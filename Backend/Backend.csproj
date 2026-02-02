@@ -7,11 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.66" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="app\Core\Enums\" />
+    <Folder Include="app\Infrastructure\Repositories\" />
+    <Folder Include="app\Infrastructure\Repositories\SQLite\" />
   </ItemGroup>
 
 </Project>
