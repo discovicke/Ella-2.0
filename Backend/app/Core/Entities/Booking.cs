@@ -5,6 +5,10 @@ namespace Backend.app.Core.Models;
 
 public class Booking
 {
+    // Booking entity matching database schema
+    // TODO: Define properties matching Infrastructure/Data/schema.sql bookings table
+    // ⚠️ Compare with src/modules/bookings/booking.repo.js for schema differences
+    
     public int Id { get; private set; }
     public int UserId { get; private set; }
     public int RoomId { get; private set; }
