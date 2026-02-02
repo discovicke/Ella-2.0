@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "sE4CvgAAG+U=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\LENOVO\\Documents\\git-syncs\\_Databaser\\net25-kurs-3-valfri-h1-337-ella\\Backend\\Backend.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\LENOVO\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.0\\microsoft.aspnetcore.openapi.10.0.0.nupkg.sha512",
+    "C:\\Users\\LENOVO\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
