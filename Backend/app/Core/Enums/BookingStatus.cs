@@ -2,8 +2,7 @@ namespace Backend.app.Core.Enums;
 
 public enum BookingStatus
 {
-    Pending,
-    Confirmed,
+    Active,
     Cancelled,
-    Completed,
+    Expired,
 }
