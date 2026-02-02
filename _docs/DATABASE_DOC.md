@@ -1,4 +1,4 @@
-<img width="1657" height="1167" alt="image" src="https://github.com/user-attachments/assets/7ebf8f87-31ae-4d8c-b2dc-11d7ee5b3099" />
+<img width="1657" height="1167" alt="image" src="./images/ChartDB_screenshot.png" />
 
 
 ### **1. Auth & Identity**
