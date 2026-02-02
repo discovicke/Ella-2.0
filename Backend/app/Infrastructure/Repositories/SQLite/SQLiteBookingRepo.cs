@@ -5,5 +5,7 @@ namespace Backend.app.Infrastructure.Repositories.SQLite;
 
 public class SQLiteBookingRepo : IBookingRepository
 {
-    // Implementation of booking repository methods for SQLite
+// SQLite repository for Booking
+// TODO: Migrate all SQL queries from booking.repo.js
+// ⚠️ Update queries for new schema if columns/tables changed
 }

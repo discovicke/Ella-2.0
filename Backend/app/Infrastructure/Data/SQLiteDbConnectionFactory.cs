@@ -5,5 +5,7 @@ namespace Backend.app.Infrastructure.Data;
 
 public class SQLiteDbConnectionFactory : IDbConnectionFactory
 {
-    // Implementation of SQLite database connection factory methods
+    // SQLite connection factory implementation
+    // TODO: Implement IDbConnectionFactory with connection string from appsettings
+    // Reference: src/db/db.js for connection handling
 }
