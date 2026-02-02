@@ -35,63 +35,17 @@
 PRAGMA foreign_keys = ON;
 
 BEGIN TRANSACTION;
-CREATE TABLE IF NOT EXISTS "registrations (join table)" (
-    "user_id" INTEGER NOT NULL,
-    "booking_id" INTEGER NOT NULL,
-    FOREIGN KEY("booking_id") REFERENCES "bookings"("id"),
-    FOREIGN KEY("user_id") REFERENCES "users"("id")
-);
 
-
-CREATE TABLE IF NOT EXISTS "asset_types" (
-    "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    "description" TEXT NOT NULL UNIQUE
-);
-
-
+-- 1. Users & Auth
 CREATE TABLE IF NOT EXISTS "users" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    "email" TEXT NOT NULL,
+    "email" TEXT NOT NULL UNIQUE,
     "password_hash" TEXT NOT NULL,
     "display_name" TEXT,
-    "role" INTEGER NOT NULL,
+    "role" INTEGER NOT NULL, -- 0=Student, 1=Teacher, 2=Admin (example enum mapping)
     "class" TEXT,
-    "is_banned" INTEGER NOT NULL
+    "is_banned" INTEGER NOT NULL DEFAULT 0
 );
-
-
-CREATE TABLE IF NOT EXISTS "assets" (
-    "asset_id" INTEGER,
-    "room_id" INTEGER,
-    FOREIGN KEY("asset_id") REFERENCES "asset_types"("id"),
-    FOREIGN KEY("room_id") REFERENCES "rooms"("id")
-);
-
-
-CREATE TABLE IF NOT EXISTS "rooms" (
-    "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    "name" TEXT NOT NULL,
-    "capacity" INTEGER,
-    "type" INTEGER NOT NULL,
-    "floor" TEXT,
-    "address" TEXT,
-    FOREIGN KEY("id") REFERENCES "bookings"("room_id")
-);
-
-
-CREATE TABLE IF NOT EXISTS "bookings" (
-    "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    "user_id" INTEGER,
-    "room_id" INTEGER,
-    "start_time" DATETIME NOT NULL,
-    "end_time" DATETIME NOT NULL,
-    "status" INT NOT NULL,
-    "notes" TEXT,
-    "created_at" DATETIME NOT NULL,
-    "updated_at" DATETIME,
-    FOREIGN KEY("user_id") REFERENCES "users"("id")
-);
-
 
 CREATE TABLE IF NOT EXISTS "refresh_tokens" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -100,9 +54,56 @@ CREATE TABLE IF NOT EXISTS "refresh_tokens" (
     "expires_at" DATETIME NOT NULL,
     "revoked_at" DATETIME,
     "created_at" DATETIME NOT NULL,
-    FOREIGN KEY("user_id") REFERENCES "users"("id")
+    FOREIGN KEY("user_id") REFERENCES "users"("id") ON DELETE CASCADE
 );
 
+-- 2. Rooms & Equipment
+CREATE TABLE IF NOT EXISTS "rooms" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "name" TEXT NOT NULL,
+    "capacity" INTEGER,
+    "type" INTEGER NOT NULL,
+    "floor" TEXT,
+    "address" TEXT
+    -- REMOVED: Circular FK to bookings
+);
+
+CREATE TABLE IF NOT EXISTS "asset_types" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "description" TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS "assets" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, -- Added PK for the specific physical item
+    "asset_type_id" INTEGER NOT NULL,                -- Renamed from asset_id for clarity
+    "room_id" INTEGER NOT NULL,
+    FOREIGN KEY("asset_type_id") REFERENCES "asset_types"("id"),
+    FOREIGN KEY("room_id") REFERENCES "rooms"("id") ON DELETE CASCADE
+);
+
+-- 3. Bookings & Participants
+CREATE TABLE IF NOT EXISTS "bookings" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "user_id" INTEGER NOT NULL, -- The Host
+    "room_id" INTEGER NOT NULL,
+    "start_time" DATETIME NOT NULL,
+    "end_time" DATETIME NOT NULL,
+    "status" INTEGER NOT NULL,
+    "notes" TEXT,
+    "created_at" DATETIME NOT NULL,
+    "updated_at" DATETIME,
+    FOREIGN KEY("user_id") REFERENCES "users"("id"),
+    FOREIGN KEY("room_id") REFERENCES "rooms"("id") ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS "registrations" (
+    "user_id" INTEGER NOT NULL,
+    "booking_id" INTEGER NOT NULL,
+    -- Composite Primary Key ensures a user can't register for the same booking twice
+    PRIMARY KEY ("user_id", "booking_id"),
+    FOREIGN KEY("booking_id") REFERENCES "bookings"("id") ON DELETE CASCADE,
+    FOREIGN KEY("user_id") REFERENCES "users"("id") ON DELETE CASCADE
+);
 
 COMMIT;
 ```
