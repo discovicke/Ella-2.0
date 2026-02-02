@@ -1,0 +1,3 @@
+-- TODO: Migrate seed data
+-- Reference: db/seed.sql
+-- Update for any schema changes
