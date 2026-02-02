@@ -483,5 +483,4 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 /Backend/obj/
-/Backend/obj/
 /.vscode/
