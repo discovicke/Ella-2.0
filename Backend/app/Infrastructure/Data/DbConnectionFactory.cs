@@ -4,19 +4,12 @@ using Microsoft.Data.Sqlite;
 
 namespace Backend.app.Infrastructure.Data;
 
-public class DbConnectionFactory : IDbConnectionFactory
+public class DbConnectionFactory(IConfiguration configurationFile) : IDbConnectionFactory
 {
-    private readonly IConfiguration config;
-
-    public DbConnectionFactory(IConfiguration configurationFile)
-    {
-        config = configurationFile;
-    }
-
     public IDbConnection CreateConnection()
     {
-        string? dbProvider = config.GetValue<string>("DatabaseSettings:Provider");
-        string? connectionString = config.GetValue<string>("DatabaseSettings:ConnectionString");
+        string? dbProvider = configurationFile.GetValue<string>("DatabaseSettings:Provider");
+        string? connectionString = configurationFile.GetValue<string>("DatabaseSettings:ConnectionString");
 
         if (string.IsNullOrWhiteSpace(dbProvider))
         {

@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <Folder Include="app\Core\Enums\" />
+    <Folder Include="app\Data\" />
     <Folder Include="app\Infrastructure\Repositories\" />
     <Folder Include="app\Infrastructure\Repositories\SQLite\" />
   </ItemGroup>

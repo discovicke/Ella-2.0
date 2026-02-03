@@ -1,4 +1,4 @@
-using Backend.app.Core.Enums;
+﻿using Backend.app.Core.Enums;
 
 namespace Backend.app.Core.Entities;
 
