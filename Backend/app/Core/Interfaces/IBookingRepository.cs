@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Backend.app.Core.Models;
+using Backend.app.Core.Entities;
 
 namespace Backend.app.Core.Interfaces;
 
