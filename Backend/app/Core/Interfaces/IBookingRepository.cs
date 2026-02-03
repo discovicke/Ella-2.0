@@ -18,9 +18,8 @@ public interface IBookingRepository
     Task<IEnumerable<Booking>> GetAllBookingsByDateAsync(DateTime startDate, DateTime endDate);
     Task<IEnumerable<Booking>> GetOverlappingBookingsAsync(int roomId, DateTime startDate, DateTime endDate);
 
-    // Todo: se över Getting bookings with room info för rätt DTO användning.
-    Task<IEnumerable<BookingWithRoomInfo>> GetBookingsWithRoomAsync();
-    Task<IEnumerable<BookingWithRoomInfo>> GetBookingsWithByUserWithRoomAsync(int userId);
+    Task<IEnumerable<Booking>> GetBookingsWithRoomAsync();
+    Task<IEnumerable<Booking>> GetBookingsWithByUserWithRoomAsync(int userId);
 
     Task<bool> UpdateBookingAsync(int bookingId, Booking booking);
     Task<bool> DeleteBookingAsync(int bookingId);
