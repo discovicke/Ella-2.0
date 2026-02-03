@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Backend.app.Core.Entities;
+using Backend.app.Core.Interfaces;
 using Backend.app.Core.Enums;
 using Backend.app.Core.Interfaces;
 using Dapper;
@@ -16,24 +19,20 @@ public class SQLiteBookingRepo(IDbConnectionFactory connectionFactory) : IBookin
     {
         using var conn = (SqliteConnection)connectionFactory.CreateConnection();
         await conn.OpenAsync();
-        var sql =
-            @"
-        INSERT INTO bookings (user_id, room_id, start_time, end_time, status, notes,)
-        VALUES (@UserId, @RoomId, @StartTime, @EndTime, @Status, @Notes);
-    ";
-        var rows = await conn.ExecuteAsync(
-            sql,
-            new
-            {
-                booking.UserId,
-                booking.RoomId,
-                booking.StartTime,
-                booking.EndTime,
-                status = (int)booking.Status,
-                booking.Notes,
-            }
-        );
-
+        var sql = @"
+            INSERT INTO bookings (user_id, room_id, start_time, end_time, status, notes)
+            VALUES (@UserId, @RoomId, @StartTime, @EndTime, @Status, @Notes);
+        ";
+    var rows = await conn.ExecuteAsync(sql, new 
+    {
+        booking.UserId,
+        booking.RoomId,
+        booking.StartTime,
+        booking.EndTime,
+        status = (int)booking.Status,
+        booking.Notes
+    });
+    
         return rows > 0;
     }
 
@@ -41,11 +40,14 @@ public class SQLiteBookingRepo(IDbConnectionFactory connectionFactory) : IBookin
     {
         using var conn = (SqliteConnection)connectionFactory.CreateConnection();
         await conn.OpenAsync();
+        
         var sql = "UPDATE bookings SET status = @Status WHERE id = @BookingId;";
-        var rows = await conn.ExecuteAsync(
-            sql,
-            new { Status = (int)BookingStatus.Cancelled, BookingId = bookingId }
-        );
+        var rows = await conn.ExecuteAsync(sql, new 
+        {
+            Status = (int)BookingStatus.Cancelled,
+            BookingId = bookingId
+        });
+
 
         return rows > 0;
     }
@@ -89,7 +91,8 @@ public class SQLiteBookingRepo(IDbConnectionFactory connectionFactory) : IBookin
 
     public Task SaveChangesAsync()
     {
-        throw new NotImplementedException();
+        // No-op for Dapper; changes are committed immediately
+        return Task.CompletedTask;
     }
 
     public Task<bool> UpdateBookingAsync(int bookingId, Booking booking)
