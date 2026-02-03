@@ -5,5 +5,7 @@ namespace Backend.app.Infrastructure.Repositories.SQLite;
 
 public class SQLiteRoomRepo : IRoomRepository
 {
-    // Implementation of room repository methods for SQLite
+    // SQLite repository for Room
+    // TODO: Migrate all SQL queries from room.repo.js
+    // ⚠️ Update queries for new schema if columns/tables changed
 }
