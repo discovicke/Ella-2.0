@@ -5,6 +5,8 @@ using Backend.app.Infrastructure.Data;
 using Backend.app.Infrastructure.Repositories.SQLite;
 using Scalar.AspNetCore;
 
+Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
