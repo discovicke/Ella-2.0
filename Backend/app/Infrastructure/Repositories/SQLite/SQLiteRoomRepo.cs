@@ -86,14 +86,15 @@ public class SQLiteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         {
             await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            
-            const string sql = "INSERT INTO rooms (name, capacity, type, floor, address, notes) VALUES (@name, @capacity, @type, @floor, @address, @notes);";
+
+            const string sql =
+                "INSERT INTO rooms (name, capacity, type, floor, address, notes) VALUES (@name, @capacity, @type, @floor, @address, @notes);";
             return await conn.ExecuteAsync(sql, room) > 0;
         }
         catch (Exception ex)
         {
             throw new Exception($"Unexpected error while creating room {room.Name}.", ex);
-        }    
+        }
     }
 
     public async Task<bool> UpdateRoomAsync(int id, Room room)
@@ -102,22 +103,29 @@ public class SQLiteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         {
             await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            
-            const string sql = "INSERT INTO rooms (name, capacity, type, floor, address, notes) VALUES (@name, @capacity, @type, @floor, @address, @notes);";
+
+            const string sql = "UPDATE rooms SET name = @Name, capacity = @Capacity, type = @Type, floor = @Floor, address = @Address, notes = @Notes WHERE id = @Id;";
             return await conn.ExecuteAsync(sql, room) > 0;
         }
         catch (Exception ex)
         {
             throw new Exception($"Unexpected error while updating room {room.Name}.", ex);
-        }        }
-
-    public Task<bool> DeleteRoomAsync(int id)
-    {
-        throw new NotImplementedException();
+        }
     }
 
-    public Task SaveChangesAsync()
+    public async Task<bool> DeleteRoomAsync(int id)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            
+            const string sql = "DELETE FROM rooms WHERE id = @id;";
+            return await conn.ExecuteAsync(sql, new { id }) > 0;
+        }
+        catch (Exception exception)
+        {
+            throw new Exception($"Unexpected error while deleting room with id {id}.", exception);
+        }
     }
 }
