@@ -10,14 +10,14 @@ BEGIN TRANSACTION;
 -- 1. Users & Auth
 CREATE TABLE IF NOT EXISTS "users"
 (
-    "id"            INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    "email"         TEXT                              NOT NULL UNIQUE,
-    "password_hash" TEXT                              NOT NULL,
-    "display_name"  TEXT,
-    "role"          INTEGER                           NOT NULL, -- 0=Student, 1=Teacher, 2=Admin
-    "class"         TEXT,
-    "is_banned"     INTEGER                           NOT NULL DEFAULT 0,
-    "tokens_valid_after" DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL
+    "id"                 INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "email"              TEXT                              NOT NULL UNIQUE,
+    "password_hash"      TEXT                              NOT NULL,
+    "display_name"       TEXT,
+    "role"               INTEGER                           NOT NULL, -- 0=Student, 1=Teacher, 2=Admin
+    "class"              TEXT,
+    "is_banned"          INTEGER                           NOT NULL DEFAULT 0,
+    "tokens_valid_after" DATETIME                                   DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 -- 2. Rooms & Equipment
@@ -51,14 +51,14 @@ CREATE TABLE IF NOT EXISTS "room_assets"
 -- 3. Bookings & Participants
 CREATE TABLE IF NOT EXISTS "bookings"
 (
-    "id"         INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    "user_id"    INTEGER                           NOT NULL, -- The Host
-    "room_id"    INTEGER                           NOT NULL,
-    "start_time" DATETIME                          NOT NULL,
-    "end_time"   DATETIME                          NOT NULL,
-    "status"     INTEGER                           NOT NULL,
+    "id"         INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL,
+    "user_id"    INTEGER                            NOT NULL, -- The Host
+    "room_id"    INTEGER                            NOT NULL,
+    "start_time" DATETIME                           NOT NULL,
+    "end_time"   DATETIME                           NOT NULL,
+    "status"     INTEGER                            NOT NULL,
     "notes"      TEXT,
-    "created_at" DATETIME                          NOT NULL,
+    "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "updated_at" DATETIME,
     FOREIGN KEY ("user_id") REFERENCES "users" ("id"),
     FOREIGN KEY ("room_id") REFERENCES "rooms" ("id") ON DELETE CASCADE

@@ -1,4 +1,6 @@
+using Backend.app.API.Endpoints;
 using Backend.app.Core.Interfaces;
+using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Data;
 using Backend.app.Infrastructure.Repositories.SQLite;
 
@@ -21,8 +23,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
-// --- 1. DEPENDENCY INJECTION SETUP ---
-
+// DEPENDENCY INJECTION SETUP
 // Register the Factory as a Singleton (Lives forever, shared across app)
 builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
 
@@ -31,6 +32,12 @@ builder.Services.AddScoped<IRoomRepository, SQLiteRoomRepo>();
 builder.Services.AddScoped<IUserRepository, SQLiteUserRepo>();
 builder.Services.AddScoped<IBookingRepository, SQLiteBookingRepo>();
 
+// Register the AuthService so it can be injected into our endpoints
+builder.Services.AddScoped<AuthService>();
+
 var app = builder.Build();
+
+// ENDPOINT MAPPINGS
+app.MapAuthEndpoints();
 
 app.Run();

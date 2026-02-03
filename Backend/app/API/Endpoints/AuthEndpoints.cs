@@ -1,7 +1,30 @@
+using Backend.app.Core.DTO;
+using Backend.app.Core.Services;
+
 namespace Backend.app.API.Endpoints;
 
-public class AuthEndpoints
+public static class AuthEndpoints
 {
-    // TODO: Migrate authentication endpoints (login, logout, register)
-    // Reference: src/modules/auth/auth.routes.js + auth.controller.js
+    public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
+    {
+        // Creates a common prefix for all endpoints in this group (/api/auth)
+        var group = app.MapGroup("/api/auth").WithTags("Auth"); // Helps group them in Swagger/OpenAPI
+
+        // POST /api/auth/register
+        group
+            .MapPost(
+                "/register",
+                async (RegisterDto request, AuthService authService) =>
+                {
+                    var result = await authService.RegisterAsync(request);
+                    return Results.Ok(result);
+                }
+            )
+            .WithName("RegisterUser")
+            .WithDescription("Registers a new user.");
+        // TODO: Migrate authentication endpoints (login, logout, register)
+        // Reference: src/modules/auth/auth.routes.js + auth.controller.js
+
+        return app;
+    }
 }

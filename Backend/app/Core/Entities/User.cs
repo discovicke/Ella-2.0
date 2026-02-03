@@ -1,7 +1,6 @@
-﻿using System;
-using Backend.app.Core.Enums;
+﻿using Backend.app.Core.Enums;
 
-namespace Backend.app.Core.Models;
+namespace Backend.app.Core.Entities;
 
 public class User
 {
@@ -16,5 +15,4 @@ public class User
     public UserRole Role { get; set; } = UserRole.Student;
     public string? UserClass { get; set; }
     public BannedStatus IsBanned { get; set; } = BannedStatus.NotBanned;
-    public object Class { get; internal set; }
 }

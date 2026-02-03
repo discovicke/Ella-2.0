@@ -1,6 +1,5 @@
 ﻿using System;
-
-using Backend.app.Core.Models;
+using Backend.app.Core.Entities;
 using Backend.app.Core.Enums;
 namespace Backend.app.Core.Interfaces;
 
