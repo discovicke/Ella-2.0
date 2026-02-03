@@ -10,7 +10,7 @@ public interface IBookingRepository
     // TODO: Define method signatures for CRUD operations
     // Reference: src/modules/bookings/booking.repo.js for all methods
     // CRUD stands for Create, Read, Update, and Delete – basic operations used to add, fetch, modify, and remove data.
-    Task <Booking> CreateBookingAsync(Booking booking);
+    Task <bool> CreateBookingAsync(Booking booking);
     Task<IEnumerable<Booking>> GetAllBookingsAsync();
     Task <Booking?> GetBookingByIdAsync(int bookingId);
     Task<IEnumerable<Booking>> GetBookingsByUserIdAsync(int userId);
