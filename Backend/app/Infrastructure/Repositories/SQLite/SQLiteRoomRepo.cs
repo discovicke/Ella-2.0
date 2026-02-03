@@ -16,7 +16,7 @@ public class SQLiteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
     {
         try
         {
-            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             const string sql = "SELECT * FROM rooms;";
             var rooms = await conn.QueryAsync<Room>(sql);
@@ -32,7 +32,7 @@ public class SQLiteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
     {
         try
         {
-            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
             const string sql = "SELECT * FROM rooms WHERE id = @id;";
@@ -49,7 +49,7 @@ public class SQLiteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
     {
         try
         {
-            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
             const string sql = "SELECT * FROM rooms WHERE type = @type;";
@@ -66,7 +66,7 @@ public class SQLiteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
     {
         try
         {
-            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
             const string sql = "SELECT * FROM rooms WHERE type = @location;";
@@ -83,7 +83,7 @@ public class SQLiteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
     {
         try
         {
-            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
             const string sql =
@@ -100,7 +100,7 @@ public class SQLiteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
     {
         try
         {
-            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
             const string sql =
@@ -117,7 +117,7 @@ public class SQLiteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
     {
         try
         {
-            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
             const string sql = "DELETE FROM rooms WHERE id = @id;";

@@ -16,7 +16,7 @@ public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
     {
         try
         {
-            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = "SELECT * FROM users;";
             var users = await conn.QueryAsync<User>(sql);
@@ -32,7 +32,7 @@ public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
     {
         try
         {
-            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = "SELECT * FROM users WHERE id = @id;";
             var user = await conn.QuerySingleOrDefaultAsync<User>(sql, new { id });
@@ -48,7 +48,7 @@ public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
     {
         try
         {
-            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = "SELECT * FROM users WHERE email = @email;";
             var user = await conn.QuerySingleOrDefaultAsync<User>(sql, new { email });
@@ -64,7 +64,7 @@ public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
     {
         try
         {
-            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = "SELECT * FROM users WHERE role = @role;";
             var user = await conn.QuerySingleOrDefaultAsync<User>(sql, new { role });
@@ -80,7 +80,7 @@ public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
     {
         try
         {
-            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = "SELECT * FROM users WHERE display_name = @displayName;";
             var user = await conn.QuerySingleOrDefaultAsync<User>(sql, new { displayName });
@@ -96,7 +96,7 @@ public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
     {
         try
         {
-            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
             var sql =
@@ -127,7 +127,7 @@ public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
     {
         try
         {
-            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
             var sql =
@@ -160,7 +160,7 @@ public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
     {
         try
         {
-            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
             var sql = @"DELETE FROM users WHERE id = @id;";
@@ -179,7 +179,7 @@ public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
     {
         try
         {
-            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = "SELECT * FROM users WHERE class = @className;";
             var users = await conn.QueryAsync<User>(sql, new { className });
@@ -195,7 +195,7 @@ public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
     {
         try
         {
-            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = "SELECT * FROM users WHERE role = @role";
             var users = await conn.QueryAsync<User>(sql, new { role });

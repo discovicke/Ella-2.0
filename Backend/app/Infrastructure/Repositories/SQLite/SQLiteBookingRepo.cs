@@ -17,7 +17,7 @@ public class SQLiteBookingRepo(IDbConnectionFactory connectionFactory) : IBookin
     // ⚠️ Update queries for new schema if columns/tables changed
     public async Task<bool> CreateBookingAsync(Booking booking)
     {
-        using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+        using var conn = connectionFactory.CreateConnection();
         await conn.OpenAsync();
         var sql =
             @"

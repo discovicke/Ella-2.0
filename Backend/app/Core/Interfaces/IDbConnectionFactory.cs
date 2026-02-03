@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Data.Common;
 
 namespace Backend.app.Core.Interfaces;
 
@@ -9,5 +10,5 @@ public interface IDbConnectionFactory
     // TODO: Define CreateConnection() method
     // Reference: src/db/db.js for connection handling
 
-    IDbConnection CreateConnection();
+    DbConnection CreateConnection();
 }

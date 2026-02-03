@@ -1,4 +1,5 @@
 using System.Data;
+using System.Data.Common;
 using Backend.app.Core.Interfaces;
 using Microsoft.Data.Sqlite;
 
@@ -6,10 +7,12 @@ namespace Backend.app.Infrastructure.Data;
 
 public class DbConnectionFactory(IConfiguration configurationFile) : IDbConnectionFactory
 {
-    public IDbConnection CreateConnection()
+    public DbConnection CreateConnection()
     {
         string? dbProvider = configurationFile.GetValue<string>("DatabaseSettings:Provider");
-        string? connectionString = configurationFile.GetValue<string>("DatabaseSettings:ConnectionString");
+        string? connectionString = configurationFile.GetValue<string>(
+            "DatabaseSettings:ConnectionString"
+        );
 
         if (string.IsNullOrWhiteSpace(dbProvider))
         {
