@@ -34,7 +34,7 @@ The **Service** performs checks that require "knowledge of the world" (Database 
 - **Conflicts**: Is the room already occupied during this specific time slot?
 - **Permissions**: Is the user allowed to perform this action based on their current status?
 
-- **Result**: Throws an exception (e.g., `InvalidOperationException`) that the endpoint catches to return a `409 Conflict` or `400 Bad Request`.
+- **Result**: Throws an exception (e.g., `InvalidOperationException`) that the endpoint catches to return a `409 Conflict` or `403 Forbidden`.
 - **Junior Tip**: This layer ensures the request is valid given the current state of the application.
 
 ### Layer 4: Database Integrity (The Vault)
