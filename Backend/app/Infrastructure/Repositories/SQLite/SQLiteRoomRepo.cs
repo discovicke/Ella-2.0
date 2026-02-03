@@ -4,7 +4,7 @@ using Backend.app.Core.Models;
 
 namespace Backend.app.Infrastructure.Repositories.SQLite;
 
-public class SQLiteRoomRepo : IRoomRepository
+public class SQLiteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepository
 {
     // SQLite repository for Room
     // TODO: Migrate all SQL queries from room.repo.js
