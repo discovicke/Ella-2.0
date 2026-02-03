@@ -1,16 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Backend.app.Core.Entities;
 using Backend.app.Core.Enums;
-using Backend.app.Core.Interfaces;
 using Backend.app.Core.Interfaces;
 using Dapper;
 using Microsoft.Data.Sqlite;
 
-namespace Backend.app.Infrastructure.Repositories.SQLite;
+namespace Backend.app.Infrastructure.Repositories;
 
-public class SQLiteBookingRepo(IDbConnectionFactory connectionFactory) : IBookingRepository
+public class BookingRepo(IDbConnectionFactory connectionFactory) : IBookingRepository
 {
     // SQLite repository for Booking
     // TODO: Migrate all SQL queries from booking.repo.js

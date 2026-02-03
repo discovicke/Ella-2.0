@@ -15,14 +15,14 @@ public class DbInitializer(IDbConnectionFactory connectionFactory, ILogger<DbIni
     {
         logger.LogInformation("🔌 Initializing database...");
 
-        var conn = (Microsoft.Data.Sqlite.SqliteConnection)connectionFactory.CreateConnection();
+        await using var conn = connectionFactory.CreateConnection();
         await using (conn.ConfigureAwait(false))
         {
             await conn.OpenAsync();
 
             // Enable WAL mode for better concurrency
             await conn.ExecuteAsync("PRAGMA journal_mode = WAL;");
-            
+
             // Enable foreign key constraints
             await conn.ExecuteAsync("PRAGMA foreign_keys = ON;");
 
@@ -40,12 +40,24 @@ public class DbInitializer(IDbConnectionFactory connectionFactory, ILogger<DbIni
     {
         logger.LogInformation("📝 Running schema.sql...");
 
-        var schemaPath = Path.Combine(AppContext.BaseDirectory, "app", "Infrastructure", "Data", "schema.sql");
-        
+        var schemaPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "app",
+            "Infrastructure",
+            "Data",
+            "schema.sql"
+        );
+
         // Fallback: try relative path from project root (for development)
         if (!File.Exists(schemaPath))
         {
-            schemaPath = Path.Combine(Directory.GetCurrentDirectory(), "app", "Infrastructure", "Data", "schema.sql");
+            schemaPath = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "app",
+                "Infrastructure",
+                "Data",
+                "schema.sql"
+            );
         }
 
         if (!File.Exists(schemaPath))
@@ -66,18 +78,33 @@ public class DbInitializer(IDbConnectionFactory connectionFactory, ILogger<DbIni
 
         if (userCount > 0)
         {
-            logger.LogInformation("ℹ️ Database already seeded ({UserCount} users found). Skipping seed.", userCount);
+            logger.LogInformation(
+                "ℹ️ Database already seeded ({UserCount} users found). Skipping seed.",
+                userCount
+            );
             return;
         }
 
         logger.LogInformation("📦 Seeding database with initial data...");
 
-        var seedPath = Path.Combine(AppContext.BaseDirectory, "app", "Infrastructure", "Data", "seed.sql");
-        
+        var seedPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "app",
+            "Infrastructure",
+            "Data",
+            "seed.sql"
+        );
+
         // Fallback: try relative path from project root (for development)
         if (!File.Exists(seedPath))
         {
-            seedPath = Path.Combine(Directory.GetCurrentDirectory(), "app", "Infrastructure", "Data", "seed.sql");
+            seedPath = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "app",
+                "Infrastructure",
+                "Data",
+                "seed.sql"
+            );
         }
 
         if (!File.Exists(seedPath))
@@ -114,7 +141,8 @@ public class DbInitializer(IDbConnectionFactory connectionFactory, ILogger<DbIni
     private static string ReplaceFirst(string text, string search, string replace)
     {
         var pos = text.IndexOf(search, StringComparison.Ordinal);
-        if (pos < 0) return text;
+        if (pos < 0)
+            return text;
         return string.Concat(text.AsSpan(0, pos), replace, text.AsSpan(pos + search.Length));
     }
 }

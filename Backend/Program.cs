@@ -2,7 +2,7 @@ using Backend.app.API.Endpoints;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Data;
-using Backend.app.Infrastructure.Repositories.SQLite;
+using Backend.app.Infrastructure.Repositories;
 using Scalar.AspNetCore;
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
@@ -31,9 +31,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
 
 // Register the Repository as Scoped (Created fresh for each HTTP request)
-builder.Services.AddScoped<IRoomRepository, SQLiteRoomRepo>();
-builder.Services.AddScoped<IUserRepository, SQLiteUserRepo>();
-builder.Services.AddScoped<IBookingRepository, SQLiteBookingRepo>();
+builder.Services.AddScoped<IRoomRepository, RoomRepo>();
+builder.Services.AddScoped<IUserRepository, UserRepo>();
+builder.Services.AddScoped<IBookingRepository, BookingRepo>();
 
 // Register the AuthService so it can be injected into our endpoints
 builder.Services.AddScoped<AuthService>();

@@ -4,9 +4,9 @@ using Backend.app.Core.Interfaces;
 using Dapper;
 using Microsoft.Data.Sqlite;
 
-namespace Backend.app.Infrastructure.Repositories.SQLite;
+namespace Backend.app.Infrastructure.Repositories;
 
-public class SQLiteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepository
+public class RoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepository
 {
     // SQLite repository for Room
     // TODO: Migrate all SQL queries from room.repo.js

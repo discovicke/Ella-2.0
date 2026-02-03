@@ -4,9 +4,9 @@ using Backend.app.Core.Interfaces;
 using Dapper;
 using Microsoft.Data.Sqlite;
 
-namespace Backend.app.Infrastructure.Repositories.SQLite;
+namespace Backend.app.Infrastructure.Repositories;
 
-public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepository
+public class UserRepo(IDbConnectionFactory connectionFactory) : IUserRepository
 {
     // SQLite repository for User
     // TODO: Migrate all SQL queries from user.repo.js

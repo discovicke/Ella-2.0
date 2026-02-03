@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <Folder Include="app\Infrastructure\Repositories\" />
-    <Folder Include="app\Infrastructure\Repositories\SQLite\" />
   </ItemGroup>
 
 </Project>
