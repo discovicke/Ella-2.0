@@ -3,7 +3,7 @@ using Backend.app.Core.Interfaces;
 
 namespace Backend.app.Infrastructure.Repositories.SQLite;
 
-public class SQLiteUserRepo : IUserRepository
+public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepository
 {
     // SQLite repository for User
     // TODO: Migrate all SQL queries from user.repo.js
