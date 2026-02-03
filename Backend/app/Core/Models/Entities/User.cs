@@ -15,4 +15,5 @@ public class User
     public UserRole Role { get; set; } = UserRole.Student;
     public string? UserClass { get; set; }
     public BannedStatus IsBanned { get; set; } = BannedStatus.NotBanned;
+    public DateTime TokensValidAfter { get; set; } = DateTime.UtcNow;
 }

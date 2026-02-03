@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS "users"
     "password_hash"      TEXT                              NOT NULL,
     "display_name"       TEXT,
     "role"               INTEGER                           NOT NULL, -- 0=Student, 1=Teacher, 2=Admin
-    "class"              TEXT,
+    "user_class"              TEXT,
     "is_banned"          INTEGER                           NOT NULL DEFAULT 0,
     "tokens_valid_after" DATETIME                                   DEFAULT CURRENT_TIMESTAMP NOT NULL
 );

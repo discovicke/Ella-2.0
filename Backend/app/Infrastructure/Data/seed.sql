@@ -2,7 +2,7 @@
 -- Reference: db/seed.sql
 -- Update for any schema changes
 
-INSERT INTO users (email, password_hash, role, class, display_name)
+INSERT INTO users (email, password_hash, role, user_class, display_name)
 VALUES ('admin@edugrade.com', '__HASH__', 2, NULL, 'Admin Testberg'),
        ('larare@edugrade.com', '__HASH__', 1, NULL, 'Lärare Testholm'),
        ('elev@edugrade.com', '__HASH__', 0, 'demo26', 'Elev Testlund'),
