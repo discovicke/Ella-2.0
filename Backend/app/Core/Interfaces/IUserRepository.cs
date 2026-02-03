@@ -13,15 +13,14 @@ public interface IUserRepository
     
     Task<IEnumerable<User>> GetAllUsersAsync();
     Task<User?> GetUserByIdAsync(int id);
-    Task<User?> FindUserByEmailAsync(string email);
-    Task<User?> FindUserByClassAsync(int classId);
-    Task<User?> FindUserByRoleAsync(UserRole role);
-    Task<User?> FindUserByNameAsync(string name);
+    Task<User?> GetUserByEmailAsync(string email);
+    Task<User?> GetUserByRoleAsync(UserRole role);
+    Task<User?> GetUserByDisplayNameAsync(string displayName);
     Task<User?> CreateUserAsync(User user);
     Task<User?> UpdateUserAsync(int id, User user);
     Task<User?> DeleteUserAsync(int id);
 
-    // New Tasks
+    // New query methods
     Task<IEnumerable<User>> GetUsersByClassAsync(string classname);
     Task<IEnumerable<User>> GetUsersByRoleAsync(UserRole role);
     
