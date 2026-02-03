@@ -8,13 +8,13 @@ public class Booking
     // TODO: Define properties matching Infrastructure/Data/schema.sql bookings table
     // ⚠️ Compare with src/modules/bookings/booking.repo.js for schema differences
     
-    public int Id { get; private set; }
-    public int UserId { get; private set; }
-    public int RoomId { get; private set; }
-    public DateTime StartTime { get; private set; }
-    public DateTime EndTime { get; private set; }
-    public BookingStatus Status { get; private set; }
-    public string? Notes { get; private set; }
-    public DateTime CreatedAt { get; private set; }
-    public DateTime? UpdatedAt { get; private set; }
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public int RoomId { get; set; }
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    public BookingStatus Status { get; set; }
+    public string? Notes { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 }
