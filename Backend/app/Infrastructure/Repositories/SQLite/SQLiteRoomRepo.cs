@@ -1,6 +1,6 @@
 using System;
+using Backend.app.Core.Entities;
 using Backend.app.Core.Interfaces;
-using Backend.app.Core.Models;
 using Dapper;
 using Microsoft.Data.Sqlite;
 
@@ -11,87 +11,107 @@ public class SQLiteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
     // SQLite repository for Room
     // TODO: Migrate all SQL queries from room.repo.js
     // ⚠️ Update queries for new schema if columns/tables changed
-    
+
     public async Task<IEnumerable<Room>> GetAllRoomsAsync()
     {
-        using var conn = (SqliteConnection)connectionFactory.CreateConnection();
-        await conn.OpenAsync();
-        var sql = "SELECT * FROM rooms;";
-        var rooms = await conn.QueryAsync<Room>(sql);
-        return rooms;
+        try
+        {
+            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            const string sql = "SELECT * FROM rooms;";
+            var rooms = await conn.QueryAsync<Room>(sql);
+            return rooms;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Unexpected error while fetching all rooms.", ex);
+        }
     }
 
-    public Task<Room?> GetRoomByIdAsync(int id)
+
+    public async Task<Room?> GetRoomByIdAsync(int id)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+
+            const string sql = "SELECT * FROM rooms WHERE id = @id;";
+
+            return await conn.QueryFirstOrDefaultAsync<Room>(sql, new { id });
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Unexpected error while fetching room with id {id}.", ex);
+        }
     }
 
-    public Task<Room?> GetRoomByRoomNumberAsync(string roomNumber)
+    public async Task<IEnumerable<Room>> GetRoomsByTypeAsync(int type)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+
+            const string sql = "SELECT * FROM rooms WHERE type = @type;";
+
+            return await conn.QueryAsync<Room>(sql, new { type });
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Unexpected error while fetching rooms with type {type}.", ex);
+        }
     }
 
-    public Task<IEnumerable<Room>> GetRoomsByTypeAsync(int type)
+    public async Task<IEnumerable<Room>> GetRoomsByLocationAsync(string location)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+
+            const string sql = "SELECT * FROM rooms WHERE type = @location;";
+
+            return await conn.QueryAsync<Room>(sql, new { location });
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Unexpected error while fetching rooms with type {location}.", ex);
+        }
     }
 
-    public Task<IEnumerable<Room>> GetRoomsByLocationAsync(string location)
+    public async Task<bool> CreateRoomAsync(Room room)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            
+            const string sql = "INSERT INTO rooms (name, capacity, type, floor, address, notes) VALUES (@name, @capacity, @type, @floor, @address, @notes);";
+            return await conn.ExecuteAsync(sql, room) > 0;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Unexpected error while creating room {room.Name}.", ex);
+        }    
     }
 
-    public Task<Room> CreateRoomAsync(Room room)
+    public async Task<bool> UpdateRoomAsync(int id, Room room)
     {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> UpdateRoomAsync(int id, Room room)
-    {
-        throw new NotImplementedException();
-    }
+        try
+        {
+            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            
+            const string sql = "INSERT INTO rooms (name, capacity, type, floor, address, notes) VALUES (@name, @capacity, @type, @floor, @address, @notes);";
+            return await conn.ExecuteAsync(sql, room) > 0;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Unexpected error while updating room {room.Name}.", ex);
+        }        }
 
     public Task<bool> DeleteRoomAsync(int id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IEnumerable<object>> GetAssetsByRoomIdAsync(int roomId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<object?> GetAssetByIdAsync(int assetId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<object> CreateRoomAssetAsync(int roomId, int assetTypeId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> UpdateRoomAssetAsync(int assetId, int roomId, int assetTypeId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> DeleteRoomAssetAsync(int assetId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<int> DeleteAllAssetsByRoomIdAsync(int roomId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<object?> GetRoomWithAssetsAsync(int roomId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IEnumerable<object>> GetAllRoomsWithAssetsAsync()
     {
         throw new NotImplementedException();
     }
