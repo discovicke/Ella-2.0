@@ -1,6 +1,6 @@
 using System;
 using Backend.app.Core.Interfaces;
-using Backend.app.Core.Models;
+using Backend.app.Core.Entities;
 using Microsoft.Data.Sqlite;
 using Dapper;
 using Backend.app.Core.Enums;
