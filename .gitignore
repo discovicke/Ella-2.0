@@ -494,3 +494,4 @@ $RECYCLE.BIN/
 *.sqlite3
 *.sqlite-shm
 *.sqlite-wal
+*.sqlite
