@@ -53,5 +53,5 @@ The **Database Schema** acts as the final safety net.
 | ------------- | --------------- | ------------------ | ------------- |
 | **Framework** | Type Safety     | None               | `400`         |
 | **Endpoint**  | Input Integrity | DTO Data Only      | `400`         |
-| **Service**   | System State    | Repository Access  | `409` / `400` |
+| **Service**   | System State    | Repository Access  | `409` / `403` |
 | **Database**  | Hard Reality    | Schema Constraints | `500`         |
