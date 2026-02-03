@@ -33,4 +33,50 @@ public class SQLiteBookingRepo(IDbConnectionFactory connectionFactory) : IBookin
     
         return rows > 0;
     }
+
+    public Task<bool> DeleteBookingAsync(int bookingId)
+    {
+        
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<Booking>> GetAllBookingsAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<Booking>> GetAllBookingsByDateAsync(DateTime startDate, DateTime endDate)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Booking?> GetBookingByIdAsync(int bookingId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<Booking>> GetBookingsByRoomIdAsync(int roomId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<Booking>> GetBookingsByUserIdAsync(int userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<Booking>> GetOverlappingBookingsAsync(int roomId, DateTime startDate, DateTime endDate)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task SaveChangesAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> UpdateBookingAsync(int bookingId, Booking booking)
+    {
+        throw new NotImplementedException();
+    }
 }
