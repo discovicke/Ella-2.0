@@ -3,6 +3,7 @@ using Backend.app.Core.Interfaces;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Data;
 using Backend.app.Infrastructure.Repositories.SQLite;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,12 @@ builder.Services.AddScoped<IBookingRepository, SQLiteBookingRepo>();
 builder.Services.AddScoped<AuthService>();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi(); // Generates the underlying JSON file
+    app.MapScalarApiReference(); // Hosts the Scalar UI
+}
 
 // ENDPOINT MAPPINGS
 app.MapAuthEndpoints();
