@@ -15,5 +15,5 @@ public class User
     public string? DisplayName { get; set; }
     public UserRole Role { get; set; } = UserRole.Student;
     public string? UserClass { get; set; }
-    public bool IsBanned { get; set; } = false;
+    public BannedStatus IsBanned { get; set; } = BannedStatus.NotBanned;
 }
