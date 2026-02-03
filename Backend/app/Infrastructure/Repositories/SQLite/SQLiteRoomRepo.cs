@@ -1,18 +1,24 @@
 using System;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models;
+using Dapper;
+using Microsoft.Data.Sqlite;
 
 namespace Backend.app.Infrastructure.Repositories.SQLite;
 
-public class SQLiteRoomRepo : IRoomRepository
+public class SQLiteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepository
 {
     // SQLite repository for Room
     // TODO: Migrate all SQL queries from room.repo.js
     // ⚠️ Update queries for new schema if columns/tables changed
     
-    public Task<IEnumerable<Room>> GetAllRoomsAsync()
+    public async Task<IEnumerable<Room>> GetAllRoomsAsync()
     {
-        throw new NotImplementedException();
+        using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+        var sql = "SELECT * FROM rooms;";
+        var rooms = await conn.QueryAsync<Room>(sql);
+        return rooms;
     }
 
     public Task<Room?> GetRoomByIdAsync(int id)
