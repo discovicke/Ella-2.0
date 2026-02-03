@@ -1,4 +1,4 @@
-<img width="1657" height="1167" alt="image" src="./images/ChartDB_screenshot.png" />
+<img alt="image" src="./images/ChartDB_screenshot_NEW.png" />
 
 
 ### **1. Auth & Identity**
