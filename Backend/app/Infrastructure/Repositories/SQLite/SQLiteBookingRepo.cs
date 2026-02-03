@@ -3,6 +3,7 @@ using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models;
 using Microsoft.Data.Sqlite;
 using Dapper;
+using Backend.app.Core.Enums;
 
 namespace Backend.app.Infrastructure.Repositories.SQLite;
 
@@ -34,10 +35,18 @@ public class SQLiteBookingRepo(IDbConnectionFactory connectionFactory) : IBookin
         return rows > 0;
     }
 
-    public Task<bool> DeleteBookingAsync(int bookingId)
-    {
-        
-        throw new NotImplementedException();
+    public async Task<bool> CancelBookingAsync(int bookingId)
+    {   using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+        var sql = "UPDATE bookings SET status = @Status WHERE id = @BookingId;";
+        var rows = await conn.ExecuteAsync(sql, new 
+        {
+            Status = (int)BookingStatus.Cancelled,
+            BookingId = bookingId
+        });
+
+
+        return rows > 0;
     }
 
     public Task<IEnumerable<Booking>> GetAllBookingsAsync()
