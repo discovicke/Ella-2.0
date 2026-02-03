@@ -1,6 +1,7 @@
 ﻿using System;
 using Backend.app.Core.Entities;
 using Backend.app.Core.Enums;
+
 namespace Backend.app.Core.Interfaces;
 
 public interface IUserRepository
@@ -9,7 +10,7 @@ public interface IUserRepository
     // TODO: Define method signatures for CRUD operations
     // Reference: src/modules/users/user.repo.js for all methods
     // CRUD stands for Create, Read, Update, and Delete – basic operations used to add, fetch, modify, and remove data.
-    
+
     Task<IEnumerable<User>> GetAllUsersAsync(); //
     Task<User?> GetUserByIdAsync(int id); //
     Task<User?> GetUserByEmailAsync(string email); //
@@ -22,7 +23,4 @@ public interface IUserRepository
     // New query methods
     Task<IEnumerable<User>> GetUsersByClassAsync(string classname); //
     Task<IEnumerable<User>> GetUsersByRoleAsync(UserRole role);
-    
-
-    
 }

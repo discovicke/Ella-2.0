@@ -9,7 +9,7 @@ public interface IRoomRepository
     // Repository interface for Room data access
     // Reference: src/modules/rooms/room.repo.js for all methods
     // CRUD stands for Create, Read, Update, and Delete – basic operations used to add, fetch, modify, and remove data.
-    
+
     Task<IEnumerable<Room>> GetAllRoomsAsync();
     Task<Room?> GetRoomByIdAsync(int id);
     Task<IEnumerable<Room>> GetRoomsByTypeAsync(int type);
