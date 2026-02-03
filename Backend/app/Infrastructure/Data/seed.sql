@@ -3,21 +3,28 @@
 -- Update for any schema changes
 
 INSERT INTO users (email, password_hash, role, class, display_name)
-VALUES ('admin@edugrade.com', '__HASH__', 'admin', NULL, 'Admin Testberg'),
-       ('larare@edugrade.com', '__HASH__', 'teacher', NULL, 'Lärare Testholm'),
-       ('elev@edugrade.com', '__HASH__', 'student', 'demo26', 'Elev Testlund'),
-       ('andre.ponten.net25@edu.edugrade.com', '__HASH__', 'student', 'net25', 'André Pontén'),
-       ('christian.gennari.net25@edu.edugrade.com', '__HASH__', 'student', 'net25', 'Christian Gennari'),
-       ('marcus.loov.net25@edu.edugrade.com', '__HASH__', 'student', 'net25', 'Marcus Lööv'),
-       ('viktor.johansson.net25@edu.edugrade.com', '__HASH__', 'student', 'net25', 'Viktor Johansson');
+VALUES ('admin@edugrade.com', '__HASH__', 2, NULL, 'Admin Testberg'),
+       ('larare@edugrade.com', '__HASH__', 1, NULL, 'Lärare Testholm'),
+       ('elev@edugrade.com', '__HASH__', 0, 'demo26', 'Elev Testlund'),
+       ('andre.ponten.net25@edu.edugrade.com', '__HASH__', 0, 'net25', 'André Pontén'),
+       ('christian.gennari.net25@edu.edugrade.com', '__HASH__', 0, 'net25', 'Christian Gennari'),
+       ('marcus.loov.net25@edu.edugrade.com', '__HASH__', 0, 'net25', 'Marcus Lööv'),
+       ('viktor.johansson.net25@edu.edugrade.com', '__HASH__', 0, 'net25', 'Viktor Johansson');
 
-INSERT INTO room (type, capacity, name)
-VALUES ( 'lab', 16, 'Lintjärn'),
-       ( 'classroom', 22, 'Lillfjärden'),
-       ( 'publicarea', 10, 'Personalrummet'),
-       ( 'classroom', 24, 'Dellen'),
-       ( 'lab', 16, 'Kopparlab'),
-       ( 'lab', 20, 'Fiberlab' );
+INSERT INTO rooms (name, capacity, type, floor, address)
+VALUES ('Lintjärn', 16, 1, '1', 'Edugrade'),
+       ('Lillfjärden', 22, 0, '1', 'Edugrade'),
+       ('Personalrummet', 10, 2, '1', 'Edugrade'),
+       ('Dellen', 24, 0, '2', 'Edugrade'),
+       ('Kopparlab', 16, 1, '2', 'Edugrade'),
+       ('Fiberlab', 20, 1, '2', 'Edugrade');
+
+INSERT INTO asset_types (description)
+VALUES ('Whiteboard'),
+       ('TV'),
+       ('Nätverksutrustning'),
+       ('Projektor'),
+       ('Fiberutrustning');
 
 INSERT INTO room_assets (room_id, asset_type_id)
 VALUES (1, 1),
@@ -34,10 +41,3 @@ VALUES (1, 1),
        (6, 1),
        (6, 4),
        (6, 5);
-
-INSERT INTO asset_types (description)
-VALUES ( 'Whiteboard'),
-       ( 'TV'),
-       ( 'Nätverksutrustning'),
-       ( 'Projektor'),
-       ( 'Fiberutrustning');
