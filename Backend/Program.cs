@@ -36,7 +36,17 @@ builder.Services.AddScoped<IBookingRepository, SQLiteBookingRepo>();
 // Register the AuthService so it can be injected into our endpoints
 builder.Services.AddScoped<AuthService>();
 
+// Register the DbInitializer for schema/seed setup
+builder.Services.AddScoped<DbInitializer>();
+
 var app = builder.Build();
+
+// Initialize database (run schema + seed if empty)
+using (var scope = app.Services.CreateScope())
+{
+    var dbInitializer = scope.ServiceProvider.GetRequiredService<DbInitializer>();
+    await dbInitializer.InitializeAsync();
+}
 
 if (app.Environment.IsDevelopment())
 {
