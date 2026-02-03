@@ -1,15 +1,13 @@
-﻿using Backend.app.Core.Enums;
+﻿using Backend.app.Core.Entities;
+using Backend.app.Core.Enums;
 using Backend.app.Core.Interfaces;
-using Backend.app.Core.Entities;
 using Dapper;
 using Microsoft.Data.Sqlite;
-using System;
 
 namespace Backend.app.Infrastructure.Repositories.SQLite;
 
 public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepository
 {
-
     // SQLite repository for User
     // TODO: Migrate all SQL queries from user.repo.js
     // ⚠️ Update queries for new schema if columns/tables changed
@@ -93,6 +91,7 @@ public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
             throw new Exception("Unexpected error while fetching user.", ex);
         }
     }
+
     public async Task<bool> CreateUserAsync(User user)
     {
         try
@@ -100,17 +99,21 @@ public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
             await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            var sql = @"
+            var sql =
+                @"
             INSERT INTO users (email, password_hash, role, display_name)
             VALUES (@Email, @PasswordHash, @Role, @DisplayName);";
 
-            var rowsAffected = await conn.ExecuteAsync(sql, new
-            {
-                user.Email,
-                user.PasswordHash,
-                user.Role,
-                user.DisplayName,
-            });
+            var rowsAffected = await conn.ExecuteAsync(
+                sql,
+                new
+                {
+                    user.Email,
+                    user.PasswordHash,
+                    user.Role,
+                    user.DisplayName,
+                }
+            );
 
             return rowsAffected == 1;
         }
@@ -118,7 +121,6 @@ public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
         {
             throw new Exception("Unexpected error while creating user.", ex);
         }
-
     }
 
     public async Task<bool> UpdateUserAsync(int id, User user)
@@ -128,20 +130,23 @@ public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
             await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            var sql = @"
+            var sql =
+                @"
             UPDATE users
             SET email = @Email, password_hash = @PasswordHash, role = @Role, display_name = @DisplayName
             WHERE id = @Id;";
 
-
-            var rowsAffected = await conn.ExecuteAsync(sql, new
-            {
-                user.Email,
-                user.PasswordHash,
-                user.Role,
-                user.DisplayName,
-                Id = id
-            });
+            var rowsAffected = await conn.ExecuteAsync(
+                sql,
+                new
+                {
+                    user.Email,
+                    user.PasswordHash,
+                    user.Role,
+                    user.DisplayName,
+                    Id = id,
+                }
+            );
 
             return rowsAffected == 1;
         }
@@ -168,7 +173,6 @@ public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
         {
             throw new Exception("Unexpected error while deleting user.", ex);
         }
-
     }
 
     public async Task<IEnumerable<User>> GetUsersByClassAsync(string className)
@@ -202,5 +206,4 @@ public class SQLiteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
             throw new Exception("Unexpected error while fetching users.", ex);
         }
     }
-
 }

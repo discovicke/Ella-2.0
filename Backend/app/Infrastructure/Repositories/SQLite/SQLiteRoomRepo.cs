@@ -28,7 +28,6 @@ public class SQLiteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         }
     }
 
-
     public async Task<Room?> GetRoomByIdAsync(int id)
     {
         try
@@ -104,7 +103,8 @@ public class SQLiteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
             await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            const string sql = "UPDATE rooms SET name = @Name, capacity = @Capacity, type = @Type, floor = @Floor, address = @Address, notes = @Notes WHERE id = @Id;";
+            const string sql =
+                "UPDATE rooms SET name = @Name, capacity = @Capacity, type = @Type, floor = @Floor, address = @Address, notes = @Notes WHERE id = @Id;";
             return await conn.ExecuteAsync(sql, room) > 0;
         }
         catch (Exception ex)
@@ -119,7 +119,7 @@ public class SQLiteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         {
             await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            
+
             const string sql = "DELETE FROM rooms WHERE id = @id;";
             return await conn.ExecuteAsync(sql, new { id }) > 0;
         }
