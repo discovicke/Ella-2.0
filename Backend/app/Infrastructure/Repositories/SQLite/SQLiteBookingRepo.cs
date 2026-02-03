@@ -3,7 +3,7 @@ using Backend.app.Core.Interfaces;
 
 namespace Backend.app.Infrastructure.Repositories.SQLite;
 
-public class SQLiteBookingRepo : IBookingRepository
+public class SQLiteBookingRepo(IDbConnectionFactory connectionFactory) : IBookingRepository
 {
     // SQLite repository for Booking
     // TODO: Migrate all SQL queries from booking.repo.js

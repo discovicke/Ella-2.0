@@ -1,3 +1,7 @@
+using Backend.app.Core.Interfaces;
+using Backend.app.Infrastructure.Data;
+using Backend.app.Infrastructure.Repositories.SQLite;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -15,8 +19,17 @@ var builder = WebApplication.CreateBuilder(args);
 // TODO: Configure development-specific settings
 // Reference: Development environment setup in JS project
 
-
 builder.Services.AddOpenApi();
+
+// --- 1. DEPENDENCY INJECTION SETUP ---
+
+// Register the Factory as a Singleton (Lives forever, shared across app)
+builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
+
+// Register the Repository as Scoped (Created fresh for each HTTP request)
+builder.Services.AddScoped<IRoomRepository, SQLiteRoomRepo>();
+builder.Services.AddScoped<IUserRepository, SQLiteUserRepo>();
+builder.Services.AddScoped<IBookingRepository, SQLiteBookingRepo>();
 
 var app = builder.Build();
 
