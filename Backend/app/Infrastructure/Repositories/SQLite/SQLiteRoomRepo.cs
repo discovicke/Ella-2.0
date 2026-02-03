@@ -38,7 +38,7 @@ public class SQLiteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
 
             const string sql = "SELECT * FROM rooms WHERE id = @id;";
 
-            return await conn.QueryFirstOrDefaultAsync<Room>(sql, new { id });
+            return await conn.QuerySingleOrDefaultAsync<Room>(sql, new { id });
         }
         catch (Exception ex)
         {
