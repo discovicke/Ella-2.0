@@ -18,7 +18,7 @@ public interface IBookingRepository
     Task<IEnumerable<Booking>> GetAllBookingsByDateAsync(DateTime startDate, DateTime endDate);
     Task<IEnumerable<Booking>> GetOverlappingBookingsAsync(int roomId, DateTime startDate, DateTime endDate);
     Task<bool> UpdateBookingAsync(int bookingId, Booking booking);
-    Task<bool> DeleteBookingAsync(int bookingId);
+    Task<bool> CancelBookingAsync(int bookingId);
     Task SaveChangesAsync();
     
 
