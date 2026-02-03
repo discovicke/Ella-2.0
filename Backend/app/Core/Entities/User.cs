@@ -1,7 +1,6 @@
-using System;
 using Backend.app.Core.Enums;
 
-namespace Backend.app.Core.Models;
+namespace Backend.app.Core.Entities;
 
 public class User
 {
