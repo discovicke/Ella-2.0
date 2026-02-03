@@ -1,5 +1,5 @@
 
-<img alt="image" width="500px" height="auto" src="./images/validation_flow.jpg" />
+<img alt="image" width="500px" height="auto" src="./images/validation_flow_NEW.png" />
 
 <img alt="image" width="800px" height="auto" src="./images/validation_flow_banana.png" />
 
