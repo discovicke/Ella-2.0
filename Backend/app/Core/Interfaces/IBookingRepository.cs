@@ -23,5 +23,4 @@ public interface IBookingRepository
     );
     Task<bool> UpdateBookingAsync(int bookingId, Booking booking);
     Task<bool> CancelBookingAsync(int bookingId);
-    Task SaveChangesAsync();
 }
