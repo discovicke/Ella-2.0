@@ -9,11 +9,11 @@ namespace Backend.app.Infrastructure.Data;
 /// Initializes and seeds the database on application startup.
 /// Equivalent to the JS db.js initialization logic.
 /// </summary>
-public class DbInitializer(IDbConnectionFactory connectionFactory, ILogger<DbInitializer> logger)
+public class DbInitializer(IDbConnectionFactory connectionFactory, ILogger<DbInitializer> logger, PasswordHasher passwordHasher)
 {
     public async Task InitializeAsync()
     {
-        logger.LogInformation("🔌 Initializing database...");
+        logger.LogInformation("Initializing database...");
 
         await using var conn = connectionFactory.CreateConnection();
         await using (conn.ConfigureAwait(false))
@@ -33,12 +33,12 @@ public class DbInitializer(IDbConnectionFactory connectionFactory, ILogger<DbIni
             await SeedIfEmptyAsync(conn);
         }
 
-        logger.LogInformation("✅ Database initialization complete.");
+        logger.LogInformation("Database initialization complete.");
     }
 
     private async Task RunSchemaAsync(IDbConnection conn)
     {
-        logger.LogInformation("📝 Running schema.sql...");
+        logger.LogInformation("Running schema.sql...");
 
         var schemaPath = Path.Combine(
             AppContext.BaseDirectory,
@@ -68,7 +68,7 @@ public class DbInitializer(IDbConnectionFactory connectionFactory, ILogger<DbIni
         var schemaSql = await File.ReadAllTextAsync(schemaPath);
         await conn.ExecuteAsync(schemaSql);
 
-        logger.LogInformation("✅ Schema applied.");
+        logger.LogInformation("Schema applied.");
     }
 
     private async Task SeedIfEmptyAsync(IDbConnection conn)
@@ -79,13 +79,13 @@ public class DbInitializer(IDbConnectionFactory connectionFactory, ILogger<DbIni
         if (userCount > 0)
         {
             logger.LogInformation(
-                "ℹ️ Database already seeded ({UserCount} users found). Skipping seed.",
+                "Database already seeded ({UserCount} users found). Skipping seed.",
                 userCount
             );
             return;
         }
 
-        logger.LogInformation("📦 Seeding database with initial data...");
+        logger.LogInformation("Seeding database with initial data...");
 
         var seedPath = Path.Combine(
             AppContext.BaseDirectory,
@@ -117,21 +117,21 @@ public class DbInitializer(IDbConnectionFactory connectionFactory, ILogger<DbIni
         // Replace __HASH__ placeholders with stub hashes
         // TODO: Replace with real password hashing when auth is implemented
         const string stubPassword = "lösen123";
-        logger.LogInformation("🔐 Generating password hashes for seed users...");
+        logger.LogInformation("Generating password hashes for seed users...");
 
         seedSql = ReplaceHashPlaceholders(seedSql, stubPassword);
 
         await conn.ExecuteAsync(seedSql);
 
-        logger.LogInformation("✅ Database seeded successfully.");
+        logger.LogInformation("Database seeded successfully.");
     }
 
-    private static string ReplaceHashPlaceholders(string sql, string password)
+    private string ReplaceHashPlaceholders(string sql, string password)
     {
         // Each __HASH__ gets its own hash (same password, but would be different salts in real impl)
         while (sql.Contains("__HASH__"))
         {
-            var hash = PasswordHasher.HashPassword(password);
+            var hash = passwordHasher.HashPassword(password);
             sql = ReplaceFirst(sql, "__HASH__", hash);
         }
 
