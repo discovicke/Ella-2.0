@@ -138,8 +138,33 @@ public class BookingRepo(IDbConnectionFactory connectionFactory) : IBookingRepos
         return bookings;
     }
 
-    public Task<bool> UpdateBookingAsync(int bookingId, Booking booking)
+    public async Task<bool> UpdateBookingAsync(int bookingId, Booking booking)
     {
-        throw new NotImplementedException();
+        using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+        var sql = @"
+            UPDATE bookings
+            SET user_id =@UserId,
+            room_id = @RoomId,
+            start_time = @StartTime,
+            end_time = @EndTime,
+            status = @Status,
+            notes = @Notes
+            WHERE id = @BookingId;
+        ";
+        var rows = await conn.ExecuteAsync(
+            sql,
+            new
+            {
+                booking.UserId,
+                booking.RoomId,
+                booking.StartTime,
+                booking.EndTime,
+                Status = (int)booking.Status,
+                booking.Notes,
+                BookingId = bookingId,
+            }
+        );
+        return rows > 0;
     }
 }
