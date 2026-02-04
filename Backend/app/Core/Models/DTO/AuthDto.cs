@@ -9,7 +9,7 @@ public record LoginDto
 public record LoginResultDto
 {
     public required string Token { get; set; }
-    public required UserResponseDto User { get; set; }
+    public required AuthedUserResponseDto User { get; set; }
 }
 
 public record RegisterDto
@@ -22,10 +22,10 @@ public record RegisterDto
 public record RegisterResultDto
 {
     public required string Token { get; set; }
-    public required UserResponseDto User { get; set; }
+    public required AuthedUserResponseDto User { get; set; }
 }
 
-public record UserResponseDto
+public record AuthedUserResponseDto
 {
     public int Id { get; set; }
     public required string Email { get; set; }

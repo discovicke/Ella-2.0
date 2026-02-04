@@ -190,9 +190,9 @@ public class AuthService(
         };
     }
 
-    private static UserResponseDto MapToUserDto(User user)
+    private static AuthedUserResponseDto MapToUserDto(User user)
     {
-        return new UserResponseDto
+        return new AuthedUserResponseDto()
         {
             Id = user.Id,
             Email = user.Email,
