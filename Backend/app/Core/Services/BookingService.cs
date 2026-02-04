@@ -1,3 +1,5 @@
+using Backend.app.Core.DTO;
+using Backend.app.Core.Entities;
 using Backend.app.Core.Interfaces;
 using Backend.app.Infrastructure.Repositories;
 
@@ -9,9 +11,26 @@ public class BookingService(IBookingRepository repo)
     // TODO: Extract and migrate business rules from booking.controller.js
     // Include validation logic, availability checks, permission checks
     
-    internal async Task<object?> GetAllBookingsAsync()
+    public async Task<IEnumerable<object?>> GetAllBookingsAsync()
     {
 
         return await repo.GetAllBookingsAsync();
+    }
+
+    public async Task<CreateBookingDto> CreateBookingAsync(CreateBookingDto booking)
+    {
+        var bokning = new Booking
+        {
+            UserId = booking.UserId,
+            RoomId = booking.RoomId,
+            StartTime = booking.StartTime,
+            EndTime = booking.EndTime,
+            Notes = booking.Notes,
+            Status = (Enums.BookingStatus)booking.status
+        };
+        
+        await repo.CreateBookingAsync(bokning);
+        
+        return booking;
     }
 }
