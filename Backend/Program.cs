@@ -2,7 +2,7 @@ using Backend.app.API.Endpoints;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Data;
-using Backend.app.Infrastructure.Repositories;
+using Backend.app.Infrastructure.Repositories.Sqlite;
 using Scalar.AspNetCore;
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
@@ -26,28 +26,58 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
-// DEPENDENCY INJECTION SETUP
-// Register the Factory as a Singleton (Lives forever, shared across app)
+#region DYNAMIC DB CONFIG
+
+// Retrieve the Provider string from appsettings.json to determine flow
+var dbProvider = builder.Configuration["DatabaseSettings:Provider"]?.ToLower();
+
+// Validate configuration exists
+if (string.IsNullOrEmpty(dbProvider))
+{
+    throw new InvalidOperationException("Database Provider is not configured in appsettings.json.");
+}
+
+// Register the Connection Factory (Singleton)
 builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
 
-// Register the Repository as Scoped (Created fresh for each HTTP request)
-builder.Services.AddScoped<IRoomRepository, RoomRepo>();
-builder.Services.AddScoped<IUserRepository, UserRepo>();
-builder.Services.AddScoped<IBookingRepository, BookingRepo>();
+// Register Repositories Dynamically based on Provider
+switch (dbProvider)
+{
+    case "sqlite":
+        // Register SQLite-specific implementations
+        builder.Services.AddScoped<IRoomRepository, SqliteRoomRepo>();
+        builder.Services.AddScoped<IUserRepository, SqliteUserRepo>();
+        builder.Services.AddScoped<IBookingRepository, SqliteBookingRepo>();
+
+        // Register SQLite Initializer
+        builder.Services.AddScoped<DbInitializer>();
+        break;
+
+    case "sqlserver":
+    case "postgres":
+        // Future proofing for other providers
+        throw new NotImplementedException($"The provider '{dbProvider}' is not yet implemented.");
+
+    default:
+        throw new NotSupportedException($"The database provider '{dbProvider}' is not supported.");
+}
+
+#endregion
 
 // Register the AuthService so it can be injected into our endpoints
 builder.Services.AddScoped<AuthService>();
-
-// Register the DbInitializer for schema/seed setup
-builder.Services.AddScoped<DbInitializer>();
 
 var app = builder.Build();
 
 // Initialize database (run schema + seed if empty)
 using (var scope = app.Services.CreateScope())
 {
-    var dbInitializer = scope.ServiceProvider.GetRequiredService<DbInitializer>();
-    await dbInitializer.InitializeAsync();
+    // Try to get the initializer (it might not be registered if provider doesn't support it)
+    var dbInitializer = scope.ServiceProvider.GetService<DbInitializer>();
+    if (dbInitializer != null)
+    {
+        await dbInitializer.InitializeAsync();
+    }
 }
 
 if (app.Environment.IsDevelopment())
