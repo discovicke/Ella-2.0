@@ -1,6 +1,7 @@
 using Backend.app.API.Endpoints;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Services;
+using Backend.app.Infrastructure.Auth;
 using Backend.app.Infrastructure.Data;
 using Backend.app.Infrastructure.Repositories.Sqlite;
 using Scalar.AspNetCore;
@@ -49,6 +50,13 @@ switch (dbProvider)
         builder.Services.AddScoped<IUserRepository, SqliteUserRepo>();
         builder.Services.AddScoped<IBookingRepository, SqliteBookingRepo>();
 
+// Register the AuthService so it can be injected into our endpoints
+builder.Services.AddSingleton<PasswordHasher>();
+builder.Services.AddSingleton<TokenService>();
+builder.Services.AddScoped<AuthService>();
+
+// Register the DbInitializer for schema/seed setup
+builder.Services.AddScoped<DbInitializer>();
         // Register SQLite Initializer
         builder.Services.AddScoped<DbInitializer>();
         break;

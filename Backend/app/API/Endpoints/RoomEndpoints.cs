@@ -12,7 +12,6 @@ public static class RoomEndpoints
         var group = app.MapGroup("/rooms").WithTags("Rooms");
 
         // GET /api/rooms
-        // Inject RoomService instead of IRoomRepository
         group.MapGet(
             "/",
             async ([FromQuery] RoomType? type, [FromQuery] string? address, RoomService service) =>
@@ -27,8 +26,19 @@ public static class RoomEndpoints
             "/{id}",
             async (int id, RoomService service) =>
             {
-                var room = await service.GetRoomByIdAsync(id);
-                return room is not null ? Results.Ok(room) : Results.NotFound();
+                // Layer 2: Endpoint validation
+                if (id <= 0)
+                    return Results.BadRequest("ID must be a positive integer.");
+
+                try
+                {
+                    var room = await service.GetRoomByIdAsync(id);
+                    return Results.Ok(room);
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    return Results.NotFound(ex.Message);
+                }
             }
         );
 
@@ -37,12 +47,12 @@ public static class RoomEndpoints
             "/",
             async (CreateRoomDto dto, RoomService service) =>
             {
+                // Layer 2: Endpoint validation
+                var validation = ValidateCreateRoom(dto);
+                if (validation is not null)
+                    return validation;
+
                 var createdRoom = await service.CreateRoomAsync(dto);
-
-                if (createdRoom is null)
-                    return Results.BadRequest("Invalid data or creation failed.");
-
-                // Ideally return CreatedAtRoute using the ID
                 return Results.Created($"/api/rooms/{createdRoom.Id}", createdRoom);
             }
         );
@@ -52,8 +62,23 @@ public static class RoomEndpoints
             "/{id}",
             async (int id, UpdateRoomDto dto, RoomService service) =>
             {
-                var success = await service.UpdateRoomAsync(id, dto);
-                return success ? Results.Ok() : Results.NotFound();
+                // Layer 2: Endpoint validation
+                if (id <= 0)
+                    return Results.BadRequest("ID must be a positive integer.");
+
+                var validation = ValidateUpdateRoom(dto);
+                if (validation is not null)
+                    return validation;
+
+                try
+                {
+                    await service.UpdateRoomAsync(id, dto);
+                    return Results.NoContent();
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    return Results.NotFound(ex.Message);
+                }
             }
         );
 
@@ -62,11 +87,45 @@ public static class RoomEndpoints
             "/{id}",
             async (int id, RoomService service) =>
             {
-                var success = await service.DeleteRoomAsync(id);
-                return success ? Results.NoContent() : Results.NotFound();
+                // Layer 2: Endpoint validation
+                if (id <= 0)
+                    return Results.BadRequest("ID must be a positive integer.");
+
+                try
+                {
+                    await service.DeleteRoomAsync(id);
+                    return Results.NoContent();
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    return Results.NotFound(ex.Message);
+                }
             }
         );
 
         return group;
+    }
+
+    // Layer 2 validation helpers
+    private static IResult? ValidateCreateRoom(CreateRoomDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Name))
+            return Results.BadRequest("Room name is required.");
+
+        if (dto.Capacity.HasValue && dto.Capacity <= 0)
+            return Results.BadRequest("Capacity must be a positive number.");
+
+        return null;
+    }
+
+    private static IResult? ValidateUpdateRoom(UpdateRoomDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Name))
+            return Results.BadRequest("Room name is required.");
+
+        if (dto.Capacity.HasValue && dto.Capacity <= 0)
+            return Results.BadRequest("Capacity must be a positive number.");
+
+        return null;
     }
 }

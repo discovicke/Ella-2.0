@@ -22,19 +22,18 @@ public class RoomService(IRoomRepository repo)
     // Get by ID
     public async Task<Room?> GetRoomByIdAsync(int id)
     {
-        if (id <= 0)
-            return null; // Basic validation
-        return await repo.GetRoomByIdAsync(id);
+        // Layer 3: Check existence
+        var room = await repo.GetRoomByIdAsync(id);
+
+        if (room is null)
+            throw new KeyNotFoundException($"Room with ID {id} does not exist.");
+
+        return room;
     }
 
     // Create
-    public async Task<Room?> CreateRoomAsync(CreateRoomDto dto)
+    public async Task<Room> CreateRoomAsync(CreateRoomDto dto)
     {
-        // Business Logic: Validate capacity
-        if (dto.Capacity.HasValue && dto.Capacity <= 0)
-            return null; // Or throw exception
-
-        // Map DTO -> Entity
         var room = new Room
         {
             Name = dto.Name,
@@ -45,20 +44,21 @@ public class RoomService(IRoomRepository repo)
             Notes = dto.Notes,
         };
 
-        // Call Repo
-        var created = await repo.CreateRoomAsync(room);
+        var newId = await repo.CreateRoomAsync(room);
 
-        // Return the room if successful (Repo should ideally return the new ID, but assuming bool for now)
-        return created ? room : null;
+        room.Id = newId;
+        return room;
     }
 
     // Update
-    public async Task<bool> UpdateRoomAsync(int id, UpdateRoomDto dto)
+    public async Task UpdateRoomAsync(int id, UpdateRoomDto dto)
     {
-        if (id <= 0)
-            return false;
+        // Layer 3: Check existence
+        var existingRoom = await repo.GetRoomByIdAsync(id);
 
-        // Map DTO -> Entity
+        if (existingRoom is null)
+            throw new KeyNotFoundException($"Room with ID {id} does not exist.");
+
         var room = new Room
         {
             Id = id,
@@ -70,14 +70,18 @@ public class RoomService(IRoomRepository repo)
             Notes = dto.Notes,
         };
 
-        return await repo.UpdateRoomAsync(id, room);
+        await repo.UpdateRoomAsync(id, room);
     }
 
     // Delete
-    public async Task<bool> DeleteRoomAsync(int id)
+    public async Task DeleteRoomAsync(int id)
     {
-        if (id <= 0)
-            return false;
-        return await repo.DeleteRoomAsync(id);
+        // Layer 3: Check existence
+        var existingRoom = await repo.GetRoomByIdAsync(id);
+
+        if (existingRoom is null)
+            throw new KeyNotFoundException($"Room with ID {id} does not exist.");
+
+        await repo.DeleteRoomAsync(id);
     }
 }

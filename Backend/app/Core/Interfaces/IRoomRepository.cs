@@ -15,7 +15,7 @@ public interface IRoomRepository
     Task<Room?> GetRoomByIdAsync(int id);
     Task<IEnumerable<Room>> GetRoomsByTypeAsync(RoomType type);
     Task<IEnumerable<Room>> GetRoomsByAddressAsync(string address);
-    Task<bool> CreateRoomAsync(Room room);
+    Task<int> CreateRoomAsync(Room room);
     Task<bool> UpdateRoomAsync(int id, Room room);
     Task<bool> DeleteRoomAsync(int id);
 }
