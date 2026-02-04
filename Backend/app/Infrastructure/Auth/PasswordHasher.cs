@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Konscious.Security.Cryptography;
+using Microsoft.Extensions.Logging;
 
 namespace Backend.app.Infrastructure.Auth;
 
@@ -9,8 +10,9 @@ namespace Backend.app.Infrastructure.Auth;
 /// Argon2id är en hybrid av Argon2i (minneshård, skyddar mot side-channel attacks)
 /// och Argon2d (snabbare, skyddar mot GPU-cracking). Den kombinerar det bästa av båda.
 /// </summary>
-public static class PasswordHasher
+public class PasswordHasher(ILogger<PasswordHasher> logger)
 {
+    private readonly ILogger<PasswordHasher> _logger = logger;
     private const int SaltSize = 16;            // 128 bit - kryptografiskt säkert slumpmässigt salt
     private const int HashSize = 32;            // 256 bit - längden på den resulterande hashen
     private const int Iterations = 4;           // Time cost - antal "pass" genom minnet (högre = långsammare)
@@ -28,7 +30,7 @@ public static class PasswordHasher
     /// 
     /// Hashformat: $argon2id$v=19$m={memory},t={iterations},p={parallelism}${salt}${hash}
     /// </summary>
-    public static string HashPassword(string password)
+    public string HashPassword(string password)
     {
         // Steg 1: Generera ett kryptografiskt säkert salt
         // RandomNumberGenerator är inte System.Random, utan använder OS:ets CSPRNG!
@@ -64,7 +66,7 @@ public static class PasswordHasher
     /// 
     /// Returnerar true om lösenordet matchar, annars false.
     /// </summary>
-    public static bool VerifyPassword(string password, string storedHash)
+    public bool VerifyPassword(string password, string storedHash)
     {
         try
         {
@@ -97,10 +99,10 @@ public static class PasswordHasher
             // där en angripare mäter hur lång tid jämförelsen tar för att gissa hashen
             return CryptographicOperations.FixedTimeEquals(computedHash, expectedHash);
         }
-        catch
+        catch (Exception ex)
         {
-            // Vid parsningsfel eller andra undantag, returnera false
-            // (logga gärna detta i produktion för debugging)
+            // Logga felet för debugging - inkludera INTE lösenord eller hash i loggen!
+            _logger.LogWarning(ex, "Failed to verify password hash. Possible corrupt hash or invalid format.");
             return false;
         }
     }
