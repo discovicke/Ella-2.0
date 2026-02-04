@@ -7,10 +7,10 @@ public static class AuthEndpoints
 {
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
-        // Creates a common prefix for all endpoints in this group (/api/auth)
-        var group = app.MapGroup("/api/auth").WithTags("Auth"); // Helps group them in Swagger/OpenAPI
+        // Creates a common prefix for all endpoints in this group (/auth)
+        var group = app.MapGroup("/auth").WithTags("Auth"); // Helps group them in Swagger/OpenAPI
 
-        // POST /api/auth/register
+        // POST /auth/register
         group
             .MapPost(
                 "/register",
