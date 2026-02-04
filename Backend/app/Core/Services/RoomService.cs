@@ -8,19 +8,22 @@ namespace Backend.app.Core.Services;
 public class RoomService(IRoomRepository repo)
 {
     // Get with Filters
-    public async Task<IEnumerable<Room>> GetRoomsAsync(RoomType? type, string? address)
+    public async Task<IEnumerable<RoomResponseDto>> GetRoomsAsync(RoomType? type, string? address)
     {
+        IEnumerable<Room> rooms;
+
         if (type.HasValue)
-            return await repo.GetRoomsByTypeAsync(type.Value);
+            rooms = await repo.GetRoomsByTypeAsync(type.Value);
+        else if (!string.IsNullOrWhiteSpace(address))
+            rooms = await repo.GetRoomsByAddressAsync(address);
+        else
+            rooms = await repo.GetAllRoomsAsync();
 
-        if (!string.IsNullOrWhiteSpace(address))
-            return await repo.GetRoomsByAddressAsync(address);
-
-        return await repo.GetAllRoomsAsync();
+        return rooms.Select(MapToDto);
     }
 
     // Get by ID
-    public async Task<Room?> GetRoomByIdAsync(int id)
+    public async Task<RoomResponseDto> GetRoomByIdAsync(int id)
     {
         // Layer 3: Check existence
         var room = await repo.GetRoomByIdAsync(id);
@@ -28,11 +31,11 @@ public class RoomService(IRoomRepository repo)
         if (room is null)
             throw new KeyNotFoundException($"Room with ID {id} does not exist.");
 
-        return room;
+        return MapToDto(room);
     }
 
     // Create
-    public async Task<Room> CreateRoomAsync(CreateRoomDto dto)
+    public async Task<RoomResponseDto> CreateRoomAsync(CreateRoomDto dto)
     {
         var room = new Room
         {
@@ -47,7 +50,7 @@ public class RoomService(IRoomRepository repo)
         var newId = await repo.CreateRoomAsync(room);
 
         room.Id = newId;
-        return room;
+        return MapToDto(room);
     }
 
     // Update
@@ -83,5 +86,19 @@ public class RoomService(IRoomRepository repo)
             throw new KeyNotFoundException($"Room with ID {id} does not exist.");
 
         await repo.DeleteRoomAsync(id);
+    }
+
+    // Mapper: Entity → DTO
+    private static RoomResponseDto MapToDto(Room room)
+    {
+        return new RoomResponseDto(
+            room.Id,
+            room.Name,
+            room.Capacity,
+            room.Type,
+            room.Floor,
+            room.Address,
+            room.Notes
+        );
     }
 }
