@@ -19,3 +19,14 @@ public record UpdateRoomDto(
     string? Address,
     string? Notes
 );
+
+// Response DTO
+public record RoomResponseDto(
+    int Id,
+    string Name,
+    int? Capacity,
+    RoomType Type,
+    string? Floor,
+    string? Address,
+    string? Notes
+);

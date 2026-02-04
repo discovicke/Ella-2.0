@@ -1,4 +1,4 @@
-﻿using Backend.app.Core.Entities;
+﻿﻿using Backend.app.Core.Entities;
 using Backend.app.Core.Enums;
 using Backend.app.Core.Interfaces;
 using Dapper;
@@ -6,10 +6,9 @@ using Microsoft.Data.Sqlite;
 
 namespace Backend.app.Infrastructure.Repositories.Sqlite;
 
-public class SqliteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepository
+public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<SqliteUserRepo> logger) : IUserRepository
 {
     // SQLite repository for User
-    // TODO: Migrate all SQL queries from user.repo.js
     // ⚠️ Update queries for new schema if columns/tables changed
 
     public async Task<IEnumerable<User>> GetAllUsersAsync()
@@ -24,7 +23,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
         }
         catch (Exception ex)
         {
-            throw new Exception("Unexpected error while fetching all users.", ex);
+            logger.LogError(ex, "Database error while fetching all users");
+            throw;
         }
     }
 
@@ -40,7 +40,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
         }
         catch (Exception ex)
         {
-            throw new Exception("Unexpected error while fetching user.", ex);
+            logger.LogError(ex, "Database error while fetching user with ID {UserId}", id);
+            throw;
         }
     }
 
@@ -56,7 +57,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
         }
         catch (Exception ex)
         {
-            throw new Exception("Unexpected error while fetching user.", ex);
+            logger.LogError(ex, "Database error while fetching user with email {Email}", email);
+            throw;
         }
     }
 
@@ -72,7 +74,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
         }
         catch (Exception ex)
         {
-            throw new Exception("Unexpected error while fetching user.", ex);
+            logger.LogError(ex, "Database error while fetching user with role {Role}", role);
+            throw;
         }
     }
 
@@ -88,7 +91,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
         }
         catch (Exception ex)
         {
-            throw new Exception("Unexpected error while fetching user.", ex);
+            logger.LogError(ex, "Database error while fetching user with displayName {DisplayName}", displayName);
+            throw;
         }
     }
 
@@ -119,7 +123,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
         }
         catch (Exception ex)
         {
-            throw new Exception("Unexpected error while creating user.", ex);
+            logger.LogError(ex, "Database error while creating user {Email}", user.Email);
+            throw;
         }
     }
 
@@ -152,7 +157,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
         }
         catch (Exception ex)
         {
-            throw new Exception("Unexpected error while updating user.", ex);
+            logger.LogError(ex, "Database error while updating user with ID {UserId}", id);
+            throw;
         }
     }
 
@@ -171,7 +177,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
         }
         catch (Exception ex)
         {
-            throw new Exception("Unexpected error while deleting user.", ex);
+            logger.LogError(ex, "Database error while deleting user with ID {UserId}", id);
+            throw;
         }
     }
 
@@ -187,7 +194,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
         }
         catch (Exception ex)
         {
-            throw new Exception("Unexpected error while fetching users.", ex);
+            logger.LogError(ex, "Database error while fetching users for class {ClassName}", className);
+            throw;
         }
     }
 
@@ -203,7 +211,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory) : IUserRepos
         }
         catch (Exception ex)
         {
-            throw new Exception("Unexpected error while fetching users.", ex);
+            logger.LogError(ex, "Database error while fetching users with role {Role}", role);
+            throw;
         }
     }
 }

@@ -7,10 +7,9 @@ using Microsoft.Data.Sqlite;
 
 namespace Backend.app.Infrastructure.Repositories.Sqlite;
 
-public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepository
+public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<SqliteRoomRepo> logger) : IRoomRepository
 {
     // SQLite repository for Room
-    // TODO: Migrate all SQL queries from room.repo.js
     // ⚠️ Update queries for new schema if columns/tables changed
 
     public async Task<IEnumerable<Room>> GetAllRoomsAsync()
@@ -25,7 +24,8 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         }
         catch (Exception ex)
         {
-            throw new Exception("Unexpected error while fetching all rooms.", ex);
+            logger.LogError(ex, "Database error while fetching all rooms");
+            throw;
         }
     }
 
@@ -42,7 +42,8 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         }
         catch (Exception ex)
         {
-            throw new Exception($"Unexpected error while fetching room with id {id}.", ex);
+            logger.LogError(ex, "Database error while fetching room with ID {RoomId}", id);
+            throw;
         }
     }
 
@@ -59,7 +60,8 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         }
         catch (Exception ex)
         {
-            throw new Exception($"Unexpected error while fetching rooms with type {type}.", ex);
+            logger.LogError(ex, "Database error while fetching rooms with type {RoomType}", type);
+            throw;
         }
     }
 
@@ -76,10 +78,8 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         }
         catch (Exception ex)
         {
-            throw new Exception(
-                $"Unexpected error while fetching rooms with address {address}.",
-                ex
-            );
+            logger.LogError(ex, "Database error while fetching rooms with address {Address}", address);
+            throw;
         }
     }
 
@@ -100,7 +100,8 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         }
         catch (Exception ex)
         {
-            throw new Exception($"Unexpected error while creating room {room.Name}.", ex);
+            logger.LogError(ex, "Database error while creating room {RoomName}", room.Name);
+            throw;
         }
     }
 
@@ -117,7 +118,8 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         }
         catch (Exception ex)
         {
-            throw new Exception($"Unexpected error while updating room {room.Name}.", ex);
+            logger.LogError(ex, "Database error while updating room with ID {RoomId}", id);
+            throw;
         }
     }
 
@@ -133,7 +135,8 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         }
         catch (Exception exception)
         {
-            throw new Exception($"Unexpected error while deleting room with id {id}.", exception);
+            logger.LogError(exception, "Database error while deleting room with ID {RoomId}", id);
+            throw;
         }
     }
 }
