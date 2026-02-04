@@ -1,4 +1,4 @@
-using Backend.app.API.Endpoints;
+﻿using Backend.app.API.Endpoints;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
@@ -96,5 +96,6 @@ if (app.Environment.IsDevelopment())
 var apiGroup = app.MapGroup("/api");
 apiGroup.MapRoomEndpoints();
 apiGroup.MapAuthEndpoints();
+apiGroup.MapUserEndpoints();
 
 app.Run();

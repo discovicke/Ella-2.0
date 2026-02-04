@@ -58,7 +58,7 @@ public static class UserEndpoints
         });
 
         // POST /api/users
-        group.MapPost("/", async (User input, IUserRepository userRepo) =>
+        _ = group.MapPost("/", static async (User input, IUserRepository userRepo) =>
         {
             if (string.IsNullOrWhiteSpace(input.Email) || string.IsNullOrWhiteSpace(input.PasswordHash))
                 return Results.BadRequest(new { error = "Email and password are required." });
@@ -67,7 +67,7 @@ public static class UserEndpoints
             if (existing is not null)
                 return Results.Conflict(new { error = "User with this email already exists." });
 
-            var hashed = PasswordHasher.HashPassword(input.PasswordHash);
+            string hashed = PasswordHasher.HashPassword(input.PasswordHash);
 
             var user = new User
             {
