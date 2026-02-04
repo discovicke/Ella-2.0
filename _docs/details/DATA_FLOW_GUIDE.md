@@ -2,7 +2,7 @@
 
 This guide explains how data moves through the application layers and which model types are used at each step.
 
----
+
 
 ## Overview Diagram
 
@@ -68,7 +68,7 @@ This guide explains how data moves through the application layers and which mode
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
----
+
 
 ## Model Types
 
@@ -111,7 +111,7 @@ public record RoomResponseDto(
 );
 ```
 
----
+
 
 ### 2. Entities
 
@@ -139,7 +139,7 @@ public class Room
 - Entities match database column names exactly
 - DTOs control what the API exposes
 
----
+
 
 ### 3. Enums
 
@@ -159,7 +159,7 @@ public enum RoomType
 }
 ```
 
----
+
 
 ### 4. ReadModels (Optional)
 
@@ -186,7 +186,7 @@ LEFT JOIN bookings b ON r.id = b.room_id
 GROUP BY r.id
 ```
 
----
+
 
 ## Complete Example: Creating a Room
 
@@ -290,7 +290,7 @@ Location: /api/rooms/42
 }
 ```
 
----
+
 
 ## Quick Reference Table
 
@@ -301,7 +301,7 @@ Location: /api/rooms/42
 | **Repository** | Entity | Entity or ID | Entity |
 | **Database** | SQL | Rows | — |
 
----
+
 
 ## Common Mistakes to Avoid
 
@@ -341,7 +341,7 @@ return Results.Ok(user);
 return Results.Ok(new UserResponseDto(user.Id, user.Email, user.Name));
 ```
 
----
+
 
 ## Summary
 

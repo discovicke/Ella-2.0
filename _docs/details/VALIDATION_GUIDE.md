@@ -1,10 +1,8 @@
+<img alt="image" width="500px" height="auto" src="../images/validation_flow_NEW.png" />
 
-<img alt="image" width="500px" height="auto" src="./images/validation_flow_NEW.png" />
-
-<img alt="image" width="800px" height="auto" src="./images/validation_flow_banana.png" />
+<img alt="image" width="800px" height="auto" src="../images/validation_flow_banana.png" />
 
 ## This guide outlines the layered "Fail-Fast" validation strategy used in this project. The goal is to catch errors as early as possible to avoid wasting system resources.
-
 
 ### Layer 1: The Request Bouncer (Automatic)
 
@@ -45,7 +43,7 @@ The **Database Schema** acts as the final safety net.
 - **Result**: Rolls back the transaction and triggers a `500 Internal Server Error` if a bug bypassed layers 1–3.
 - **Junior Tip**: Treat the database as the absolute authority on data integrity.
 
----
+
 
 ### Summary Table
 
