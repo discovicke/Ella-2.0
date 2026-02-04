@@ -75,6 +75,25 @@ builder.Services.AddScoped<RoomService>();
 
 var app = builder.Build();
 
+// Acquire a logger from DI and log startup/shutdown events
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation("Application starting. Environment: {Env}", app.Environment.EnvironmentName);
+
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    logger.LogInformation("Application started and is now accepting requests.");
+});
+
+app.Lifetime.ApplicationStopping.Register(() =>
+{
+    logger.LogInformation("Application is stopping...");
+});
+
+app.Lifetime.ApplicationStopped.Register(() =>
+{
+    logger.LogInformation("Application has stopped.");
+});
+
 // Initialize database (run schema + seed if empty)
 using (var scope = app.Services.CreateScope())
 {
@@ -98,4 +117,17 @@ apiGroup.MapRoomEndpoints();
 apiGroup.MapAuthEndpoints();
 apiGroup.MapUserEndpoints();
 
-app.Run();
+try
+{
+    logger.LogInformation("Starting web host...");
+    app.Run();
+}
+catch (Exception ex)
+{
+    logger.LogCritical(ex, "Host terminated unexpectedly");
+    throw;
+}
+finally
+{
+    logger.LogInformation("Host shutdown sequence complete.");
+}
