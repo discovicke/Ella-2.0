@@ -33,4 +33,10 @@ public class BookingService(IBookingRepository repo)
         
         return booking;
     }
+
+    public async Task<CancelBookingDto> CancelBookingAsync(CancelBookingDto dto)
+    {
+            await repo.CancelBookingAsync(dto.Id);
+            return dto;
+    }
 }

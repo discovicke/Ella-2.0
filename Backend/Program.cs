@@ -73,6 +73,7 @@ builder.Services.AddSingleton<TokenService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<RoomService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<BookingService>();
 
 var app = builder.Build();
 

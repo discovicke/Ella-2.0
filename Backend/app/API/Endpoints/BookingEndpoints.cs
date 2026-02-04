@@ -34,6 +34,16 @@ public static class BookingEndpoints
             var createdBooking = await service.CreateBookingAsync(dto);
             return Results.NoContent();
         });
+        
+        // Get /api/bookings/{id}
+
+        group.MapGet("/{id}",
+        async (int id, BookingService service) =>
+        {
+
+            await service.CancelBookingAsync(new CancelBookingDto(id));
+            return Results.NoContent();
+        });
 
     return group;
     }
