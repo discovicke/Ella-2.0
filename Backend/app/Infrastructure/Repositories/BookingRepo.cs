@@ -104,9 +104,17 @@ public class BookingRepo(IDbConnectionFactory connectionFactory) : IBookingRepos
         return bookings;
     }
 
-    public Task<IEnumerable<Booking>> GetBookingsByUserIdAsync(int userId)
+    public async Task<IEnumerable<Booking>> GetBookingsByUserIdAsync(int userId)
     {
-        throw new NotImplementedException();
+        using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+        var sql = "SELECT * FROM bookings WHERE user_id = @UserId;";
+        var bookings = await conn.QueryAsync<Booking>(
+            sql,
+            new { UserId = userId }
+        );
+        return bookings;
+        
     }
 
     public Task<IEnumerable<Booking>> GetOverlappingBookingsAsync(
