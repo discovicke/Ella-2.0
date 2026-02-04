@@ -38,6 +38,7 @@ builder.Services.AddScoped<IBookingRepository, BookingRepo>();
 
 // Register the AuthService so it can be injected into our endpoints
 builder.Services.AddSingleton<PasswordHasher>();
+builder.Services.AddSingleton<TokenService>();
 builder.Services.AddScoped<AuthService>();
 
 // Register the DbInitializer for schema/seed setup
