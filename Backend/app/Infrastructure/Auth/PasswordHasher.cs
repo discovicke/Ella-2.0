@@ -101,7 +101,7 @@ public class PasswordHasher(ILogger<PasswordHasher> logger)
         }
         catch (Exception ex)
         {
-            // Logga felet för debugging - inkludera INTE lösenord eller hash i loggen!
+            // Log the error for debugging - DO NOT include password or hash in the logs!
             _logger.LogWarning(ex, "Failed to verify password hash. Possible corrupt hash or invalid format.");
             return false;
         }
