@@ -1,5 +1,6 @@
 using System;
 using Backend.app.Core.Entities;
+using Backend.app.Core.Enums;
 using Backend.app.Core.Interfaces;
 using Dapper;
 using Microsoft.Data.Sqlite;
@@ -45,7 +46,7 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         }
     }
 
-    public async Task<IEnumerable<Room>> GetRoomsByTypeAsync(int type)
+    public async Task<IEnumerable<Room>> GetRoomsByTypeAsync(RoomType type)
     {
         try
         {
