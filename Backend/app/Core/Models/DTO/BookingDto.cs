@@ -28,5 +28,8 @@ public record CreateBookingDto(
     string? Notes,
     int status = 0
 );
+public record CancelBookingDto(
+    int Id
+);
 
    
