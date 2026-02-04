@@ -4,9 +4,9 @@ using Backend.app.Core.Interfaces;
 using Dapper;
 using Microsoft.Data.Sqlite;
 
-namespace Backend.app.Infrastructure.Repositories;
+namespace Backend.app.Infrastructure.Repositories.Sqlite;
 
-public class BookingRepo(IDbConnectionFactory connectionFactory) : IBookingRepository
+public class SqliteBookingRepo(IDbConnectionFactory connectionFactory) : IBookingRepository
 {
     // SQLite repository for Booking
     // TODO: Migrate all SQL queries from booking.repo.js

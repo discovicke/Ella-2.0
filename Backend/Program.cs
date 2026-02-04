@@ -2,7 +2,7 @@ using Backend.app.API.Endpoints;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Data;
-using Backend.app.Infrastructure.Repositories;
+using Backend.app.Infrastructure.Repositories.Sqlite;
 using Scalar.AspNetCore;
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
@@ -45,9 +45,9 @@ switch (dbProvider)
 {
     case "sqlite":
         // Register SQLite-specific implementations
-        builder.Services.AddScoped<IRoomRepository, RoomRepo>();
-        builder.Services.AddScoped<IUserRepository, UserRepo>();
-        builder.Services.AddScoped<IBookingRepository, BookingRepo>();
+        builder.Services.AddScoped<IRoomRepository, SqliteRoomRepo>();
+        builder.Services.AddScoped<IUserRepository, SqliteUserRepo>();
+        builder.Services.AddScoped<IBookingRepository, SqliteBookingRepo>();
 
         // Register SQLite Initializer
         builder.Services.AddScoped<DbInitializer>();
