@@ -1,154 +1,185 @@
-﻿using Backend.app.Core.Entities;
-using Backend.app.Core.Enums;
-using Backend.app.Core.Interfaces;
-using Backend.app.Infrastructure.Auth;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+﻿using Backend.app.Core.DTO;
+using Backend.app.Core.Services;
 
 namespace Backend.app.API.Endpoints;
 
 public static class UserEndpoints
 {
-    // TODO: Migrate all user endpoints
-    // Reference: src/modules/users/user.routes.js + user.controller.js
-    //Inser endpoints here:
-
-    // Kopplar ihop våra endpoints med appen
-    public static void MapUserEndpoints(this IEndpointRouteBuilder app)
+    public static RouteGroupBuilder MapUserEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/users");
+        var group = app.MapGroup("/users").WithTags("Users");
 
         // GET /api/users
-        group.MapGet("/", async (IUserRepository userRepo) =>
-        {
-            var users = await userRepo.GetAllUsersAsync();
-
-            var sanitized = users.Select(u => new User
-            {
-                Id = u.Id,
-                Email = u.Email,
-                DisplayName = u.DisplayName,
-                UserClass = u.UserClass,
-                Role = u.Role,
-                PasswordHash = null
-            });
-
-            return Results.Ok(sanitized);
-        });
+        group
+            .MapGet(
+                "/",
+                async (UserService service) =>
+                {
+                    var users = await service.GetAllAsync();
+                    return Results.Ok(users);
+                }
+            )
+            .WithName("GetUsers")
+            .WithSummary("Get all users")
+            .WithDescription("Retrieves all users in the system.")
+            .Produces<IEnumerable<UserResponseDto>>(StatusCodes.Status200OK);
 
         // GET /api/users/{id}
-        group.MapGet("/{id:int}", async (int id, IUserRepository userRepo) =>
-        {
-            var user = await userRepo.GetUserByIdAsync(id);
-            if (user is null)
-                return Results.NotFound(new { error = "User not found" });
+        group
+            .MapGet(
+                "/{id}",
+                async (int id, UserService service) =>
+                {
+                    if (id <= 0)
+                        return Results.BadRequest("ID must be a positive integer.");
 
-            var sanitized = new User
-            {
-                Id = user.Id,
-                Email = user.Email,
-                DisplayName = user.DisplayName,
-                UserClass = user.UserClass,
-                Role = user.Role,
-                PasswordHash = null
-            };
-
-            return Results.Ok(sanitized);
-        });
+                    try
+                    {
+                        var user = await service.GetByIdAsync(id);
+                        return Results.Ok(user);
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        return Results.NotFound(ex.Message);
+                    }
+                }
+            )
+            .WithName("GetUserById")
+            .WithSummary("Get user by ID")
+            .WithDescription("Retrieves a specific user by their unique identifier.")
+            .Produces<UserResponseDto>(StatusCodes.Status200OK)
+            .Produces<string>(StatusCodes.Status400BadRequest)
+            .Produces<string>(StatusCodes.Status404NotFound);
 
         // POST /api/users
-        _ = group.MapPost("/", static async (User input, IUserRepository userRepo) =>
-        {
-            if (string.IsNullOrWhiteSpace(input.Email) || string.IsNullOrWhiteSpace(input.PasswordHash))
-                return Results.BadRequest(new { error = "Email and password are required." });
+        group
+            .MapPost(
+                "/",
+                async (CreateUserDto dto, UserService service) =>
+                {
+                    var validation = ValidateCreateUser(dto);
+                    if (validation is not null)
+                        return validation;
 
-            var existing = await userRepo.GetUserByEmailAsync(input.Email);
-            if (existing is not null)
-                return Results.Conflict(new { error = "User with this email already exists." });
-
-            string hashed = PasswordHasher.HashPassword(input.PasswordHash);
-
-            var user = new User
-            {
-                Email = input.Email,
-                DisplayName = input.DisplayName,
-                UserClass = input.UserClass,
-                Role = input.Role,
-                PasswordHash = hashed
-            };
-
-            var success = await userRepo.CreateUserAsync(user);
-            if (!success) return Results.Problem("Ett fel uppstod vid skapande av användare", statusCode: 500);
-
-            var created = await userRepo.GetUserByEmailAsync(user.Email);
-            if (created is null) return Results.Problem("Kunde inte hämta skapad användare", statusCode: 500);
-
-            var sanitized = new User
-            {
-                Id = created.Id,
-                Email = created.Email,
-                DisplayName = created.DisplayName,
-                UserClass = created.UserClass,
-                Role = created.Role,
-                PasswordHash = null
-            };
-
-            return Results.Created($"/api/users/{created.Id}", new { message = "User created successfully", user = sanitized });
-        });
+                    try
+                    {
+                        var createdUser = await service.CreateUserAsync(dto);
+                        return Results.CreatedAtRoute("GetUserById", new { id = createdUser.id }, createdUser);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        return Results.Conflict(ex.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        return Results.Problem(ex.Message);
+                    }
+                }
+            )
+            .WithName("CreateUser")
+            .WithSummary("Create a new user")
+            .WithDescription("Creates a new user with the provided details.")
+            .Accepts<CreateUserDto>("application/json")
+            .Produces<UserResponseDto>(StatusCodes.Status201Created)
+            .Produces<string>(StatusCodes.Status400BadRequest)
+            .Produces<string>(StatusCodes.Status409Conflict)
+            .Produces<string>(StatusCodes.Status500InternalServerError);
 
         // PUT /api/users/{id}
-        group.MapPut("/{id:int}", async (int id, User input, IUserRepository userRepo) =>
-        {
-            var existing = await userRepo.GetUserByIdAsync(id);
-            if (existing is null)
-                return Results.NotFound(new { error = "Användare hittades inte" });
+        group
+            .MapPut(
+                "/{id}",
+                async (int id, UpdateUserDto dto, UserService service) =>
+                {
+                    if (id <= 0)
+                        return Results.BadRequest("ID must be a positive integer.");
 
-            var updated = new User
-            {
-                Id = existing.Id,
-                Email = string.IsNullOrWhiteSpace(input.Email) ? existing.Email : input.Email,
-                DisplayName = string.IsNullOrWhiteSpace(input.DisplayName) ? existing.DisplayName : input.DisplayName,
-                UserClass = string.IsNullOrWhiteSpace(input.UserClass) ? existing.UserClass : input.UserClass,
-                Role = input.Role != 0 ? input.Role : existing.Role,
-                PasswordHash = string.IsNullOrWhiteSpace(input.PasswordHash)
-                    ? existing.PasswordHash
-                    : PasswordHasher.HashPassword(input.PasswordHash)
-            };
+                    if (id != dto.Id)
+                        return Results.BadRequest("ID in path and body must match.");
 
-            var success = await userRepo.UpdateUserAsync(id, updated);
-            if (!success) return Results.Problem("Ett fel uppstod vid uppdatering", statusCode: 500);
+                    var validation = ValidateUpdateUser(dto);
+                    if (validation is not null)
+                        return validation;
 
-            var refreshed = await userRepo.GetUserByIdAsync(id);
-            if (refreshed is null) return Results.Problem("Kunde inte hämta uppdaterad användare", statusCode: 500);
-
-            var sanitized = new User
-            {
-                Id = refreshed.Id,
-                Email = refreshed.Email,
-                DisplayName = refreshed.DisplayName,
-                UserClass = refreshed.UserClass,
-                Role = refreshed.Role,
-                PasswordHash = null
-            };
-
-            return Results.Ok(sanitized);
-        });
+                    try
+                    {
+                        await service.UpdateUserAsync(id, dto);
+                        return Results.NoContent();
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        return Results.NotFound(ex.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        return Results.Problem(ex.Message);
+                    }
+                }
+            )
+            .WithName("UpdateUser")
+            .WithSummary("Update an existing user")
+            .WithDescription("Updates a user's details by their unique identifier.")
+            .Accepts<UpdateUserDto>("application/json")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces<string>(StatusCodes.Status400BadRequest)
+            .Produces<string>(StatusCodes.Status404NotFound)
+            .Produces<string>(StatusCodes.Status500InternalServerError);
 
         // DELETE /api/users/{id}
-        group.MapDelete("/{id:int}", async (int id, IUserRepository userRepo) =>
-        {
-            var existing = await userRepo.GetUserByIdAsync(id);
-            if (existing is null)
-                return Results.NotFound(new { error = "Användare hittades inte" });
+        group
+            .MapDelete(
+                "/{id}",
+                async (int id, UserService service) =>
+                {
+                    if (id <= 0)
+                        return Results.BadRequest("ID must be a positive integer.");
 
-            var success = await userRepo.DeleteUserAsync(id);
-            if (!success)
-                return Results.Problem("Kunde inte radera användaren", statusCode: 500);
+                    try
+                    {
+                        await service.DeleteUserAsync(id);
+                        return Results.NoContent();
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        return Results.NotFound(ex.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        return Results.Problem(ex.Message);
+                    }
+                }
+            )
+            .WithName("DeleteUser")
+            .WithSummary("Delete a user")
+            .WithDescription("Permanently deletes a user by their unique identifier.")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces<string>(StatusCodes.Status400BadRequest)
+            .Produces<string>(StatusCodes.Status404NotFound)
+            .Produces<string>(StatusCodes.Status500InternalServerError);
 
-            return Results.NoContent();
-        });
+        return group;
     }
 
+    // Layer 2 validation helpers
+    private static IResult? ValidateCreateUser(CreateUserDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Email))
+            return Results.BadRequest("Email is required.");
 
+        if (string.IsNullOrWhiteSpace(dto.Password))
+            return Results.BadRequest("Password is required.");
+
+        return null;
+    }
+
+    private static IResult? ValidateUpdateUser(UpdateUserDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Email))
+            return Results.BadRequest("Email is required.");
+
+        if (string.IsNullOrWhiteSpace(dto.Password))
+            return Results.BadRequest("Password is required.");
+
+        return null;
+    }
 }
