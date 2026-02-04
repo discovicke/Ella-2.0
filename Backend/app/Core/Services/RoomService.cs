@@ -12,8 +12,12 @@ public class RoomService(IRoomRepository repo, ILogger<RoomService> logger)
     {
         IEnumerable<Room> rooms;
 
-        logger.LogInformation("Fetching rooms with filters: Type={Type}, Address={Address}", type, address);
-        
+        logger.LogInformation(
+            "Fetching rooms with filters: Type={Type}, Address={Address}",
+            type,
+            address
+        );
+
         if (type.HasValue)
             rooms = await repo.GetRoomsByTypeAsync(type.Value);
         else if (!string.IsNullOrWhiteSpace(address))
@@ -28,7 +32,7 @@ public class RoomService(IRoomRepository repo, ILogger<RoomService> logger)
     public async Task<RoomResponseDto> GetRoomByIdAsync(int id)
     {
         logger.LogDebug("Fetching room with ID {RoomId}", id);
-        
+
         // Layer 3: Check existence
         var room = await repo.GetRoomByIdAsync(id);
 
@@ -45,7 +49,7 @@ public class RoomService(IRoomRepository repo, ILogger<RoomService> logger)
     public async Task<RoomResponseDto> CreateRoomAsync(CreateRoomDto dto)
     {
         logger.LogInformation("Creating new room: {RoomName}", dto.Name);
-        
+
         var room = new Room
         {
             Name = dto.Name,
@@ -67,7 +71,7 @@ public class RoomService(IRoomRepository repo, ILogger<RoomService> logger)
     public async Task UpdateRoomAsync(int id, UpdateRoomDto dto)
     {
         logger.LogInformation("Updating room with ID {RoomId}", id);
-        
+
         // Layer 3: Check existence
         var existingRoom = await repo.GetRoomByIdAsync(id);
 
@@ -96,7 +100,7 @@ public class RoomService(IRoomRepository repo, ILogger<RoomService> logger)
     public async Task DeleteRoomAsync(int id)
     {
         logger.LogInformation("Deleting room with ID {RoomId}", id);
-        
+
         // Layer 3: Check existence
         var existingRoom = await repo.GetRoomByIdAsync(id);
 

@@ -1,4 +1,4 @@
-﻿using Backend.app.API.Endpoints;
+﻿﻿using Backend.app.API.Endpoints;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
@@ -110,6 +110,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi(); // Generates the underlying JSON file
     app.MapScalarApiReference(); // Hosts the Scalar UI
 }
+
+// Enable JWT authentication middleware (validates tokens and attaches user to HttpContext)
+app.UseJwtAuthentication();
 
 // API ENDPOINT MAPPINGS
 var apiGroup = app.MapGroup("/api");
