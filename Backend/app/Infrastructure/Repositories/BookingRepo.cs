@@ -117,13 +117,25 @@ public class BookingRepo(IDbConnectionFactory connectionFactory) : IBookingRepos
         
     }
 
-    public Task<IEnumerable<Booking>> GetOverlappingBookingsAsync(
+    public async Task<IEnumerable<Booking>> GetOverlappingBookingsAsync(
         int roomId,
         DateTime startDate,
         DateTime endDate
-    )
+        )
     {
-        throw new NotImplementedException();
+        using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+        var sql = @"
+            SELECT * FROM bookings
+            WHERE room_id = @RoomId
+            AND (
+                (start_time < @EndDate AND end_time > @StartDate)
+            );";
+        var bookings = await conn.QueryAsync<Booking>(
+            sql,
+            new { RoomId = roomId, StartDate = startDate, EndDate = endDate }
+        );
+        return bookings;
     }
 
     public Task<bool> UpdateBookingAsync(int bookingId, Booking booking)
