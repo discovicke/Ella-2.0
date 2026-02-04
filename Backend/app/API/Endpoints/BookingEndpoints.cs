@@ -1,3 +1,5 @@
+using Backend.app.Core.DTO;
+using Backend.app.Core.Entities;
 using Backend.app.Core.Enums;
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Services;
@@ -14,7 +16,8 @@ public static class BookingEndpoints
     {
         var group = app.MapGroup("/bookings").WithTags("Bookings");
 
-        
+        // GET /api/bookings
+
          group.MapGet("/",
           async (BookingService service) =>
           {
@@ -22,7 +25,17 @@ public static class BookingEndpoints
               return Results.Ok(bookings);
           });
 
-        return group;
+
+        // POST /api/bookings
+
+        group.MapPost("/",
+        async (CreateBookingDto dto, BookingService service) =>
+        {
+            var createdBooking = await service.CreateBookingAsync(dto);
+            return Results.Created($"/api/bookings/{createdBooking.Id}", createdBooking);
+        });
+
+    return group;
     }
-    
 }
+    
