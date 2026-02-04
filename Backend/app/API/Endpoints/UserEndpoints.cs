@@ -64,7 +64,7 @@ public static class UserEndpoints
                     try
                     {
                         var createdUser = await service.CreateUserAsync(dto);
-                        return Results.CreatedAtRoute("GetUserById", new { id = createdUser.id }, createdUser);
+                        return Results.NoContent();
                     }
                     catch (InvalidOperationException ex)
                     {

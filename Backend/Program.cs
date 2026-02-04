@@ -72,6 +72,7 @@ builder.Services.AddSingleton<TokenService>();
 // Register Business Logic Services (Scoped - per request)
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<RoomService>();
+builder.Services.AddScoped<UserService>();
 
 var app = builder.Build();
 
