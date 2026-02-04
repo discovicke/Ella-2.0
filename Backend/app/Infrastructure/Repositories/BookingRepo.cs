@@ -92,9 +92,16 @@ public class BookingRepo(IDbConnectionFactory connectionFactory) : IBookingRepos
         return booking;
     }
 
-    public Task<IEnumerable<Booking>> GetBookingsByRoomIdAsync(int roomId)
+    public async Task<IEnumerable<Booking>> GetBookingsByRoomIdAsync(int roomId)
     {
-        throw new NotImplementedException();
+        using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+        var sql = "SELECT * FROM bookings WHERE room_id = @RoomId;";
+        var bookings = await conn.QueryAsync<Booking>(
+            sql,
+            new { RoomId = roomId }
+        );
+        return bookings;
     }
 
     public Task<IEnumerable<Booking>> GetBookingsByUserIdAsync(int userId)
