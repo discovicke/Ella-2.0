@@ -1,7 +1,6 @@
-using Backend.app.Core.Entities;
 using Backend.app.Core.Enums;
-using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.DTO;
+using Backend.app.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.app.API.Endpoints;
@@ -12,132 +11,62 @@ public static class RoomEndpoints
     {
         var group = app.MapGroup("/rooms").WithTags("Rooms");
 
-        // 1. GET /api/rooms
+        // GET /api/rooms
+        // Inject RoomService instead of IRoomRepository
         group.MapGet(
             "/",
-            async ([FromQuery] RoomType? type, [FromQuery] string? address, IRoomRepository repo) =>
+            async ([FromQuery] RoomType? type, [FromQuery] string? address, RoomService service) =>
             {
-                if (type.HasValue)
-                {
-                    return Results.Ok(await repo.GetRoomsByTypeAsync(type.Value));
-                }
-
-                if (!string.IsNullOrEmpty(address))
-                {
-                    return Results.Ok(await repo.GetRoomsByAddressAsync(address));
-                }
-
-                return Results.Ok(await repo.GetAllRoomsAsync());
+                var rooms = await service.GetRoomsAsync(type, address);
+                return Results.Ok(rooms);
             }
         );
 
-        // 2. GET /api/rooms/{id}
+        // GET /api/rooms/{id}
         group.MapGet(
             "/{id}",
-            async (int id, IRoomRepository repo) =>
+            async (int id, RoomService service) =>
             {
-                // Layer 2: Endpoint Validation
-                if (id <= 0)
-                    return Results.BadRequest("ID must be a positive integer.");
-
-                var room = await repo.GetRoomByIdAsync(id);
+                var room = await service.GetRoomByIdAsync(id);
                 return room is not null ? Results.Ok(room) : Results.NotFound();
             }
         );
 
-        // 3. POST /api/rooms
+        // POST /api/rooms
         group.MapPost(
             "/",
-            async (CreateRoomDto dto, IRoomRepository repo) =>
+            async (CreateRoomDto dto, RoomService service) =>
             {
-                // Layer 2: Endpoint Validation
-                var validation = ValidateCreateRoom(dto);
-                if (validation is not null)
-                    return validation;
+                var createdRoom = await service.CreateRoomAsync(dto);
 
-                var room = new Room
-                {
-                    Name = dto.Name,
-                    Capacity = dto.Capacity,
-                    Type = dto.Type,
-                    Floor = dto.Floor,
-                    Address = dto.Address,
-                    Notes = dto.Notes,
-                };
+                if (createdRoom is null)
+                    return Results.BadRequest("Invalid data or creation failed.");
 
-                var created = await repo.CreateRoomAsync(room);
-                return created
-                    ? Results.Created($"/api/rooms/{room.Id}", room)
-                    : Results.BadRequest("Could not create room.");
+                // Ideally return CreatedAtRoute using the ID
+                return Results.Created($"/api/rooms/{createdRoom.Id}", createdRoom);
             }
         );
 
-        // 4. PUT /api/rooms/{id}
+        // PUT /api/rooms/{id}
         group.MapPut(
             "/{id}",
-            async (int id, UpdateRoomDto dto, IRoomRepository repo) =>
+            async (int id, UpdateRoomDto dto, RoomService service) =>
             {
-                // Layer 2: Endpoint Validation
-                if (id <= 0)
-                    return Results.BadRequest("ID must be a positive integer.");
-
-                var validation = ValidateUpdateRoom(dto);
-                if (validation is not null)
-                    return validation;
-
-                var room = new Room
-                {
-                    Id = id,
-                    Name = dto.Name,
-                    Capacity = dto.Capacity,
-                    Type = dto.Type,
-                    Floor = dto.Floor,
-                    Address = dto.Address,
-                    Notes = dto.Notes,
-                };
-
-                var updated = await repo.UpdateRoomAsync(id, room);
-                return updated ? Results.Ok(room) : Results.NotFound();
+                var success = await service.UpdateRoomAsync(id, dto);
+                return success ? Results.Ok() : Results.NotFound();
             }
         );
 
-        // 5. DELETE /api/rooms/{id}
+        // DELETE /api/rooms/{id}
         group.MapDelete(
             "/{id}",
-            async (int id, IRoomRepository repo) =>
+            async (int id, RoomService service) =>
             {
-                // Layer 2: Endpoint Validation
-                if (id <= 0)
-                    return Results.BadRequest("ID must be a positive integer.");
-
-                var deleted = await repo.DeleteRoomAsync(id);
-                return deleted ? Results.NoContent() : Results.NotFound();
+                var success = await service.DeleteRoomAsync(id);
+                return success ? Results.NoContent() : Results.NotFound();
             }
         );
 
         return group;
-    }
-
-    // Layer 2 validation helpers
-    private static IResult? ValidateCreateRoom(CreateRoomDto dto)
-    {
-        if (string.IsNullOrWhiteSpace(dto.Name))
-            return Results.BadRequest("Room name is required.");
-
-        if (dto.Capacity.HasValue && dto.Capacity <= 0)
-            return Results.BadRequest("Capacity must be a positive number.");
-
-        return null;
-    }
-
-    private static IResult? ValidateUpdateRoom(UpdateRoomDto dto)
-    {
-        if (string.IsNullOrWhiteSpace(dto.Name))
-            return Results.BadRequest("Room name is required.");
-
-        if (dto.Capacity.HasValue && dto.Capacity <= 0)
-            return Results.BadRequest("Capacity must be a positive number.");
-
-        return null;
     }
 }
