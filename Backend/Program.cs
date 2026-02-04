@@ -86,7 +86,9 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference(); // Hosts the Scalar UI
 }
 
-// ENDPOINT MAPPINGS
-app.MapAuthEndpoints();
+// API ENDPOINT MAPPINGS
+var apiGroup = app.MapGroup("/api");
+apiGroup.MapRoomEndpoints();
+apiGroup.MapAuthEndpoints();
 
 app.Run();
