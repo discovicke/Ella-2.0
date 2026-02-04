@@ -8,9 +8,7 @@ namespace Backend.app.Infrastructure.Repositories.Sqlite;
 
 public class SqliteBookingRepo(IDbConnectionFactory connectionFactory) : IBookingRepository
 {
-    // SQLite repository for Booking
-    // TODO: Migrate all SQL queries from booking.repo.js
-    // ⚠️ Update queries for new schema if columns/tables changed
+    
     public async Task<bool> CreateBookingAsync(Booking booking)
     {
         using var conn = connectionFactory.CreateConnection();
