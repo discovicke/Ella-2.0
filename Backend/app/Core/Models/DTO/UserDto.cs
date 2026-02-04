@@ -8,15 +8,14 @@ namespace Backend.app.Core.DTO;
     // TODO: Define CreateUserDto, UserResponseDto, UpdateUserDto
     // Reference: src/modules/users/user.dto.js
 public record UserResponseDto(
-    int id,
-    string email ,
+    int Id,
+    string Email ,
     string? DisplayName ,
     UserRole Role ,
     string? UserClass
 );
 
 public record CreateUserDto(
-    int Id,
     string Email,
     string? DisplayName,
     UserRole Role,
