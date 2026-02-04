@@ -1,6 +1,7 @@
 using Backend.app.API.Endpoints;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Services;
+using Backend.app.Infrastructure.Auth;
 using Backend.app.Infrastructure.Data;
 using Backend.app.Infrastructure.Repositories.Sqlite;
 using Scalar.AspNetCore;
@@ -48,7 +49,7 @@ switch (dbProvider)
         builder.Services.AddScoped<IRoomRepository, SqliteRoomRepo>();
         builder.Services.AddScoped<IUserRepository, SqliteUserRepo>();
         builder.Services.AddScoped<IBookingRepository, SqliteBookingRepo>();
-
+        
         // Register SQLite Initializer
         builder.Services.AddScoped<DbInitializer>();
         break;
@@ -64,8 +65,13 @@ switch (dbProvider)
 
 #endregion
 
-// Register the AuthService so it can be injected into our endpoints
+// Register Auth infrastructure (Singleton - stateless services)
+builder.Services.AddSingleton<PasswordHasher>();
+builder.Services.AddSingleton<TokenService>();
+
+// Register Business Logic Services (Scoped - per request)
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<RoomService>();
 
 var app = builder.Build();
 
@@ -86,7 +92,9 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference(); // Hosts the Scalar UI
 }
 
-// ENDPOINT MAPPINGS
-app.MapAuthEndpoints();
+// API ENDPOINT MAPPINGS
+var apiGroup = app.MapGroup("/api");
+apiGroup.MapRoomEndpoints();
+apiGroup.MapAuthEndpoints();
 
 app.Run();

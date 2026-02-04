@@ -1,15 +1,15 @@
 using System;
 using Backend.app.Core.Entities;
+using Backend.app.Core.Enums;
 using Backend.app.Core.Interfaces;
 using Dapper;
 using Microsoft.Data.Sqlite;
 
 namespace Backend.app.Infrastructure.Repositories.Sqlite;
 
-public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepository
+public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<SqliteRoomRepo> logger) : IRoomRepository
 {
     // SQLite repository for Room
-    // TODO: Migrate all SQL queries from room.repo.js
     // ⚠️ Update queries for new schema if columns/tables changed
 
     public async Task<IEnumerable<Room>> GetAllRoomsAsync()
@@ -24,7 +24,8 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         }
         catch (Exception ex)
         {
-            throw new Exception("Unexpected error while fetching all rooms.", ex);
+            logger.LogError(ex, "Database error while fetching all rooms");
+            throw;
         }
     }
 
@@ -41,11 +42,12 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         }
         catch (Exception ex)
         {
-            throw new Exception($"Unexpected error while fetching room with id {id}.", ex);
+            logger.LogError(ex, "Database error while fetching room with ID {RoomId}", id);
+            throw;
         }
     }
 
-    public async Task<IEnumerable<Room>> GetRoomsByTypeAsync(int type)
+    public async Task<IEnumerable<Room>> GetRoomsByTypeAsync(RoomType type)
     {
         try
         {
@@ -58,28 +60,30 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         }
         catch (Exception ex)
         {
-            throw new Exception($"Unexpected error while fetching rooms with type {type}.", ex);
+            logger.LogError(ex, "Database error while fetching rooms with type {RoomType}", type);
+            throw;
         }
     }
 
-    public async Task<IEnumerable<Room>> GetRoomsByLocationAsync(string location)
+    public async Task<IEnumerable<Room>> GetRoomsByAddressAsync(string address)
     {
         try
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            const string sql = "SELECT * FROM rooms WHERE type = @location;";
+            const string sql = "SELECT * FROM rooms WHERE address = @address;";
 
-            return await conn.QueryAsync<Room>(sql, new { location });
+            return await conn.QueryAsync<Room>(sql, new { address });
         }
         catch (Exception ex)
         {
-            throw new Exception($"Unexpected error while fetching rooms with type {location}.", ex);
+            logger.LogError(ex, "Database error while fetching rooms with address {Address}", address);
+            throw;
         }
     }
 
-    public async Task<bool> CreateRoomAsync(Room room)
+    public async Task<int> CreateRoomAsync(Room room)
     {
         try
         {
@@ -87,12 +91,17 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
             await conn.OpenAsync();
 
             const string sql =
-                "INSERT INTO rooms (name, capacity, type, floor, address, notes) VALUES (@name, @capacity, @type, @floor, @address, @notes);";
-            return await conn.ExecuteAsync(sql, room) > 0;
+                @"
+            INSERT INTO rooms (name, capacity, type, floor, address, notes) 
+            VALUES (@Name, @Capacity, @Type, @Floor, @Address, @Notes);
+            SELECT last_insert_rowid();";
+
+            return await conn.ExecuteScalarAsync<int>(sql, room);
         }
         catch (Exception ex)
         {
-            throw new Exception($"Unexpected error while creating room {room.Name}.", ex);
+            logger.LogError(ex, "Database error while creating room {RoomName}", room.Name);
+            throw;
         }
     }
 
@@ -109,7 +118,8 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         }
         catch (Exception ex)
         {
-            throw new Exception($"Unexpected error while updating room {room.Name}.", ex);
+            logger.LogError(ex, "Database error while updating room with ID {RoomId}", id);
+            throw;
         }
     }
 
@@ -125,7 +135,8 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         }
         catch (Exception exception)
         {
-            throw new Exception($"Unexpected error while deleting room with id {id}.", exception);
+            logger.LogError(exception, "Database error while deleting room with ID {RoomId}", id);
+            throw;
         }
     }
 }
