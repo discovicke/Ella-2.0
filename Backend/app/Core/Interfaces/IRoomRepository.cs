@@ -13,7 +13,7 @@ public interface IRoomRepository
     Task<IEnumerable<Room>> GetAllRoomsAsync();
     Task<Room?> GetRoomByIdAsync(int id);
     Task<IEnumerable<Room>> GetRoomsByTypeAsync(int type);
-    Task<IEnumerable<Room>> GetRoomsByLocationAsync(string location);
+    Task<IEnumerable<Room>> GetRoomsByAddressAsync(string address);
     Task<bool> CreateRoomAsync(Room room);
     Task<bool> UpdateRoomAsync(int id, Room room);
     Task<bool> DeleteRoomAsync(int id);
