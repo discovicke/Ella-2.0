@@ -64,8 +64,9 @@ switch (dbProvider)
 
 #endregion
 
-// Register the AuthService so it can be injected into our endpoints
+// Register the Services so they can be injected into our endpoints
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<RoomService>();
 
 var app = builder.Build();
 
