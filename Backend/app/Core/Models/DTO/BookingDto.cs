@@ -20,3 +20,14 @@ public record BookingResponseDto(
     DateTime CreatedAt,
     DateTime UpdatedAt
 );
+public record CreateBookingDto(
+    int UserId,
+    int RoomId,
+    DateTime StartTime,
+    DateTime EndTime,
+    string? Notes,
+    int status = 0
+)
+{
+    public object Id { get; internal set; }
+}
