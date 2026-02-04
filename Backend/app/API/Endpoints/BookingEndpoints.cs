@@ -32,7 +32,7 @@ public static class BookingEndpoints
         async (CreateBookingDto dto, BookingService service) =>
         {
             var createdBooking = await service.CreateBookingAsync(dto);
-            return Results.Created($"/api/bookings/{createdBooking.Id}", createdBooking);
+            return Results.NoContent();
         });
 
     return group;
