@@ -50,51 +50,121 @@ public class BookingRepo(IDbConnectionFactory connectionFactory) : IBookingRepos
         return rows > 0;
     }
 
-    public Task<IEnumerable<Booking>> GetAllBookingsAsync()
+    public  async Task<IEnumerable<Booking>> GetAllBookingsAsync()
     {
-        throw new NotImplementedException();
+        using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+        var sql = "SELECT * FROM bookings;";
+        var bookings = await conn.QueryAsync<Booking>(sql);
+
+        return bookings;
     }
 
-    public Task<IEnumerable<Booking>> GetAllBookingsByDateAsync(
+    public  async Task<IEnumerable<Booking>> GetAllBookingsByDateAsync(
         DateTime startDate,
         DateTime endDate
-    )
+        )
     {
-        throw new NotImplementedException();
+        using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+        var sql = @"
+            SELECT * FROM bookings
+            WHERE start_time >= @StartDate AND end_time <= @EndDate;
+        ";
+
+        var bookings = await conn.QueryAsync<Booking>(
+            sql,
+            new { StartDate = startDate, EndDate = endDate }
+        );
+
+        return bookings;
     }
 
-    public Task<Booking?> GetBookingByIdAsync(int bookingId)
+    public async Task<Booking?> GetBookingByIdAsync(int bookingId)
     {
-        throw new NotImplementedException();
+        using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+        var sql = "SELECT * FROM booking WHERE id = @BookingId;";
+        var booking = await conn.QuerySingleOrDefaultAsync<Booking>(
+            sql,
+            new { BookingId = bookingId }
+        );
+        return booking;
     }
 
-    public Task<IEnumerable<Booking>> GetBookingsByRoomIdAsync(int roomId)
+    public async Task<IEnumerable<Booking>> GetBookingsByRoomIdAsync(int roomId)
     {
-        throw new NotImplementedException();
+        using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+        var sql = "SELECT * FROM bookings WHERE room_id = @RoomId;";
+        var bookings = await conn.QueryAsync<Booking>(
+            sql,
+            new { RoomId = roomId }
+        );
+        return bookings;
     }
 
-    public Task<IEnumerable<Booking>> GetBookingsByUserIdAsync(int userId)
+    public async Task<IEnumerable<Booking>> GetBookingsByUserIdAsync(int userId)
     {
-        throw new NotImplementedException();
+        using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+        var sql = "SELECT * FROM bookings WHERE user_id = @UserId;";
+        var bookings = await conn.QueryAsync<Booking>(
+            sql,
+            new { UserId = userId }
+        );
+        return bookings;
+        
     }
 
-    public Task<IEnumerable<Booking>> GetOverlappingBookingsAsync(
+    public async Task<IEnumerable<Booking>> GetOverlappingBookingsAsync(
         int roomId,
         DateTime startDate,
         DateTime endDate
-    )
+        )
     {
-        throw new NotImplementedException();
+        using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+        var sql = @"
+            SELECT * FROM bookings
+            WHERE room_id = @RoomId
+            AND (
+                (start_time < @EndDate AND end_time > @StartDate)
+            );";
+        var bookings = await conn.QueryAsync<Booking>(
+            sql,
+            new { RoomId = roomId, StartDate = startDate, EndDate = endDate }
+        );
+        return bookings;
     }
 
-    public Task SaveChangesAsync()
+    public async Task<bool> UpdateBookingAsync(int bookingId, Booking booking)
     {
-        // No-op for Dapper; changes are committed immediately
-        return Task.CompletedTask;
-    }
-
-    public Task<bool> UpdateBookingAsync(int bookingId, Booking booking)
-    {
-        throw new NotImplementedException();
+        using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+        var sql = @"
+            UPDATE bookings
+            SET user_id =@UserId,
+            room_id = @RoomId,
+            start_time = @StartTime,
+            end_time = @EndTime,
+            status = @Status,
+            notes = @Notes
+            WHERE id = @BookingId;
+        ";
+        var rows = await conn.ExecuteAsync(
+            sql,
+            new
+            {
+                booking.UserId,
+                booking.RoomId,
+                booking.StartTime,
+                booking.EndTime,
+                Status = (int)booking.Status,
+                booking.Notes,
+                BookingId = bookingId,
+            }
+        );
+        return rows > 0;
     }
 }

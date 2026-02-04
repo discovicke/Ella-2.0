@@ -1,12 +1,13 @@
 using System;
 using Backend.app.Core.Entities;
+using Backend.app.Core.Enums;
 using Backend.app.Core.Interfaces;
 using Dapper;
 using Microsoft.Data.Sqlite;
 
-namespace Backend.app.Infrastructure.Repositories;
+namespace Backend.app.Infrastructure.Repositories.Sqlite;
 
-public class RoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepository
+public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepository
 {
     // SQLite repository for Room
     // TODO: Migrate all SQL queries from room.repo.js
@@ -45,7 +46,7 @@ public class RoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepository
         }
     }
 
-    public async Task<IEnumerable<Room>> GetRoomsByTypeAsync(int type)
+    public async Task<IEnumerable<Room>> GetRoomsByTypeAsync(RoomType type)
     {
         try
         {
@@ -62,20 +63,23 @@ public class RoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepository
         }
     }
 
-    public async Task<IEnumerable<Room>> GetRoomsByLocationAsync(string location)
+    public async Task<IEnumerable<Room>> GetRoomsByAddressAsync(string address)
     {
         try
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            const string sql = "SELECT * FROM rooms WHERE type = @location;";
+            const string sql = "SELECT * FROM rooms WHERE address = @address;";
 
-            return await conn.QueryAsync<Room>(sql, new { location });
+            return await conn.QueryAsync<Room>(sql, new { address });
         }
         catch (Exception ex)
         {
-            throw new Exception($"Unexpected error while fetching rooms with type {location}.", ex);
+            throw new Exception(
+                $"Unexpected error while fetching rooms with address {address}.",
+                ex
+            );
         }
     }
 

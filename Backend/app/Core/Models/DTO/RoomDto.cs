@@ -1,8 +1,21 @@
-namespace Backend.app.Core.DTO;
+using Backend.app.Core.Enums;
 
-public class RoomDto
-{
-    // Data Transfer Objects for Room
-    // TODO: Define CreateRoomDto, RoomResponseDto, UpdateRoomDto
-    // Reference: src/modules/rooms/room.dto.js (if exists)
-}
+namespace Backend.app.Core.Models.DTO;
+
+public record CreateRoomDto(
+    string Name,
+    int? Capacity,
+    RoomType Type,
+    string? Floor,
+    string? Address,
+    string? Notes
+);
+
+public record UpdateRoomDto(
+    string Name,
+    int? Capacity,
+    RoomType Type,
+    string? Floor,
+    string? Address,
+    string? Notes
+);
