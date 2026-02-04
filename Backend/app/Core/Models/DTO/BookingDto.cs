@@ -1,4 +1,5 @@
 using Backend.app.Core.Entities;
+using Backend.app.Core.Enums;
 
 namespace Backend.app.Core.DTO;
 
@@ -8,10 +9,14 @@ namespace Backend.app.Core.DTO;
 
 public record BookingResponseDto(
     int Id,
-    string Name,
-    int? Capacity,
-    Booking Type,
-    string? Floor,
-    string? Address,
-    string? Notes
+    int UserId,
+    string UserName,
+    int RoomId,
+    string? RoomName,
+    DateTime StartTime,
+    DateTime EndTime,
+    BookingStatus Status,
+    string? Notes,
+    DateTime CreatedAt,
+    DateTime UpdatedAt
 );
