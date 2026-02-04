@@ -1,4 +1,4 @@
-﻿﻿using Backend.app.API.Endpoints;
+using Backend.app.API.Endpoints;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
@@ -47,13 +47,13 @@ switch (dbProvider)
     case "sqlite":
         // Register SQLite-specific implementations
         builder.Services.AddScoped<IRoomRepository, SqliteRoomRepo>();
+        builder.Services.AddScoped<IRoomReadModelRepository, SqliteRoomReadModelRepo>();
         builder.Services.AddScoped<IUserRepository, SqliteUserRepo>();
         builder.Services.AddScoped<IBookingRepository, SqliteBookingRepo>();
-        
+
         // Register SQLite Initializer
         builder.Services.AddScoped<DbInitializer>();
         break;
-
     case "sqlserver":
     case "postgres":
         // Future proofing for other providers
