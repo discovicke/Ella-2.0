@@ -7,7 +7,16 @@ using Microsoft.Extensions.Logging;
 
 namespace Backend.app.Core.Services;
 
-public class UserService(IUserRepository repo, ILogger<UserService> logger)
+/// <summary>
+/// User management service for admin/teacher operations.
+/// SECURITY: This service should only be used by admin/teacher roles.
+/// For user registration, use AuthService.RegisterAsync() instead.
+/// For password changes by the user themselves, use AuthService methods.
+/// </summary>
+public class UserService(
+    IUserRepository repo, 
+    PasswordHasher passwordHasher,
+    ILogger<UserService> logger)
 {
     // Hämta alla användare
     public async Task<IEnumerable<UserResponseDto>> GetAllAsync()
@@ -50,7 +59,9 @@ public class UserService(IUserRepository repo, ILogger<UserService> logger)
             throw new InvalidOperationException("User with this email already exists."); 
         }
 
-        string hashed = PasswordHasher.HashPassword(dto.Password);
+        // SECURITY: Hash the password using Argon2id before storing
+        string hashed = passwordHasher.HashPassword(dto.Password);
+        logger.LogDebug("Password hashed successfully for user {Email}", dto.Email);
 
         // Skapar ny användare
         var user = new User 
@@ -96,6 +107,15 @@ public class UserService(IUserRepository repo, ILogger<UserService> logger)
             throw new KeyNotFoundException($"User with ID {id} does not exist."); 
         }
 
+        // SECURITY: Only hash new password if provided, otherwise keep existing hash
+        // NOTE: This allows admin/teacher to reset passwords without knowing the old one
+        string passwordHash = existing.PasswordHash;
+        if (!string.IsNullOrWhiteSpace(dto.Password))
+        {
+            passwordHash = passwordHasher.HashPassword(dto.Password);
+            logger.LogInformation("Password updated for user {UserId} by admin/teacher", id);
+        }
+
         // Skapar uppdaterad användare
         var updated = new User 
         {
@@ -104,9 +124,7 @@ public class UserService(IUserRepository repo, ILogger<UserService> logger)
             DisplayName = dto.DisplayName,
             UserClass = dto.UserClass,
             Role = dto.Role,
-            PasswordHash = string.IsNullOrWhiteSpace(dto.Password)
-                ? existing.PasswordHash 
-                : PasswordHasher.HashPassword(dto.Password),
+            PasswordHash = passwordHash,
             IsBanned = dto.IsBanned
         };
 
