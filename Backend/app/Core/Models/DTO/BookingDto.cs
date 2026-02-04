@@ -27,7 +27,6 @@ public record CreateBookingDto(
     DateTime EndTime,
     string? Notes,
     int status = 0
-)
-{
-    public object Id { get; internal set; }
-}
+);
+
+   
