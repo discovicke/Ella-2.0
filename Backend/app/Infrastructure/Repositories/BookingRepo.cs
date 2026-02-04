@@ -50,9 +50,14 @@ public class BookingRepo(IDbConnectionFactory connectionFactory) : IBookingRepos
         return rows > 0;
     }
 
-    public Task<IEnumerable<Booking>> GetAllBookingsAsync()
+    public  async Task<IEnumerable<Booking>> GetAllBookingsAsync()
     {
-        throw new NotImplementedException();
+        using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+        var sql = "SELECT * FROM bookings;";
+        var bookings = await conn.QueryAsync<Booking>(sql);
+
+        return bookings;
     }
 
     public Task<IEnumerable<Booking>> GetAllBookingsByDateAsync(
