@@ -87,12 +87,6 @@ public class BookingRepo(IDbConnectionFactory connectionFactory) : IBookingRepos
         throw new NotImplementedException();
     }
 
-    public Task SaveChangesAsync()
-    {
-        // No-op for Dapper; changes are committed immediately
-        return Task.CompletedTask;
-    }
-
     public Task<bool> UpdateBookingAsync(int bookingId, Booking booking)
     {
         throw new NotImplementedException();
