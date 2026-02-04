@@ -49,14 +49,7 @@ switch (dbProvider)
         builder.Services.AddScoped<IRoomRepository, SqliteRoomRepo>();
         builder.Services.AddScoped<IUserRepository, SqliteUserRepo>();
         builder.Services.AddScoped<IBookingRepository, SqliteBookingRepo>();
-
-// Register the AuthService so it can be injected into our endpoints
-builder.Services.AddSingleton<PasswordHasher>();
-builder.Services.AddSingleton<TokenService>();
-builder.Services.AddScoped<AuthService>();
-
-// Register the DbInitializer for schema/seed setup
-builder.Services.AddScoped<DbInitializer>();
+        
         // Register SQLite Initializer
         builder.Services.AddScoped<DbInitializer>();
         break;
@@ -72,7 +65,11 @@ builder.Services.AddScoped<DbInitializer>();
 
 #endregion
 
-// Register the Services so they can be injected into our endpoints
+// Register Auth infrastructure (Singleton - stateless services)
+builder.Services.AddSingleton<PasswordHasher>();
+builder.Services.AddSingleton<TokenService>();
+
+// Register Business Logic Services (Scoped - per request)
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<RoomService>();
 
