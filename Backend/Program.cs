@@ -72,7 +72,7 @@ builder.Services.AddSingleton<TokenService>();
 // Register Business Logic Services (Scoped - per request)
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<RoomService>();
-
+builder.Services.AddScoped<BookingService>();
 var app = builder.Build();
 
 // Acquire a logger from DI and log startup/shutdown events
