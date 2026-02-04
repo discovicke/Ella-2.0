@@ -83,7 +83,7 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
         }
     }
 
-    public async Task<bool> CreateRoomAsync(Room room)
+    public async Task<int> CreateRoomAsync(Room room)
     {
         try
         {
@@ -91,8 +91,12 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory) : IRoomRepos
             await conn.OpenAsync();
 
             const string sql =
-                "INSERT INTO rooms (name, capacity, type, floor, address, notes) VALUES (@name, @capacity, @type, @floor, @address, @notes);";
-            return await conn.ExecuteAsync(sql, room) > 0;
+                @"
+            INSERT INTO rooms (name, capacity, type, floor, address, notes) 
+            VALUES (@Name, @Capacity, @Type, @Floor, @Address, @Notes);
+            SELECT last_insert_rowid();";
+
+            return await conn.ExecuteScalarAsync<int>(sql, room);
         }
         catch (Exception ex)
         {
