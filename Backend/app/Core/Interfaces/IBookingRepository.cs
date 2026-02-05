@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Backend.app.Core.Entities;
 
@@ -12,15 +12,15 @@ public interface IBookingRepository
     // CRUD stands for Create, Read, Update, and Delete – basic operations used to add, fetch, modify, and remove data.
     Task<bool> CreateBookingAsync(Booking booking);
     Task<IEnumerable<Booking>> GetAllBookingsAsync();
-    Task<Booking?> GetBookingByIdAsync(int bookingId);
-    Task<IEnumerable<Booking>> GetBookingsByUserIdAsync(int userId);
-    Task<IEnumerable<Booking>> GetBookingsByRoomIdAsync(int roomId);
+    Task<Booking?> GetBookingByIdAsync(long bookingId);
+    Task<IEnumerable<Booking>> GetBookingsByUserIdAsync(long userId);
+    Task<IEnumerable<Booking>> GetBookingsByRoomIdAsync(long roomId);
     Task<IEnumerable<Booking>> GetAllBookingsByDateAsync(DateTime startDate, DateTime endDate);
     Task<IEnumerable<Booking>> GetOverlappingBookingsAsync(
-        int roomId,
+        long roomId,
         DateTime startDate,
         DateTime endDate
     );
-    Task<bool> UpdateBookingAsync(int bookingId, Booking booking);
-    Task<bool> CancelBookingAsync(int bookingId);
+    Task<bool> UpdateBookingAsync(long bookingId, Booking booking);
+    Task<bool> CancelBookingAsync(long bookingId);
 }
