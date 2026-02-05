@@ -40,9 +40,14 @@ public static class BookingEndpoints
         group.MapGet("/{id}",
         async (long id, BookingService service) =>
         {
-
-            await service.CancelBookingAsync(new CancelBookingDto(id));
-            return Results.NoContent();
+            var booking = await service.GetBookingByIdAsync(id);
+            
+            if (booking is null)
+            {
+                return Results.NotFound();
+            }
+            
+            return Results.Ok(new { isCancelled = booking.Status == BookingStatus.Cancelled });
         });
 
     return group;

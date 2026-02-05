@@ -1,4 +1,4 @@
-using Backend.app.Core.DTO;
+﻿using Backend.app.Core.DTO;
 using Backend.app.Core.Entities;
 using Backend.app.Core.Interfaces;
 using Backend.app.Infrastructure.Repositories;
@@ -37,5 +37,10 @@ public class BookingService(IBookingRepository repo)
     {
         await repo.CancelBookingAsync(dto.Id);
         return dto;
+    }
+
+    public async Task<Booking?> GetBookingByIdAsync(long id)
+    {
+        return await repo.GetBookingByIdAsync(id);
     }
 }
