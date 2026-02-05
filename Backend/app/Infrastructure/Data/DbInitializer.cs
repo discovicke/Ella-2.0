@@ -38,14 +38,14 @@ public class DbInitializer(IDbConnectionFactory connectionFactory, ILogger<DbIni
 
     private async Task RunSchemaAsync(IDbConnection conn)
     {
-        logger.LogInformation("Running schema.sql...");
+        logger.LogInformation("Running schema.sqlite...");
 
         var schemaPath = Path.Combine(
             AppContext.BaseDirectory,
             "app",
             "Infrastructure",
             "Data",
-            "schema.sql"
+            "schema.sqlite"
         );
 
         // Fallback: try relative path from project root (for development)
@@ -56,7 +56,7 @@ public class DbInitializer(IDbConnectionFactory connectionFactory, ILogger<DbIni
                 "app",
                 "Infrastructure",
                 "Data",
-                "schema.sql"
+                "schema.sqlite"
             );
         }
 
@@ -92,7 +92,7 @@ public class DbInitializer(IDbConnectionFactory connectionFactory, ILogger<DbIni
             "app",
             "Infrastructure",
             "Data",
-            "seed.sql"
+            "seed.sqlite"
         );
 
         // Fallback: try relative path from project root (for development)
@@ -103,7 +103,7 @@ public class DbInitializer(IDbConnectionFactory connectionFactory, ILogger<DbIni
                 "app",
                 "Infrastructure",
                 "Data",
-                "seed.sql"
+                "seed.sqlite"
             );
         }
 
