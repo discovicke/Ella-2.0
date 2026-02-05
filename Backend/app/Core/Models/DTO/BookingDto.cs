@@ -1,4 +1,4 @@
-using Backend.app.Core.Entities;
+﻿using Backend.app.Core.Entities;
 using Backend.app.Core.Enums;
 
 namespace Backend.app.Core.DTO;
@@ -8,10 +8,10 @@ namespace Backend.app.Core.DTO;
     // Reference: src/modules/bookings/booking.dto.js
 
 public record BookingResponseDto(
-    int Id,
-    int UserId,
+    long Id,
+    long UserId,
     string UserName,
-    int RoomId,
+    long RoomId,
     string? RoomName,
     DateTime StartTime,
     DateTime EndTime,
@@ -21,15 +21,15 @@ public record BookingResponseDto(
     DateTime UpdatedAt
 );
 public record CreateBookingDto(
-    int UserId,
-    int RoomId,
+    long UserId,
+    long RoomId,
     DateTime StartTime,
     DateTime EndTime,
     string? Notes,
     int status = 0
 );
 public record CancelBookingDto(
-    int Id
+    long Id
 );
 
    
