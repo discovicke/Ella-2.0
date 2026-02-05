@@ -117,7 +117,7 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
         {
             using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            var sql = "SELECT * FROM booking WHERE id = @BookingId;";
+            var sql = "SELECT * FROM bookings WHERE id = @BookingId;";
             var booking = await conn.QuerySingleOrDefaultAsync<Booking>(
                 sql,
                 new { BookingId = bookingId }
