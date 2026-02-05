@@ -5,7 +5,6 @@ namespace Backend.app.Core.Entities;
 public class Room
 {
     // Room entity matching database schema
-    // TODO: Define properties matching Infrastructure/Data/schema.sql rooms table
     // ⚠️ Compare with src/modules/rooms/room.repo.js for schema differences
 
     public long Id { get; set; }

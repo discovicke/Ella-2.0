@@ -3,7 +3,6 @@
 namespace Backend.app.Core.DTO;
 
 // Data Transfer Objects for User
-// TODO: Define CreateUserDto, UserResponseDto, UpdateUserDto
 // Reference: src/modules/users/user.dto.js
 public record UserResponseDto(
     long Id,

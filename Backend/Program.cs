@@ -13,6 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
+// TODO: Lex & Parsing from C# to JS
+
 // TODO: Configure services and middleware pipeline
 // Reference: src/app.js and src/server.js for Express setup
 // Check CORS settings, authentication flow, and static file serving
@@ -50,7 +52,7 @@ switch (dbProvider)
         builder.Services.AddScoped<IRoomReadModelRepository, SqliteRoomReadModelRepo>();
         builder.Services.AddScoped<IUserRepository, SqliteUserRepo>();
         builder.Services.AddScoped<IBookingRepository, SqliteBookingRepo>();
-        builder.Services.AddScoped<IBookingReadModelRepository, SqliteBookingReadModelRepo>();
+        builder.Services.AddScoped<IBookingDetailedRepository, SqliteBookingDetailedRepo>();
 
         // Register SQLite Initializer
         builder.Services.AddScoped<IDbInitializer, SqliteDbInitializer>();

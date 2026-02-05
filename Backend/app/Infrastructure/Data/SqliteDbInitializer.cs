@@ -118,7 +118,6 @@ public class SqliteDbInitializer(
         var seedSql = await File.ReadAllTextAsync(seedPath);
 
         // Replace __HASH__ placeholders with stub hashes
-        // TODO: Replace with real password hashing when auth is implemented
         const string stubPassword = "lösen123";
         logger.LogInformation("Generating password hashes for seed users...");
 
