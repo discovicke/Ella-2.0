@@ -68,7 +68,7 @@ public class RoomService(IRoomRepository repo, ILogger<RoomService> logger)
     }
 
     // Update
-    public async Task UpdateRoomAsync(int id, UpdateRoomDto dto)
+    public async Task UpdateRoomAsync(long id, UpdateRoomDto dto)
     {
         logger.LogInformation("Updating room with ID {RoomId}", id);
 

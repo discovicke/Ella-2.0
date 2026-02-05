@@ -3,7 +3,7 @@ using Backend.app.Core.Enums;
 namespace Backend.app.Core.Models.ReadModels;
 
 public record RoomDetailModel(
-    int RoomId,
+    long RoomId,
     string Name,
     int? Capacity,
     RoomType Type,

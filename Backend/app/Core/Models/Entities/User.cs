@@ -4,7 +4,7 @@ namespace Backend.app.Core.Entities;
 
 public class User
 {
-    // User entity matching database schema
+    // User entity (source of truth), atm matching database schema
     // TODO: Define properties matching Infrastructure/Data/schema.sql users table
     // ⚠️ Compare with src/modules/users/user.repo.js for schema differences
 

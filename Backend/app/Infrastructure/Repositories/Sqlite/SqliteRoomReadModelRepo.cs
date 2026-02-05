@@ -44,7 +44,7 @@ public class SqliteRoomReadModelRepo(
         }
     }
 
-    public async Task<RoomDetailModel?> GetRoomDetailByIdAsync(int roomId)
+    public async Task<RoomDetailModel?> GetRoomDetailByIdAsync(long roomId)
     {
         try
         {

@@ -5,5 +5,5 @@ namespace Backend.app.Core.Interfaces;
 public interface IRoomReadModelRepository
 {
     Task<IEnumerable<RoomDetailModel>> GetAllRoomDetailsAsync();
-    Task<RoomDetailModel?> GetRoomDetailByIdAsync(int roomId);
+    Task<RoomDetailModel?> GetRoomDetailByIdAsync(long roomId);
 }
