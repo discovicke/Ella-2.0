@@ -1,4 +1,4 @@
-using Backend.app.Core.Entities;
+﻿using Backend.app.Core.Entities;
 using Backend.app.Core.Enums;
 using Backend.app.Core.Interfaces;
 using Dapper;
@@ -43,7 +43,7 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
         }
     }
 
-    public async Task<bool> CancelBookingAsync(int bookingId)
+    public async Task<bool> CancelBookingAsync(long bookingId)
     {
         try
         {
@@ -90,7 +90,7 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
     {
         try
         {
-            using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = @"
             SELECT * FROM bookings
@@ -111,11 +111,11 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
         }
     }
 
-    public async Task<Booking?> GetBookingByIdAsync(int bookingId)
+    public async Task<Booking?> GetBookingByIdAsync(long bookingId)
     {
         try
         {
-            using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = "SELECT * FROM booking WHERE id = @BookingId;";
             var booking = await conn.QuerySingleOrDefaultAsync<Booking>(
@@ -131,11 +131,11 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
         }
     }
 
-    public async Task<IEnumerable<Booking>> GetBookingsByRoomIdAsync(int roomId)
+    public async Task<IEnumerable<Booking>> GetBookingsByRoomIdAsync(long roomId)
     {
         try
         {
-            using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = "SELECT * FROM bookings WHERE room_id = @RoomId;";
             var bookings = await conn.QueryAsync<Booking>(
@@ -151,11 +151,11 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
         }
     }
 
-    public async Task<IEnumerable<Booking>> GetBookingsByUserIdAsync(int userId)
+    public async Task<IEnumerable<Booking>> GetBookingsByUserIdAsync(long userId)
     {
         try
         {
-            using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = "SELECT * FROM bookings WHERE user_id = @UserId;";
             var bookings = await conn.QueryAsync<Booking>(
@@ -172,7 +172,7 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
     }
 
     public async Task<IEnumerable<Booking>> GetOverlappingBookingsAsync(
-        int roomId,
+        long roomId,
         DateTime startDate,
         DateTime endDate
     )
@@ -200,11 +200,11 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
         }
     }
 
-    public async Task<bool> UpdateBookingAsync(int bookingId, Booking booking)
+    public async Task<bool> UpdateBookingAsync(long bookingId, Booking booking)
     {
         try
         {
-            using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = @"
             UPDATE bookings
