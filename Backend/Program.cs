@@ -66,7 +66,7 @@ switch (dbProvider)
 #endregion
 
 // Register Auth infrastructure (Singleton - stateless services)
-builder.Services.AddSingleton<PasswordHasher>();
+builder.Services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
 builder.Services.AddSingleton<TokenService>();
 
 // Register Business Logic Services (Scoped - per request)
