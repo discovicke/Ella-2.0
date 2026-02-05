@@ -1,0 +1,41 @@
+namespace Backend.app.Core.Models.ReadModels;
+
+/// <summary>
+/// Read model for detailed booking information with enriched data from joins.
+/// Maps to the v_bookings_detailed view in the database.
+/// </summary>
+public record BookingDetailedReadModel
+{
+    public long BookingId { get; init; }
+    public long UserId { get; init; }
+    public string? UserName { get; init; }
+    public string? UserEmail { get; init; }
+    public int? UserRole { get; init; }
+    public string? UserClass { get; init; }
+    public long RoomId { get; init; }
+    public string? RoomName { get; init; }
+    public int? RoomCapacity { get; init; }
+    public int RoomType { get; init; }
+    public string? RoomFloor { get; init; }
+    public string? RoomAddress { get; init; }
+    public DateTime StartTime { get; init; }
+    public DateTime EndTime { get; init; }
+    public int Status { get; init; }
+    public string? Notes { get; init; }
+    public DateTime CreatedAt { get; init; }
+    public DateTime? UpdatedAt { get; init; }
+    public int RegistrationCount { get; init; }
+}
+
+/// <summary>
+/// Read model for room assets with asset type descriptions.
+/// Maps to the v_room_assets_detailed view in the database.
+/// </summary>
+public record RoomAssetDetailedReadModel
+{
+    public long RoomAssetId { get; init; }
+    public long RoomId { get; init; }
+    public string? RoomName { get; init; }
+    public long AssetTypeId { get; init; }
+    public string? AssetDescription { get; init; }
+}
