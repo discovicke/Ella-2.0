@@ -77,7 +77,7 @@ public static class AuthEndpoints
                 httpContext.Response.Cookies.Delete("auth_token", new CookieOptions { Path = "/" });
 
                 // If user is authenticated, invalidate all their tokens
-                var userId = httpContext.Items["UserId"] as int?;
+                var userId = httpContext.Items["UserId"] as long?;
                 if (userId.HasValue)
                 {
                     await authService.InvalidateAllTokensAsync(userId.Value);

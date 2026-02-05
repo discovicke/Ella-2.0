@@ -137,7 +137,11 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
             var sql =
                 @"
             UPDATE users
-            SET email = @Email, password_hash = @PasswordHash, role = @Role, display_name = @DisplayName
+            SET email = @Email,
+                password_hash = @PasswordHash,
+                role = @Role,
+                display_name = @DisplayName,
+                tokens_valid_after = @TokensValidAfter
             WHERE id = @Id;";
 
             var rowsAffected = await conn.ExecuteAsync(
@@ -148,6 +152,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
                     user.PasswordHash,
                     user.Role,
                     user.DisplayName,
+                    user.TokensValidAfter,
                     Id = id,
                 }
             );
