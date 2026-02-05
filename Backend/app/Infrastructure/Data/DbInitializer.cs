@@ -9,7 +9,7 @@ namespace Backend.app.Infrastructure.Data;
 /// Initializes and seeds the database on application startup.
 /// Equivalent to the JS db.js initialization logic.
 /// </summary>
-public class DbInitializer(IDbConnectionFactory connectionFactory, ILogger<DbInitializer> logger, PasswordHasher passwordHasher)
+public class DbInitializer(IDbConnectionFactory connectionFactory, ILogger<DbInitializer> logger, Argon2PasswordHasher passwordHasher)
 {
     public async Task InitializeAsync()
     {
