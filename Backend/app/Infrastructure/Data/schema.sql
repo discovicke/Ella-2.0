@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS "users"
     "role"               INTEGER                           NOT NULL, -- 0=Student, 1=Teacher, 2=Admin
     "user_class"         TEXT,
     "is_banned"          INTEGER                           NOT NULL DEFAULT 0,
-    "tokens_valid_after" DATETIME                                   DEFAULT CURRENT_TIMESTAMP NOT NULL
+    "tokens_valid_after" DATETIME                          NOT NULL DEFAULT CURRENT_TIMESTAMP 
 );
 
 -- 2. Rooms & Equipment
