@@ -13,6 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
+// TODO: Lex & Parsing from C# to JS
+
 // TODO: Configure services and middleware pipeline
 // Reference: src/app.js and src/server.js for Express setup
 // Check CORS settings, authentication flow, and static file serving

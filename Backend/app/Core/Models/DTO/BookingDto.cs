@@ -4,7 +4,6 @@ using Backend.app.Core.Enums;
 namespace Backend.app.Core.DTO;
 
     // Data Transfer Objects for Booking
-    // TODO: Define CreateBookingDto, BookingResponseDto, UpdateBookingDto
     // Reference: src/modules/bookings/booking.dto.js
 
 public record BookingResponseDto(
