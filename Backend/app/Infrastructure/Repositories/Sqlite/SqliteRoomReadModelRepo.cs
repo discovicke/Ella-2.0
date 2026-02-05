@@ -1,4 +1,3 @@
-using Backend.app.Core.Enums;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.ReadModels;
 using Dapper;
