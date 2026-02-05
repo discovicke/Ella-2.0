@@ -1,7 +1,7 @@
 using Backend.app.Core.DTO;
 using Backend.app.Core.Entities;
+using Backend.app.Core.Enums;
 using Backend.app.Core.Interfaces;
-using Backend.app.Infrastructure.Auth;
 
 namespace Backend.app.Core.Services;
 
@@ -11,14 +11,15 @@ namespace Backend.app.Core.Services;
 /// </summary>
 public class AuthService(
     IUserRepository userRepo,
-    PasswordHasher passwordHasher,
-    TokenService tokenService,
-    ILogger<AuthService> logger)
+    IPasswordHasher passwordHasher,
+    ITokenProvider tokenProvider,
+    ILogger<AuthService> logger
+)
 {
     /// <summary>
     /// Authenticates a user by email and password.
     /// Returns JWT token and user info on success, null on failure.
-    /// 
+    ///
     /// Security: Uses identical error for "user not found" and "wrong password"
     /// to prevent user enumeration attacks.
     /// </summary>
@@ -36,7 +37,7 @@ public class AuthService(
         }
 
         // Check if user is banned
-        if (user.IsBanned == Core.Enums.BannedStatus.Banned)
+        if (user.IsBanned == BannedStatus.Banned)
         {
             logger.LogWarning("Login failed: user {UserId} is banned", user.Id);
             return null;
@@ -52,15 +53,11 @@ public class AuthService(
         }
 
         // Generate JWT token
-        var token = tokenService.GenerateAccessToken(user.Id, user.Email);
+        var token = tokenProvider.GenerateAccessToken(user.Id, user.Email);
 
         logger.LogInformation("Login successful for user {UserId} ({Email})", user.Id, user.Email);
 
-        return new LoginResultDto
-        {
-            Token = token,
-            User = MapToUserDto(user)
-        };
+        return new LoginResultDto { Token = token, User = MapToUserDto(user) };
     }
 
     /// <summary>
@@ -70,7 +67,7 @@ public class AuthService(
     public async Task<User?> ValidateTokenAndGetUserAsync(string token)
     {
         // Step 1: Validate JWT signature and expiration
-        var principal = tokenService.ValidateToken(token);
+        var principal = tokenProvider.ValidateToken(token);
         if (principal is null)
         {
             logger.LogDebug("Token validation failed: invalid JWT");
@@ -78,7 +75,7 @@ public class AuthService(
         }
 
         // Step 2: Extract user ID from claims
-        var userId = tokenService.GetUserIdFromClaims(principal);
+        var userId = tokenProvider.GetUserIdFromClaims(principal);
         if (userId is null)
         {
             logger.LogWarning("Token validation failed: no user ID in claims");
@@ -94,10 +91,13 @@ public class AuthService(
         }
 
         // Step 4: Check tokens_valid_after (invalidates all tokens issued before this timestamp)
-        var issuedAt = tokenService.GetIssuedAtFromClaims(principal);
+        var issuedAt = tokenProvider.GetIssuedAtFromClaims(principal);
         if (issuedAt is null || issuedAt < user.TokensValidAfter)
         {
-            logger.LogWarning("Token validation failed: token issued before tokens_valid_after for user {UserId}", userId);
+            logger.LogWarning(
+                "Token validation failed: token issued before tokens_valid_after for user {UserId}",
+                userId
+            );
             return null;
         }
 
@@ -115,7 +115,7 @@ public class AuthService(
     /// Invalidates all tokens for a user by updating tokens_valid_after.
     /// Used for logout, password change, or security events.
     /// </summary>
-    public async Task<bool> InvalidateAllTokensAsync(int userId)
+    public async Task<bool> InvalidateAllTokensAsync(long userId)
     {
         var user = await userRepo.GetUserByIdAsync(userId);
         if (user is null)
@@ -160,7 +160,7 @@ public class AuthService(
             PasswordHash = passwordHash,
             DisplayName = request.DisplayName,
             Role = Core.Enums.UserRole.Student, // Default role
-            TokensValidAfter = DateTime.UtcNow
+            TokensValidAfter = DateTime.UtcNow,
         };
 
         var success = await userRepo.CreateUserAsync(user);
@@ -174,20 +174,23 @@ public class AuthService(
         var createdUser = await userRepo.GetUserByEmailAsync(request.Email);
         if (createdUser is null)
         {
-            logger.LogError("Registration failed: user created but not found {Email}", request.Email);
+            logger.LogError(
+                "Registration failed: user created but not found {Email}",
+                request.Email
+            );
             return null;
         }
 
         // Generate JWT for immediate login
-        var token = tokenService.GenerateAccessToken(createdUser.Id, createdUser.Email);
+        var token = tokenProvider.GenerateAccessToken(createdUser.Id, createdUser.Email);
 
-        logger.LogInformation("Registration successful for user {UserId} ({Email})", createdUser.Id, createdUser.Email);
+        logger.LogInformation(
+            "Registration successful for user {UserId} ({Email})",
+            createdUser.Id,
+            createdUser.Email
+        );
 
-        return new RegisterResultDto
-        {
-            Token = token,
-            User = MapToUserDto(createdUser)
-        };
+        return new RegisterResultDto { Token = token, User = MapToUserDto(createdUser) };
     }
 
     private static AuthedUserResponseDto MapToUserDto(User user)
@@ -199,7 +202,7 @@ public class AuthService(
             DisplayName = user.DisplayName,
             Role = user.Role.ToString().ToLowerInvariant(),
             UserClass = user.UserClass,
-            IsBanned = user.IsBanned == Core.Enums.BannedStatus.Banned
+            IsBanned = user.IsBanned == BannedStatus.Banned,
         };
     }
 }

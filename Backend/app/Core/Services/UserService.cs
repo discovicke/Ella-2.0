@@ -15,7 +15,7 @@ namespace Backend.app.Core.Services;
 /// </summary>
 public class UserService(
     IUserRepository repo,
-    PasswordHasher passwordHasher,
+    IPasswordHasher passwordHasher,
     ILogger<UserService> logger
 )
 {
