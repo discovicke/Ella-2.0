@@ -80,4 +80,47 @@ CREATE TABLE IF NOT EXISTS "registrations"
     FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE
 );
 
+-- 4. Views for Read Models
+-- View: Bookings with enriched data (user and room names, registration count)
+CREATE VIEW IF NOT EXISTS "v_bookings_detailed" AS
+SELECT 
+    b.id AS booking_id,
+    b.user_id,
+    u.display_name AS user_name,
+    u.email AS user_email,
+    u.role AS user_role,
+    u.user_class AS user_class,
+    b.room_id,
+    r.name AS room_name,
+    r.capacity AS room_capacity,
+    r.type AS room_type,
+    r.address AS address,
+    r.floor AS room_floor,
+    b.start_time,
+    b.end_time,
+    b.status,
+    b.notes,
+    b.created_at,
+    b.updated_at,
+    COALESCE(COUNT(reg.user_id), 0) AS registration_count
+FROM bookings b
+LEFT JOIN users u ON b.user_id = u.id
+LEFT JOIN rooms r ON b.room_id = r.id
+LEFT JOIN registrations reg ON b.id = reg.booking_id
+GROUP BY b.id, b.user_id, u.display_name, u.email, u.user_class, b.room_id, r.name, r.capacity, 
+         r.type, r.floor, r.address, b.start_time, b.end_time, b.status, b.notes, b.created_at, b.updated_at;
+
+-- View: Room assets with asset type descriptions
+CREATE VIEW IF NOT EXISTS "v_room_assets_detailed" AS
+SELECT 
+    ra.id AS room_asset_id,
+    ra.room_id,
+    r.name AS room_name,
+    ra.asset_type_id,
+    at.description AS asset_description
+FROM room_assets ra
+LEFT JOIN rooms r ON ra.room_id = r.id
+LEFT JOIN asset_types at ON ra.asset_type_id = at.id;
+
+
 COMMIT;
