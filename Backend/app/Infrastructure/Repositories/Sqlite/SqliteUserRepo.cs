@@ -28,7 +28,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         }
     }
 
-    public async Task<User?> GetUserByIdAsync(int id)
+    public async Task<User?> GetUserByIdAsync(long id)
     {
         try
         {
@@ -128,7 +128,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         }
     }
 
-    public async Task<bool> UpdateUserAsync(int id, User user)
+    public async Task<bool> UpdateUserAsync(long id, User user)
     {
         try
         {
@@ -162,7 +162,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         }
     }
 
-    public async Task<bool> DeleteUserAsync(int id)
+    public async Task<bool> DeleteUserAsync(long id)
     {
         try
         {
@@ -188,7 +188,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            var sql = "SELECT * FROM users WHERE class = @className;";
+            var sql = "SELECT * FROM users WHERE user_class = @className;";
             var users = await conn.QueryAsync<User>(sql, new { className });
             return users;
         }
