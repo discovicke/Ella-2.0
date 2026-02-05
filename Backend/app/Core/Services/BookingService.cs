@@ -10,7 +10,8 @@ public class BookingService(
     IBookingRepository repo,
     IBookingReadModelRepository readModelRepo,
     IUserRepository userRepo,
-    IRoomRepository roomRepo)
+    IRoomRepository roomRepo
+)
 {
     // Business logic for bookings
     // Follows CQRS pattern: Write operations use repo, Read operations use readModelRepo
