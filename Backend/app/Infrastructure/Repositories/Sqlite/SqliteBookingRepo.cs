@@ -10,7 +10,7 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
 {
     // SQLite repository for Booking
     // ⚠️ Update queries for new schema if columns/tables changed
-    public async Task<bool> CreateBookingAsync(Booking booking)
+    public async Task<long> CreateBookingAsync(Booking booking)
     {
         try
         {
@@ -20,8 +20,9 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
                 @"
             INSERT INTO bookings (user_id, room_id, start_time, end_time, status, notes)
             VALUES (@UserId, @RoomId, @StartTime, @EndTime, @Status, @Notes);
+            SELECT last_insert_rowid();
         ";
-            var rows = await conn.ExecuteAsync(
+            var id = await conn.ExecuteScalarAsync<long>(
                 sql,
                 new
                 {
@@ -34,7 +35,7 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
                 }
             );
 
-            return rows > 0;
+            return id;
         }
         catch (Exception ex)
         {

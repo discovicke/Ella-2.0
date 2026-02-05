@@ -8,7 +8,9 @@ namespace Backend.app.Core.Services;
 
 public class BookingService(
     IBookingRepository repo,
-    IBookingReadModelRepository readModelRepo)
+    IBookingReadModelRepository readModelRepo,
+    IUserRepository userRepo,
+    IRoomRepository roomRepo)
 {
     // Business logic for bookings
     // Follows CQRS pattern: Write operations use repo, Read operations use readModelRepo
@@ -30,10 +32,16 @@ public class BookingService(
         long? roomId = null,
         DateTime? startDate = null,
         DateTime? endDate = null,
-        int? status = null)
+        int? status = null
+    )
     {
         return await readModelRepo.GetDetailedBookingsFilteredAsync(
-            userId, roomId, startDate, endDate, status);
+            userId,
+            roomId,
+            startDate,
+            endDate,
+            status
+        );
     }
 
     /// <summary>
@@ -47,19 +55,42 @@ public class BookingService(
     /// <summary>
     /// Create a new booking
     /// </summary>
-    public async Task<CreateBookingDto> CreateBookingAsync(CreateBookingDto booking)
+    public async Task<Booking?> CreateBookingAsync(CreateBookingDto dto)
     {
-        var bokning = new Booking
+        // Validation: Existence
+        if (await userRepo.GetUserByIdAsync(dto.UserId) is null)
         {
-            UserId = booking.UserId,
-            RoomId = booking.RoomId,
-            StartTime = booking.StartTime,
-            EndTime = booking.EndTime,
-            Notes = booking.Notes,
-            Status = (BookingStatus)booking.status,
+            throw new KeyNotFoundException($"User with ID {dto.UserId} not found.");
+        }
+
+        if (await roomRepo.GetRoomByIdAsync(dto.RoomId) is null)
+        {
+            throw new KeyNotFoundException($"Room with ID {dto.RoomId} not found.");
+        }
+
+        // Check for overlaps
+        var overlaps = await repo.GetOverlappingBookingsAsync(
+            dto.RoomId,
+            dto.StartTime,
+            dto.EndTime
+        );
+        if (overlaps.Any())
+        {
+            return null; // Conflict
+        }
+
+        var booking = new Booking
+        {
+            UserId = dto.UserId,
+            RoomId = dto.RoomId,
+            StartTime = dto.StartTime,
+            EndTime = dto.EndTime,
+            Notes = dto.Notes,
+            Status = (BookingStatus)dto.status,
         };
 
-        await repo.CreateBookingAsync(bokning);
+        var id = await repo.CreateBookingAsync(booking);
+        booking.Id = id;
 
         return booking;
     }
