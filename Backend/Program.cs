@@ -50,6 +50,7 @@ switch (dbProvider)
         builder.Services.AddScoped<IRoomReadModelRepository, SqliteRoomReadModelRepo>();
         builder.Services.AddScoped<IUserRepository, SqliteUserRepo>();
         builder.Services.AddScoped<IBookingRepository, SqliteBookingRepo>();
+        builder.Services.AddScoped<IBookingReadModelRepository, SqliteBookingReadModelRepo>();
 
         // Register SQLite Initializer
         builder.Services.AddScoped<DbInitializer>();
