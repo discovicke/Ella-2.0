@@ -9,15 +9,15 @@ namespace Backend.app.Infrastructure.Repositories.Sqlite;
 /// SQLite repository for querying enriched booking data from views.
 /// Follows CQRS pattern - read operations separated from write operations.
 /// </summary>
-public class SqliteBookingReadModelRepo(
+public class SqliteDetailedBookingRepo(
     IDbConnectionFactory connectionFactory,
-    ILogger<SqliteBookingReadModelRepo> logger) : IBookingReadModelRepository
+    ILogger<SqliteDetailedBookingRepo> logger) : IBookingReadModelRepository
 {
     public async Task<IEnumerable<BookingDetailedReadModel>> GetAllDetailedBookingsAsync()
     {
         try
         {
-            using var conn = connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
             var sql = "SELECT * FROM v_bookings_detailed ORDER BY start_time DESC;";
@@ -36,7 +36,7 @@ public class SqliteBookingReadModelRepo(
     {
         try
         {
-            using var conn = connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
             var sql = "SELECT * FROM v_bookings_detailed WHERE booking_id = @BookingId;";
@@ -57,7 +57,7 @@ public class SqliteBookingReadModelRepo(
     {
         try
         {
-            using var conn = connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
             var sql = @"
@@ -82,7 +82,7 @@ public class SqliteBookingReadModelRepo(
     {
         try
         {
-            using var conn = connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
             var sql = @"
@@ -109,7 +109,7 @@ public class SqliteBookingReadModelRepo(
     {
         try
         {
-            using var conn = connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
             var sql = @"
@@ -140,7 +140,7 @@ public class SqliteBookingReadModelRepo(
     {
         try
         {
-            using var conn = connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
             var sqlBuilder = new StringBuilder("SELECT * FROM v_bookings_detailed WHERE 1=1");

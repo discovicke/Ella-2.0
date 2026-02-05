@@ -14,7 +14,7 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
     {
         try
         {
-            using var conn = connectionFactory.CreateConnection();
+            await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql =
                 @"
@@ -47,7 +47,7 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
     {
         try
         {
-            using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
             var sql = "UPDATE bookings SET status = @Status WHERE id = @BookingId;";
@@ -69,7 +69,7 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
     {
         try
         {
-            using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            await using var conn = (SqliteConnection)connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = "SELECT * FROM bookings;";
             var bookings = await conn.QueryAsync<Booking>(sql);
