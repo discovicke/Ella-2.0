@@ -2,6 +2,9 @@
 -- Reference: db/seed.sql
 -- Update for any schema changes
 
+INSERT INTO database_versions (name)
+VALUES ('Production schema');
+
 INSERT INTO users (email, password_hash, role, user_class, display_name)
 VALUES ('admin@edugrade.com', '__HASH__', 2, NULL, 'Admin Testberg'),
        ('larare@edugrade.com', '__HASH__', 1, NULL, 'Lärare Testholm'),

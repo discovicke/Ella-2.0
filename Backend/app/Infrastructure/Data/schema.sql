@@ -5,6 +5,13 @@
 PRAGMA foreign_keys = ON;
 
 BEGIN TRANSACTION;
+-- 0. Versioning
+CREATE TABLE IF NOT EXISTS database_versions
+(
+    version    INTEGER PRIMARY KEY,
+    name       TEXT NOT NULL UNIQUE,
+    applied_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 
 -- 1. Users & Auth
 CREATE TABLE IF NOT EXISTS "users"
@@ -14,7 +21,7 @@ CREATE TABLE IF NOT EXISTS "users"
     "password_hash"      TEXT                              NOT NULL,
     "display_name"       TEXT,
     "role"               INTEGER                           NOT NULL, -- 0=Student, 1=Teacher, 2=Admin
-    "user_class"              TEXT,
+    "user_class"         TEXT,
     "is_banned"          INTEGER                           NOT NULL DEFAULT 0,
     "tokens_valid_after" DATETIME                                   DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
