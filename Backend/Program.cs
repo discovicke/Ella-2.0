@@ -55,7 +55,7 @@ switch (dbProvider)
         builder.Services.AddScoped<IBookingReadModelRepository, SqliteBookingReadModelRepo>();
 
         // Register SQLite Initializer
-        builder.Services.AddScoped<DbInitializer>();
+        builder.Services.AddScoped<IDbInitializer, SqliteDbInitializer>();
         break;
     case "sqlserver":
     case "postgres":
@@ -103,7 +103,7 @@ app.Lifetime.ApplicationStopped.Register(() =>
 using (var scope = app.Services.CreateScope())
 {
     // Try to get the initializer (it might not be registered if provider doesn't support it)
-    var dbInitializer = scope.ServiceProvider.GetService<DbInitializer>();
+    var dbInitializer = scope.ServiceProvider.GetService<IDbInitializer>();
     if (dbInitializer != null)
     {
         await dbInitializer.InitializeAsync();
