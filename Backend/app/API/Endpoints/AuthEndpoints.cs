@@ -34,9 +34,11 @@ public static class AuthEndpoints
                 });
             })
             .WithName("RegisterUser")
-            .WithDescription("Registers a new user account.")
-            .Produces(200)
-            .Produces(400);
+            .WithSummary("Register a new user")
+            .WithDescription("Creates a new user account and returns an authentication token.")
+            .Accepts<RegisterDto>("application/json")
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest);
 
         // POST /auth/login - Authenticate user and get JWT token
         group
@@ -65,9 +67,11 @@ public static class AuthEndpoints
                 });
             })
             .WithName("LoginUser")
-            .WithDescription("Authenticates a user and returns a JWT token.")
-            .Produces(200)
-            .Produces(401);
+            .WithSummary("Login user")
+            .WithDescription("Authenticates a user with email and password, returning a JWT token.")
+            .Accepts<LoginDto>("application/json")
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized);
 
         // POST /auth/logout - Invalidate current user's tokens
         group
@@ -86,7 +90,9 @@ public static class AuthEndpoints
                 return Results.Ok(new { message = "Logout successful" });
             })
             .WithName("LogoutUser")
-            .WithDescription("Logs out the current user and invalidates their tokens.");
+            .WithSummary("Logout user")
+            .WithDescription("Logs out the current user, clears the auth cookie, and invalidates their tokens.")
+            .Produces(StatusCodes.Status200OK);
 
         // GET /auth/me - Get current authenticated user
         group
@@ -112,9 +118,10 @@ public static class AuthEndpoints
             })
             .RequireAuth()
             .WithName("GetCurrentUser")
-            .WithDescription("Returns the currently authenticated user.")
-            .Produces(200)
-            .Produces(401);
+            .WithSummary("Get current user")
+            .WithDescription("Retrieves the details of the currently authenticated user.")
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized);
 
         return app;
     }

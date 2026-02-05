@@ -1,5 +1,6 @@
 ﻿using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Enums;
+using Backend.app.Core.Models.ReadModels;
 using Backend.app.Core.Services;
 
 namespace Backend.app.API.Endpoints;
@@ -15,65 +16,90 @@ public static class BookingEndpoints
 
         // GET /api/bookings
 
-        group.MapGet(
-            "/",
-            async (BookingService service) =>
-            {
-                var bookings = await service.GetAllBookingsAsync();
-                return Results.Ok(bookings);
-            }
-        );
+        group
+            .MapGet(
+                "/",
+                async (BookingService service) =>
+                {
+                    var bookings = await service.GetAllBookingsAsync();
+                    return Results.Ok(bookings);
+                }
+            )
+            .WithName("GetAllBookings")
+            .WithSummary("Get all bookings")
+            .WithDescription("Retrieves a detailed list of all bookings in the system.")
+            .Produces<IEnumerable<BookingDetailedReadModel>>(StatusCodes.Status200OK);
 
         // POST /api/bookings
 
-        group.MapPost(
-            "/",
-            async (CreateBookingDto dto, BookingService service) =>
-            {
-                // Layer 2 Validation: Logic Check
-                if (dto.StartTime >= dto.EndTime)
+        group
+            .MapPost(
+                "/",
+                async (CreateBookingDto dto, BookingService service) =>
                 {
-                    return Results.BadRequest(
-                        new { message = "Start time must be before end time." }
-                    );
-                }
-
-                try
-                {
-                    var createdBooking = await service.CreateBookingAsync(dto);
-
-                    if (createdBooking is null)
+                    // Layer 2 Validation: Logic Check
+                    if (dto.StartTime >= dto.EndTime)
                     {
-                        return Results.Conflict(
-                            new { message = "The room is already booked for this time period." }
+                        return Results.BadRequest(
+                            new { message = "Start time must be before end time." }
                         );
                     }
 
-                    return Results.Created($"/api/bookings/{createdBooking.Id}", createdBooking);
+                    try
+                    {
+                        var createdBooking = await service.CreateBookingAsync(dto);
+
+                        if (createdBooking is null)
+                        {
+                            return Results.Conflict(
+                                new { message = "The room is already booked for this time period." }
+                            );
+                        }
+
+                        return Results.Created(
+                            $"/api/bookings/{createdBooking.Id}",
+                            createdBooking
+                        );
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        return Results.NotFound(new { message = ex.Message });
+                    }
                 }
-                catch (KeyNotFoundException ex)
-                {
-                    return Results.NotFound(new { message = ex.Message });
-                }
-            }
-        );
+            )
+            .WithName("CreateBooking")
+            .WithSummary("Create a new booking")
+            .WithDescription("Creates a new booking if the room is available and user exists.")
+            .Accepts<CreateBookingDto>("application/json")
+            .Produces<BookingDetailedReadModel>(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status409Conflict);
 
         // Get /api/bookings/{id}
 
-        group.MapGet(
-            "/{id}",
-            async (long id, BookingService service) =>
-            {
-                var booking = await service.GetBookingByIdAsync(id);
-
-                if (booking is null)
+        group
+            .MapGet(
+                "/{id}",
+                async (long id, BookingService service) =>
                 {
-                    return Results.NotFound();
-                }
+                    var booking = await service.GetBookingByIdAsync(id);
 
-                return Results.Ok(new { isCancelled = booking.Status == BookingStatus.Cancelled });
-            }
-        );
+                    if (booking is null)
+                    {
+                        return Results.NotFound();
+                    }
+
+                    return Results.Ok(
+                        new { isCancelled = booking.Status == BookingStatus.Cancelled }
+                    );
+                }
+            )
+            .WithName("GetBookingById")
+            .WithSummary("Get booking status by ID")
+            .WithDescription("Retrieves the cancellation status of a specific booking.")
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
 
         return group;
     }

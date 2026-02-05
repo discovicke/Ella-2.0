@@ -5,7 +5,8 @@ using Dapper;
 
 namespace Backend.app.Infrastructure.Repositories.Sqlite;
 
-public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<SqliteUserRepo> logger) : IUserRepository
+public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<SqliteUserRepo> logger)
+    : IUserRepository
 {
     // SQLite repository for User
     // ⚠️ Update queries for new schema if columns/tables changed
@@ -90,7 +91,11 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching user with displayName {DisplayName}", displayName);
+            logger.LogError(
+                ex,
+                "Database error while fetching user with displayName {DisplayName}",
+                displayName
+            );
             throw;
         }
     }
@@ -198,7 +203,11 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching users for class {ClassName}", className);
+            logger.LogError(
+                ex,
+                "Database error while fetching users for class {ClassName}",
+                className
+            );
             throw;
         }
     }

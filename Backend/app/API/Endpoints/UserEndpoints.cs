@@ -64,7 +64,7 @@ public static class UserEndpoints
                     try
                     {
                         var createdUser = await service.CreateUserAsync(dto);
-                        return Results.NoContent();
+                        return Results.Created($"/api/users/{createdUser.Id}", createdUser);
                     }
                     catch (InvalidOperationException ex)
                     {
