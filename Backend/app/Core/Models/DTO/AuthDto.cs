@@ -27,7 +27,7 @@ public record RegisterResultDto
 
 public record AuthedUserResponseDto
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
     public required string Email { get; set; }
     public string? DisplayName { get; set; }
     public required string Role { get; set; }

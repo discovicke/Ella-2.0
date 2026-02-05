@@ -29,7 +29,7 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         }
     }
 
-    public async Task<Room?> GetRoomByIdAsync(int id)
+    public async Task<Room?> GetRoomByIdAsync(long id)
     {
         try
         {
@@ -83,7 +83,7 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         }
     }
 
-    public async Task<int> CreateRoomAsync(Room room)
+    public async Task<long> CreateRoomAsync(Room room)
     {
         try
         {
@@ -105,7 +105,7 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         }
     }
 
-    public async Task<bool> UpdateRoomAsync(int id, Room room)
+    public async Task<bool> UpdateRoomAsync(long id, Room room)
     {
         try
         {
@@ -123,7 +123,7 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         }
     }
 
-    public async Task<bool> DeleteRoomAsync(int id)
+    public async Task<bool> DeleteRoomAsync(long id)
     {
         try
         {

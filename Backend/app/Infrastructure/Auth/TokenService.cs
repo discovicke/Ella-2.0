@@ -54,7 +54,7 @@ public class TokenService
     /// Denna timestamp (iat) kan jämföras med user.token_valid_after i databasen
     /// för att invalidera alla tokens vid behov (t.ex. efter lösenordsbyte).
     /// </summary>
-    public string GenerateAccessToken(int userId, string email)
+    public string GenerateAccessToken(long userId, string email)
     {
         // Steg 1: Skapa claims (påståenden om användaren)
         var claims = new List<Claim>
