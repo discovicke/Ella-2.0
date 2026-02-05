@@ -6,7 +6,7 @@ namespace Backend.app.Core.Interfaces;
 /// Repository interface for querying enriched booking data from views.
 /// Follows CQRS pattern - read operations separated from write operations.
 /// </summary>
-public interface IBookingDetailedRepository
+public interface IBookingReadModelRepository
 {
     /// <summary>
     /// Get all bookings with enriched data (user names, room names, registration count)
