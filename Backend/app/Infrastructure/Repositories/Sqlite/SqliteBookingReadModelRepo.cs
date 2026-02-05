@@ -9,9 +9,9 @@ namespace Backend.app.Infrastructure.Repositories.Sqlite;
 /// SQLite repository for querying enriched booking data from views.
 /// Follows CQRS pattern - read operations separated from write operations.
 /// </summary>
-public class SqliteBookingDetailedRepo(
+public class SqliteBookingReadModelRepo(
     IDbConnectionFactory connectionFactory,
-    ILogger<SqliteBookingDetailedRepo> logger) : IBookingDetailedRepository
+    ILogger<SqliteBookingReadModelRepo> logger) : IBookingReadModelRepository
 {
     public async Task<IEnumerable<BookingDetailedReadModel>> GetAllDetailedBookingsAsync()
     {
