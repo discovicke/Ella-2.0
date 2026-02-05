@@ -7,7 +7,7 @@ namespace Backend.app.Core.Services;
 
 public class BookingService(
     IBookingRepository repo,
-    IBookingReadModelRepository readModelRepo)
+    IBookingDetailedRepository readModelRepo)
 {
     // Business logic for bookings
     // Follows CQRS pattern: Write operations use repo, Read operations use readModelRepo
