@@ -117,7 +117,7 @@ if (app.Environment.IsDevelopment())
 app.UseJwtAuthentication();
 
 // API ENDPOINT MAPPINGS
-var apiGroup = app.MapGroup("/api");
+var apiGroup = app.MapGroup("api");
 apiGroup.MapRoomEndpoints();
 apiGroup.MapAuthEndpoints();
 apiGroup.MapUserEndpoints();
