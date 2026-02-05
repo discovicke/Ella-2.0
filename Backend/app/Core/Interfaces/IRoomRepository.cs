@@ -12,10 +12,10 @@ public interface IRoomRepository
     // CRUD stands for Create, Read, Update, and Delete – basic operations used to add, fetch, modify, and remove data.
 
     Task<IEnumerable<Room>> GetAllRoomsAsync();
-    Task<Room?> GetRoomByIdAsync(int id);
+    Task<Room?> GetRoomByIdAsync(long id);
     Task<IEnumerable<Room>> GetRoomsByTypeAsync(RoomType type);
     Task<IEnumerable<Room>> GetRoomsByAddressAsync(string address);
-    Task<int> CreateRoomAsync(Room room);
-    Task<bool> UpdateRoomAsync(int id, Room room);
-    Task<bool> DeleteRoomAsync(int id);
+    Task<long> CreateRoomAsync(Room room);
+    Task<bool> UpdateRoomAsync(long id, Room room);
+    Task<bool> DeleteRoomAsync(long id);
 }

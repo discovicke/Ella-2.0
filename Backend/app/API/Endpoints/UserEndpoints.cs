@@ -28,7 +28,7 @@ public static class UserEndpoints
         group
             .MapGet(
                 "/{id}",
-                async (int id, UserService service) =>
+                async (long id, UserService service) =>
                 {
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
@@ -89,7 +89,7 @@ public static class UserEndpoints
         group
             .MapPut(
                 "/{id}",
-                async (int id, UpdateUserDto dto, UserService service) =>
+                async (long id, UpdateUserDto dto, UserService service) =>
                 {
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
@@ -129,7 +129,7 @@ public static class UserEndpoints
         group
             .MapDelete(
                 "/{id}",
-                async (int id, UserService service) =>
+                async (long id, UserService service) =>
                 {
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");

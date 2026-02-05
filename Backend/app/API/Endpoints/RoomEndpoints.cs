@@ -84,7 +84,7 @@ public static class RoomEndpoints
         group
             .MapPut(
                 "/{id}",
-                async (int id, UpdateRoomDto dto, RoomService service) =>
+                async (long id, UpdateRoomDto dto, RoomService service) =>
                 {
                     // Layer 2: Endpoint validation
                     if (id <= 0)

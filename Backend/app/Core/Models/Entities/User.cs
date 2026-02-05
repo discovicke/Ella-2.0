@@ -4,11 +4,11 @@ namespace Backend.app.Core.Entities;
 
 public class User
 {
-    // User entity matching database schema
+    // User entity (source of truth), atm matching database schema
     // TODO: Define properties matching Infrastructure/Data/schema.sql users table
     // ⚠️ Compare with src/modules/users/user.repo.js for schema differences
 
-    public int Id { get; set; }
+    public long Id { get; set; }
     public required string Email { get; set; }
     public required string PasswordHash { get; set; }
     public string? DisplayName { get; set; }

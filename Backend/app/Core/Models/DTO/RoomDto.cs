@@ -22,7 +22,7 @@ public record UpdateRoomDto(
 
 // Response DTO
 public record RoomResponseDto(
-    int Id,
+    long Id,
     string Name,
     int? Capacity,
     RoomType Type,

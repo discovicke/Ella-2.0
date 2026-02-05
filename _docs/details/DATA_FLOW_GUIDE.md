@@ -18,7 +18,7 @@ This guide explains how data moves through the application layers and which mode
                                      │
                     ┌────────────────┴────────────────┐
                     │                                 │
-                    ▼                                 ▼
+                    ▼                                 ▲
              CreateRoomDto                    RoomResponseDto
              UpdateRoomDto                    (Output to client)
              (Input from client)

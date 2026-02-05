@@ -27,33 +27,15 @@ public class SqliteRoomReadModelRepo(
                     r.floor, 
                     r.address, 
                     r.notes,
-                    at.description AS AssetDescription
+                    -- Combine assets into a single string using '|||' as the separator
+                    GROUP_CONCAT(at.description, '|||') AS AssetsString
                 FROM rooms r
                 LEFT JOIN room_assets ra ON r.id = ra.room_id
-                LEFT JOIN asset_types at ON ra.asset_type_id = at.id;";
+                LEFT JOIN asset_types at ON ra.asset_type_id = at.id
+                GROUP BY r.id, r.name, r.capacity, r.type, r.floor, r.address, r.notes;";
 
-            var rawData = await conn.QueryAsync<RoomDetailRow>(sql);
-
-            var result = rawData
-                .GroupBy(r => r.RoomId)
-                .Select(g =>
-                {
-                    var first = g.First();
-                    return new RoomDetailModel(
-                        first.RoomId,
-                        first.Name,
-                        first.Capacity,
-                        first.Type,
-                        first.Floor,
-                        first.Address,
-                        first.Notes,
-                        g.Where(x => x.AssetDescription != null)
-                            .Select(x => x.AssetDescription!)
-                            .ToList()
-                    );
-                });
-
-            return result;
+            // Dapper automatically matches columns to the RoomDetailModel constructor
+            return await conn.QueryAsync<RoomDetailModel>(sql);
         }
         catch (Exception ex)
         {
@@ -62,7 +44,7 @@ public class SqliteRoomReadModelRepo(
         }
     }
 
-    public async Task<RoomDetailModel?> GetRoomDetailByIdAsync(int roomId)
+    public async Task<RoomDetailModel?> GetRoomDetailByIdAsync(long roomId)
     {
         try
         {
@@ -79,33 +61,15 @@ public class SqliteRoomReadModelRepo(
                     r.floor, 
                     r.address, 
                     r.notes,
-                    at.description AS AssetDescription
+                    -- Combine assets into a single string using '|||' as the separator
+                    GROUP_CONCAT(at.description, '|||') AS AssetsString
                 FROM rooms r
                 LEFT JOIN room_assets ra ON r.id = ra.room_id
                 LEFT JOIN asset_types at ON ra.asset_type_id = at.id
-                WHERE r.id = @roomId;";
+                WHERE r.id = @roomId
+                GROUP BY r.id, r.name, r.capacity, r.type, r.floor, r.address, r.notes;";
 
-            var rawData = await conn.QueryAsync<RoomDetailRow>(sql, new { roomId });
-
-            if (!rawData.Any())
-                return null;
-
-            var first = rawData.First();
-            var assets = rawData
-                .Where(x => x.AssetDescription != null)
-                .Select(x => x.AssetDescription!)
-                .ToList();
-
-            return new RoomDetailModel(
-                first.RoomId,
-                first.Name,
-                first.Capacity,
-                first.Type,
-                first.Floor,
-                first.Address,
-                first.Notes,
-                assets
-            );
+            return await conn.QuerySingleOrDefaultAsync<RoomDetailModel>(sql, new { roomId });
         }
         catch (Exception ex)
         {
@@ -116,18 +80,5 @@ public class SqliteRoomReadModelRepo(
             );
             throw;
         }
-    }
-
-    // Helper class for Dapper mapping
-    private class RoomDetailRow
-    {
-        public int RoomId { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public int? Capacity { get; set; }
-        public RoomType Type { get; set; }
-        public string? Floor { get; set; }
-        public string? Address { get; set; }
-        public string? Notes { get; set; }
-        public string? AssetDescription { get; set; }
     }
 }
