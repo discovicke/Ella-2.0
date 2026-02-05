@@ -81,41 +81,35 @@ public static class AuthorizationMiddleware
 /// </summary>
 public static class AuthorizationExtensions
 {
-    extension(RouteGroupBuilder group)
+    /// <summary>
+    /// Requires authentication for all endpoints in this group.
+    /// </summary>
+    public static RouteGroupBuilder RequireAuth(this RouteGroupBuilder group)
     {
-        /// <summary>
-        /// Requires authentication for all endpoints in this group.
-        /// </summary>
-        public RouteGroupBuilder RequireAuth()
-        {
-            return group.AddEndpointFilter(AuthorizationMiddleware.RequireAuthentication);
-        }
-
-        /// <summary>
-        /// Requires the user to have one of the specified roles.
-        /// </summary>
-        public RouteGroupBuilder RequireRoles(params UserRole[] roles)
-        {
-            return group.AddEndpointFilter(AuthorizationMiddleware.RequireRoles(roles));
-        }
+        return group.AddEndpointFilter(AuthorizationMiddleware.RequireAuthentication);
     }
 
-    extension(RouteHandlerBuilder builder)
+    /// <summary>
+    /// Requires the user to have one of the specified roles.
+    /// </summary>
+    public static RouteGroupBuilder RequireRoles(this RouteGroupBuilder group, params UserRole[] roles)
     {
-        /// <summary>
-        /// Requires authentication for this specific endpoint.
-        /// </summary>
-        public RouteHandlerBuilder RequireAuth()
-        {
-            return builder.AddEndpointFilter(AuthorizationMiddleware.RequireAuthentication);
-        }
+        return group.AddEndpointFilter(AuthorizationMiddleware.RequireRoles(roles));
+    }
 
-        /// <summary>
-        /// Requires the user to have one of the specified roles for this endpoint.
-        /// </summary>
-        public RouteHandlerBuilder RequireRoles(params UserRole[] roles)
-        {
-            return builder.AddEndpointFilter(AuthorizationMiddleware.RequireRoles(roles));
-        }
+    /// <summary>
+    /// Requires authentication for this specific endpoint.
+    /// </summary>
+    public static RouteHandlerBuilder RequireAuth(this RouteHandlerBuilder builder)
+    {
+        return builder.AddEndpointFilter(AuthorizationMiddleware.RequireAuthentication);
+    }
+
+    /// <summary>
+    /// Requires the user to have one of the specified roles for this endpoint.
+    /// </summary>
+    public static RouteHandlerBuilder RequireRoles(this RouteHandlerBuilder builder, params UserRole[] roles)
+    {
+        return builder.AddEndpointFilter(AuthorizationMiddleware.RequireRoles(roles));
     }
 }
