@@ -1,4 +1,4 @@
-using Backend.app.Core.DTO;
+﻿using Backend.app.Core.DTO;
 using Backend.app.Core.Entities;
 using Backend.app.Core.Enums;
 using Backend.app.Core.Models.DTO;
@@ -38,7 +38,7 @@ public static class BookingEndpoints
         // Get /api/bookings/{id}
 
         group.MapGet("/{id}",
-        async (int id, BookingService service) =>
+        async (long id, BookingService service) =>
         {
 
             await service.CancelBookingAsync(new CancelBookingDto(id));
