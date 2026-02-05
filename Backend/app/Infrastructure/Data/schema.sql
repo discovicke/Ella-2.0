@@ -8,9 +8,9 @@ BEGIN TRANSACTION;
 -- 0. Versioning
 CREATE TABLE IF NOT EXISTS database_versions
 (
-    version    INTEGER PRIMARY KEY,
-    name       TEXT NOT NULL UNIQUE,
-    applied_at TEXT NOT NULL DEFAULT (datetime('now'))
+    "version"    INTEGER PRIMARY KEY,
+    "name"       TEXT NOT NULL UNIQUE,
+    "applied_at" TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 -- 1. Users & Auth
