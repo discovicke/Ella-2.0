@@ -32,7 +32,7 @@ public class UserService(
     }
 
     // Hämta en användare via ID
-    public async Task<UserResponseDto> GetByIdAsync(int id)
+    public async Task<UserResponseDto> GetByIdAsync(long id)
     {
         logger.LogDebug("Fetching user with ID {UserId}", id);
 
@@ -96,7 +96,7 @@ public class UserService(
     }
 
     // Uppdatera användare
-    public async Task UpdateUserAsync(int id, UpdateUserDto dto)
+    public async Task UpdateUserAsync(long id, UpdateUserDto dto)
     {
         logger.LogInformation("Updating user with ID {UserId}", id);
 
@@ -141,7 +141,7 @@ public class UserService(
     }
 
     // Radera användare
-    public async Task DeleteUserAsync(int id)
+    public async Task DeleteUserAsync(long id)
     {
         logger.LogInformation("Deleting user with ID {UserId}", id);
 

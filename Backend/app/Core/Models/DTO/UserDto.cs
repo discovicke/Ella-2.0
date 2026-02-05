@@ -2,16 +2,14 @@
 
 namespace Backend.app.Core.DTO;
 
-
-
-    // Data Transfer Objects for User
-    // TODO: Define CreateUserDto, UserResponseDto, UpdateUserDto
-    // Reference: src/modules/users/user.dto.js
+// Data Transfer Objects for User
+// TODO: Define CreateUserDto, UserResponseDto, UpdateUserDto
+// Reference: src/modules/users/user.dto.js
 public record UserResponseDto(
-    int Id,
-    string Email ,
-    string? DisplayName ,
-    UserRole Role ,
+    long Id,
+    string Email,
+    string? DisplayName,
+    UserRole Role,
     string? UserClass
 );
 
@@ -24,7 +22,7 @@ public record CreateUserDto(
 );
 
 public record UpdateUserDto(
-    int Id,
+    long Id,
     string Email,
     string? DisplayName,
     UserRole Role,
@@ -33,6 +31,4 @@ public record UpdateUserDto(
     BannedStatus IsBanned
 );
 
-public record DeleteUserDto(
-    int Id
-);
+public record DeleteUserDto(long Id);
