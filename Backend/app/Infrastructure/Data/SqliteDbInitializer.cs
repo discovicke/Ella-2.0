@@ -1,6 +1,5 @@
 using System.Data;
 using Backend.app.Core.Interfaces;
-using Backend.app.Infrastructure.Auth;
 using Dapper;
 
 namespace Backend.app.Infrastructure.Data;
@@ -9,7 +8,11 @@ namespace Backend.app.Infrastructure.Data;
 /// Initializes and seeds the database on application startup.
 /// Equivalent to the JS db.js initialization logic.
 /// </summary>
-public class DbInitializer(IDbConnectionFactory connectionFactory, ILogger<DbInitializer> logger, PasswordHasher passwordHasher)
+public class SqliteDbInitializer(
+    IDbConnectionFactory connectionFactory,
+    ILogger<SqliteDbInitializer> logger,
+    IPasswordHasher passwordHasher
+) : IDbInitializer
 {
     public async Task InitializeAsync()
     {
