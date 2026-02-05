@@ -1,6 +1,6 @@
-﻿using Backend.app.Core.Enums;
+﻿using Backend.app.Core.Models.Enums;
 
-namespace Backend.app.Core.DTO;
+namespace Backend.app.Core.Models.DTO;
 
 // Data Transfer Objects for User
 // Reference: src/modules/users/user.dto.js

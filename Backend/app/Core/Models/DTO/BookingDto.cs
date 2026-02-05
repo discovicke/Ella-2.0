@@ -1,7 +1,6 @@
-﻿using Backend.app.Core.Entities;
-using Backend.app.Core.Enums;
+﻿using Backend.app.Core.Models.Enums;
 
-namespace Backend.app.Core.DTO;
+namespace Backend.app.Core.Models.DTO;
 
     // Data Transfer Objects for Booking
     // Reference: src/modules/bookings/booking.dto.js

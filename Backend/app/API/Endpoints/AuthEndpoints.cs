@@ -1,5 +1,6 @@
-using Backend.app.Core.DTO;
-using Backend.app.Core.Entities;
+using Backend.app.Core.Models.DTO;
+using Backend.app.Core.Models.Entities;
+using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
 
@@ -105,7 +106,7 @@ public static class AuthEndpoints
                         displayName = user.DisplayName,
                         role = user.Role.ToString().ToLowerInvariant(),
                         userClass = user.UserClass,
-                        isBanned = user.IsBanned == Core.Enums.BannedStatus.Banned
+                        isBanned = user.IsBanned == BannedStatus.Banned
                     }
                 });
             })

@@ -1,4 +1,4 @@
-namespace Backend.app.Core.DTO;
+namespace Backend.app.Core.Models.DTO;
 
 public record LoginDto
 {

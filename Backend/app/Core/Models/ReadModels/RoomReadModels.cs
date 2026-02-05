@@ -1,4 +1,4 @@
-using Backend.app.Core.Enums;
+using Backend.app.Core.Models.Enums;
 
 namespace Backend.app.Core.Models.ReadModels;
 

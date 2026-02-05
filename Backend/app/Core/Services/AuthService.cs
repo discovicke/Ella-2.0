@@ -1,7 +1,7 @@
-using Backend.app.Core.DTO;
-using Backend.app.Core.Entities;
-using Backend.app.Core.Enums;
 using Backend.app.Core.Interfaces;
+using Backend.app.Core.Models.DTO;
+using Backend.app.Core.Models.Entities;
+using Backend.app.Core.Models.Enums;
 
 namespace Backend.app.Core.Services;
 
@@ -102,7 +102,7 @@ public class AuthService(
         }
 
         // Step 5: Check if user is banned
-        if (user.IsBanned == Core.Enums.BannedStatus.Banned)
+        if (user.IsBanned == BannedStatus.Banned)
         {
             logger.LogWarning("Token validation failed: user {UserId} is banned", userId);
             return null;
@@ -159,7 +159,7 @@ public class AuthService(
             Email = request.Email,
             PasswordHash = passwordHash,
             DisplayName = request.DisplayName,
-            Role = Core.Enums.UserRole.Student, // Default role
+            Role = UserRole.Student, // Default role
             TokensValidAfter = DateTime.UtcNow,
         };
 

@@ -1,4 +1,4 @@
-namespace Backend.app.Core.Enums;
+namespace Backend.app.Core.Models.Enums;
 
 public enum BookingStatus
 {

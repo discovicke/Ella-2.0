@@ -2,7 +2,6 @@ using System.Security.Cryptography;
 using System.Text;
 using Backend.app.Core.Interfaces;
 using Konscious.Security.Cryptography;
-using Microsoft.Extensions.Logging;
 
 namespace Backend.app.Infrastructure.Auth;
 

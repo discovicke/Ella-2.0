@@ -1,4 +1,3 @@
-using System.Data;
 using System.Data.Common;
 using Backend.app.Core.Interfaces;
 using Microsoft.Data.Sqlite;

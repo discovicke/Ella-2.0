@@ -1,4 +1,3 @@
-using Backend.app.Core.Entities;
 using Backend.app.Core.Services;
 
 namespace Backend.app.Infrastructure.Auth;

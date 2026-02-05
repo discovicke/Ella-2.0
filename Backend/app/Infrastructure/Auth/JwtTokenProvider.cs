@@ -12,7 +12,6 @@ namespace Backend.app.Infrastructure.Auth;
 /// </summary>
 public class JwtTokenProvider : ITokenProvider
 {
-    private readonly IConfiguration _configuration;
     private readonly ILogger<JwtTokenProvider> _logger;
 
     // JWT-inställningar från appsettings.json
@@ -23,17 +22,16 @@ public class JwtTokenProvider : ITokenProvider
 
     public JwtTokenProvider(IConfiguration configuration, ILogger<JwtTokenProvider> logger)
     {
-        _configuration = configuration;
         _logger = logger;
 
         // Läs in JWT-inställningar från konfiguration
         _secretKey =
-            _configuration["JwtSettings:SecretKey"]
+            configuration["JwtSettings:SecretKey"]
             ?? throw new InvalidOperationException("JWT SecretKey saknas i konfiguration");
-        _issuer = _configuration["JwtSettings:Issuer"] ?? "EllaBookingAPI";
-        _audience = _configuration["JwtSettings:Audience"] ?? "EllaBookingClient";
+        _issuer = configuration["JwtSettings:Issuer"] ?? "EllaBookingAPI";
+        _audience = configuration["JwtSettings:Audience"] ?? "EllaBookingClient";
         _accessTokenExpirationMinutes = int.Parse(
-            _configuration["JwtSettings:AccessTokenExpirationMinutes"] ?? "60"
+            configuration["JwtSettings:AccessTokenExpirationMinutes"] ?? "60"
         );
 
         // Validera att secret key är tillräckligt lång (minst 256 bitar för HS256)

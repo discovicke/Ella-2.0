@@ -1,7 +1,5 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Backend.app.Core.Entities;
-using Backend.app.Core.Enums;
+using Backend.app.Core.Models.Entities;
+using Backend.app.Core.Models.Enums;
 
 namespace Backend.app.Core.Interfaces;
 

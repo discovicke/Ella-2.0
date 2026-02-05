@@ -1,5 +1,5 @@
-using Backend.app.Core.Enums;
 using Backend.app.Core.Models.DTO;
+using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 

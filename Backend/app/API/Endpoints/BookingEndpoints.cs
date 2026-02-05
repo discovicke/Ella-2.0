@@ -1,9 +1,6 @@
-﻿using Backend.app.Core.DTO;
-using Backend.app.Core.Entities;
-using Backend.app.Core.Enums;
-using Backend.app.Core.Models.DTO;
+﻿using Backend.app.Core.Models.DTO;
+using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.app.API.Endpoints;
 

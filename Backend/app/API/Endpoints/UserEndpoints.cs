@@ -1,4 +1,4 @@
-﻿using Backend.app.Core.DTO;
+﻿using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Services;
 
 namespace Backend.app.API.Endpoints;

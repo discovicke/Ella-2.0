@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Backend.app.Core.Entities;
+﻿using Backend.app.Core.Models.Entities;
 
 namespace Backend.app.Core.Interfaces;
 
