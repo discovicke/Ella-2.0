@@ -80,6 +80,8 @@ builder.Services.AddScoped<BookingService>();
 
 var app = builder.Build();
 
+#region LOGGING STARTUP/SHUTDOWN
+
 // Acquire a logger from DI and log startup/shutdown events
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("Application starting. Environment: {Env}", app.Environment.EnvironmentName);
@@ -99,6 +101,10 @@ app.Lifetime.ApplicationStopped.Register(() =>
     logger.LogInformation("Application has stopped.");
 });
 
+#endregion
+
+
+#region DATABASE INITIALIZATION
 // Initialize database (run schema + seed if empty)
 using (var scope = app.Services.CreateScope())
 {
@@ -109,6 +115,8 @@ using (var scope = app.Services.CreateScope())
         await dbInitializer.InitializeAsync();
     }
 }
+
+#endregion
 
 if (app.Environment.IsDevelopment())
 {
@@ -124,7 +132,7 @@ var apiGroup = app.MapGroup("api");
 apiGroup.MapRoomEndpoints();
 apiGroup.MapAuthEndpoints();
 apiGroup.MapUserEndpoints();
-
+apiGroup.MapBookingEndpoints();
 try
 {
     logger.LogInformation("Starting web host...");
