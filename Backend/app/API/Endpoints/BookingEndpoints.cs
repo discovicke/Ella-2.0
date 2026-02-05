@@ -10,7 +10,7 @@ public static class BookingEndpoints
     // TODO: Migrate all booking endpoints
     // Reference: src/modules/bookings/booking.routes.js + booking.controller.js
 
-    public static RouteGroupBuilder MapBookingEndPoints(this IEndpointRouteBuilder app)
+    public static RouteGroupBuilder MapBookingEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/bookings").WithTags("Bookings");
 
