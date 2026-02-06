@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "ELLA.Frontend": {
+    "ng.Frontend": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -61,10 +61,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "ELLA.Frontend:build:production"
+              "buildTarget": "ng.Frontend:build:production"
             },
             "development": {
-              "buildTarget": "ELLA.Frontend:build:development"
+              "buildTarget": "ng.Frontend:build:development"
             }
           },
           "defaultConfiguration": "development"
