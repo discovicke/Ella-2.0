@@ -7,8 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "g-layout": "node template-generation-scripts/generate-layout.js",
-    "g-page": "node template-generation-scripts/generate-page.js"
+    "g-layout": "node scripts/generate-layout.js",
+    "g-page": "node scripts/generate-page.js"
   },
   "prettier": {
     "printWidth": 100,
