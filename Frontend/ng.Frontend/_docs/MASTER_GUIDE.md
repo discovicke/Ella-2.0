@@ -1,4 +1,14 @@
+
 # Project Architecture & Developer Guide
+
+## Best Practices Cheat Sheet
+
+| Requirement | Rule |
+| --- | --- |
+| **New Route?** | Use `npm run g-page`. |
+| **New Widget?** | Use `ng g c shared/components/my-widget`. |
+| **Data Access?** | Always use a Service (`ng g s shared/services/user`). |
+| **Performance?** | Never remove `changeDetection: ChangeDetectionStrategy.OnPush`. |
 
 ## 1. High-Level Philosophy
 
@@ -59,7 +69,7 @@ We distinguish clearly between a "Container" and its "Content".
 ## 4. 🛠️ Custom Generators (How to Create Files)
 
 **Do not use `ng g c` for pages or layouts.**
-We have custom scripts in `template-generation-scripts/` that enforce our architecture (OnPush, Naming, Folder Structure).
+We have custom scripts in `scripts/` that enforce our architecture (OnPush, Naming, Folder Structure).
 
 ### ✅ How to Generate a Page
 
@@ -139,23 +149,57 @@ export const routes: Routes = [
 
 ---
 
-## 6. CSS & Assets
+## 6. Current Route Map
+
+As of the latest architecture update, the application is divided into four distinct zones.
+
+### 🌍 Public Zone (No Login)
+
+| URL | Page Component | Description |
+| --- | --- | --- |
+| `/` | `HomePage` | Landing page. |
+| `/login` | `LoginPage` | User authentication. |
+| `/register` | `RegisterPage` | New user signup. |
+| `/not-found` | `NotFoundPage` | Generic 404 error. |
+| `/forbidden` | `ForbiddenPage` | 403 Access Denied. |
+
+### 🔐 Protected Zones (Requires Login)
+
+These zones use **Layouts** to provide a persistent sidebar/header.
+
+**1. Administrator** (`/admin`)
+
+* **Layout:** `AdministratorLayout`
+* **Default Redirect:** `/admin/overview`
+* **Sub-Pages:**
+* `/overview`: Dashboard stats (`OverviewPage`)
+* `/users`: User management (`ManageUsersPage`)
+* `/rooms`: Room inventory (`ManageRoomsPage`)
+* `/bookings`: Booking oversight (`ManageBookingsPage`)
+
+
+
+**2. Student** (`/student`)
+
+* **Layout:** `StudentLayout`
+* **Status:** *Under Construction* (Currently redirects to Not Found)
+
+**3. Educator** (`/educator`)
+
+* **Layout:** `EducatorLayout`
+* **Status:** *Under Construction* (Currently redirects to Not Found)
+
+### ⚠️ Fallback Strategy
+
+* Any unknown URL (`**`) redirects immediately to `/not-found`.
+
+---
+
+## 7. CSS & Assets
 
 * **Global Styles:** `src/styles.scss` (Use sparingly).
 * **Assets:** Place images/fonts in `src/assets/`.
 * Usage in HTML: `<img src="assets/logo.png">` (No `src/` prefix in the tag).
-
-
 * **Component Styles:** Use the `*.scss` file next to your component.
 
 ---
-
-## 7. Best Practices Cheat Sheet
-
-| Requirement | Rule |
-| --- | --- |
-| **New Route?** | Use `npm run g-page`. |
-| **New Widget?** | Use `ng g c shared/components/my-widget`. |
-| **Data Access?** | Always use a Service (`ng g s shared/services/user`). |
-| **Performance?** | Never remove `changeDetection: ChangeDetectionStrategy.OnPush`. |
-| **Imports?** | Avoid "barrel files" (index.ts) inside `pages/` to prevent circular dependencies. |
