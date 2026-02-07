@@ -10,6 +10,14 @@ Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Fix so frontend can send string value of enums, db still automatically uses int values at the backend
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(
+        new System.Text.Json.Serialization.JsonStringEnumConverter()
+    );
+});
+
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
@@ -118,6 +126,11 @@ using (var scope = app.Services.CreateScope())
 
 #endregion
 
+
+// Serve static files from wwwroot (frontend build output)
+app.UseDefaultFiles(); // Finds index.html
+app.UseStaticFiles(); // Serves .js, .css, etc.
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi(); // Generates the underlying JSON file
@@ -133,6 +146,10 @@ apiGroup.MapRoomEndpoints();
 apiGroup.MapAuthEndpoints();
 apiGroup.MapUserEndpoints();
 apiGroup.MapBookingEndpoints();
+
+// If the request didn't match an API route or a file, serve index.html (fallback to SPA entry point)
+app.MapFallbackToFile("index.html");
+
 try
 {
     logger.LogInformation("Starting web host...");

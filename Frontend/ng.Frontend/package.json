@@ -8,7 +8,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "g-layout": "node scripts/generate-layout.js",
-    "g-page": "node scripts/generate-page.js"
+    "g-page": "node scripts/generate-page.js",
+    "api:sync": "npx swagger-typescript-api generate -p ./openapi/Backend.json -o src/app/api -n models.ts --no-client"
   },
   "prettier": {
     "printWidth": 100,

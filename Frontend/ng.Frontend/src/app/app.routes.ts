@@ -32,7 +32,7 @@ export const routes: Routes = [
   // 2. ADMINISTRATOR AREA
   // =========================================================
   {
-    path: 'admin',
+    path: 'administrator',
     // 1. Load the "Shell" (Sidebar + RouterOutlet)
     loadComponent: () =>
       import('./pages/administrator/administrator.layout').then((m) => m.AdministratorLayout),
