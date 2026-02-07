@@ -8,5 +8,5 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.scss'
 })
 export class App {
-  protected readonly title = signal('ELLA.Frontend');
+  protected readonly title = signal('ng.Frontend');
 }
