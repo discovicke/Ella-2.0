@@ -155,17 +155,17 @@ export interface RoomDetailModel {
    * @format int64
    * @pattern ^-?(?:0|[1-9]\d*)$
    */
-  roomId: number | string;
-  name: string;
+  roomId?: number | string;
+  name?: string;
   /**
    * @format int32
    * @pattern ^-?(?:0|[1-9]\d*)$
    */
-  capacity: null | number | string;
-  type: RoomType;
-  floor: null | string;
-  address: null | string;
-  notes: null | string;
+  capacity?: null | number | string;
+  type?: RoomType;
+  floor?: null | string;
+  address?: null | string;
+  notes?: null | string;
   assets?: null | any[];
 }
 
