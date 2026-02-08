@@ -407,7 +407,7 @@
           "Rooms"
         ],
         "summary": "Create a new room",
-        "description": "Creates a new room with the provided details.",
+        "description": "Creates a new room. You can optionally provide a list of 'assetIds' to link existing assets (e.g., Projector) to the room immediately.",
         "operationId": "CreateRoom",
         "requestBody": {
           "content": {
@@ -504,7 +504,7 @@
           "Rooms"
         ],
         "summary": "Update an existing room",
-        "description": "Updates a room's details by its unique identifier.",
+        "description": "Updates a room's details. Providing 'assetIds' will REPLACE the room's entire asset inventory with the new list.",
         "operationId": "UpdateRoom",
         "parameters": [
           {
@@ -622,11 +622,155 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/AssetType"
+                    "$ref": "#/components/schemas/AssetTypeResponseDto"
                   }
                 }
               }
             }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Create a new asset type",
+        "operationId": "CreateAssetType",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAssetTypeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetTypeResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/api/assets/{id}": {
+      "get": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Get asset type by ID",
+        "operationId": "GetAssetTypeById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetTypeResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Update an asset type",
+        "operationId": "UpdateAssetType",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAssetTypeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Delete an asset type",
+        "operationId": "DeleteAssetType",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
@@ -731,7 +875,7 @@
   },
   "components": {
     "schemas": {
-      "AssetType": {
+      "AssetTypeResponseDto": {
         "required": [
           "id",
           "description"
@@ -879,6 +1023,17 @@
           "Cancelled",
           "Expired"
         ]
+      },
+      "CreateAssetTypeDto": {
+        "required": [
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          }
+        }
       },
       "CreateBookingDto": {
         "required": [
@@ -1197,6 +1352,17 @@
           "GroupRoom",
           "ComputerLab"
         ]
+      },
+      "UpdateAssetTypeDto": {
+        "required": [
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          }
+        }
       },
       "UpdateRoomDto": {
         "required": [

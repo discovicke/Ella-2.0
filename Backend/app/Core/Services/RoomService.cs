@@ -9,6 +9,7 @@ namespace Backend.app.Core.Services;
 public class RoomService(
     IRoomRepository repo,
     IRoomReadModelRepository readModelRepo,
+    AssetService assetService,
     ILogger<RoomService> logger
 )
 {
@@ -63,6 +64,12 @@ public class RoomService(
     {
         logger.LogInformation("Creating new room: {RoomName}", dto.Name);
 
+        // Validate Assets BEFORE creating room (Fail Fast)
+        if (dto.AssetIds != null && dto.AssetIds.Count != 0)
+        {
+             await assetService.ValidateAssetIdsAsync(dto.AssetIds);
+        }
+
         var room = new Room
         {
             Name = dto.Name,
@@ -80,7 +87,7 @@ public class RoomService(
         try
         {
             // 2. Add Assets (if any)
-            if (dto.AssetIds != null && dto.AssetIds.Any())
+            if (dto.AssetIds != null && dto.AssetIds.Count != 0)
             {
                 logger.LogInformation("Adding {Count} assets to room {RoomId}", dto.AssetIds.Count, newId);
                 await repo.AddAssetsToRoomAsync(newId, dto.AssetIds);
@@ -118,6 +125,12 @@ public class RoomService(
             throw new KeyNotFoundException($"Room with ID {id} does not exist.");
         }
 
+        // Validate Assets
+        if (dto.AssetIds != null && dto.AssetIds.Any())
+        {
+             await assetService.ValidateAssetIdsAsync(dto.AssetIds);
+        }
+
         var room = new Room
         {
             Id = id,
@@ -133,8 +146,6 @@ public class RoomService(
         await repo.UpdateRoomAsync(id, room);
 
         // 2. Update Assets (Clear existing -> Add new)
-        // This is a simple strategy. For very large sets, diffing might be better, 
-        // but for room assets (usually < 20), this is efficient enough.
         await repo.ClearRoomAssetsAsync(id);
 
         if (dto.AssetIds != null && dto.AssetIds.Any())
@@ -160,12 +171,6 @@ public class RoomService(
 
         await repo.DeleteRoomAsync(id);
         logger.LogInformation("Room with ID {RoomId} deleted", id);
-    }
-
-    public async Task<IEnumerable<AssetType>> GetAssetTypesAsync()
-    {
-        logger.LogInformation("Fetching all asset types");
-        return await repo.GetAllAssetTypesAsync();
     }
 
     // Mapper: RoomDetailModel -> RoomResponseDto

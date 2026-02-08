@@ -189,21 +189,4 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
             throw;
         }
     }
-
-    public async Task<IEnumerable<AssetType>> GetAllAssetTypesAsync()
-    {
-        try
-        {
-            await using var conn = connectionFactory.CreateConnection();
-            await conn.OpenAsync();
-
-            const string sql = "SELECT * FROM asset_types;";
-            return await conn.QueryAsync<AssetType>(sql);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Database error while fetching all asset types");
-            throw;
-        }
-    }
 }

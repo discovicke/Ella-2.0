@@ -101,6 +101,7 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
             services.AddScoped<IUserRepository, SqliteUserRepo>();
             services.AddScoped<IBookingRepository, SqliteBookingRepo>();
             services.AddScoped<IBookingReadModelRepository, SqliteBookingReadModelRepo>();
+            services.AddScoped<IAssetRepository, SqliteAssetRepo>();
             services.AddScoped<IDbInitializer, SqliteDbInitializer>();
             break;
 
@@ -123,4 +124,5 @@ static void ConfigureCoreServices(IServiceCollection services)
     services.AddScoped<RoomService>();
     services.AddScoped<UserService>();
     services.AddScoped<BookingService>();
+    services.AddScoped<AssetService>();
 }

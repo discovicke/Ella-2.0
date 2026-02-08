@@ -79,7 +79,7 @@ public static class RoomEndpoints
             )
             .WithName("CreateRoom")
             .WithSummary("Create a new room")
-            .WithDescription("Creates a new room with the provided details.")
+            .WithDescription("Creates a new room. You can optionally provide a list of 'assetIds' to link existing assets (e.g., Projector) to the room immediately.")
             .Accepts<CreateRoomDto>("application/json")
             .Produces<RoomResponseDto>(StatusCodes.Status201Created)
             .Produces<string>(StatusCodes.Status400BadRequest);
@@ -111,7 +111,7 @@ public static class RoomEndpoints
             )
             .WithName("UpdateRoom")
             .WithSummary("Update an existing room")
-            .WithDescription("Updates a room's details by its unique identifier.")
+            .WithDescription("Updates a room's details. Providing 'assetIds' will REPLACE the room's entire asset inventory with the new list.")
             .Accepts<UpdateRoomDto>("application/json")
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
