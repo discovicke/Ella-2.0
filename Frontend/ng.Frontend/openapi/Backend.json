@@ -606,6 +606,31 @@
         }
       }
     },
+    "/api/assets": {
+      "get": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Get all asset types",
+        "description": "Retrieves a list of all available room asset types (e.g., Whiteboard, Projector).",
+        "operationId": "GetAssetTypes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetType"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/bookings": {
       "get": {
         "tags": [
@@ -706,6 +731,26 @@
   },
   "components": {
     "schemas": {
+      "AssetType": {
+        "required": [
+          "id",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
       "BannedStatus": {
         "enum": [
           "NotBanned",
@@ -1316,6 +1361,9 @@
     },
     {
       "name": "Rooms"
+    },
+    {
+      "name": "Assets"
     },
     {
       "name": "Bookings"

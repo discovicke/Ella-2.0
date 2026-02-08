@@ -77,11 +77,21 @@ public class RoomService(
         var newId = await repo.CreateRoomAsync(room);
         logger.LogInformation("Room created with ID {RoomId}", newId);
 
-        // 2. Add Assets (if any)
-        if (dto.AssetIds != null && dto.AssetIds.Any())
+        try
         {
-            logger.LogInformation("Adding {Count} assets to room {RoomId}", dto.AssetIds.Count, newId);
-            await repo.AddAssetsToRoomAsync(newId, dto.AssetIds);
+            // 2. Add Assets (if any)
+            if (dto.AssetIds != null && dto.AssetIds.Any())
+            {
+                logger.LogInformation("Adding {Count} assets to room {RoomId}", dto.AssetIds.Count, newId);
+                await repo.AddAssetsToRoomAsync(newId, dto.AssetIds);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to add assets to room {RoomId}. Rolling back creation.", newId);
+            // Manual Rollback: Delete the room that was just created to ensure atomicity
+            await repo.DeleteRoomAsync(newId);
+            throw new InvalidOperationException("Failed to create room with provided assets. Verification failed.", ex);
         }
 
         // 3. Fetch the complete ReadModel to return (ensures response matches GET format)
@@ -150,6 +160,12 @@ public class RoomService(
 
         await repo.DeleteRoomAsync(id);
         logger.LogInformation("Room with ID {RoomId} deleted", id);
+    }
+
+    public async Task<IEnumerable<AssetType>> GetAssetTypesAsync()
+    {
+        logger.LogInformation("Fetching all asset types");
+        return await repo.GetAllAssetTypesAsync();
     }
 
     // Mapper: RoomDetailModel -> RoomResponseDto

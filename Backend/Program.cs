@@ -60,6 +60,7 @@ var api = app.MapGroup("api");
 api.MapAuthEndpoints();
 api.MapUserEndpoints();
 api.MapRoomEndpoints();
+api.MapAssetEndpoints();
 api.MapBookingEndpoints();
 
 // 5. THE CATCH-ALL (SPA Fallback)
