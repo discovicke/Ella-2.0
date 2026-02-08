@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-08  
 **Scope:** `Backend/**`  
-**Framework:** .NET 10.0 (Preview)  
+**Framework:** .NET 10.0
 **Architecture:** Layered (Endpoints → Services → Repositories → Dapper/SQLite)
 
 ---
