@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Backend.app.Core.Models.Enums;
 
 namespace Backend.app.Core.Models.ReadModels;
@@ -10,5 +11,14 @@ public record RoomDetailModel(
     string? Floor,
     string? Address,
     string? Notes,
-    List<string> Assets
-);
+    // Dapper maps to this (matches SQL column 'AssetsString')
+    // We hide it from the Frontend JSON
+    [property: JsonIgnore] string? AssetsString
+)
+{
+    // Frontend sees this Clean List
+    public List<string> Assets =>
+        string.IsNullOrEmpty(AssetsString)
+            ? []
+            : [.. AssetsString.Split(["|||"], StringSplitOptions.RemoveEmptyEntries)];
+}

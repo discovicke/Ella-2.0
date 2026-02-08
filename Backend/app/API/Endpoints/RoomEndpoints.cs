@@ -1,5 +1,6 @@
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Enums;
+using Backend.app.Core.Models.ReadModels; // Added this namespace
 using Backend.app.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,13 +29,14 @@ public static class RoomEndpoints
             .WithName("GetRooms")
             .WithSummary("Get all rooms")
             .WithDescription("Retrieves all rooms. Optionally filter by type or address.")
-            .Produces<IEnumerable<RoomResponseDto>>(StatusCodes.Status200OK);
+            // UPDATED: Now produces RoomDetailModel (includes Assets list)
+            .Produces<IEnumerable<RoomDetailModel>>(StatusCodes.Status200OK);
 
         // GET /api/rooms/{id}
         group
             .MapGet(
                 "/{id}",
-                async (int id, RoomService service) =>
+                async (long id, RoomService service) =>
                 {
                     // Layer 2: Endpoint validation
                     if (id <= 0)
@@ -54,7 +56,8 @@ public static class RoomEndpoints
             .WithName("GetRoomById")
             .WithSummary("Get room by ID")
             .WithDescription("Retrieves a specific room by its unique identifier.")
-            .Produces<RoomResponseDto>(StatusCodes.Status200OK)
+            // UPDATED: Now produces RoomDetailModel (includes Assets list)
+            .Produces<RoomDetailModel>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound);
 
@@ -69,6 +72,7 @@ public static class RoomEndpoints
                     if (validation is not null)
                         return validation;
 
+                    // Note: Create returns RoomResponseDto (no assets initially)
                     var createdRoom = await service.CreateRoomAsync(dto);
                     return Results.Created($"/api/rooms/{createdRoom.Id}", createdRoom);
                 }
@@ -84,7 +88,7 @@ public static class RoomEndpoints
         group
             .MapPut(
                 "/{id}",
-                async (long id, UpdateRoomDto dto, RoomService service) =>
+                async (long id, UpdateRoomDto dto, RoomService service) => // Changed int to long
                 {
                     // Layer 2: Endpoint validation
                     if (id <= 0)
@@ -117,7 +121,7 @@ public static class RoomEndpoints
         group
             .MapDelete(
                 "/{id}",
-                async (int id, RoomService service) =>
+                async (long id, RoomService service) =>
                 {
                     // Layer 2: Endpoint validation
                     if (id <= 0)

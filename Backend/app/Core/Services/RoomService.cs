@@ -2,39 +2,52 @@ using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
+using Backend.app.Core.Models.ReadModels;
 
 namespace Backend.app.Core.Services;
 
-public class RoomService(IRoomRepository repo, ILogger<RoomService> logger)
+public class RoomService(
+    IRoomRepository repo,
+    IRoomReadModelRepository readModelRepo,
+    ILogger<RoomService> logger
+)
 {
-    // Get with Filters
-    public async Task<IEnumerable<RoomResponseDto>> GetRoomsAsync(RoomType? type, string? address)
+    // GET: Returns RoomDetailModel (Includes parsed Assets!)
+    public async Task<IEnumerable<RoomDetailModel>> GetRoomsAsync(RoomType? type, string? address)
     {
-        IEnumerable<Room> rooms;
-
         logger.LogInformation(
-            "Fetching rooms with filters: Type={Type}, Address={Address}",
+            "Fetching room details with filters: Type={Type}, Address={Address}",
             type,
             address
         );
 
-        if (type.HasValue)
-            rooms = await repo.GetRoomsByTypeAsync(type.Value);
-        else if (!string.IsNullOrWhiteSpace(address))
-            rooms = await repo.GetRoomsByAddressAsync(address);
-        else
-            rooms = await repo.GetAllRoomsAsync();
+        // 1. Fetch all Read Models (contains AssetsString populated by Dapper)
+        var rooms = await readModelRepo.GetAllRoomDetailsAsync();
 
-        return rooms.Select(MapToDto);
+        // 2. Apply filters in-memory (since ReadRepo doesn't have specific filter methods yet)
+        if (type.HasValue)
+        {
+            rooms = rooms.Where(r => r.Type == type.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(address))
+        {
+            // Case-insensitive check
+            rooms = rooms.Where(r =>
+                r.Address != null && r.Address.Contains(address, StringComparison.OrdinalIgnoreCase)
+            );
+        }
+
+        return rooms;
     }
 
-    // Get by ID
-    public async Task<RoomResponseDto> GetRoomByIdAsync(int id)
+    // GET BY ID: Returns RoomDetailModel
+    public async Task<RoomDetailModel> GetRoomByIdAsync(long id)
     {
-        logger.LogDebug("Fetching room with ID {RoomId}", id);
+        logger.LogDebug("Fetching room detail with ID {RoomId}", id);
 
-        // Layer 3: Check existence
-        var room = await repo.GetRoomByIdAsync(id);
+        // Use the Read Repo
+        var room = await readModelRepo.GetRoomDetailByIdAsync(id);
 
         if (room is null)
         {
@@ -42,10 +55,10 @@ public class RoomService(IRoomRepository repo, ILogger<RoomService> logger)
             throw new KeyNotFoundException($"Room with ID {id} does not exist.");
         }
 
-        return MapToDto(room);
+        return room;
     }
 
-    // Create
+    // CREATE: Returns RoomResponseDto with Assets populated
     public async Task<RoomResponseDto> CreateRoomAsync(CreateRoomDto dto)
     {
         logger.LogInformation("Creating new room: {RoomName}", dto.Name);
@@ -60,19 +73,33 @@ public class RoomService(IRoomRepository repo, ILogger<RoomService> logger)
             Notes = dto.Notes,
         };
 
+        // 1. Create Room Entity
         var newId = await repo.CreateRoomAsync(room);
-
-        room.Id = newId;
         logger.LogInformation("Room created with ID {RoomId}", newId);
-        return MapToDto(room);
+
+        // 2. Add Assets (if any)
+        if (dto.AssetIds != null && dto.AssetIds.Any())
+        {
+            logger.LogInformation("Adding {Count} assets to room {RoomId}", dto.AssetIds.Count, newId);
+            await repo.AddAssetsToRoomAsync(newId, dto.AssetIds);
+        }
+
+        // 3. Fetch the complete ReadModel to return (ensures response matches GET format)
+        var createdRoomDetail = await readModelRepo.GetRoomDetailByIdAsync(newId);
+
+        if (createdRoomDetail is null)
+        {
+            throw new InvalidOperationException("Room was created but could not be retrieved.");
+        }
+
+        return MapDetailToResponse(createdRoomDetail);
     }
 
-    // Update
+    // UPDATE: Updates Room and Assets
     public async Task UpdateRoomAsync(long id, UpdateRoomDto dto)
     {
         logger.LogInformation("Updating room with ID {RoomId}", id);
 
-        // Layer 3: Check existence
         var existingRoom = await repo.GetRoomByIdAsync(id);
 
         if (existingRoom is null)
@@ -92,16 +119,27 @@ public class RoomService(IRoomRepository repo, ILogger<RoomService> logger)
             Notes = dto.Notes,
         };
 
+        // 1. Update Room Entity
         await repo.UpdateRoomAsync(id, room);
-        logger.LogInformation("Room with ID {RoomId} updated", id);
+
+        // 2. Update Assets (Clear existing -> Add new)
+        // This is a simple strategy. For very large sets, diffing might be better, 
+        // but for room assets (usually < 20), this is efficient enough.
+        await repo.ClearRoomAssetsAsync(id);
+
+        if (dto.AssetIds != null && dto.AssetIds.Any())
+        {
+            await repo.AddAssetsToRoomAsync(id, dto.AssetIds);
+        }
+
+        logger.LogInformation("Room with ID {RoomId} updated (including assets)", id);
     }
 
-    // Delete
-    public async Task DeleteRoomAsync(int id)
+    // DELETE: Standard Entity delete (Repo handles asset cleanup via transaction)
+    public async Task DeleteRoomAsync(long id)
     {
         logger.LogInformation("Deleting room with ID {RoomId}", id);
 
-        // Layer 3: Check existence
         var existingRoom = await repo.GetRoomByIdAsync(id);
 
         if (existingRoom is null)
@@ -114,17 +152,18 @@ public class RoomService(IRoomRepository repo, ILogger<RoomService> logger)
         logger.LogInformation("Room with ID {RoomId} deleted", id);
     }
 
-    // Mapper: Entity → DTO
-    private static RoomResponseDto MapToDto(Room room)
+    // Mapper: RoomDetailModel -> RoomResponseDto
+    private static RoomResponseDto MapDetailToResponse(RoomDetailModel model)
     {
         return new RoomResponseDto(
-            room.Id,
-            room.Name,
-            room.Capacity,
-            room.Type,
-            room.Floor,
-            room.Address,
-            room.Notes
+            model.RoomId,
+            model.Name,
+            model.Capacity,
+            model.Type,
+            model.Floor,
+            model.Address,
+            model.Notes,
+            model.Assets // List<string> (Descriptions)
         );
     }
 }

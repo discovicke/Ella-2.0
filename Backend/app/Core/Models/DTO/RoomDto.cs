@@ -8,7 +8,8 @@ public record CreateRoomDto(
     RoomType Type,
     string? Floor,
     string? Address,
-    string? Notes
+    string? Notes,
+    List<long>? AssetIds
 );
 
 public record UpdateRoomDto(
@@ -17,7 +18,8 @@ public record UpdateRoomDto(
     RoomType Type,
     string? Floor,
     string? Address,
-    string? Notes
+    string? Notes,
+    List<long>? AssetIds
 );
 
 // Response DTO
@@ -28,5 +30,6 @@ public record RoomResponseDto(
     RoomType Type,
     string? Floor,
     string? Address,
-    string? Notes
+    string? Notes,
+    List<string>? Assets
 );

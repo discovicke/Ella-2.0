@@ -16,4 +16,6 @@ public interface IRoomRepository
     Task<long> CreateRoomAsync(Room room);
     Task<bool> UpdateRoomAsync(long id, Room room);
     Task<bool> DeleteRoomAsync(long id);
+    Task AddAssetsToRoomAsync(long roomId, IEnumerable<long> assetIds);
+    Task ClearRoomAssetsAsync(long roomId);
 }
