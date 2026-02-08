@@ -744,13 +744,7 @@
             ]
           },
           "userRole": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "null",
-              "integer",
-              "string"
-            ],
-            "format": "int32"
+            "$ref": "#/components/schemas/UserRole"
           },
           "userClass": {
             "type": [
@@ -782,12 +776,7 @@
             "format": "int32"
           },
           "roomType": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
+            "$ref": "#/components/schemas/RoomType"
           },
           "roomFloor": {
             "type": [
@@ -810,12 +799,7 @@
             "format": "date-time"
           },
           "status": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
+            "$ref": "#/components/schemas/BookingStatus"
           },
           "notes": {
             "type": [
@@ -843,6 +827,13 @@
             "format": "int32"
           }
         }
+      },
+      "BookingStatus": {
+        "enum": [
+          "Active",
+          "Cancelled",
+          "Expired"
+        ]
       },
       "CreateBookingDto": {
         "required": [
