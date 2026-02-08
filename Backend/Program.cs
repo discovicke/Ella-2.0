@@ -4,13 +4,19 @@ using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
 using Backend.app.Infrastructure.Data;
 using Backend.app.Infrastructure.Repositories.Sqlite;
+using DotNetEnv;
 using Scalar.AspNetCore;
 
-Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+// 1. LOAD SECRETS (.env)
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Fix so frontend can send string value of enums, db still automatically uses int values at the backend
+// 2. CONFIGURATION
+builder.Configuration.AddEnvironmentVariables();
+builder.Services.AddOpenApi();
+
+// Fix Enums for Frontend
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(
@@ -18,149 +24,98 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     );
 });
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-
-// TODO: Lex & Parsing from C# to JS
-
-// TODO: Configure services and middleware pipeline
-// Reference: src/app.js and src/server.js for Express setup
-// Check CORS settings, authentication flow, and static file serving
-
-// IN - appsettings.json
-// TODO: Configure connection strings, JWT settings, CORS origins
-// Reference: Environment variables or config in src/app.js
-
-// IN - appsettings.Development.json
-// TODO: Configure development-specific settings
-// Reference: Development environment setup in JS project
-
-builder.Services.AddOpenApi();
-
-#region DYNAMIC DB CONFIG
-
-// Retrieve the Provider string from appsettings.json to determine flow
-var dbProvider = builder.Configuration["DatabaseSettings:Provider"]?.ToLower();
-
-// Validate configuration exists
-if (string.IsNullOrEmpty(dbProvider))
-{
-    throw new InvalidOperationException("Database Provider is not configured in appsettings.json.");
-}
-
-// Register the Connection Factory (Singleton)
-builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
-
-// Register Repositories Dynamically based on Provider
-switch (dbProvider)
-{
-    case "sqlite":
-        // Register SQLite-specific implementations
-        builder.Services.AddScoped<IRoomRepository, SqliteRoomRepo>();
-        builder.Services.AddScoped<IRoomReadModelRepository, SqliteRoomReadModelRepo>();
-        builder.Services.AddScoped<IUserRepository, SqliteUserRepo>();
-        builder.Services.AddScoped<IBookingRepository, SqliteBookingRepo>();
-        builder.Services.AddScoped<IBookingReadModelRepository, SqliteBookingReadModelRepo>();
-
-        // Register SQLite Initializer
-        builder.Services.AddScoped<IDbInitializer, SqliteDbInitializer>();
-        break;
-    case "sqlserver":
-    case "postgres":
-        // Future proofing for other providers
-        throw new NotImplementedException($"The provider '{dbProvider}' is not yet implemented.");
-
-    default:
-        throw new NotSupportedException($"The database provider '{dbProvider}' is not supported.");
-}
-
-#endregion
-
-// Register Auth infrastructure (Singleton - stateless services)
-builder.Services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
-builder.Services.AddSingleton<ITokenProvider, JwtTokenProvider>();
-
-// Register Business Logic Services (Scoped - per request)
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<RoomService>();
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<BookingService>();
+// 3. SETUP (Using Local Methods)
+ConfigureDatabase(builder);
+ConfigureCoreServices(builder.Services);
 
 var app = builder.Build();
 
-#region LOGGING STARTUP/SHUTDOWN
-
-// Acquire a logger from DI and log startup/shutdown events
+// 4. PIPELINE
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
-logger.LogInformation("Application starting. Environment: {Env}", app.Environment.EnvironmentName);
+app.Lifetime.ApplicationStarted.Register(() => logger.LogInformation("App started."));
 
-app.Lifetime.ApplicationStarted.Register(() =>
-{
-    logger.LogInformation("Application started and is now accepting requests.");
-});
-
-app.Lifetime.ApplicationStopping.Register(() =>
-{
-    logger.LogInformation("Application is stopping...");
-});
-
-app.Lifetime.ApplicationStopped.Register(() =>
-{
-    logger.LogInformation("Application has stopped.");
-});
-
-#endregion
-
-
-#region DATABASE INITIALIZATION
-// Initialize database (run schema + seed if empty)
+// Seed Database
 using (var scope = app.Services.CreateScope())
 {
-    // Try to get the initializer (it might not be registered if provider doesn't support it)
     var dbInitializer = scope.ServiceProvider.GetService<IDbInitializer>();
     if (dbInitializer != null)
-    {
         await dbInitializer.InitializeAsync();
-    }
 }
 
-#endregion
-
-
-// Serve static files from wwwroot (frontend build output)
-app.UseDefaultFiles(); // Finds index.html
-app.UseStaticFiles(); // Serves .js, .css, etc.
+// Frontend & Dev Tools
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi(); // Generates the underlying JSON file
-    app.MapScalarApiReference(); // Hosts the Scalar UI
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
-// Enable JWT authentication middleware (validates tokens and attaches user to HttpContext)
+// Security
 app.UseJwtAuthentication();
 
-// API ENDPOINT MAPPINGS
-var apiGroup = app.MapGroup("api");
-apiGroup.MapRoomEndpoints();
-apiGroup.MapAuthEndpoints();
-apiGroup.MapUserEndpoints();
-apiGroup.MapBookingEndpoints();
+// Endpoints
+var api = app.MapGroup("api");
+api.MapAuthEndpoints();
+api.MapUserEndpoints();
+api.MapRoomEndpoints();
+api.MapBookingEndpoints();
 
-// If the request didn't match an API route or a file, serve index.html (fallback to SPA entry point)
+// Fallback to index.html for SPA routing
 app.MapFallbackToFile("index.html");
 
-try
+app.Run();
+
+// ---------------------------------------------------------
+// LOCAL CONFIGURATION METHODS
+// ---------------------------------------------------------
+
+static void ConfigureDatabase(WebApplicationBuilder builder)
 {
-    logger.LogInformation("Starting web host...");
-    app.Run();
+    // Global Dapper Settings
+    Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
+    var services = builder.Services;
+    var configuration = builder.Configuration;
+
+    var dbProvider = configuration["DatabaseSettings:Provider"]?.ToLower();
+
+    if (string.IsNullOrEmpty(dbProvider))
+    {
+        throw new InvalidOperationException("Database Provider is not configured.");
+    }
+
+    services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
+
+    switch (dbProvider)
+    {
+        case "sqlite":
+            services.AddScoped<IRoomRepository, SqliteRoomRepo>();
+            services.AddScoped<IRoomReadModelRepository, SqliteRoomReadModelRepo>();
+            services.AddScoped<IUserRepository, SqliteUserRepo>();
+            services.AddScoped<IBookingRepository, SqliteBookingRepo>();
+            services.AddScoped<IBookingReadModelRepository, SqliteBookingReadModelRepo>();
+            services.AddScoped<IDbInitializer, SqliteDbInitializer>();
+            break;
+
+        case "postgres":
+            throw new NotImplementedException("Postgres is not supported yet.");
+
+        default:
+            throw new NotSupportedException($"Provider '{dbProvider}' is not supported.");
+    }
 }
-catch (Exception ex)
+
+static void ConfigureCoreServices(IServiceCollection services)
 {
-    logger.LogCritical(ex, "Host terminated unexpectedly");
-    throw;
-}
-finally
-{
-    logger.LogInformation("Host shutdown sequence complete.");
+    // Auth
+    services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
+    services.AddSingleton<ITokenProvider, JwtTokenProvider>();
+
+    // Business Logic
+    services.AddScoped<AuthService>();
+    services.AddScoped<RoomService>();
+    services.AddScoped<UserService>();
+    services.AddScoped<BookingService>();
 }
