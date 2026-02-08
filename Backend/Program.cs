@@ -30,42 +30,46 @@ ConfigureCoreServices(builder.Services);
 
 var app = builder.Build();
 
-// 4. PIPELINE
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
-app.Lifetime.ApplicationStarted.Register(() => logger.LogInformation("App started."));
+// --- START OF PIPELINE ---
 
-// Seed Database
-using (var scope = app.Services.CreateScope())
-{
-    var dbInitializer = scope.ServiceProvider.GetService<IDbInitializer>();
-    if (dbInitializer != null)
-        await dbInitializer.InitializeAsync();
-}
-
-// Frontend & Dev Tools
+// 1. THE FILE CHECKER
+// "Is the user asking for a file like 'styles.scss'?"
+// If YES: Give it to them and STOP here.
+// If NO: Pass them to the next step.
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
+// 2. THE DEV TOOLS (Conditional)
+// "Is this a developer?"
+// If YES: Show them the API documentation pages.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
 
-// Security
+// 3. THE BOUNCER (Security)
+// "Does this request have a valid ID card (JWT)?"
+// Action: Check the token and stamp the request with the User ID.
 app.UseJwtAuthentication();
 
-// Endpoints
+// 4. THE API GATES
+// "Is the user asking for data (e.g., /api/bookings)?"
+// Action: Route them to the C# method that handles that specific data.
 var api = app.MapGroup("api");
 api.MapAuthEndpoints();
 api.MapUserEndpoints();
 api.MapRoomEndpoints();
 api.MapBookingEndpoints();
 
-// Fallback to index.html for SPA routing
+// 5. THE CATCH-ALL (SPA Fallback)
+// "I don't know what this URL is. It must be an Angular page."
+// Action: Send them 'index.html' so Angular can handle the routing in the browser.
 app.MapFallbackToFile("index.html");
 
-app.Run();
+// --- END OF PIPELINE ---
+
+app.Run(); // <--- Start the machine!
 
 // ---------------------------------------------------------
 // LOCAL CONFIGURATION METHODS
