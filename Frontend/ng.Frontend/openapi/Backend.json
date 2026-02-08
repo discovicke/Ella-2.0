@@ -1217,15 +1217,6 @@
         }
       },
       "RoomDetailModel": {
-        "required": [
-          "roomId",
-          "name",
-          "capacity",
-          "type",
-          "floor",
-          "address",
-          "notes"
-        ],
         "type": "object",
         "properties": {
           "roomId": {

@@ -16,6 +16,9 @@ public record RoomDetailModel(
     [property: JsonIgnore] string? AssetsString
 )
 {
+    // Parameterless constructor for Dapper materialization
+    public RoomDetailModel() : this(0, string.Empty, null, default, null, null, null, null) { }
+
     // Frontend sees this Clean List
     public List<string> Assets =>
         string.IsNullOrEmpty(AssetsString)

@@ -23,9 +23,24 @@ export enum RoomType {
   ComputerLab = "ComputerLab",
 }
 
+export enum BookingStatus {
+  Active = "Active",
+  Cancelled = "Cancelled",
+  Expired = "Expired",
+}
+
 export enum BannedStatus {
   NotBanned = "NotBanned",
   Banned = "Banned",
+}
+
+export interface AssetTypeResponseDto {
+  /**
+   * @format int64
+   * @pattern ^-?(?:0|[1-9]\d*)$
+   */
+  id: number | string;
+  description: string;
 }
 
 export interface BookingDetailedReadModel {
@@ -41,11 +56,7 @@ export interface BookingDetailedReadModel {
   userId?: number | string;
   userName?: null | string;
   userEmail?: null | string;
-  /**
-   * @format int32
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  userRole?: null | number | string;
+  userRole?: UserRole;
   userClass?: null | string;
   /**
    * @format int64
@@ -58,22 +69,14 @@ export interface BookingDetailedReadModel {
    * @pattern ^-?(?:0|[1-9]\d*)$
    */
   roomCapacity?: null | number | string;
-  /**
-   * @format int32
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  roomType?: number | string;
+  roomType?: RoomType;
   roomFloor?: null | string;
   roomAddress?: null | string;
   /** @format date-time */
   startTime?: string;
   /** @format date-time */
   endTime?: string;
-  /**
-   * @format int32
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  status?: number | string;
+  status?: BookingStatus;
   notes?: null | string;
   /** @format date-time */
   createdAt?: string;
@@ -84,6 +87,10 @@ export interface BookingDetailedReadModel {
    * @pattern ^-?(?:0|[1-9]\d*)$
    */
   registrationCount?: number | string;
+}
+
+export interface CreateAssetTypeDto {
+  description: string;
 }
 
 export interface CreateBookingDto {
@@ -121,6 +128,7 @@ export interface CreateRoomDto {
   floor: null | string;
   address: null | string;
   notes: null | string;
+  assetIds: null | any[];
 }
 
 export interface CreateUserDto {
@@ -142,6 +150,25 @@ export interface RegisterDto {
   displayName?: null | string;
 }
 
+export interface RoomDetailModel {
+  /**
+   * @format int64
+   * @pattern ^-?(?:0|[1-9]\d*)$
+   */
+  roomId: number | string;
+  name: string;
+  /**
+   * @format int32
+   * @pattern ^-?(?:0|[1-9]\d*)$
+   */
+  capacity: null | number | string;
+  type: RoomType;
+  floor: null | string;
+  address: null | string;
+  notes: null | string;
+  assets?: null | any[];
+}
+
 export interface RoomResponseDto {
   /**
    * @format int64
@@ -158,6 +185,11 @@ export interface RoomResponseDto {
   floor: null | string;
   address: null | string;
   notes: null | string;
+  assets: null | any[];
+}
+
+export interface UpdateAssetTypeDto {
+  description: string;
 }
 
 export interface UpdateRoomDto {
@@ -171,6 +203,7 @@ export interface UpdateRoomDto {
   floor: null | string;
   address: null | string;
   notes: null | string;
+  assetIds: null | any[];
 }
 
 export interface UpdateUserDto {
