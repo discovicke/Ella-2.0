@@ -125,6 +125,7 @@ public class UserService(
             Role = dto.Role,
             PasswordHash = passwordHash,
             IsBanned = dto.IsBanned,
+            TokensValidAfter = existing.TokensValidAfter,
         };
 
         // Uppdaterar i databasen
@@ -136,6 +137,31 @@ public class UserService(
         }
 
         logger.LogInformation("User with ID {UserId} updated", id);
+    }
+
+    // Force logout (revoke all tokens)
+    public async Task RevokeTokensAsync(long id)
+    {
+        logger.LogInformation("Revoking all tokens for user with ID {UserId}", id);
+
+        var existing = await repo.GetUserByIdAsync(id);
+        if (existing is null)
+        {
+            logger.LogWarning("Cannot revoke tokens - user with ID {UserId} not found", id);
+            throw new KeyNotFoundException($"User with ID {id} does not exist.");
+        }
+
+        // Set TokensValidAfter to now, invalidating any tokens issued before this moment
+        existing.TokensValidAfter = DateTime.UtcNow;
+
+        var success = await repo.UpdateUserAsync(id, existing);
+        if (!success)
+        {
+            logger.LogError("Failed to revoke tokens for user with ID {UserId}", id);
+            throw new Exception("Failed to revoke tokens.");
+        }
+
+        logger.LogInformation("All tokens revoked for user {UserId}", id);
     }
 
     // Radera användare

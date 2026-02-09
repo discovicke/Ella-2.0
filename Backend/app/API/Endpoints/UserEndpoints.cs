@@ -102,6 +102,28 @@ public static class UserEndpoints
             .Produces<string>(StatusCodes.Status404NotFound)
             .Produces<string>(StatusCodes.Status500InternalServerError);
 
+        // POST /api/users/{id}/revoke-tokens
+        group
+            .MapPost(
+                "/{id}/revoke-tokens",
+                async (long id, UserService service) =>
+                {
+                    if (id <= 0)
+                        return Results.BadRequest("ID must be a positive integer.");
+
+                    await service.RevokeTokensAsync(id);
+                    return Results.NoContent();
+                }
+            )
+            .RequireRoles(UserRole.Admin) // Only Admin can force logout
+            .WithName("RevokeTokens")
+            .WithSummary("Force logout a user")
+            .WithDescription("Invalidates all existing tokens for a specific user.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces<string>(StatusCodes.Status400BadRequest)
+            .Produces<string>(StatusCodes.Status404NotFound)
+            .Produces<string>(StatusCodes.Status500InternalServerError);
+
         // DELETE /api/users/{id}
         group
             .MapDelete(
