@@ -1,8 +1,9 @@
 {
-  "openapi": "3.1.1",
+  "openapi": "3.0.1",
   "info": {
-    "title": "Backend | v1",
-    "version": "1.0.0"
+    "title": "ELLA Booking System API",
+    "description": "Welcome to the ELLA Booking System API. \n\nThis API provides endpoints for managing rooms, assets, users, registrations, and bookings. Most modification endpoints require authentication and Admin privileges.\n\n**Authentication:**\n1. Login via `POST /api/auth/login` to receive a JWT token.\n2. Click the **'auth/login'** button below.\n3. Enter the token in the value field (e.g. `ey...`).\n   *Note: Scalar automatically adds the 'Bearer ' prefix for you.*",
+    "version": "v1"
   },
   "paths": {
     "/api/auth/register": {
@@ -100,7 +101,7 @@
           "Users"
         ],
         "summary": "Get all users",
-        "description": "Retrieves all users in the system.",
+        "description": "Retrieves all users in the system.\n\n🔒 **Authentication Required**",
         "operationId": "GetUsers",
         "responses": {
           "200": {
@@ -123,7 +124,7 @@
           "Users"
         ],
         "summary": "Create a new user",
-        "description": "Creates a new user with the provided details.",
+        "description": "Creates a new user with the provided details.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
         "operationId": "CreateUser",
         "requestBody": {
           "content": {
@@ -185,7 +186,7 @@
           "Users"
         ],
         "summary": "Get user by ID",
-        "description": "Retrieves a specific user by their unique identifier.",
+        "description": "Retrieves a specific user by their unique identifier.\n\n🔒 **Authentication Required**",
         "operationId": "GetUserById",
         "parameters": [
           {
@@ -193,11 +194,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int64"
             }
           }
@@ -240,7 +237,7 @@
           "Users"
         ],
         "summary": "Update an existing user",
-        "description": "Updates a user's details by their unique identifier.",
+        "description": "Updates a user's details by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
         "operationId": "UpdateUser",
         "parameters": [
           {
@@ -248,11 +245,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int64"
             }
           }
@@ -308,7 +301,7 @@
           "Users"
         ],
         "summary": "Delete a user",
-        "description": "Permanently deletes a user by their unique identifier.",
+        "description": "Permanently deletes a user by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
         "operationId": "DeleteUser",
         "parameters": [
           {
@@ -316,11 +309,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int64"
             }
           }
@@ -368,14 +357,20 @@
           "Rooms"
         ],
         "summary": "Get all rooms",
-        "description": "Retrieves all rooms. Optionally filter by type or address.",
+        "description": "Retrieves all rooms. Optionally filter by type or address.\n\n🔒 **Authentication Required**",
         "operationId": "GetRooms",
         "parameters": [
           {
             "name": "type",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/RoomType"
+              "enum": [
+                "Classroom",
+                "Laboratory",
+                "GroupRoom",
+                "ComputerLab",
+                null
+              ]
             }
           },
           {
@@ -407,7 +402,7 @@
           "Rooms"
         ],
         "summary": "Create a new room",
-        "description": "Creates a new room. You can optionally provide a list of 'assetIds' to link existing assets (e.g., Projector) to the room immediately.",
+        "description": "Creates a new room. You can optionally provide a list of 'assetIds' to link existing assets (e.g., Projector) to the room immediately.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
         "operationId": "CreateRoom",
         "requestBody": {
           "content": {
@@ -449,7 +444,7 @@
           "Rooms"
         ],
         "summary": "Get room by ID",
-        "description": "Retrieves a specific room by its unique identifier.",
+        "description": "Retrieves a specific room by its unique identifier.\n\n🔒 **Authentication Required**",
         "operationId": "GetRoomById",
         "parameters": [
           {
@@ -457,11 +452,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int64"
             }
           }
@@ -504,7 +495,7 @@
           "Rooms"
         ],
         "summary": "Update an existing room",
-        "description": "Updates a room's details. Providing 'assetIds' will REPLACE the room's entire asset inventory with the new list.",
+        "description": "Updates a room's details. Providing 'assetIds' will REPLACE the room's entire asset inventory with the new list.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
         "operationId": "UpdateRoom",
         "parameters": [
           {
@@ -512,11 +503,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int64"
             }
           }
@@ -562,7 +549,7 @@
           "Rooms"
         ],
         "summary": "Delete a room",
-        "description": "Permanently deletes a room by its unique identifier.",
+        "description": "Permanently deletes a room by its unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
         "operationId": "DeleteRoom",
         "parameters": [
           {
@@ -570,11 +557,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int64"
             }
           }
@@ -612,7 +595,7 @@
           "Assets"
         ],
         "summary": "Get all asset types",
-        "description": "Retrieves a list of all available room asset types (e.g., Whiteboard, Projector).",
+        "description": "Retrieves a list of all available room asset types (e.g., Whiteboard, Projector).\n\n🔒 **Authentication Required**",
         "operationId": "GetAssetTypes",
         "responses": {
           "200": {
@@ -635,6 +618,7 @@
           "Assets"
         ],
         "summary": "Create a new asset type",
+        "description": "Creates a new asset type.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
         "operationId": "CreateAssetType",
         "requestBody": {
           "content": {
@@ -669,6 +653,7 @@
           "Assets"
         ],
         "summary": "Get asset type by ID",
+        "description": "Retrieves a specific asset type by its unique identifier.\n\n🔒 **Authentication Required**",
         "operationId": "GetAssetTypeById",
         "parameters": [
           {
@@ -676,11 +661,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int64"
             }
           }
@@ -706,6 +687,7 @@
           "Assets"
         ],
         "summary": "Update an asset type",
+        "description": "Updates an existing asset type.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
         "operationId": "UpdateAssetType",
         "parameters": [
           {
@@ -713,11 +695,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int64"
             }
           }
@@ -749,6 +727,7 @@
           "Assets"
         ],
         "summary": "Delete an asset type",
+        "description": "Permanently deletes an asset type.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
         "operationId": "DeleteAssetType",
         "parameters": [
           {
@@ -756,11 +735,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int64"
             }
           }
@@ -781,8 +756,54 @@
           "Bookings"
         ],
         "summary": "Get all bookings",
-        "description": "Retrieves a detailed list of all bookings in the system.",
+        "description": "Retrieves a list of bookings, optionally filtered by user, room, date range, or status.\n\n🔒 **Authentication Required**",
         "operationId": "GetAllBookings",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "roomId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "enum": [
+                "Active",
+                "Cancelled",
+                "Expired",
+                null
+              ]
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -804,7 +825,7 @@
           "Bookings"
         ],
         "summary": "Create a new booking",
-        "description": "Creates a new booking if the room is available and user exists.",
+        "description": "Creates a new booking for the authenticated user.\n\n🔒 **Authentication Required**",
         "operationId": "CreateBooking",
         "requestBody": {
           "content": {
@@ -845,7 +866,7 @@
           "Bookings"
         ],
         "summary": "Update booking status by ID",
-        "description": "Updates the status of a specific booking.",
+        "description": "Updates the status of a specific booking.\n\n🔒 **Authentication Required**",
         "operationId": "UpdateBookingStatus",
         "parameters": [
           {
@@ -853,11 +874,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int64"
             }
           },
@@ -886,7 +903,7 @@
           "Bookings"
         ],
         "summary": "Register for a booking",
-        "description": "Signs up the authenticated user for a specific booking.",
+        "description": "Signs up the authenticated user for a specific booking.\n\n🔒 **Authentication Required**",
         "operationId": "RegisterForBooking",
         "parameters": [
           {
@@ -894,11 +911,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int64"
             }
           }
@@ -923,7 +936,7 @@
           "Bookings"
         ],
         "summary": "Unregister from a booking",
-        "description": "Removes the authenticated user from a specific booking.",
+        "description": "Removes the authenticated user from a specific booking.\n\n🔒 **Authentication Required**",
         "operationId": "UnregisterFromBooking",
         "parameters": [
           {
@@ -931,11 +944,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int64"
             }
           }
@@ -956,7 +965,7 @@
           "Bookings"
         ],
         "summary": "Get user registrations",
-        "description": "Retrieves all bookings the authenticated user is registered for.",
+        "description": "Retrieves all bookings the authenticated user is registered for.\n\n🔒 **Authentication Required**",
         "operationId": "GetMyRegistrations",
         "responses": {
           "200": {
@@ -984,7 +993,7 @@
           "Bookings"
         ],
         "summary": "Get owned bookings",
-        "description": "Retrieves all bookings created by the authenticated user.",
+        "description": "Retrieves all bookings created by the authenticated user.\n\n🔒 **Authentication Required**",
         "operationId": "GetMyOwnedBookings",
         "responses": {
           "200": {
@@ -1017,11 +1026,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "description": {
@@ -1039,79 +1044,51 @@
         "type": "object",
         "properties": {
           "bookingId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "userId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "userName": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "userEmail": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "userRole": {
             "$ref": "#/components/schemas/UserRole"
           },
           "userClass": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "roomId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "roomName": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "roomCapacity": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "null",
-              "integer",
-              "string"
-            ],
-            "format": "int32"
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           },
           "roomType": {
             "$ref": "#/components/schemas/RoomType"
           },
           "roomFloor": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "roomAddress": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "startTime": {
             "type": "string",
@@ -1125,28 +1102,20 @@
             "$ref": "#/components/schemas/BookingStatus"
           },
           "notes": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
             "format": "date-time"
           },
           "updatedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "date-time"
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           },
           "registrationCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         }
@@ -1180,19 +1149,11 @@
         "type": "object",
         "properties": {
           "userId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "roomId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "startTime": {
@@ -1204,17 +1165,11 @@
             "format": "date-time"
           },
           "notes": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "status": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32",
             "default": 0
           }
@@ -1236,48 +1191,32 @@
             "type": "string"
           },
           "capacity": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "null",
-              "integer",
-              "string"
-            ],
-            "format": "int32"
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           },
           "type": {
             "$ref": "#/components/schemas/RoomType"
           },
           "floor": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "address": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "notes": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "assetIds": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int64"
-            }
+            },
+            "nullable": true
           }
         }
       },
@@ -1295,10 +1234,8 @@
             "type": "string"
           },
           "displayName": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "role": {
             "$ref": "#/components/schemas/UserRole"
@@ -1307,10 +1244,8 @@
             "type": "string"
           },
           "userClass": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -1343,10 +1278,8 @@
             "type": "string"
           },
           "displayName": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -1354,54 +1287,38 @@
         "type": "object",
         "properties": {
           "roomId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "name": {
             "type": "string"
           },
           "capacity": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "null",
-              "integer",
-              "string"
-            ],
-            "format": "int32"
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           },
           "type": {
             "$ref": "#/components/schemas/RoomType"
           },
           "floor": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "address": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "notes": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "assets": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "nullable": true
           }
         }
       },
@@ -1419,54 +1336,38 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "name": {
             "type": "string"
           },
           "capacity": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "null",
-              "integer",
-              "string"
-            ],
-            "format": "int32"
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           },
           "type": {
             "$ref": "#/components/schemas/RoomType"
           },
           "floor": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "address": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "notes": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "assets": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "nullable": true
           }
         }
       },
@@ -1505,48 +1406,32 @@
             "type": "string"
           },
           "capacity": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "null",
-              "integer",
-              "string"
-            ],
-            "format": "int32"
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           },
           "type": {
             "$ref": "#/components/schemas/RoomType"
           },
           "floor": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "address": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "notes": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "assetIds": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int64"
-            }
+            },
+            "nullable": true
           }
         }
       },
@@ -1563,21 +1448,15 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "email": {
             "type": "string"
           },
           "displayName": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "role": {
             "$ref": "#/components/schemas/UserRole"
@@ -1586,10 +1465,8 @@
             "type": "string"
           },
           "userClass": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "isBanned": {
             "$ref": "#/components/schemas/BannedStatus"
@@ -1607,30 +1484,22 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "email": {
             "type": "string"
           },
           "displayName": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "role": {
             "$ref": "#/components/schemas/UserRole"
           },
           "userClass": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -1641,8 +1510,21 @@
           "Admin"
         ]
       }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "JWT Authorization header using the Bearer scheme.",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
     }
   },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ],
   "tags": [
     {
       "name": "Auth"
