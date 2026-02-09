@@ -840,13 +840,13 @@
       }
     },
     "/api/bookings/{id}": {
-      "get": {
+      "put": {
         "tags": [
           "Bookings"
         ],
-        "summary": "Get booking status by ID",
-        "description": "Retrieves the cancellation status of a specific booking.",
-        "operationId": "GetBookingById",
+        "summary": "Update booking status by ID",
+        "description": "Updates the status of a specific booking.",
+        "operationId": "UpdateBookingStatus",
         "parameters": [
           {
             "name": "id",
@@ -859,6 +859,14 @@
                 "string"
               ],
               "format": "int64"
+            }
+          },
+          {
+            "name": "newStatus",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/BookingStatus"
             }
           }
         ],
