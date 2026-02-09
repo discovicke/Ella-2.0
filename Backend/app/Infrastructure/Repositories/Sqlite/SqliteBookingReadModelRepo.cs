@@ -1,4 +1,5 @@
 using Backend.app.Core.Interfaces;
+using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Models.ReadModels;
 using Dapper;
 using System.Text;
@@ -136,7 +137,7 @@ public class SqliteBookingReadModelRepo(
         long? roomId = null,
         DateTime? startDate = null,
         DateTime? endDate = null,
-        int? status = null)
+        BookingStatus? status = null)
     {
         try
         {

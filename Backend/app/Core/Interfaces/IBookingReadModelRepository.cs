@@ -1,3 +1,4 @@
+using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Models.ReadModels;
 
 namespace Backend.app.Core.Interfaces;
@@ -44,7 +45,7 @@ public interface IBookingReadModelRepository
         long? roomId = null,
         DateTime? startDate = null,
         DateTime? endDate = null,
-        int? status = null
+        BookingStatus? status = null
     );
 
     /// <summary>

@@ -1,5 +1,7 @@
 ﻿using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Services;
+using Backend.app.Infrastructure.Auth;
+using Backend.app.Core.Models.Enums;
 
 namespace Backend.app.API.Endpoints;
 
@@ -7,7 +9,9 @@ public static class UserEndpoints
 {
     public static RouteGroupBuilder MapUserEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/users").WithTags("Users");
+        var group = app.MapGroup("/users")
+            .WithTags("Users")
+            .RequireAuth(); // Lock down entire group to authenticated users
 
         // GET /api/users
         group
@@ -21,7 +25,7 @@ public static class UserEndpoints
             )
             .WithName("GetUsers")
             .WithSummary("Get all users")
-            .WithDescription("Retrieves all users in the system.")
+            .WithDescription("Retrieves all users in the system.\n\n🔒 **Authentication Required**")
             .Produces<IEnumerable<UserResponseDto>>(StatusCodes.Status200OK);
 
         // GET /api/users/{id}
@@ -39,7 +43,7 @@ public static class UserEndpoints
             )
             .WithName("GetUserById")
             .WithSummary("Get user by ID")
-            .WithDescription("Retrieves a specific user by their unique identifier.")
+            .WithDescription("Retrieves a specific user by their unique identifier.\n\n🔒 **Authentication Required**")
             .Produces<UserResponseDto>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound);
@@ -58,9 +62,10 @@ public static class UserEndpoints
                     return Results.Created($"/api/users/{createdUser.Id}", createdUser);
                 }
             )
+            .RequireRoles(UserRole.Admin) // Only Admin can create users
             .WithName("CreateUser")
             .WithSummary("Create a new user")
-            .WithDescription("Creates a new user with the provided details.")
+            .WithDescription("Creates a new user with the provided details.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin")
             .Accepts<CreateUserDto>("application/json")
             .Produces<UserResponseDto>(StatusCodes.Status201Created)
             .Produces<string>(StatusCodes.Status400BadRequest)
@@ -87,9 +92,10 @@ public static class UserEndpoints
                     return Results.NoContent();
                 }
             )
+            .RequireRoles(UserRole.Admin) // Only Admin can update users
             .WithName("UpdateUser")
             .WithSummary("Update an existing user")
-            .WithDescription("Updates a user's details by their unique identifier.")
+            .WithDescription("Updates a user's details by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin")
             .Accepts<UpdateUserDto>("application/json")
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
@@ -109,9 +115,10 @@ public static class UserEndpoints
                     return Results.NoContent();
                 }
             )
+            .RequireRoles(UserRole.Admin) // Only Admin can delete users
             .WithName("DeleteUser")
             .WithSummary("Delete a user")
-            .WithDescription("Permanently deletes a user by their unique identifier.")
+            .WithDescription("Permanently deletes a user by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin")
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)

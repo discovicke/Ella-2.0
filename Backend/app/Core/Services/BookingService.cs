@@ -1,4 +1,5 @@
-﻿using Backend.app.Core.Interfaces;
+﻿using Azure.Identity;
+using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
@@ -33,7 +34,7 @@ public class BookingService(
         long? roomId = null,
         DateTime? startDate = null,
         DateTime? endDate = null,
-        int? status = null
+        BookingStatus? status = null
     )
     {
         return await readModelRepo.GetDetailedBookingsFilteredAsync(

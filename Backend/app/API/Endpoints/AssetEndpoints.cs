@@ -1,5 +1,7 @@
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Services;
+using Backend.app.Infrastructure.Auth;
+using Backend.app.Core.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.app.API.Endpoints;
@@ -8,7 +10,9 @@ public static class AssetEndpoints
 {
     public static RouteGroupBuilder MapAssetEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/assets").WithTags("Assets");
+        var group = app.MapGroup("/assets")
+            .WithTags("Assets")
+            .RequireAuth();
 
         // GET /api/assets
         group
@@ -22,7 +26,7 @@ public static class AssetEndpoints
             )
             .WithName("GetAssetTypes")
             .WithSummary("Get all asset types")
-            .WithDescription("Retrieves a list of all available room asset types (e.g., Whiteboard, Projector).")
+            .WithDescription("Retrieves a list of all available room asset types (e.g., Whiteboard, Projector).\n\n🔒 **Authentication Required**")
             .Produces<IEnumerable<AssetTypeResponseDto>>(StatusCodes.Status200OK);
 
         // GET /api/assets/{id}
@@ -37,6 +41,7 @@ public static class AssetEndpoints
             )
             .WithName("GetAssetTypeById")
             .WithSummary("Get asset type by ID")
+            .WithDescription("Retrieves a specific asset type by its unique identifier.\n\n🔒 **Authentication Required**") // Added description
             .Produces<AssetTypeResponseDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
@@ -55,8 +60,10 @@ public static class AssetEndpoints
                     return Results.Created($"/api/assets/{created.Id}", created);
                 }
             )
+            .RequireRoles(UserRole.Admin)
             .WithName("CreateAssetType")
             .WithSummary("Create a new asset type")
+            .WithDescription("Creates a new asset type.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin") // Added description
             .Accepts<CreateAssetTypeDto>("application/json")
             .Produces<AssetTypeResponseDto>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest);
@@ -76,8 +83,10 @@ public static class AssetEndpoints
                     return Results.NoContent();
                 }
             )
+            .RequireRoles(UserRole.Admin)
             .WithName("UpdateAssetType")
             .WithSummary("Update an asset type")
+            .WithDescription("Updates an existing asset type.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin") // Added description
             .Accepts<UpdateAssetTypeDto>("application/json")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status400BadRequest)
@@ -93,8 +102,10 @@ public static class AssetEndpoints
                     return Results.NoContent();
                 }
             )
+            .RequireRoles(UserRole.Admin)
             .WithName("DeleteAssetType")
             .WithSummary("Delete an asset type")
+            .WithDescription("Permanently deletes an asset type.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin") // Added description
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound);
 
