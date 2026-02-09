@@ -160,7 +160,7 @@ public class AuthService(
             PasswordHash = passwordHash,
             DisplayName = request.DisplayName,
             Role = UserRole.Student, // Default role
-            TokensValidAfter = DateTime.UtcNow,
+            TokensValidAfter = DateTime.MinValue, // Fix: Ensure new users don't have immediate token invalidation issues due to timestamp precision
         };
 
         var success = await userRepo.CreateUserAsync(user);
