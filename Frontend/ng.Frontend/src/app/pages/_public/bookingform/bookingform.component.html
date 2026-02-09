@@ -1,0 +1,170 @@
+<div class="booking-container">
+  <!-- Formulär till vänster -->
+  <div class="booking-form">
+    <h2>Boka rum</h2>
+
+    <form (ngSubmit)="onSubmit()">
+      <!-- Namn -->
+      <div class="form-group">
+        <label for="name">Namn</label>
+        <input
+          type="text"
+          id="name"
+          [ngModel]="name()"
+          (ngModelChange)="name.set($event)"
+          name="name"
+          placeholder="Ange ditt namn"
+          required
+        />
+      </div>
+
+      <!-- Stad och Rum bredvid varandra -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="city">Stad</label>
+          <select
+            id="city"
+            [ngModel]="selectedCity()"
+            (ngModelChange)="selectedCity.set($event); onCityChange()"
+            name="city"
+            required
+          >
+            <option value="">Välj stad</option>
+            @for (city of cities; track city.name) {
+              <option [value]="city.name">{{ city.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="room">Rum</label>
+          <select
+            id="room"
+            [ngModel]="selectedRoomId()"
+            (ngModelChange)="selectedRoomId.set($event)"
+            name="room"
+            required
+            [disabled]="!selectedCity()"
+          >
+            <option [ngValue]="null">Välj rum</option>
+            @for (room of filteredRooms(); track room.id) {
+              <option [ngValue]="room.id">{{ room.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <!-- Start datum och tid -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="startDate">Startdatum</label>
+          <input
+            type="date"
+            id="startDate"
+            [ngModel]="startDate()"
+            (ngModelChange)="startDate.set($event)"
+            name="startDate"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="startTime">Starttid</label>
+          <input
+            type="time"
+            id="startTime"
+            [ngModel]="startTime()"
+            (ngModelChange)="startTime.set($event)"
+            name="startTime"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Slut datum och tid -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="endDate">Slutdatum</label>
+          <input
+            type="date"
+            id="endDate"
+            [ngModel]="endDate()"
+            (ngModelChange)="endDate.set($event)"
+            name="endDate"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="endTime">Sluttid</label>
+          <input
+            type="time"
+            id="endTime"
+            [ngModel]="endTime()"
+            (ngModelChange)="endTime.set($event)"
+            name="endTime"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Anteckningar -->
+      <div class="form-group">
+        <label for="notes">Anteckningar</label>
+        <textarea
+          id="notes"
+          [ngModel]="notes()"
+          (ngModelChange)="notes.set($event)"
+          name="notes"
+          placeholder="Frivilliga anteckningar..."
+          rows="4"
+        ></textarea>
+      </div>
+
+      <!-- Submit-knapp -->
+      <button type="submit" class="submit-btn" [disabled]="!isFormValid()">
+        Boka
+      </button>
+    </form>
+  </div>
+
+  <!-- Rumslista till höger -->
+  <div class="rooms-list">
+    <h2>Tillgängliga rum</h2>
+
+    @for (room of rooms; track room.id) {
+      <div class="room-item">
+        <button
+          class="room-header"
+          (click)="toggleRoom(room.id)"
+          [class.expanded]="isRoomExpanded(room.id)"
+        >
+          <span class="room-name">{{ room.name }}</span>
+          <span class="room-city">({{ room.city }})</span>
+          <span class="expand-icon">{{ isRoomExpanded(room.id) ? '▼' : '▶' }}</span>
+        </button>
+
+        @if (isRoomExpanded(room.id)) {
+          <div class="room-details">
+            <div class="detail-row">
+              <span class="label">Typ:</span>
+              <span class="value">{{ getRoomTypeLabel(room.type) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Kapacitet:</span>
+              <span class="value">{{ room.capacity }} platser</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Assets:</span>
+              <ul class="assets-list">
+                @for (asset of room.assets; track asset.id) {
+                  <li>{{ asset.name }}</li>
+                }
+              </ul>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
