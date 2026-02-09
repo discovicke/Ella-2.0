@@ -113,7 +113,10 @@ public class JwtTokenProvider : ITokenProvider
     {
         try
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenHandler = new JwtSecurityTokenHandler
+            {
+                MapInboundClaims = false
+            };
             var key = Encoding.UTF8.GetBytes(_secretKey);
 
             // Konfigurera valideringsparametrar
@@ -163,7 +166,7 @@ public class JwtTokenProvider : ITokenProvider
         }
         catch (Exception ex)
         {
-            _logger.LogError("Unexpected error while validating token: {ex}", ex);
+            _logger.LogError("Unexpected error while validating token: {Exception}", ex);
             return null;
         }
     }
