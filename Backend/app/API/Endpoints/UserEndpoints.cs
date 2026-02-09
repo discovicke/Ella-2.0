@@ -26,7 +26,8 @@ public static class UserEndpoints
             .WithName("GetUsers")
             .WithSummary("Get all users")
             .WithDescription("Retrieves all users in the system.\n\n🔒 **Authentication Required**")
-            .Produces<IEnumerable<UserResponseDto>>(StatusCodes.Status200OK);
+            .Produces<IEnumerable<UserResponseDto>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized);
 
         // GET /api/users/{id}
         group
@@ -46,7 +47,8 @@ public static class UserEndpoints
             .WithDescription("Retrieves a specific user by their unique identifier.\n\n🔒 **Authentication Required**")
             .Produces<UserResponseDto>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
-            .Produces<string>(StatusCodes.Status404NotFound);
+            .Produces<string>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized);
 
         // POST /api/users
         group
@@ -70,7 +72,8 @@ public static class UserEndpoints
             .Produces<UserResponseDto>(StatusCodes.Status201Created)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status409Conflict)
-            .Produces<string>(StatusCodes.Status500InternalServerError);
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         // PUT /api/users/{id}
         group
@@ -100,7 +103,8 @@ public static class UserEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces<string>(StatusCodes.Status500InternalServerError);
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         // POST /api/users/{id}/revoke-tokens
         group
@@ -122,7 +126,8 @@ public static class UserEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces<string>(StatusCodes.Status500InternalServerError);
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         // DELETE /api/users/{id}
         group
@@ -144,7 +149,8 @@ public static class UserEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces<string>(StatusCodes.Status500InternalServerError);
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         return group;
     }

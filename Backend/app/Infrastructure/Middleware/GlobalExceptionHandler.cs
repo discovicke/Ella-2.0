@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Backend.app.Infrastructure.Middleware;
 
 /// <summary>
-/// Production-ready global exception handler using the IExceptionHandler pattern (introduced in .NET 8).
+/// Global exception handler using the IExceptionHandler pattern (introduced in .NET 8).
 /// Converts all application exceptions into standardized RFC 7807 Problem Details responses.
 /// </summary>
 public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger, IHostEnvironment env) : IExceptionHandler

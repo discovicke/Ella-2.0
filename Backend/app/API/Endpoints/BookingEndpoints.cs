@@ -39,7 +39,8 @@ public static class BookingEndpoints
             .WithName("GetAllBookings")
             .WithSummary("Get all bookings")
             .WithDescription("Retrieves a list of bookings, optionally filtered by user, room, date range, or status.\n\n🔒 **Authentication Required**")
-            .Produces<IEnumerable<BookingDetailedReadModel>>(StatusCodes.Status200OK);
+            .Produces<IEnumerable<BookingDetailedReadModel>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized);
 
         // POST /api/bookings
         group
@@ -86,7 +87,8 @@ public static class BookingEndpoints
             .Produces<BookingDetailedReadModel>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status409Conflict);
+            .Produces(StatusCodes.Status409Conflict)
+            .Produces(StatusCodes.Status401Unauthorized);
 
         // Get /api/bookings/{id}
 
@@ -104,7 +106,8 @@ public static class BookingEndpoints
             .WithSummary("Update booking status by ID")
             .WithDescription("Updates the status of a specific booking.\n\n🔒 **Authentication Required**")
             .Produces(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status404NotFound);
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized);
 
         // POST /api/bookings/{id}/register
         group

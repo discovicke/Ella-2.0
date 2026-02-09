@@ -27,7 +27,8 @@ public static class AssetEndpoints
             .WithName("GetAssetTypes")
             .WithSummary("Get all asset types")
             .WithDescription("Retrieves a list of all available room asset types (e.g., Whiteboard, Projector).\n\n🔒 **Authentication Required**")
-            .Produces<IEnumerable<AssetTypeResponseDto>>(StatusCodes.Status200OK);
+            .Produces<IEnumerable<AssetTypeResponseDto>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized);
 
         // GET /api/assets/{id}
         group
@@ -43,7 +44,8 @@ public static class AssetEndpoints
             .WithSummary("Get asset type by ID")
             .WithDescription("Retrieves a specific asset type by its unique identifier.\n\n🔒 **Authentication Required**") // Added description
             .Produces<AssetTypeResponseDto>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status404NotFound);
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized);
 
         // POST /api/assets
         group
@@ -66,7 +68,9 @@ public static class AssetEndpoints
             .WithDescription("Creates a new asset type.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin") // Added description
             .Accepts<CreateAssetTypeDto>("application/json")
             .Produces<AssetTypeResponseDto>(StatusCodes.Status201Created)
-            .Produces(StatusCodes.Status400BadRequest);
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         // PUT /api/assets/{id}
         group
@@ -90,7 +94,9 @@ public static class AssetEndpoints
             .Accepts<UpdateAssetTypeDto>("application/json")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status404NotFound);
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         // DELETE /api/assets/{id}
         group
@@ -107,7 +113,9 @@ public static class AssetEndpoints
             .WithSummary("Delete an asset type")
             .WithDescription("Permanently deletes an asset type.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin") // Added description
             .Produces(StatusCodes.Status204NoContent)
-            .Produces(StatusCodes.Status404NotFound);
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         return group;
     }
