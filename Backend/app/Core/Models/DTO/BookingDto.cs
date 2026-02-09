@@ -1,4 +1,4 @@
-﻿using Backend.app.Core.Models.Entities;
+using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
 
 namespace Backend.app.Core.Models.DTO;
@@ -26,7 +26,7 @@ public record CreateBookingDto(
     DateTime StartTime,
     DateTime EndTime,
     string? Notes,
-    BookingStatus Status = BookingStatus.Active
+    BookingStatus? Status
 );
 
 public record CancelBookingDto(long Id);

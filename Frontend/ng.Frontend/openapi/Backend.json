@@ -1127,14 +1127,6 @@
           "Expired"
         ]
       },
-      "BookingStatus2": {
-        "enum": [
-          "Active",
-          "Cancelled",
-          "Expired"
-        ],
-        "default": "Active"
-      },
       "CreateAssetTypeDto": {
         "required": [
           "description"
@@ -1152,7 +1144,8 @@
           "roomId",
           "startTime",
           "endTime",
-          "notes"
+          "notes",
+          "status"
         ],
         "type": "object",
         "properties": {
@@ -1177,7 +1170,7 @@
             "nullable": true
           },
           "status": {
-            "$ref": "#/components/schemas/BookingStatus2"
+            "$ref": "#/components/schemas/NullableOfBookingStatus"
           }
         }
       },
@@ -1269,6 +1262,15 @@
             "type": "string"
           }
         }
+      },
+      "NullableOfBookingStatus": {
+        "enum": [
+          "Active",
+          "Cancelled",
+          "Expired",
+          null
+        ],
+        "nullable": true
       },
       "RegisterDto": {
         "required": [

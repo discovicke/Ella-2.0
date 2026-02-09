@@ -1,4 +1,4 @@
-﻿using Azure.Identity;
+using Azure.Identity;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
@@ -88,7 +88,7 @@ public class BookingService(
             StartTime = dto.StartTime,
             EndTime = dto.EndTime,
             Notes = dto.Notes,
-            Status = dto.Status,
+            Status = dto.Status ?? BookingStatus.Active,
         };
 
         var id = await repo.CreateBookingAsync(booking);
