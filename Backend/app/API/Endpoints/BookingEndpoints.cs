@@ -1,4 +1,5 @@
 ﻿using Backend.app.Core.Models.DTO;
+using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Models.ReadModels;
 using Backend.app.Core.Services;
@@ -81,23 +82,19 @@ public static class BookingEndpoints
         group
             .MapPut(
                 "/{id}",
-                async (long id, BookingService service) =>
+                async (long id, BookingStatus newStatus, BookingService service) =>
                 {
-                    var booking = await service.GetBookingByIdAsync(id);
+                    
+                    Booking booking = await service.UpdateBookingStatusAsync(id, newStatus);
 
-                    if (booking is null)
-                    {
-                        return Results.NotFound();
-                    }
-
-                    return Results.Ok(
-                        new { isCancelled = booking.Status == BookingStatus.Cancelled }
-                    );
+                    return Results.Ok(booking);
                 }
+
+
             )
-            .WithName("GetBookingById")
-            .WithSummary("Get booking status by ID")
-            .WithDescription("Retrieves the cancellation status of a specific booking.")
+            .WithName("UpdateBookingStatus")
+            .WithSummary("Update booking status by ID")
+            .WithDescription("Updates the status of a specific booking.")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
