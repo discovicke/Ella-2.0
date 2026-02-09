@@ -6,9 +6,20 @@ using Backend.app.Infrastructure.Data;
 using Backend.app.Infrastructure.Repositories.Sqlite;
 using DotNetEnv;
 using Scalar.AspNetCore;
+using System.IO;
 
 // 1. LOAD SECRETS (.env)
-Env.Load();
+// Try explicit path inside the Backend project directory first (helps IDEs with different working directories)
+var envPathExplicit = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+if (File.Exists(envPathExplicit))
+{
+    Env.Load(envPathExplicit);
+}
+else
+{
+    // Fallback to default behavior (searches upwards from current dir)
+    Env.Load();
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +40,28 @@ ConfigureDatabase(builder);
 ConfigureCoreServices(builder.Services);
 
 var app = builder.Build();
+
+// --- RUN DATABASE INITIALIZER ON STARTUP ---
+// Ensure schema and seed are applied before the app starts serving requests.
+using (var scope = app.Services.CreateScope())
+{
+    var initializer = scope.ServiceProvider.GetService<IDbInitializer>();
+    if (initializer is not null)
+    {
+        try
+        {
+            // Top-level await is allowed in Program.cs (minimal host)
+            await initializer.InitializeAsync();
+        }
+        catch (Exception ex)
+        {
+            var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
+            logger?.LogError(ex, "Database initialization failed on startup.");
+            // Rethrow to prevent starting the app in a broken state
+            throw;
+        }
+    }
+}
 
 // --- START OF PIPELINE ---
 
@@ -51,6 +84,7 @@ if (app.Environment.IsDevelopment())
 // 3. THE BOUNCER (Security)
 // "Does this request have a valid ID card (JWT)?"
 // Action: Check the token and stamp the request with the User ID.
+
 app.UseJwtAuthentication();
 
 // 4. THE API GATES

@@ -1,8 +1,16 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { CreateBookingDto } from '../../api/models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BookingService {
-  
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = '/api/bookings';
+
+  createBooking(booking: CreateBookingDto): Observable<unknown> {
+    return this.http.post(this.apiUrl, booking);
+  }
 }
