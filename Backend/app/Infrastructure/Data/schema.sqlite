@@ -85,16 +85,16 @@ CREATE VIEW IF NOT EXISTS "v_bookings_detailed" AS
 SELECT 
     b.id AS booking_id,
     b.user_id,
-    u.display_name AS user_name,
-    u.email AS user_email,
-    u.role AS user_role,
-    u.user_class AS user_class,
+    u.display_name  AS user_name,
+    u.email         AS user_email,
+    u.role          AS user_role,
+    u.user_class    AS user_class,
     b.room_id,
-    r.name AS room_name,
-    r.capacity AS room_capacity,
-    r.type AS room_type,
-    r.address AS address,
-    r.floor AS room_floor,
+    r.name          AS room_name,
+    r.capacity      AS room_capacity,
+    r.type          AS room_type,
+    r.address       AS address,
+    r.floor         AS room_floor,
     b.start_time,
     b.end_time,
     b.status,
@@ -112,11 +112,11 @@ GROUP BY b.id, b.user_id, u.display_name, u.email, u.user_class, b.room_id, r.na
 -- View: Room assets with asset type descriptions
 CREATE VIEW IF NOT EXISTS "v_room_assets_detailed" AS
 SELECT 
-    ra.id AS room_asset_id,
+    ra.id           AS room_asset_id,
     ra.room_id,
-    r.name AS room_name,
+    r.name          AS room_name,
     ra.asset_type_id,
-    at.description AS asset_description
+    at.description  AS asset_description
 FROM room_assets ra
 LEFT JOIN rooms r ON ra.room_id = r.id
 LEFT JOIN asset_types at ON ra.asset_type_id = at.id;
