@@ -2,7 +2,7 @@
 
 ### **1. Auth & Identity**
 
-- **One User** has **One Role Level** (Student, Teacher, or Admin).
+- **One User** has **One Role Level** (Student, Educator, or Admin).
 - **Security Strategy:** - **Passwords** are manually hashed using a unique `password_salt` for each user.
 - **Sessions** are stateless using JWTs. Global logout (revocation) is handled by the `tokens_valid_after` timestamp. Any JWT issued before this timestamp is considered invalid.
 
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS "users"
     "email"              TEXT                              NOT NULL UNIQUE,
     "password_hash"      TEXT                              NOT NULL,
     "display_name"       TEXT,
-    "role"               INTEGER                           NOT NULL, -- 0=Student, 1=Teacher, 2=Admin
+    "role"               INTEGER                           NOT NULL, -- 0=Student, 1=Educator, 2=Admin
     "user_class"              TEXT,
     "is_banned"          INTEGER                           NOT NULL DEFAULT 0,
     "tokens_valid_after" DATETIME                                   DEFAULT CURRENT_TIMESTAMP NOT NULL

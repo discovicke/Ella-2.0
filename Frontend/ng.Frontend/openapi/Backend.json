@@ -1637,7 +1637,7 @@
       "UserRole": {
         "enum": [
           "Student",
-          "Teacher",
+          "Educator",
           "Admin"
         ]
       }

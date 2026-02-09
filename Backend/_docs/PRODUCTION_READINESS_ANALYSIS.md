@@ -24,7 +24,7 @@ While the `AuthorizationMiddleware` exists, it is **not applied** to critical en
 **Analysis:**
 The `CreateBookingDto` accepts a `UserId`.
 - There is no check to ensure the `UserId` in the DTO matches the `HttpContext.User.Identity`.
-- **Exploit:** An authenticated student could technically create a booking on behalf of a teacher or another student by simply sending a different `UserId` in the JSON payload.
+- **Exploit:** An authenticated student could technically create a booking on behalf of a educator or another student by simply sending a different `UserId` in the JSON payload.
 - **Fix Required:** Ignore `UserId` from DTO and force use of `HttpContext.Items["UserId"]` for non-admin users.
 
 ### 1.3. Cookie Configuration for Production

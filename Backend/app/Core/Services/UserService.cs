@@ -6,8 +6,8 @@ using Backend.app.Core.Models.Enums;
 namespace Backend.app.Core.Services;
 
 /// <summary>
-/// User management service for admin/teacher operations.
-/// SECURITY: This service should only be used by admin/teacher roles.
+/// User management service for admin/educator operations.
+/// SECURITY: This service should only be used by admin/educator roles.
 /// For user registration, use AuthService.RegisterAsync() instead.
 /// For password changes by the user themselves, use AuthService methods.
 /// </summary>
@@ -107,12 +107,12 @@ public class UserService(
         }
 
         // SECURITY: Only hash new password if provided, otherwise keep existing hash
-        // NOTE: This allows admin/teacher to reset passwords without knowing the old one
+        // NOTE: This allows admin/educator to reset passwords without knowing the old one
         string passwordHash = existing.PasswordHash;
         if (!string.IsNullOrWhiteSpace(dto.Password))
         {
             passwordHash = passwordHasher.HashPassword(dto.Password);
-            logger.LogInformation("Password updated for user {UserId} by admin/teacher", id);
+            logger.LogInformation("Password updated for user {UserId} by admin/educator", id);
         }
 
         // Skapar uppdaterad användare

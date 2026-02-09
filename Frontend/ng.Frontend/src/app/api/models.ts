@@ -11,27 +11,27 @@
  */
 
 export enum UserRole {
-  Student = "Student",
-  Teacher = "Teacher",
-  Admin = "Admin",
+  Student = 'Student',
+  Educator = 'Educator',
+  Admin = 'Admin',
 }
 
 export enum RoomType {
-  Classroom = "Classroom",
-  Laboratory = "Laboratory",
-  GroupRoom = "GroupRoom",
-  ComputerLab = "ComputerLab",
+  Classroom = 'Classroom',
+  Laboratory = 'Laboratory',
+  GroupRoom = 'GroupRoom',
+  ComputerLab = 'ComputerLab',
 }
 
 export enum BookingStatus {
-  Active = "Active",
-  Cancelled = "Cancelled",
-  Expired = "Expired",
+  Active = 'Active',
+  Cancelled = 'Cancelled',
+  Expired = 'Expired',
 }
 
 export enum BannedStatus {
-  NotBanned = "NotBanned",
-  Banned = "Banned",
+  NotBanned = 'NotBanned',
+  Banned = 'Banned',
 }
 
 export interface AssetTypeResponseDto {
