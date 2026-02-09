@@ -1127,6 +1127,14 @@
           "Expired"
         ]
       },
+      "BookingStatus2": {
+        "enum": [
+          "Active",
+          "Cancelled",
+          "Expired"
+        ],
+        "default": "Active"
+      },
       "CreateAssetTypeDto": {
         "required": [
           "description"
@@ -1169,9 +1177,7 @@
             "nullable": true
           },
           "status": {
-            "type": "integer",
-            "format": "int32",
-            "default": 0
+            "$ref": "#/components/schemas/BookingStatus2"
           }
         }
       },

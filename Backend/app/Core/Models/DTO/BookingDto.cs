@@ -1,9 +1,10 @@
-﻿using Backend.app.Core.Models.Enums;
+﻿using Backend.app.Core.Models.Entities;
+using Backend.app.Core.Models.Enums;
 
 namespace Backend.app.Core.Models.DTO;
 
-    // Data Transfer Objects for Booking
-    // Reference: src/modules/bookings/booking.dto.js
+// Data Transfer Objects for Booking
+// Reference: src/modules/bookings/booking.dto.js
 
 public record BookingResponseDto(
     long Id,
@@ -18,16 +19,14 @@ public record BookingResponseDto(
     DateTime CreatedAt,
     DateTime UpdatedAt
 );
+
 public record CreateBookingDto(
     long UserId,
     long RoomId,
     DateTime StartTime,
     DateTime EndTime,
     string? Notes,
-    int status = 0
-);
-public record CancelBookingDto(
-    long Id
+    BookingStatus Status = BookingStatus.Active
 );
 
-   
+public record CancelBookingDto(long Id);
