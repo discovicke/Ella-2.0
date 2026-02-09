@@ -194,4 +194,31 @@ public class SqliteBookingReadModelRepo(
             throw;
         }
     }
+
+    public async Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByRegisteredUserIdAsync(long userId)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+
+            var sql = @"
+                SELECT v.* 
+                FROM v_bookings_detailed v
+                INNER JOIN registrations r ON v.booking_id = r.booking_id
+                WHERE r.user_id = @UserId
+                ORDER BY v.start_time DESC;";
+
+            var bookings = await conn.QueryAsync<BookingDetailedReadModel>(
+                sql,
+                new { UserId = userId });
+
+            return bookings;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while fetching bookings registered for user {UserId}", userId);
+            throw;
+        }
+    }
 }
