@@ -32,8 +32,9 @@ public interface IBookingReadModelRepository
     /// Get detailed bookings within a time range
     /// </summary>
     Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByDateRangeAsync(
-        DateTime startDate, 
-        DateTime endDate);
+        DateTime startDate,
+        DateTime endDate
+    );
 
     /// <summary>
     /// Get detailed bookings filtered by multiple criteria
@@ -43,5 +44,11 @@ public interface IBookingReadModelRepository
         long? roomId = null,
         DateTime? startDate = null,
         DateTime? endDate = null,
-        int? status = null);
+        int? status = null
+    );
+
+    /// <summary>
+    /// Get all bookings a specific user is registered to attend.
+    /// </summary>
+    Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByRegisteredUserIdAsync(long userId);
 }
