@@ -42,85 +42,73 @@ export class BookingformComponent {
   readonly rooms: Room[] = [
     {
       id: 1,
-      name: 'Sal A101',
+      name: 'Lintjärn',
       city: 'Hudiksvall',
-      capacity: 30,
-      type: RoomType.Classroom,
+      capacity: 16,
+      type: RoomType.ComputerLab,
       assets: [
-        { id: 1, name: 'Projektor' },
-        { id: 2, name: 'Whiteboard' },
+        { id: 1, name: 'Whiteboard'},
+        { id: 2, name: 'TV' },
+        { id: 4, name: 'Projektor' },
+        { id: 3, name: 'Nätverksutrustning'},
       ],
     },
     {
       id: 2,
-      name: 'Lab B202',
+      name: 'Lillfjärden',
       city: 'Hudiksvall',
-      capacity: 20,
-      type: RoomType.Laboratory,
+      capacity: 22,
+      type: RoomType.Classroom,
       assets: [
-        { id: 3, name: 'Mikroskop' },
-        { id: 4, name: 'Labbänkar' },
-        { id: 5, name: 'Ventilation' },
+        { id: 2, name: 'TV' },
       ],
     },
     {
       id: 3,
-      name: 'Grupprum G1',
-      city: 'Hudiksvall',
-      capacity: 8,
+      name: 'Personalrum',
+      city: 'Uppsala',
+      capacity: 10,
       type: RoomType.GroupRoom,
       assets: [
-        { id: 6, name: 'Whiteboard' },
-        { id: 7, name: 'TV-skärm' },
-      ],
+        { id: 2, name: 'TV' },
+      ]
     },
     {
       id: 4,
-      name: 'Datasal D101',
-      city: 'Uppsala',
-      capacity: 25,
-      type: RoomType.ComputerLab,
+      name: 'Dellen',
+      city: 'Hudiksvall',
+      capacity: 24,
+      type: RoomType.Classroom,
       assets: [
-        { id: 8, name: 'Datorer' },
-        { id: 9, name: 'Projektor' },
-        { id: 10, name: 'Skrivare' },
-      ],
+        { id: 1, name: 'Whiteboard' },
+        { id: 2, name: 'TV' },
+        { id: 3, name: 'Projektor' },
+      ]
     },
     {
       id: 5,
-      name: 'Föreläsningssal F1',
-      city: 'Uppsala',
-      capacity: 100,
-      type: RoomType.Classroom,
+      name: 'Kopparlab',
+      city: 'Hudiksvall',
+      capacity: 26,
+      type: RoomType.Laboratory,
       assets: [
-        { id: 11, name: 'Projektor' },
-        { id: 12, name: 'Mikrofon' },
-        { id: 13, name: 'Högtalarystem' },
-      ],
+        { id: 1, name: 'Whiteboard' },
+        { id: 4, name: 'Projektor'},
+        { id: 5, name: 'Fiberutrustning'}
+      ]
     },
     {
       id: 6,
-      name: 'Studiecenter',
-      city: 'Stockholm',
-      capacity: 50,
-      type: RoomType.GroupRoom,
-      assets: [
-        { id: 14, name: 'Soffgrupper' },
-        { id: 15, name: 'Kaffemaskin' },
-      ],
-    },
-    {
-      id: 7,
-      name: 'Kemilab K1',
-      city: 'Stockholm',
-      capacity: 15,
+      name: 'Fiberlab',
+      city: 'Hudiksvall',
+      capacity: 20,
       type: RoomType.Laboratory,
       assets: [
-        { id: 16, name: 'Dragskåp' },
-        { id: 17, name: 'Kemikalieförråd' },
-        { id: 18, name: 'Nöddusch' },
-      ],
-    },
+        { id: 1, name: 'Whiteboard' },
+        { id: 4, name: 'Projektor'},
+        { id: 5, name: 'Fiberutrustning'}
+      ]
+    }
   ];
 
   // Formulärfält
@@ -198,7 +186,9 @@ export class BookingformComponent {
     const endDateTime = new Date(`${this.endDate()}T${this.endTime()}`);
 
     // Slå ihop namn och anteckningar
-    const combinedNotes = `Namn: ${this.name()}${this.notes() ? '\nAnteckningar: ' + this.notes() : ''}`;
+    const combinedNotes = `Namn: ${this.name()}${this.notes()
+      ? '\nAnteckningar: ' + this.notes()
+      : ''}`;
 
     const booking: CreateBookingDto = {
       userId: 1, // Mock userId
