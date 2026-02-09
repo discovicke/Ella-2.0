@@ -840,7 +840,7 @@
       }
     },
     "/api/bookings/{id}": {
-      "get": {
+      "put": {
         "tags": [
           "Bookings"
         ],

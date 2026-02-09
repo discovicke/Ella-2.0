@@ -79,7 +79,7 @@ public static class BookingEndpoints
         // Get /api/bookings/{id}
 
         group
-            .MapGet(
+            .MapPut(
                 "/{id}",
                 async (long id, BookingService service) =>
                 {
