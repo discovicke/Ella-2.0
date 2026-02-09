@@ -33,15 +33,8 @@ public static class UserEndpoints
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
 
-                    try
-                    {
-                        var user = await service.GetByIdAsync(id);
-                        return Results.Ok(user);
-                    }
-                    catch (KeyNotFoundException ex)
-                    {
-                        return Results.NotFound(ex.Message);
-                    }
+                    var user = await service.GetByIdAsync(id);
+                    return Results.Ok(user);
                 }
             )
             .WithName("GetUserById")
@@ -61,19 +54,8 @@ public static class UserEndpoints
                     if (validation is not null)
                         return validation;
 
-                    try
-                    {
-                        var createdUser = await service.CreateUserAsync(dto);
-                        return Results.Created($"/api/users/{createdUser.Id}", createdUser);
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        return Results.Conflict(ex.Message);
-                    }
-                    catch (Exception ex)
-                    {
-                        return Results.Problem(ex.Message);
-                    }
+                    var createdUser = await service.CreateUserAsync(dto);
+                    return Results.Created($"/api/users/{createdUser.Id}", createdUser);
                 }
             )
             .WithName("CreateUser")
@@ -101,19 +83,8 @@ public static class UserEndpoints
                     if (validation is not null)
                         return validation;
 
-                    try
-                    {
-                        await service.UpdateUserAsync(id, dto);
-                        return Results.NoContent();
-                    }
-                    catch (KeyNotFoundException ex)
-                    {
-                        return Results.NotFound(ex.Message);
-                    }
-                    catch (Exception ex)
-                    {
-                        return Results.Problem(ex.Message);
-                    }
+                    await service.UpdateUserAsync(id, dto);
+                    return Results.NoContent();
                 }
             )
             .WithName("UpdateUser")
@@ -134,19 +105,8 @@ public static class UserEndpoints
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
 
-                    try
-                    {
-                        await service.DeleteUserAsync(id);
-                        return Results.NoContent();
-                    }
-                    catch (KeyNotFoundException ex)
-                    {
-                        return Results.NotFound(ex.Message);
-                    }
-                    catch (Exception ex)
-                    {
-                        return Results.Problem(ex.Message);
-                    }
+                    await service.DeleteUserAsync(id);
+                    return Results.NoContent();
                 }
             )
             .WithName("DeleteUser")

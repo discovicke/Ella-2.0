@@ -42,15 +42,8 @@ public static class RoomEndpoints
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
 
-                    try
-                    {
-                        var room = await service.GetRoomByIdAsync(id);
-                        return Results.Ok(room);
-                    }
-                    catch (KeyNotFoundException ex)
-                    {
-                        return Results.NotFound(ex.Message);
-                    }
+                    var room = await service.GetRoomByIdAsync(id);
+                    return Results.Ok(room);
                 }
             )
             .WithName("GetRoomById")
@@ -98,15 +91,8 @@ public static class RoomEndpoints
                     if (validation is not null)
                         return validation;
 
-                    try
-                    {
-                        await service.UpdateRoomAsync(id, dto);
-                        return Results.NoContent();
-                    }
-                    catch (KeyNotFoundException ex)
-                    {
-                        return Results.NotFound(ex.Message);
-                    }
+                    await service.UpdateRoomAsync(id, dto);
+                    return Results.NoContent();
                 }
             )
             .WithName("UpdateRoom")
@@ -127,15 +113,8 @@ public static class RoomEndpoints
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
 
-                    try
-                    {
-                        await service.DeleteRoomAsync(id);
-                        return Results.NoContent();
-                    }
-                    catch (KeyNotFoundException ex)
-                    {
-                        return Results.NotFound(ex.Message);
-                    }
+                    await service.DeleteRoomAsync(id);
+                    return Results.NoContent();
                 }
             )
             .WithName("DeleteRoom")

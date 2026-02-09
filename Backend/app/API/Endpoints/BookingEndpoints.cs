@@ -38,7 +38,7 @@ public static class BookingEndpoints
                 "/",
                 async (CreateBookingDto dto, BookingService service) =>
                 {
-                    // Layer 2 Validation: Logic Check
+                    // Layer 2 Validation: Logic Check (Still kept in endpoint for "Fail Fast")
                     if (dto.StartTime >= dto.EndTime)
                     {
                         return Results.BadRequest(
@@ -46,26 +46,19 @@ public static class BookingEndpoints
                         );
                     }
 
-                    try
+                    var createdBooking = await service.CreateBookingAsync(dto);
+
+                    if (createdBooking is null)
                     {
-                        var createdBooking = await service.CreateBookingAsync(dto);
-
-                        if (createdBooking is null)
-                        {
-                            return Results.Conflict(
-                                new { message = "The room is already booked for this time period." }
-                            );
-                        }
-
-                        return Results.Created(
-                            $"/api/bookings/{createdBooking.Id}",
-                            createdBooking
+                        return Results.Conflict(
+                            new { message = "The room is already booked for this time period." }
                         );
                     }
-                    catch (KeyNotFoundException ex)
-                    {
-                        return Results.NotFound(new { message = ex.Message });
-                    }
+
+                    return Results.Created(
+                        $"/api/bookings/{createdBooking.Id}",
+                        createdBooking
+                    );
                 }
             )
             .WithName("CreateBooking")

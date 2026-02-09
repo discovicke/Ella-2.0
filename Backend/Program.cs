@@ -3,6 +3,7 @@ using Backend.app.Core.Interfaces;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
 using Backend.app.Infrastructure.Data;
+using Backend.app.Infrastructure.Middleware;
 using Backend.app.Infrastructure.Repositories.Sqlite;
 using DotNetEnv;
 using Scalar.AspNetCore;
@@ -26,6 +27,8 @@ var builder = WebApplication.CreateBuilder(args);
 // 2. CONFIGURATION
 builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 // Fix Enums for Frontend
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -64,6 +67,9 @@ using (var scope = app.Services.CreateScope())
 }
 
 // --- START OF PIPELINE ---
+
+// 0. THE SAFETY NET
+app.UseExceptionHandler();
 
 // 1. THE FILE CHECKER
 // "Is the user asking for a file like 'styles.scss'?"

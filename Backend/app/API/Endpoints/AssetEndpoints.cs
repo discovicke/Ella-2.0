@@ -31,15 +31,8 @@ public static class AssetEndpoints
                 "/{id}",
                 async (long id, AssetService service) =>
                 {
-                    try
-                    {
-                        var asset = await service.GetByIdAsync(id);
-                        return Results.Ok(asset);
-                    }
-                    catch (KeyNotFoundException)
-                    {
-                        return Results.NotFound($"AssetType with ID {id} not found.");
-                    }
+                    var asset = await service.GetByIdAsync(id);
+                    return Results.Ok(asset);
                 }
             )
             .WithName("GetAssetTypeById")
@@ -79,15 +72,8 @@ public static class AssetEndpoints
                         return Results.BadRequest("Description is required.");
                     }
 
-                    try
-                    {
-                        await service.UpdateAsync(id, dto);
-                        return Results.NoContent();
-                    }
-                    catch (KeyNotFoundException)
-                    {
-                        return Results.NotFound($"AssetType with ID {id} not found.");
-                    }
+                    await service.UpdateAsync(id, dto);
+                    return Results.NoContent();
                 }
             )
             .WithName("UpdateAssetType")
@@ -103,15 +89,8 @@ public static class AssetEndpoints
                 "/{id}",
                 async (long id, AssetService service) =>
                 {
-                    try
-                    {
-                        await service.DeleteAsync(id);
-                        return Results.NoContent();
-                    }
-                    catch (KeyNotFoundException)
-                    {
-                        return Results.NotFound($"AssetType with ID {id} not found.");
-                    }
+                    await service.DeleteAsync(id);
+                    return Results.NoContent();
                 }
             )
             .WithName("DeleteAssetType")
