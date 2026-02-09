@@ -112,4 +112,22 @@ public class BookingService(
     {
         return await repo.GetBookingByIdAsync(id);
     }
+
+    /// <summary>
+    /// Update booking status (e.g., Cancelled, Completed)
+    /// </summary>
+    public async Task<Booking>UpdateBookingStatusAsync(long id, BookingStatus newStatus)
+    {
+        var booking = await repo.GetBookingByIdAsync(id);
+
+        if (booking is null)
+        {
+            throw new KeyNotFoundException($"Booking with ID {id} not found.");
+        }
+        booking.Status = newStatus;
+
+        await repo.UpdateBookingAsync(id, booking);
+
+        return booking;
+    }
 }
