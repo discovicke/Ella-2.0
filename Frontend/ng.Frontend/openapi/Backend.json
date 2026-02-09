@@ -1170,7 +1170,7 @@
             "nullable": true
           },
           "status": {
-            "$ref": "#/components/schemas/NullableOfBookingStatus"
+            "$ref": "#/components/schemas/BookingStatus"
           }
         }
       },
@@ -1262,15 +1262,6 @@
             "type": "string"
           }
         }
-      },
-      "NullableOfBookingStatus": {
-        "enum": [
-          "Active",
-          "Cancelled",
-          "Expired",
-          null
-        ],
-        "nullable": true
       },
       "RegisterDto": {
         "required": [

@@ -26,7 +26,7 @@ public record CreateBookingDto(
     DateTime StartTime,
     DateTime EndTime,
     string? Notes,
-    BookingStatus? Status
+    BookingStatus Status
 );
 
 public record CancelBookingDto(long Id);

@@ -23,13 +23,6 @@ export enum RoomType {
   ComputerLab = "ComputerLab",
 }
 
-/** @default "Active" */
-export enum BookingStatus2 {
-  Active = "Active",
-  Cancelled = "Cancelled",
-  Expired = "Expired",
-}
-
 export enum BookingStatus {
   Active = "Active",
   Cancelled = "Cancelled",
@@ -92,7 +85,7 @@ export interface CreateBookingDto {
   /** @format date-time */
   endTime: string;
   notes: string | null;
-  status?: BookingStatus2;
+  status: BookingStatus;
 }
 
 export interface CreateRoomDto {
