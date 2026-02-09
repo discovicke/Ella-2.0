@@ -125,9 +125,9 @@ static void ConfigureOpenApi(IServiceCollection services)
                     + "Most modification endpoints require authentication and Admin privileges.\n\n"
                     + "**Authentication:**\n"
                     + "1. Login via `POST /api/auth/login` to receive a JWT token.\n"
-                    + "2. Click the **'auth/login'** button below.\n"
-                    + "3. Enter the token in the value field (e.g. `ey...`).\n"
-                    + "   *Note: Scalar automatically adds the 'Bearer ' prefix for you.*";
+                    + "2. Copy the received token (e.g. `ey...`).\n"
+                    + "3. Enter the token in the value field to the right.\n\n\n"
+                    + "*Note: Scalar automatically adds the 'Bearer ' prefix for you.*";
 
                 const string schemeKey = "Bearer";
 

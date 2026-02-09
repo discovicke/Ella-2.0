@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "ELLA Booking System API",
-    "description": "Welcome to the ELLA Booking System API. \n\nThis API provides endpoints for managing rooms, assets, users, registrations, and bookings. Most modification endpoints require authentication and Admin privileges.\n\n**Authentication:**\n1. Login via `POST /api/auth/login` to receive a JWT token.\n2. Click the **'auth/login'** button below.\n3. Enter the token in the value field (e.g. `ey...`).\n   *Note: Scalar automatically adds the 'Bearer ' prefix for you.*",
+    "description": "Welcome to the ELLA Booking System API. \n\nThis API provides endpoints for managing rooms, assets, users, registrations, and bookings. Most modification endpoints require authentication and Admin privileges.\n\n**Authentication:**\n1. Login via `POST /api/auth/login` to receive a JWT token.\n2. Copy the received token (e.g. `ey...`).\n3. Enter the token in the value field to the right.\n\n\n*Note: Scalar automatically adds the 'Bearer ' prefix for you.*",
     "version": "v1"
   },
   "paths": {
