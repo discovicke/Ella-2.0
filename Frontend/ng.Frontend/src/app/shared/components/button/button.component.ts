@@ -8,16 +8,14 @@ import { ChangeDetectionStrategy, Component, input, Input, output } from '@angul
 })
 export class ButtonComponent {
   variant = input<'primary' | 'secondary' | 'tertiary' | 'danger'|'success'>('primary');
-  
-  disabled = false;
+  disabled = input(false);
+  type = input<'button' | 'submit' | 'reset'>('button');
 
   clicked = output<MouseEvent>();
 
   onClick(event: MouseEvent) {
-    if (!this.disabled) {
+    if (!this.disabled()) {
       this.clicked.emit(event);
     }
   }
-  
-
 }
