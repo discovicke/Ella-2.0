@@ -154,5 +154,4 @@ export class AuthService {
     }
   }
 
-  // Helper method removed as we don't check token expiration locally anymore (server rejects cookie)
 }
