@@ -1,3 +1,4 @@
+
 <!-- LOGIN-LAYOUT -->
 <h1 class="visually-hidden">Logga in till ELLA</h1>
 
@@ -8,7 +9,11 @@
     <p>Logga in för att börja boka</p>
 
     <form class="form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      <div class="inputGroup">
+      <!-- Email Input Group -->
+      <div 
+        class="inputGroup" 
+        [class.error]="hasLoginError() || (loginForm.controls.email.invalid && loginForm.controls.email.touched)">
+        
         <label for="username" class="visually-hidden">E-postadress</label>
         <input
           id="username"
@@ -17,14 +22,20 @@
           required
           placeholder=" "
           autocomplete="email"
+          (input)="hasLoginError.set(false)" 
         />
         <div class="labelline">E-postadress</div>
-        @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
-          <span class="error-msg">Ange en giltig e-post</span>
+        
+        @if (loginForm.controls.email.invalid && loginForm.controls.email.touched) {
+          <!-- Optional validation msg text if needed -->
         }
       </div>
 
-      <div class="inputGroup">
+      <!-- Password Input Group -->
+      <div 
+        class="inputGroup" 
+        [class.error]="hasLoginError() || (loginForm.controls.password.invalid && loginForm.controls.password.touched)">
+        
         <label for="password" class="visually-hidden">Lösenord</label>
         <input
           id="password"
@@ -33,6 +44,7 @@
           required
           placeholder=" "
           autocomplete="current-password"
+          (input)="hasLoginError.set(false)"
         />
         <div class="labelline">Lösenord</div>
       </div>
@@ -40,7 +52,7 @@
       <app-button 
         type="submit" 
         variant="primary" 
-        [disabled]="loginForm.invalid || isSubmitting()"
+        [disabled]="isSubmitting()"
         style="width: 100%; margin-top: 1rem;">
         {{ isSubmitting() ? 'Loggar in...' : 'Logga in' }}
       </app-button>
