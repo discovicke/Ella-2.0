@@ -286,6 +286,15 @@
     background: var(--color-bg-elevated);
   }
 }
+@mixin button-success {
+  @include button-base;
+  background: var(--color-success);
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: var(--color-success-hover);
+  }
+}
 
 @mixin button-danger {
   @include button-base;
