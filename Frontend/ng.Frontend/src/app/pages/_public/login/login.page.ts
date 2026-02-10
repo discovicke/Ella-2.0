@@ -25,9 +25,15 @@ export class LoginPage {
 
   readonly isSubmitting = signal(false);
   readonly hasLoginError = signal(false);
+  private errorTimeoutId?: number;
 
   onSubmit() {
-    // Reset previous error state
+    // Clear any existing error timeout
+    if (this.errorTimeoutId) {
+      clearTimeout(this.errorTimeoutId);
+    }
+
+    // Reset error state to allow shake animation to retrigger
     this.hasLoginError.set(false);
 
     if (this.loginForm.invalid) {
@@ -36,33 +42,37 @@ export class LoginPage {
     }
 
     this.isSubmitting.set(true);
-    
+
     const loginData: LoginDto = {
       email: this.loginForm.controls.email.value,
       password: this.loginForm.controls.password.value,
     };
 
     this.loginService.loginUser(loginData).subscribe({
-      next: (response) => {
+      next: () => {
         this.toastService.showSuccess('Inloggning lyckades!', { title: 'Välkommen!' });
-        
+
         // Short delay for visual feedback before nav
         setTimeout(() => {
-            this.router.navigate(['/']); 
+            this.router.navigate(['/']);
             this.isSubmitting.set(false);
-        }, 1000); 
+        }, 1000);
       },
       error: (err) => {
         console.error('Login error:', err);
-        
-        // Trigger shake and red inputs
-        this.hasLoginError.set(true);
-        
-        // Force reflow for shake animation if needed, but in Angular signal updates 
-        // usually trigger change detection which adds the class. 
-        // If user spams click, we might want to toggle false->true.
-        // For now, setting it true is enough to show the state.
-        
+
+        // Force re-trigger of shake animation by toggling error state
+        // This ensures the animation plays even if user clicks multiple times
+        setTimeout(() => {
+          this.hasLoginError.set(true);
+
+          // Auto-clear error state after 2 seconds
+          this.errorTimeoutId = window.setTimeout(() => {
+            this.hasLoginError.set(false);
+            this.errorTimeoutId = undefined;
+          }, 2000);
+        }, 0);
+
         this.toastService.showError('Fel e-post eller lösenord');
         this.isSubmitting.set(false);
       },

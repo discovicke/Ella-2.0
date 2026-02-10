@@ -10,10 +10,10 @@
 
     <form class="form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <!-- Email Input Group -->
-      <div 
-        class="inputGroup" 
+      <div
+        class="inputGroup"
         [class.error]="hasLoginError() || (loginForm.controls.email.invalid && loginForm.controls.email.touched)">
-        
+
         <label for="username" class="visually-hidden">E-postadress</label>
         <input
           id="username"
@@ -22,20 +22,19 @@
           required
           placeholder=" "
           autocomplete="email"
-          (input)="hasLoginError.set(false)" 
         />
         <div class="labelline">E-postadress</div>
-        
+
         @if (loginForm.controls.email.invalid && loginForm.controls.email.touched) {
           <!-- Optional validation msg text if needed -->
         }
       </div>
 
       <!-- Password Input Group -->
-      <div 
-        class="inputGroup" 
+      <div
+        class="inputGroup"
         [class.error]="hasLoginError() || (loginForm.controls.password.invalid && loginForm.controls.password.touched)">
-        
+
         <label for="password" class="visually-hidden">Lösenord</label>
         <input
           id="password"
@@ -44,14 +43,13 @@
           required
           placeholder=" "
           autocomplete="current-password"
-          (input)="hasLoginError.set(false)"
         />
         <div class="labelline">Lösenord</div>
       </div>
 
-      <app-button 
-        type="submit" 
-        variant="primary" 
+      <app-button
+        type="submit"
+        variant="primary"
         [disabled]="isSubmitting()"
         style="width: 100%; margin-top: 1rem;">
         {{ isSubmitting() ? 'Loggar in...' : 'Logga in' }}
