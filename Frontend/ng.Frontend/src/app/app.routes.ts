@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/auth/auth.guard';
+import { UserRole } from './api/models';
 
 export const routes: Routes = [
   // =========================================================
@@ -38,11 +40,12 @@ export const routes: Routes = [
   // =========================================================
   {
     path: 'administrator',
+    canActivate: [authGuard],
+    data: { roles: [UserRole.Admin] },
     // 1. Load the "Shell" (Sidebar + RouterOutlet)
     loadComponent: () =>
       import('./pages/administrator/administrator.layout').then((m) => m.AdministratorLayout),
-    // TODO: Add guards here later, e.g., canActivate: [authGuard, adminGuard]
-
+    
     // 2. Define the "Views" that load inside the shell
     children: [
       {
@@ -84,6 +87,8 @@ export const routes: Routes = [
   // =========================================================
   {
     path: 'student',
+    canActivate: [authGuard],
+    data: { roles: [UserRole.Student] },
     loadComponent: () => import('./pages/student/student.layout').then((m) => m.StudentLayout),
     children: [
       // Add student pages here later
@@ -95,6 +100,8 @@ export const routes: Routes = [
   // =========================================================
   {
     path: 'educator',
+    canActivate: [authGuard],
+    data: { roles: [UserRole.Educator] },
     loadComponent: () => import('./pages/educator/educator.layout').then((m) => m.EducatorLayout),
     children: [
       // Add educator pages here later

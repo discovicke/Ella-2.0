@@ -53,7 +53,7 @@ public class AuthService(
         }
 
         // Generate JWT token
-        var token = tokenProvider.GenerateAccessToken(user.Id, user.Email);
+        var token = tokenProvider.GenerateAccessToken(user.Id, user.Email, user.Role.ToString());
 
         logger.LogInformation("Login successful for user {UserId} ({Email})", user.Id, user.Email);
 
@@ -182,7 +182,7 @@ public class AuthService(
         }
 
         // Generate JWT for immediate login
-        var token = tokenProvider.GenerateAccessToken(createdUser.Id, createdUser.Email);
+        var token = tokenProvider.GenerateAccessToken(createdUser.Id, createdUser.Email, createdUser.Role.ToString());
 
         logger.LogInformation(
             "Registration successful for user {UserId} ({Email})",
@@ -200,7 +200,7 @@ public class AuthService(
             Id = user.Id,
             Email = user.Email,
             DisplayName = user.DisplayName,
-            Role = user.Role.ToString().ToLowerInvariant(),
+            Role = user.Role.ToString(),
             UserClass = user.UserClass,
             IsBanned = user.IsBanned == BannedStatus.Banned,
         };
