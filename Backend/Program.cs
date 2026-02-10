@@ -1,12 +1,14 @@
+using System.IO;
 using Backend.app.API.Endpoints;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
 using Backend.app.Infrastructure.Data;
+using Backend.app.Infrastructure.Middleware;
 using Backend.app.Infrastructure.Repositories.Sqlite;
 using DotNetEnv;
+using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
-using System.IO;
 
 // 1. LOAD SECRETS (.env)
 // Try explicit path inside the Backend project directory first (helps IDEs with different working directories)
@@ -25,7 +27,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 2. CONFIGURATION
 builder.Configuration.AddEnvironmentVariables();
-builder.Services.AddOpenApi();
+ConfigureOpenApi(builder.Services);
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 // Fix Enums for Frontend
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -42,7 +46,6 @@ ConfigureCoreServices(builder.Services);
 var app = builder.Build();
 
 // --- RUN DATABASE INITIALIZER ON STARTUP ---
-// Ensure schema and seed are applied before the app starts serving requests.
 using (var scope = app.Services.CreateScope())
 {
     var initializer = scope.ServiceProvider.GetService<IDbInitializer>();
@@ -50,14 +53,12 @@ using (var scope = app.Services.CreateScope())
     {
         try
         {
-            // Top-level await is allowed in Program.cs (minimal host)
             await initializer.InitializeAsync();
         }
         catch (Exception ex)
         {
             var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
             logger?.LogError(ex, "Database initialization failed on startup.");
-            // Rethrow to prevent starting the app in a broken state
             throw;
         }
     }
@@ -65,16 +66,14 @@ using (var scope = app.Services.CreateScope())
 
 // --- START OF PIPELINE ---
 
+// 0. THE SAFETY NET
+app.UseExceptionHandler();
+
 // 1. THE FILE CHECKER
-// "Is the user asking for a file like 'styles.scss'?"
-// If YES: Give it to them and STOP here.
-// If NO: Pass them to the next step.
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
 // 2. THE DEV TOOLS (Conditional)
-// "Is this a developer?"
-// If YES: Show them the API documentation pages.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -82,14 +81,9 @@ if (app.Environment.IsDevelopment())
 }
 
 // 3. THE BOUNCER (Security)
-// "Does this request have a valid ID card (JWT)?"
-// Action: Check the token and stamp the request with the User ID.
-
 app.UseJwtAuthentication();
 
 // 4. THE API GATES
-// "Is the user asking for data (e.g., /api/bookings)?"
-// Action: Route them to the C# method that handles that specific data.
 var api = app.MapGroup("api");
 api.MapAuthEndpoints();
 api.MapUserEndpoints();
@@ -98,8 +92,6 @@ api.MapAssetEndpoints();
 api.MapBookingEndpoints();
 
 // 5. THE CATCH-ALL (SPA Fallback)
-// "I don't know what this URL is. It must be an Angular page."
-// Action: Send them 'index.html' so Angular can handle the routing in the browser.
 app.MapFallbackToFile("index.html");
 
 // --- END OF PIPELINE ---
@@ -109,6 +101,70 @@ app.Run(); // <--- Start the machine!
 // ---------------------------------------------------------
 // LOCAL CONFIGURATION METHODS
 // ---------------------------------------------------------
+
+static void ConfigureOpenApi(IServiceCollection services)
+{
+    services.AddOpenApi(options =>
+    {
+        options.AddDocumentTransformer(
+            (document, context, cancellationToken) =>
+            {
+                // Ensure the document is not null
+                document.Info ??= new OpenApiInfo();
+                document.Components ??= new OpenApiComponents();
+                document.Components.SecuritySchemes ??=
+                    new Dictionary<string, OpenApiSecurityScheme>();
+                document.SecurityRequirements ??= new List<OpenApiSecurityRequirement>();
+
+                // Configure the document
+                document.Info.Title = "ELLA Booking System API";
+                document.Info.Version = "v1";
+                document.Info.Description =
+                    "Welcome to the ELLA Booking System API. \n\n"
+                    + "This API provides endpoints for managing rooms, assets, users, registrations, and bookings. "
+                    + "Most modification endpoints require authentication and Admin privileges.\n\n"
+                    + "**Authentication:**\n"
+                    + "1. Login via `POST /api/auth/login` to receive a JWT token.\n"
+                    + "2. Copy the received token (e.g. `ey...`).\n"
+                    + "3. Enter the token in the value field to the right.\n\n\n"
+                    + "*Note: Scalar automatically adds the 'Bearer ' prefix for you.*";
+
+                const string schemeKey = "Bearer";
+
+                // Define the Security Scheme
+                document.Components.SecuritySchemes[schemeKey] = new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "JWT Authorization header using the Bearer scheme.",
+                };
+
+                // Apply globally
+                document.SecurityRequirements.Clear();
+                document.SecurityRequirements.Add(
+                    new OpenApiSecurityRequirement
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = schemeKey,
+                                },
+                            },
+                            Array.Empty<string>()
+                        },
+                    }
+                );
+
+                return Task.CompletedTask;
+            }
+        );
+    });
+}
 
 static void ConfigureDatabase(WebApplicationBuilder builder)
 {

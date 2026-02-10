@@ -42,7 +42,7 @@ public static class AuthEndpoints
 
         // POST /auth/login - Authenticate user and get JWT token
         group
-            .MapPost("/login", async (LoginDto request, AuthService authService, HttpContext httpContext) =>
+            .MapPost("/login", async (LoginDto request, AuthService authService, HttpContext httpContext, IHostEnvironment env) =>
             {
                 var result = await authService.LoginAsync(request);
 
@@ -54,7 +54,7 @@ public static class AuthEndpoints
                 {
                     HttpOnly = true,
                     SameSite = SameSiteMode.Lax,
-                    Secure = false, // Set to true in production with HTTPS
+                    Secure = !env.IsDevelopment(), // Secure in production, allowed in dev
                     MaxAge = TimeSpan.FromDays(7),
                     Path = "/"
                 });

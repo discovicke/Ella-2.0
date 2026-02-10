@@ -1,4 +1,5 @@
-﻿using Backend.app.Core.Interfaces;
+using Azure.Identity;
+using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
@@ -33,7 +34,7 @@ public class BookingService(
         long? roomId = null,
         DateTime? startDate = null,
         DateTime? endDate = null,
-        int? status = null
+        BookingStatus? status = null
     )
     {
         return await readModelRepo.GetDetailedBookingsFilteredAsync(
@@ -87,7 +88,7 @@ public class BookingService(
             StartTime = dto.StartTime,
             EndTime = dto.EndTime,
             Notes = dto.Notes,
-            Status = (BookingStatus)dto.status,
+            Status = BookingStatus.Active,
         };
 
         var id = await repo.CreateBookingAsync(booking);
@@ -116,7 +117,7 @@ public class BookingService(
     /// <summary>
     /// Update booking status (e.g., Cancelled, Completed)
     /// </summary>
-    public async Task<Booking>UpdateBookingStatusAsync(long id, BookingStatus newStatus)
+    public async Task<Booking> UpdateBookingStatusAsync(long id, BookingStatus newStatus)
     {
         var booking = await repo.GetBookingByIdAsync(id);
 
@@ -138,8 +139,9 @@ public class BookingService(
     public async Task<bool> RegisterParticipantAsync(long userId, long bookingId)
     {
         var booking = await readModelRepo.GetDetailedBookingByIdAsync(bookingId);
-        if (booking is null) throw new KeyNotFoundException("Booking not found.");
-        
+        if (booking is null)
+            throw new KeyNotFoundException("Booking not found.");
+
         if (booking.Status == BookingStatus.Cancelled)
             throw new InvalidOperationException("Cannot register for a cancelled booking.");
 
@@ -147,7 +149,10 @@ public class BookingService(
             return true; // Already registered
 
         // Soft Capacity Check
-        if (booking.RoomCapacity.HasValue && booking.RegistrationCount >= booking.RoomCapacity.Value)
+        if (
+            booking.RoomCapacity.HasValue
+            && booking.RegistrationCount >= booking.RoomCapacity.Value
+        )
         {
             // We proceed anyway as per requirement, but we could log it or return a specific status if needed.
             // For now, we just fulfill the "don't hard stop" rule.

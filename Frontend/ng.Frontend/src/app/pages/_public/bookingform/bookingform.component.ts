@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BookingService } from '../../../shared/services/booking.service';
-import { CreateBookingDto, RoomType } from '../../../api/models';
+import { CreateBookingDto, RoomType, BookingStatus } from '../../../api/models';
 
 interface Asset {
   id: number;
@@ -32,11 +32,7 @@ export class BookingformComponent {
   private readonly bookingService = inject(BookingService);
 
   // Mockdata för städer
-  readonly cities: City[] = [
-    { name: 'Hudiksvall' },
-    { name: 'Uppsala' },
-    { name: 'Stockholm' },
-  ];
+  readonly cities: City[] = [{ name: 'Hudiksvall' }, { name: 'Uppsala' }, { name: 'Stockholm' }];
 
   // Mockdata för rum
   readonly rooms: Room[] = [
@@ -47,10 +43,10 @@ export class BookingformComponent {
       capacity: 16,
       type: RoomType.ComputerLab,
       assets: [
-        { id: 1, name: 'Whiteboard'},
+        { id: 1, name: 'Whiteboard' },
         { id: 2, name: 'TV' },
         { id: 4, name: 'Projektor' },
-        { id: 3, name: 'Nätverksutrustning'},
+        { id: 3, name: 'Nätverksutrustning' },
       ],
     },
     {
@@ -59,9 +55,7 @@ export class BookingformComponent {
       city: 'Hudiksvall',
       capacity: 22,
       type: RoomType.Classroom,
-      assets: [
-        { id: 2, name: 'TV' },
-      ],
+      assets: [{ id: 2, name: 'TV' }],
     },
     {
       id: 3,
@@ -69,9 +63,7 @@ export class BookingformComponent {
       city: 'Uppsala',
       capacity: 10,
       type: RoomType.GroupRoom,
-      assets: [
-        { id: 2, name: 'TV' },
-      ]
+      assets: [{ id: 2, name: 'TV' }],
     },
     {
       id: 4,
@@ -83,7 +75,7 @@ export class BookingformComponent {
         { id: 1, name: 'Whiteboard' },
         { id: 2, name: 'TV' },
         { id: 3, name: 'Projektor' },
-      ]
+      ],
     },
     {
       id: 5,
@@ -93,9 +85,9 @@ export class BookingformComponent {
       type: RoomType.Laboratory,
       assets: [
         { id: 1, name: 'Whiteboard' },
-        { id: 4, name: 'Projektor'},
-        { id: 5, name: 'Fiberutrustning'}
-      ]
+        { id: 4, name: 'Projektor' },
+        { id: 5, name: 'Fiberutrustning' },
+      ],
     },
     {
       id: 6,
@@ -105,10 +97,10 @@ export class BookingformComponent {
       type: RoomType.Laboratory,
       assets: [
         { id: 1, name: 'Whiteboard' },
-        { id: 4, name: 'Projektor'},
-        { id: 5, name: 'Fiberutrustning'}
-      ]
-    }
+        { id: 4, name: 'Projektor' },
+        { id: 5, name: 'Fiberutrustning' },
+      ],
+    },
   ];
 
   // Formulärfält
@@ -128,9 +120,8 @@ export class BookingformComponent {
   readonly filteredRooms = computed(() => {
     const city = this.selectedCity();
     if (!city) return [];
-    return this.rooms.filter(room => room.city === city);
+    return this.rooms.filter((room) => room.city === city);
   });
-
 
   // Computed: formulärvalidering
   readonly isFormValid = computed(() => {
@@ -186,9 +177,9 @@ export class BookingformComponent {
     const endDateTime = new Date(`${this.endDate()}T${this.endTime()}`);
 
     // Slå ihop namn och anteckningar
-    const combinedNotes = `Namn: ${this.name()}${this.notes()
-      ? '\nAnteckningar: ' + this.notes()
-      : ''}`;
+    const combinedNotes = `Namn: ${this.name()}${
+      this.notes() ? '\nAnteckningar: ' + this.notes() : ''
+    }`;
 
     const booking: CreateBookingDto = {
       userId: 1, // Mock userId
@@ -196,7 +187,7 @@ export class BookingformComponent {
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
       notes: combinedNotes,
-      status: 0,
+      status: BookingStatus.Active,
     };
 
     this.bookingService.createBooking(booking).subscribe({

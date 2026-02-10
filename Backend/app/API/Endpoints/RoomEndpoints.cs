@@ -2,6 +2,7 @@ using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Models.ReadModels; // Added this namespace
 using Backend.app.Core.Services;
+using Backend.app.Infrastructure.Auth;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.app.API.Endpoints;
@@ -10,7 +11,9 @@ public static class RoomEndpoints
 {
     public static RouteGroupBuilder MapRoomEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/rooms").WithTags("Rooms");
+        var group = app.MapGroup("/rooms")
+            .WithTags("Rooms")
+            .RequireAuth();
 
         // GET /api/rooms
         group
@@ -28,7 +31,7 @@ public static class RoomEndpoints
             )
             .WithName("GetRooms")
             .WithSummary("Get all rooms")
-            .WithDescription("Retrieves all rooms. Optionally filter by type or address.")
+            .WithDescription("Retrieves all rooms. Optionally filter by type or address.\n\n🔒 **Authentication Required**")
             // UPDATED: Now produces RoomDetailModel (includes Assets list)
             .Produces<IEnumerable<RoomDetailModel>>(StatusCodes.Status200OK);
 
@@ -42,20 +45,13 @@ public static class RoomEndpoints
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
 
-                    try
-                    {
-                        var room = await service.GetRoomByIdAsync(id);
-                        return Results.Ok(room);
-                    }
-                    catch (KeyNotFoundException ex)
-                    {
-                        return Results.NotFound(ex.Message);
-                    }
+                    var room = await service.GetRoomByIdAsync(id);
+                    return Results.Ok(room);
                 }
             )
             .WithName("GetRoomById")
             .WithSummary("Get room by ID")
-            .WithDescription("Retrieves a specific room by its unique identifier.")
+            .WithDescription("Retrieves a specific room by its unique identifier.\n\n🔒 **Authentication Required**")
             // UPDATED: Now produces RoomDetailModel (includes Assets list)
             .Produces<RoomDetailModel>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
@@ -77,9 +73,10 @@ public static class RoomEndpoints
                     return Results.Created($"/api/rooms/{createdRoom.Id}", createdRoom);
                 }
             )
+            .RequireRoles(UserRole.Admin)
             .WithName("CreateRoom")
             .WithSummary("Create a new room")
-            .WithDescription("Creates a new room. You can optionally provide a list of 'assetIds' to link existing assets (e.g., Projector) to the room immediately.")
+            .WithDescription("Creates a new room. You can optionally provide a list of 'assetIds' to link existing assets (e.g., Projector) to the room immediately.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin")
             .Accepts<CreateRoomDto>("application/json")
             .Produces<RoomResponseDto>(StatusCodes.Status201Created)
             .Produces<string>(StatusCodes.Status400BadRequest);
@@ -98,20 +95,14 @@ public static class RoomEndpoints
                     if (validation is not null)
                         return validation;
 
-                    try
-                    {
-                        await service.UpdateRoomAsync(id, dto);
-                        return Results.NoContent();
-                    }
-                    catch (KeyNotFoundException ex)
-                    {
-                        return Results.NotFound(ex.Message);
-                    }
+                    await service.UpdateRoomAsync(id, dto);
+                    return Results.NoContent();
                 }
             )
+            .RequireRoles(UserRole.Admin)
             .WithName("UpdateRoom")
             .WithSummary("Update an existing room")
-            .WithDescription("Updates a room's details. Providing 'assetIds' will REPLACE the room's entire asset inventory with the new list.")
+            .WithDescription("Updates a room's details. Providing 'assetIds' will REPLACE the room's entire asset inventory with the new list.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin")
             .Accepts<UpdateRoomDto>("application/json")
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
@@ -127,20 +118,14 @@ public static class RoomEndpoints
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
 
-                    try
-                    {
-                        await service.DeleteRoomAsync(id);
-                        return Results.NoContent();
-                    }
-                    catch (KeyNotFoundException ex)
-                    {
-                        return Results.NotFound(ex.Message);
-                    }
+                    await service.DeleteRoomAsync(id);
+                    return Results.NoContent();
                 }
             )
+            .RequireRoles(UserRole.Admin)
             .WithName("DeleteRoom")
             .WithSummary("Delete a room")
-            .WithDescription("Permanently deletes a room by its unique identifier.")
+            .WithDescription("Permanently deletes a room by its unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin")
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound);
