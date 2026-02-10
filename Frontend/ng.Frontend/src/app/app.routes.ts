@@ -6,10 +6,13 @@ export const routes: Routes = [
   // =========================================================
   // 1. PUBLIC AREA (No Login Required)
   // =========================================================
-  {
-    path: '',
-    loadComponent: () => import('./pages/_public/home/home.page').then((m) => m.HomePage),
-  },
+
+  // {
+  //   path: '',
+  //   loadComponent: () => import('./pages/_public/home/home.page').then((m) => m.HomePage),
+  // },
+  // COMMENTED OUT HOME PAGE FOR NOW and REDIRECTING ROOT TO LOGIN INSTEAD, MAY RE-ADD LATER
+
   {
     path: 'login',
     loadComponent: () => import('./pages/_public/login/login.page').then((m) => m.LoginPage),
@@ -32,7 +35,9 @@ export const routes: Routes = [
   {
     path: 'bookingform',
     loadComponent: () =>
-      import('./pages/_public/bookingform/bookingform.component').then((m) => m.BookingformComponent),
+      import('./pages/_public/bookingform/bookingform.component').then(
+        (m) => m.BookingformComponent,
+      ),
   },
 
   // =========================================================
@@ -45,7 +50,7 @@ export const routes: Routes = [
     // 1. Load the "Shell" (Sidebar + RouterOutlet)
     loadComponent: () =>
       import('./pages/administrator/administrator.layout').then((m) => m.AdministratorLayout),
-    
+
     // 2. Define the "Views" that load inside the shell
     children: [
       {
@@ -111,6 +116,12 @@ export const routes: Routes = [
   // =========================================================
   // 5. FALLBACK (404)
   // =========================================================
+
+  {
+    path: '',
+    redirectTo: 'login',
+    pathMatch: 'full', // Redirect / -> /login
+  },
   {
     path: '**',
     redirectTo: 'not-found', // Send unknown URLs to Not Found page
