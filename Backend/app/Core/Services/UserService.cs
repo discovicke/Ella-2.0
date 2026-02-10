@@ -6,8 +6,8 @@ using Backend.app.Core.Models.Enums;
 namespace Backend.app.Core.Services;
 
 /// <summary>
-/// User management service for admin/teacher operations.
-/// SECURITY: This service should only be used by admin/teacher roles.
+/// User management service for admin/educator operations.
+/// SECURITY: This service should only be used by admin/educator roles.
 /// For user registration, use AuthService.RegisterAsync() instead.
 /// For password changes by the user themselves, use AuthService methods.
 /// </summary>
@@ -107,12 +107,12 @@ public class UserService(
         }
 
         // SECURITY: Only hash new password if provided, otherwise keep existing hash
-        // NOTE: This allows admin/teacher to reset passwords without knowing the old one
+        // NOTE: This allows admin/educator to reset passwords without knowing the old one
         string passwordHash = existing.PasswordHash;
         if (!string.IsNullOrWhiteSpace(dto.Password))
         {
             passwordHash = passwordHasher.HashPassword(dto.Password);
-            logger.LogInformation("Password updated for user {UserId} by admin/teacher", id);
+            logger.LogInformation("Password updated for user {UserId} by admin/educator", id);
         }
 
         // Skapar uppdaterad användare
@@ -125,6 +125,7 @@ public class UserService(
             Role = dto.Role,
             PasswordHash = passwordHash,
             IsBanned = dto.IsBanned,
+            TokensValidAfter = existing.TokensValidAfter,
         };
 
         // Uppdaterar i databasen
@@ -136,6 +137,31 @@ public class UserService(
         }
 
         logger.LogInformation("User with ID {UserId} updated", id);
+    }
+
+    // Force logout (revoke all tokens)
+    public async Task RevokeTokensAsync(long id)
+    {
+        logger.LogInformation("Revoking all tokens for user with ID {UserId}", id);
+
+        var existing = await repo.GetUserByIdAsync(id);
+        if (existing is null)
+        {
+            logger.LogWarning("Cannot revoke tokens - user with ID {UserId} not found", id);
+            throw new KeyNotFoundException($"User with ID {id} does not exist.");
+        }
+
+        // Set TokensValidAfter to now, invalidating any tokens issued before this moment
+        existing.TokensValidAfter = DateTime.UtcNow;
+
+        var success = await repo.UpdateUserAsync(id, existing);
+        if (!success)
+        {
+            logger.LogError("Failed to revoke tokens for user with ID {UserId}", id);
+            throw new Exception("Failed to revoke tokens.");
+        }
+
+        logger.LogInformation("All tokens revoked for user {UserId}", id);
     }
 
     // Radera användare

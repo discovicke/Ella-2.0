@@ -27,6 +27,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/_public/forbidden/forbidden.page').then((m) => m.ForbiddenPage),
   },
+  {
+    path: 'bookingform',
+    loadComponent: () =>
+      import('./pages/_public/bookingform/bookingform.component').then((m) => m.BookingformComponent),
+  },
 
   // =========================================================
   // 2. ADMINISTRATOR AREA

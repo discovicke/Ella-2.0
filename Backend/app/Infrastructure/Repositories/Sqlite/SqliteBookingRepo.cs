@@ -8,8 +8,12 @@ namespace Backend.app.Infrastructure.Repositories.Sqlite;
 
 public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<SqliteBookingRepo> logger) : IBookingRepository
 {
-    // SQLite repository for Booking
-    // ⚠️ Update queries for new schema if columns/tables changed
+
+/// <summary>
+/// Creates a new booking and returns the generated ID.
+/// </summary>
+/// <param name="booking"></param>
+/// <returns></returns>
     public async Task<long> CreateBookingAsync(Booking booking)
     {
         try
@@ -18,8 +22,8 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
             await conn.OpenAsync();
             var sql =
                 @"
-            INSERT INTO bookings (user_id, room_id, start_time, end_time, status, notes)
-            VALUES (@UserId, @RoomId, @StartTime, @EndTime, @Status, @Notes);
+            INSERT INTO bookings (user_id, room_id, start_time, end_time, notes)
+            VALUES (@UserId, @RoomId, @StartTime, @EndTime, @Notes);
             SELECT last_insert_rowid();
         ";
             var id = await conn.ExecuteScalarAsync<long>(
@@ -30,7 +34,6 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
                     booking.RoomId,
                     booking.StartTime,
                     booking.EndTime,
-                    status = (int)booking.Status,
                     booking.Notes,
                 }
             );
@@ -235,6 +238,57 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
         catch (Exception ex)
         {
             logger.LogError(ex, "Database error while updating booking with ID {BookingId}", bookingId);
+            throw;
+        }
+    }
+
+    public async Task<bool> AddRegistrationAsync(long userId, long bookingId)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            var sql = "INSERT INTO registrations (user_id, booking_id) VALUES (@UserId, @BookingId);";
+            var rows = await conn.ExecuteAsync(sql, new { UserId = userId, BookingId = bookingId });
+            return rows > 0;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while adding registration for user {UserId} to booking {BookingId}", userId, bookingId);
+            return false;
+        }
+    }
+
+    public async Task<bool> RemoveRegistrationAsync(long userId, long bookingId)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            var sql = "DELETE FROM registrations WHERE user_id = @UserId AND booking_id = @BookingId;";
+            var rows = await conn.ExecuteAsync(sql, new { UserId = userId, BookingId = bookingId });
+            return rows > 0;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while removing registration for user {UserId} from booking {BookingId}", userId, bookingId);
+            throw;
+        }
+    }
+
+    public async Task<bool> IsUserRegisteredAsync(long userId, long bookingId)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            var sql = "SELECT COUNT(1) FROM registrations WHERE user_id = @UserId AND booking_id = @BookingId;";
+            var count = await conn.ExecuteScalarAsync<int>(sql, new { UserId = userId, BookingId = bookingId });
+            return count > 0;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while checking registration status for user {UserId} on booking {BookingId}", userId, bookingId);
             throw;
         }
     }

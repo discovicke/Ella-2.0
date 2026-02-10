@@ -12,7 +12,7 @@
 
 export enum UserRole {
   Student = "Student",
-  Teacher = "Teacher",
+  Educator = "Educator",
   Admin = "Admin",
 }
 
@@ -35,58 +35,40 @@ export enum BannedStatus {
 }
 
 export interface AssetTypeResponseDto {
-  /**
-   * @format int64
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  id: number | string;
+  /** @format int64 */
+  id: number;
   description: string;
 }
 
 export interface BookingDetailedReadModel {
-  /**
-   * @format int64
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  bookingId?: number | string;
-  /**
-   * @format int64
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  userId?: number | string;
-  userName?: null | string;
-  userEmail?: null | string;
+  /** @format int64 */
+  bookingId?: number;
+  /** @format int64 */
+  userId?: number;
+  userName?: string | null;
+  userEmail?: string | null;
   userRole?: UserRole;
-  userClass?: null | string;
-  /**
-   * @format int64
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  roomId?: number | string;
-  roomName?: null | string;
-  /**
-   * @format int32
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  roomCapacity?: null | number | string;
+  userClass?: string | null;
+  /** @format int64 */
+  roomId?: number;
+  roomName?: string | null;
+  /** @format int32 */
+  roomCapacity?: number | null;
   roomType?: RoomType;
-  roomFloor?: null | string;
-  roomAddress?: null | string;
+  roomFloor?: string | null;
+  roomAddress?: string | null;
   /** @format date-time */
   startTime?: string;
   /** @format date-time */
   endTime?: string;
   status?: BookingStatus;
-  notes?: null | string;
+  notes?: string | null;
   /** @format date-time */
   createdAt?: string;
   /** @format date-time */
-  updatedAt?: null | string;
-  /**
-   * @format int32
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  registrationCount?: number | string;
+  updatedAt?: string | null;
+  /** @format int32 */
+  registrationCount?: number;
 }
 
 export interface CreateAssetTypeDto {
@@ -94,49 +76,35 @@ export interface CreateAssetTypeDto {
 }
 
 export interface CreateBookingDto {
-  /**
-   * @format int64
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  userId: number | string;
-  /**
-   * @format int64
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  roomId: number | string;
+  /** @format int64 */
+  userId: number;
+  /** @format int64 */
+  roomId: number;
   /** @format date-time */
   startTime: string;
   /** @format date-time */
   endTime: string;
-  notes: null | string;
-  /**
-   * @format int32
-   * @default 0
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  status?: number | string;
+  notes: string | null;
+  status: BookingStatus;
 }
 
 export interface CreateRoomDto {
   name: string;
-  /**
-   * @format int32
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  capacity: null | number | string;
+  /** @format int32 */
+  capacity: number | null;
   type: RoomType;
-  floor: null | string;
-  address: null | string;
-  notes: null | string;
-  assetIds: null | any[];
+  floor: string | null;
+  address: string | null;
+  notes: string | null;
+  assetIds: number[] | null;
 }
 
 export interface CreateUserDto {
   email: string;
-  displayName: null | string;
+  displayName: string | null;
   role: UserRole;
   password: string;
-  userClass: null | string;
+  userClass: string | null;
 }
 
 export interface LoginDto {
@@ -147,45 +115,33 @@ export interface LoginDto {
 export interface RegisterDto {
   email: string;
   password: string;
-  displayName?: null | string;
+  displayName?: string | null;
 }
 
 export interface RoomDetailModel {
-  /**
-   * @format int64
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  roomId?: number | string;
+  /** @format int64 */
+  roomId?: number;
   name?: string;
-  /**
-   * @format int32
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  capacity?: null | number | string;
+  /** @format int32 */
+  capacity?: number | null;
   type?: RoomType;
-  floor?: null | string;
-  address?: null | string;
-  notes?: null | string;
-  assets?: null | any[];
+  floor?: string | null;
+  address?: string | null;
+  notes?: string | null;
+  assets?: string[] | null;
 }
 
 export interface RoomResponseDto {
-  /**
-   * @format int64
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  id: number | string;
+  /** @format int64 */
+  id: number;
   name: string;
-  /**
-   * @format int32
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  capacity: null | number | string;
+  /** @format int32 */
+  capacity: number | null;
   type: RoomType;
-  floor: null | string;
-  address: null | string;
-  notes: null | string;
-  assets: null | any[];
+  floor: string | null;
+  address: string | null;
+  notes: string | null;
+  assets: string[] | null;
 }
 
 export interface UpdateAssetTypeDto {
@@ -194,40 +150,31 @@ export interface UpdateAssetTypeDto {
 
 export interface UpdateRoomDto {
   name: string;
-  /**
-   * @format int32
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  capacity: null | number | string;
+  /** @format int32 */
+  capacity: number | null;
   type: RoomType;
-  floor: null | string;
-  address: null | string;
-  notes: null | string;
-  assetIds: null | any[];
+  floor: string | null;
+  address: string | null;
+  notes: string | null;
+  assetIds: number[] | null;
 }
 
 export interface UpdateUserDto {
-  /**
-   * @format int64
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  id: number | string;
+  /** @format int64 */
+  id: number;
   email: string;
-  displayName: null | string;
+  displayName: string | null;
   role: UserRole;
   password: string;
-  userClass: null | string;
+  userClass: string | null;
   isBanned: BannedStatus;
 }
 
 export interface UserResponseDto {
-  /**
-   * @format int64
-   * @pattern ^-?(?:0|[1-9]\d*)$
-   */
-  id: number | string;
+  /** @format int64 */
+  id: number;
   email: string;
-  displayName: null | string;
+  displayName: string | null;
   role: UserRole;
-  userClass: null | string;
+  userClass: string | null;
 }

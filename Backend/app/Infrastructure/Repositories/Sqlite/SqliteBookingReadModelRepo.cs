@@ -1,4 +1,5 @@
 using Backend.app.Core.Interfaces;
+using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Models.ReadModels;
 using Dapper;
 using System.Text;
@@ -136,7 +137,7 @@ public class SqliteBookingReadModelRepo(
         long? roomId = null,
         DateTime? startDate = null,
         DateTime? endDate = null,
-        int? status = null)
+        BookingStatus? status = null)
     {
         try
         {
@@ -191,6 +192,33 @@ public class SqliteBookingReadModelRepo(
         catch (Exception ex)
         {
             logger.LogError(ex, "Database error while fetching filtered detailed bookings");
+            throw;
+        }
+    }
+
+    public async Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByRegisteredUserIdAsync(long userId)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+
+            var sql = @"
+                SELECT v.* 
+                FROM v_bookings_detailed v
+                INNER JOIN registrations r ON v.booking_id = r.booking_id
+                WHERE r.user_id = @UserId
+                ORDER BY v.start_time DESC;";
+
+            var bookings = await conn.QueryAsync<BookingDetailedReadModel>(
+                sql,
+                new { UserId = userId });
+
+            return bookings;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while fetching bookings registered for user {UserId}", userId);
             throw;
         }
     }

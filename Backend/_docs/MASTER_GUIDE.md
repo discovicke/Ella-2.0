@@ -12,6 +12,10 @@ Welcome to the core documentation for the project. This document serves as the "
 
 
 
+## Future Improvements / Backlog
+
+*   **Asset Quantity Tracking:** Update the `RoomAssets` link table to support quantities (e.g., "Room 101 has 5 Chairs" instead of just "Has Chairs").
+
 ## 1. System Overview
 
 We follow a strict layered architecture to ensure separation of concerns. Data moves from the Frontend through the API and Service layers before hitting the Database.

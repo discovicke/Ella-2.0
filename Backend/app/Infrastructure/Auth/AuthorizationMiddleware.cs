@@ -38,7 +38,7 @@ public static class AuthorizationMiddleware
     /// Creates an endpoint filter that requires the user to have one of the specified roles.
     /// Returns 401 if not authenticated, 403 if authenticated but wrong role.
     /// 
-    /// Usage: .RequireRoles(UserRole.Admin, UserRole.Teacher)
+    /// Usage: .RequireRoles(UserRole.Admin, UserRole.Educator) to allow only admins and educators.
     /// </summary>
     public static Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> RequireRoles(params UserRole[] allowedRoles)
     {
