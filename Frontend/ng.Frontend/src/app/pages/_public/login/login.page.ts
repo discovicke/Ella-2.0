@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { LoginService } from '../../../shared/services/login.service';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -25,12 +24,16 @@ export class LoginPage {
   });
 
   readonly isSubmitting = signal(false);
-
-  // Expose signals for template if needed (though formControlName handles most)
-  // We can use toSignal for derived state if we want real-time validation feedback outside the inputs
+  readonly hasLoginError = signal(false);
 
   onSubmit() {
-    if (this.loginForm.invalid) return;
+    // Reset previous error state
+    this.hasLoginError.set(false);
+
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
 
     this.isSubmitting.set(true);
     
@@ -41,18 +44,25 @@ export class LoginPage {
 
     this.loginService.loginUser(loginData).subscribe({
       next: (response) => {
-        // Assuming response might contain token or user info
         this.toastService.showSuccess('Inloggning lyckades!', { title: 'Välkommen!' });
         
-        // TODO: Handle token storage here if needed (e.g. AuthService)
-        
+        // Short delay for visual feedback before nav
         setTimeout(() => {
-            this.router.navigate(['/']); // Or dashboard
+            this.router.navigate(['/']); 
             this.isSubmitting.set(false);
         }, 1000); 
       },
       error: (err) => {
         console.error('Login error:', err);
+        
+        // Trigger shake and red inputs
+        this.hasLoginError.set(true);
+        
+        // Force reflow for shake animation if needed, but in Angular signal updates 
+        // usually trigger change detection which adds the class. 
+        // If user spams click, we might want to toggle false->true.
+        // For now, setting it true is enough to show the state.
+        
         this.toastService.showError('Fel e-post eller lösenord');
         this.isSubmitting.set(false);
       },
