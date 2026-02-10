@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { SessionService } from '../../../core/auth/session.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { LoginDto, UserRole } from '../../../api/models';
@@ -15,6 +16,7 @@ import { LoginDto, UserRole } from '../../../api/models';
 })
 export class LoginPage {
   private readonly authService = inject(AuthService);
+  private readonly sessionService = inject(SessionService);
   private readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -28,7 +30,7 @@ export class LoginPage {
   readonly hasLoginError = signal(false);
   private errorTimeoutId?: number;
 
-  onSubmit() {
+  async onSubmit() {
     // Clear any existing error timeout
     if (this.errorTimeoutId) {
       clearTimeout(this.errorTimeoutId);
@@ -49,51 +51,50 @@ export class LoginPage {
       password: this.loginForm.controls.password.value,
     };
 
-    this.authService.login(loginData).subscribe({
-      next: () => {
-        this.toastService.showSuccess('Inloggning lyckades!', { title: 'Välkommen!' });
+    try {
+      await this.authService.login(loginData);
+      
+      this.toastService.showSuccess('Inloggning lyckades!', { title: 'Välkommen!' });
 
-        // Short delay for visual feedback before nav
-        setTimeout(() => {
-            // Check for returnUrl or default based on role
-            const returnUrl = this.route.snapshot.queryParams['returnUrl'];
-            
-            if (returnUrl) {
-              this.router.navigateByUrl(returnUrl);
+      // Short delay for visual feedback before nav
+      setTimeout(() => {
+          // Check for returnUrl or default based on role
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+          
+          if (returnUrl) {
+            this.router.navigateByUrl(returnUrl);
+          } else {
+            const role = this.sessionService.userRole();
+            if (role === UserRole.Admin) {
+              this.router.navigate(['/administrator']);
+            } else if (role === UserRole.Educator) {
+              this.router.navigate(['/educator']);
+            } else if (role === UserRole.Student) {
+              this.router.navigate(['/student']);
             } else {
-              const role = this.authService.userRole();
-              if (role === UserRole.Admin) {
-                this.router.navigate(['/administrator']);
-              } else if (role === UserRole.Educator) {
-                this.router.navigate(['/educator']);
-              } else if (role === UserRole.Student) {
-                this.router.navigate(['/student']);
-              } else {
-                this.router.navigate(['/']);
-              }
+              this.router.navigate(['/']);
             }
-            
-            this.isSubmitting.set(false);
-        }, 1000);
-      },
-      error: (err) => {
-        console.error('Login error:', err);
+          }
+          
+          this.isSubmitting.set(false);
+      }, 1000);
+    } catch (err) {
+      console.error('Login error:', err);
 
-        // Force re-trigger of shake animation by toggling error state
-        // This ensures the animation plays even if user clicks multiple times
-        setTimeout(() => {
-          this.hasLoginError.set(true);
+      // Force re-trigger of shake animation by toggling error state
+      // This ensures the animation plays even if user clicks multiple times
+      setTimeout(() => {
+        this.hasLoginError.set(true);
 
-          // Auto-clear error state after 2 seconds
-          this.errorTimeoutId = window.setTimeout(() => {
-            this.hasLoginError.set(false);
-            this.errorTimeoutId = undefined;
-          }, 2000);
-        }, 0);
+        // Auto-clear error state after 2 seconds
+        this.errorTimeoutId = window.setTimeout(() => {
+          this.hasLoginError.set(false);
+          this.errorTimeoutId = undefined;
+        }, 2000);
+      }, 0);
 
-        this.toastService.showError('Fel e-post eller lösenord');
-        this.isSubmitting.set(false);
-      },
-    });
+      this.toastService.showError('Fel e-post eller lösenord');
+      this.isSubmitting.set(false);
+    }
   }
 }

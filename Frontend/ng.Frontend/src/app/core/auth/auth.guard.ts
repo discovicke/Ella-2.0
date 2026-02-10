@@ -1,15 +1,15 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { AuthService } from './auth.service';
 import { UserRole } from '../../api/models';
+import { SessionService } from './session.service';
 
 export const authGuard: CanActivateFn = (route, state) => {
-  const authService = inject(AuthService);
+  const sessionService = inject(SessionService);
   const router = inject(Router);
 
   console.log('AuthGuard: checking access to', state.url);
 
-  if (!authService.isAuthenticated()) {
+  if (!sessionService.isAuthenticated()) {
     console.log('AuthGuard: not authenticated, redirecting to login');
     return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
   }
@@ -17,7 +17,7 @@ export const authGuard: CanActivateFn = (route, state) => {
   // Check for required roles
   const requiredRoles = route.data['roles'] as UserRole[];
   if (requiredRoles && requiredRoles.length > 0) {
-    if (!authService.hasRole(requiredRoles)) {
+    if (!sessionService.hasRole(requiredRoles)) {
       console.log('AuthGuard: forbidden, missing required roles');
       // User is logged in but doesn't have the right role
       return router.createUrlTree(['/forbidden']);
