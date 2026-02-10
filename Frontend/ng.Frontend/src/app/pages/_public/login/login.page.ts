@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
-import { SessionService } from '../../../core/auth/session.service';
+import { SessionService } from '../../../core/session.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { LoginDto, UserRole } from '../../../models/models';
@@ -22,7 +22,10 @@ export class LoginPage {
   private readonly route = inject(ActivatedRoute);
 
   readonly loginForm = new FormGroup({
-    email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
+    email: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.email],
+    }),
     password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
   });
 
@@ -53,30 +56,30 @@ export class LoginPage {
 
     try {
       await this.authService.login(loginData);
-      
+
       this.toastService.showSuccess('Inloggning lyckades!', { title: 'Välkommen!' });
 
       // Short delay for visual feedback before nav
       setTimeout(() => {
-          // Check for returnUrl or default based on role
-          const returnUrl = this.route.snapshot.queryParams['returnUrl'];
-          
-          if (returnUrl) {
-            this.router.navigateByUrl(returnUrl);
+        // Check for returnUrl or default based on role
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+
+        if (returnUrl) {
+          this.router.navigateByUrl(returnUrl);
+        } else {
+          const role = this.sessionService.userRole();
+          if (role === UserRole.Admin) {
+            this.router.navigate(['/administrator']);
+          } else if (role === UserRole.Educator) {
+            this.router.navigate(['/educator']);
+          } else if (role === UserRole.Student) {
+            this.router.navigate(['/student']);
           } else {
-            const role = this.sessionService.userRole();
-            if (role === UserRole.Admin) {
-              this.router.navigate(['/administrator']);
-            } else if (role === UserRole.Educator) {
-              this.router.navigate(['/educator']);
-            } else if (role === UserRole.Student) {
-              this.router.navigate(['/student']);
-            } else {
-              this.router.navigate(['/']);
-            }
+            this.router.navigate(['/']);
           }
-          
-          this.isSubmitting.set(false);
+        }
+
+        this.isSubmitting.set(false);
       }, 1000);
     } catch (err) {
       console.error('Login error:', err);

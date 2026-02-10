@@ -1,5 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { UserRole } from '../../models/models';
+import { UserRole } from '../models/models';
 
 export interface UserState {
   id: number;

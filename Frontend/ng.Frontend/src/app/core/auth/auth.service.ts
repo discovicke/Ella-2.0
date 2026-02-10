@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { AuthResponseDto, LoginDto, UserRole } from '../../models/models';
-import { SessionService, UserState } from './session.service';
+import { SessionService, UserState } from '../session.service';
 
 @Injectable({
   providedIn: 'root',
@@ -21,9 +21,9 @@ export class AuthService {
     // 1. Perform Login and capture user data
     // The backend returns { message, token, user }
     const response = await lastValueFrom(
-      this.http.post<AuthResponseDto>(`${this.apiUrl}/login`, credentials)
+      this.http.post<AuthResponseDto>(`${this.apiUrl}/login`, credentials),
     );
-    
+
     const userState = this.mapToUserState(response.user);
 
     // 2. Update session
