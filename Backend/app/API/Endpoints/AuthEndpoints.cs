@@ -18,12 +18,30 @@ public static class AuthEndpoints
 
         // POST /auth/register - Create a new user account
         group
-            .MapPost("/register", async (RegisterDto request, AuthService authService) =>
+            .MapPost("/register", async (RegisterDto request, AuthService authService, HttpContext httpContext, IHostEnvironment env, IConfiguration configuration) =>
             {
                 var result = await authService.RegisterAsync(request);
 
                 if (result is null)
                     return Results.BadRequest(new { error = "Registration failed", message = "Email may already exist" });
+
+                var expirationMinutes = int.Parse(configuration["JwtSettings:AccessTokenExpirationMinutes"] ?? "60");
+
+                // Set auth cookie for browser clients
+                httpContext.Response.Cookies.Append("auth_token", result.Token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    SameSite = SameSiteMode.Lax,
+                    Secure = !env.IsDevelopment(), // Secure in production, allowed in dev
+                    MaxAge = TimeSpan.FromMinutes(expirationMinutes),
+                    Path = "/"
+                });
+
+                // In production, do not return the token in the body to prevent it from being stolen or accidentally stored in local storage
+                if (!env.IsDevelopment())
+                {
+                    result.Token = "";
+                }
 
                 // Set auth cookie for browser clients
                 return Results.Created($"/api/users/{result.User.Id}", result);
@@ -37,28 +55,36 @@ public static class AuthEndpoints
 
         // POST /auth/login - Authenticate user and get JWT token
         group
-            .MapPost("/login", async (LoginDto request, AuthService authService, HttpContext httpContext, IHostEnvironment env) =>
+            .MapPost("/login", async (LoginDto request, AuthService authService, HttpContext httpContext, IHostEnvironment env, IConfiguration configuration) =>
             {
                 var result = await authService.LoginAsync(request);
 
                 if (result is null)
                     return Results.Unauthorized();
 
-                // Set auth cookie for browser clients (7 days expiry)
+                var expirationMinutes = int.Parse(configuration["JwtSettings:AccessTokenExpirationMinutes"] ?? "60");
+
+                // Set auth cookie for browser clients
                 httpContext.Response.Cookies.Append("auth_token", result.Token, new CookieOptions
                 {
                     HttpOnly = true,
                     SameSite = SameSiteMode.Lax,
                     Secure = !env.IsDevelopment(), // Secure in production, allowed in dev
-                    MaxAge = TimeSpan.FromDays(7),
+                    MaxAge = TimeSpan.FromMinutes(expirationMinutes),
                     Path = "/"
                 });
+
+                // In production, do not return the token in the body to prevent it from being stored in local storage
+                if (!env.IsDevelopment())
+                {
+                    result.Token = "";
+                }
 
                 return Results.Ok(result);
             })
             .WithName("LoginUser")
             .WithSummary("Login user")
-            .WithDescription("Authenticates a user with email and password, returning a JWT token.")
+            .WithDescription("Authenticates a user with email and password, returning a JWT token and user info on success.")
             .Accepts<LoginDto>("application/json")
             .Produces<AuthResponseDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
