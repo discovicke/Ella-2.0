@@ -1,0 +1,58 @@
+@use 'styles/variables' as *;
+
+:host{
+    .dashboard-layout {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+        gap: 24px;
+        height: calc(100vh);
+        overflow: hidden;
+    }
+    .left-panel, .right-panel {
+        background-color: var(--color-bg-panel);
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--color-border);
+        border-radius: 10px;
+        height: 100%;
+        overflow: hidden;
+        .h2
+        {
+            color: var(--color-primary);
+        }
+        .p
+        {
+            color: var(--color-text-muted);
+
+        }
+        .app-button.active
+        {   border-bottom: 2px solid var(--color-primary);
+            color: var(--color-primary);
+        }
+    }
+
+
+}
+@keyframes pulse-green {
+    0% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+}
+@keyframes pulse-red {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
+}
