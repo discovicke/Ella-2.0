@@ -1,1 +1,71 @@
-<p>login works!</p>
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="index.css" />
+    <script defer type="module" src="index.js"></script>
+    <title>ella | Edugrade Location & Logistics Assistant</title>
+  </head>
+
+  <body class="login-page">
+    <!-- IDENTISK HEADER SOM STUDENT/TEACHER -->
+    <header class="top-header">
+      <img
+        class="top-logo"
+        src="../assets/ELLA header.png"
+        alt="ELLA – rumbokningssystem"
+      />
+    </header>
+
+    <!-- LOGIN-LAYOUT -->
+    <main class="login-layout">
+      <h1 class="visually-hidden">Logga in till ELLA</h1>
+
+      <!-- Vänster sida – formulär -->
+      <section class="form-side">
+        <div class="form-content">
+          <h2>Välkommen till ELLA</h2>
+          <p>Logga in för att börja boka</p>
+
+          <form class="form" id="loginForm" novalidate>
+            <div class="inputGroup">
+              <label for="username" class="visually-hidden"
+                >Email-address</label
+              >
+              <input
+                id="username"
+                type="email"
+                required
+                placeholder=" "
+                autocomplete="off"
+              />
+              <div class="labelline">Email-address</div>
+            </div>
+
+            <div class="inputGroup">
+              <label for="password" class="visually-hidden">Lösenord</label>
+              <input
+                id="password"
+                type="password"
+                required
+                placeholder=" "
+                autocomplete="off"
+              />
+              <div class="labelline">Lösenord</div>
+            </div>
+
+            <button type="submit">Logga in</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Höger sida – dekorativ yta -->
+      <aside class="art-side">
+        <img src="../assets/ELLA logo.png" alt="" aria-hidden="true" />
+      </aside>
+    </main>
+  </body>
+</html>
+
