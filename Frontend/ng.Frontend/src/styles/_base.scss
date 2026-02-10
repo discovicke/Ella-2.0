@@ -1,0 +1,263 @@
+// =============================================
+// 🧱 BASE & RESET STYLES
+// =============================================
+// Minimal reset and global element styles.
+// Applied once at the root level.
+
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// ---------------------------------------------
+// FONT FACES
+// ---------------------------------------------
+@font-face {
+  font-family: 'Nunito Sans';
+  src: url('../assets/fonts/Nunito-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nunito Sans';
+  src: url('../assets/fonts/Nunito-Italic-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+// ---------------------------------------------
+// BOX SIZING RESET
+// ---------------------------------------------
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+// ---------------------------------------------
+// ROOT & BODY
+// ---------------------------------------------
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  tab-size: 4;
+  scroll-behavior: smooth;
+
+  @media (prefers-reduced-motion: reduce) {
+    scroll-behavior: auto;
+  }
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-family);
+  font-size: var(--font-base);
+  line-height: var(--leading-normal);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  @include custom-scrollbar;
+}
+
+// ---------------------------------------------
+// TYPOGRAPHY
+// ---------------------------------------------
+h1, h2, h3, h4, h5, h6 {
+  margin-block: 0 0.75em;
+  font-family: var(--font-family);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  color: var(--color-text-primary);
+}
+
+h1 { font-size: var(--font-2xl); }
+h2 { font-size: var(--font-xl); }
+h3 { font-size: var(--font-lg); }
+h4 { font-size: var(--font-md); }
+h5, h6 { font-size: var(--font-base); }
+
+p {
+  margin-block: 0 1em;
+  line-height: var(--leading-relaxed);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  @include transition(color, 'fast');
+
+  &:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+strong, b {
+  font-weight: 700;
+}
+
+small {
+  font-size: var(--font-sm);
+}
+
+// ---------------------------------------------
+// LISTS
+// ---------------------------------------------
+ul, ol {
+  margin-block: 0 1em;
+  padding-inline-start: 1.5em;
+}
+
+li {
+  line-height: var(--leading-relaxed);
+  margin-block-end: 0.25em;
+}
+
+// Remove list styles for nav/menu lists
+nav ul,
+nav ol,
+menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+// ---------------------------------------------
+// MEDIA
+// ---------------------------------------------
+img, svg, video, canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+// ---------------------------------------------
+// FORMS
+// ---------------------------------------------
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: inherit;
+  margin: 0;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+input,
+select,
+textarea {
+  @include input-base;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 1.25em;
+  padding-right: 2.5rem;
+}
+
+label {
+  display: block;
+  margin-block-end: 0.5rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+// ---------------------------------------------
+// TABLES
+// ---------------------------------------------
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+th {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-panel);
+}
+
+// ---------------------------------------------
+// MISC
+// ---------------------------------------------
+hr {
+  border: none;
+  border-top: 1px solid var(--color-divider);
+  margin-block: 1.5rem;
+}
+
+::selection {
+  background-color: rgba(145, 54, 203, 0.25);
+  color: inherit;
+}
+
+// Focus visible for keyboard users
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+// Prevent text selection on UI elements
+.no-select {
+  user-select: none;
+}
+
+// ---------------------------------------------
+// REDUCED MOTION
+// ---------------------------------------------
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+

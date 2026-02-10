@@ -1,18 +1,16 @@
-<div class="booking-container">
-  <!-- Formulär till vänster -->
+
+<!-- Formulär till vänster -->
   <div class="booking-form">
     <h2>Boka rum</h2>
 
-    <form (ngSubmit)="onSubmit()">
+    <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()">
       <!-- Namn -->
       <div class="form-group">
         <label for="name">Namn</label>
         <input
           type="text"
           id="name"
-          [ngModel]="name()"
-          (ngModelChange)="name.set($event)"
-          name="name"
+          formControlName="name"
           placeholder="Ange ditt namn"
           required
         />
@@ -24,9 +22,8 @@
           <label for="city">Stad</label>
           <select
             id="city"
-            [ngModel]="selectedCity()"
-            (ngModelChange)="selectedCity.set($event); onCityChange()"
-            name="city"
+            formControlName="selectedCity"
+            (change)="onCityChange()"
             required
           >
             <option value="">Välj stad</option>
@@ -40,9 +37,7 @@
           <label for="room">Rum</label>
           <select
             id="room"
-            [ngModel]="selectedRoomId()"
-            (ngModelChange)="selectedRoomId.set($event)"
-            name="room"
+            formControlName="selectedRoomId"
             required
             [disabled]="!selectedCity()"
           >
@@ -61,9 +56,7 @@
           <input
             type="date"
             id="startDate"
-            [ngModel]="startDate()"
-            (ngModelChange)="startDate.set($event)"
-            name="startDate"
+            formControlName="startDate"
             required
           />
         </div>
@@ -73,9 +66,7 @@
           <input
             type="time"
             id="startTime"
-            [ngModel]="startTime()"
-            (ngModelChange)="startTime.set($event)"
-            name="startTime"
+            formControlName="startTime"
             required
           />
         </div>
@@ -88,9 +79,7 @@
           <input
             type="date"
             id="endDate"
-            [ngModel]="endDate()"
-            (ngModelChange)="endDate.set($event)"
-            name="endDate"
+            formControlName="endDate"
             required
           />
         </div>
@@ -100,9 +89,7 @@
           <input
             type="time"
             id="endTime"
-            [ngModel]="endTime()"
-            (ngModelChange)="endTime.set($event)"
-            name="endTime"
+            formControlName="endTime"
             required
           />
         </div>
@@ -113,9 +100,7 @@
         <label for="notes">Anteckningar</label>
         <textarea
           id="notes"
-          [ngModel]="notes()"
-          (ngModelChange)="notes.set($event)"
-          name="notes"
+          formControlName="notes"
           placeholder="Frivilliga anteckningar..."
           rows="4"
         ></textarea>
@@ -167,4 +152,3 @@
       </div>
     }
   </div>
-</div>
