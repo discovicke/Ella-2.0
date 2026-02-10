@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
-import { AuthResponseDto, LoginDto, UserRole } from '../../api/models';
+import { AuthResponseDto, LoginDto, UserRole } from '../../models/models';
 import { SessionService, UserState } from './session.service';
 
 @Injectable({
