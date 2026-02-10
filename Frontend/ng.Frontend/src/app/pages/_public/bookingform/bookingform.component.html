@@ -107,9 +107,12 @@
       </div>
 
       <!-- Submit-knapp -->
-      <button type="submit" class="submit-btn" [disabled]="!isFormValid()">
+      <app-button 
+        type="submit" 
+        variant="primary" 
+        [disabled]="!isFormValid()">
         Boka
-      </button>
+      </app-button>
     </form>
   </div>
 

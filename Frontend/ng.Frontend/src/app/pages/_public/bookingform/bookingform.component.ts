@@ -3,6 +3,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BookingService } from '../../../shared/services/booking.service';
 import { CreateBookingDto, RoomType, BookingStatus } from '../../../api/models';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { ToastService } from '../../../shared/services/toast.service';
 
 interface Asset {
   id: number;
@@ -24,13 +26,14 @@ interface City {
 
 @Component({
   selector: 'app-bookingform',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ButtonComponent],
   templateUrl: './bookingform.component.html',
   styleUrl: './bookingform.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BookingformComponent {
   private readonly bookingService = inject(BookingService);
+  private readonly toastService = inject(ToastService);
 
   // Signal Forms - nytt API i Angular
   readonly bookingForm = new FormGroup({
@@ -136,9 +139,12 @@ export class BookingformComponent {
     return this.rooms.filter((room) => room.city === city);
   });
 
+  // Signal för formulärets status
+  readonly formStatus = toSignal(this.bookingForm.statusChanges, { initialValue: 'INVALID' });
+
   // Computed: formulärvalidering
   readonly isFormValid = computed(() => {
-    return this.bookingForm.valid;
+    return this.formStatus() === 'VALID';
   });
 
   toggleRoom(roomId: number): void {
@@ -197,12 +203,12 @@ export class BookingformComponent {
 
     this.bookingService.createBooking(booking).subscribe({
       next: () => {
-        alert('Bokning skapad!');
+        this.toastService.showSuccess('Bokning skapad!');
         this.resetForm();
       },
       error: (err) => {
         console.error('Fel vid bokning:', err);
-        alert('Något gick fel vid bokningen.');
+        this.toastService.showError('Något gick fel vid bokningen.');
       },
     });
   }
