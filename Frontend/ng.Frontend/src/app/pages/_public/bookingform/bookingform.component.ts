@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BookingService } from '../../../shared/services/booking.service';
 import { CreateBookingDto, RoomType, BookingStatus } from '../../../api/models';
 
@@ -23,13 +23,35 @@ interface City {
 
 @Component({
   selector: 'app-bookingform',
-  imports: [FormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './bookingform.component.html',
   styleUrl: './bookingform.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BookingformComponent {
   private readonly bookingService = inject(BookingService);
+
+  // Signal Forms - nytt API i Angular
+  readonly bookingForm = new FormGroup({
+    name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    selectedCity: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    selectedRoomId: new FormControl<number | null>(null, { validators: [Validators.required] }),
+    startDate: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    startTime: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    endDate: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    endTime: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    notes: new FormControl('', { nonNullable: true }),
+  });
+
+  // Signals för formulärdata - uppdateras automatiskt när formuläret ändras
+  readonly name = computed(() => this.bookingForm.controls.name.value);
+  readonly selectedCity = computed(() => this.bookingForm.controls.selectedCity.value);
+  readonly selectedRoomId = computed(() => this.bookingForm.controls.selectedRoomId.value);
+  readonly startDate = computed(() => this.bookingForm.controls.startDate.value);
+  readonly startTime = computed(() => this.bookingForm.controls.startTime.value);
+  readonly endDate = computed(() => this.bookingForm.controls.endDate.value);
+  readonly endTime = computed(() => this.bookingForm.controls.endTime.value);
+  readonly notes = computed(() => this.bookingForm.controls.notes.value);
 
   // Mockdata för städer
   readonly cities: City[] = [{ name: 'Hudiksvall' }, { name: 'Uppsala' }, { name: 'Stockholm' }];
@@ -103,15 +125,6 @@ export class BookingformComponent {
     },
   ];
 
-  // Formulärfält
-  readonly name = signal('');
-  readonly selectedCity = signal('');
-  readonly selectedRoomId = signal<number | null>(null);
-  readonly startDate = signal('');
-  readonly startTime = signal('');
-  readonly endDate = signal('');
-  readonly endTime = signal('');
-  readonly notes = signal('');
 
   // Expanded rooms i listan (för collapsable)
   readonly expandedRooms = signal<Set<number>>(new Set());
@@ -125,15 +138,7 @@ export class BookingformComponent {
 
   // Computed: formulärvalidering
   readonly isFormValid = computed(() => {
-    return (
-      this.name().trim() !== '' &&
-      this.selectedCity() !== '' &&
-      this.selectedRoomId() !== null &&
-      this.startDate() !== '' &&
-      this.startTime() !== '' &&
-      this.endDate() !== '' &&
-      this.endTime() !== ''
-    );
+    return this.bookingForm.valid;
   });
 
   toggleRoom(roomId: number): void {
@@ -167,7 +172,7 @@ export class BookingformComponent {
 
   onCityChange(): void {
     // Återställ valt rum när stad ändras
-    this.selectedRoomId.set(null);
+    this.bookingForm.controls.selectedRoomId.setValue(null);
   }
 
   onSubmit(): void {
@@ -203,13 +208,6 @@ export class BookingformComponent {
   }
 
   private resetForm(): void {
-    this.name.set('');
-    this.selectedCity.set('');
-    this.selectedRoomId.set(null);
-    this.startDate.set('');
-    this.startTime.set('');
-    this.endDate.set('');
-    this.endTime.set('');
-    this.notes.set('');
+    this.bookingForm.reset();
   }
 }

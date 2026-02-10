@@ -27,7 +27,7 @@
     "build:prod": "npm run setup --silent && npm run frontend:build:prod --silent && npm run dotnet:publish --silent"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.2.1"
   },
   "repository": {
     "type": "git",

@@ -1,1 +1,48 @@
-<p>login works!</p>
+
+    <!-- LOGIN-LAYOUT -->
+      <h1 class="visually-hidden">Logga in till ELLA</h1>
+
+      <!-- Vänster sida – formulär -->
+      <section class="form-side">
+        <div class="form-content">
+          <h2>Välkommen till ELLA</h2>
+          <p>Logga in för att börja boka</p>
+
+          <form class="form" id="loginForm" novalidate>
+            <div class="inputGroup">
+              <label for="username" class="visually-hidden"
+                >Email-address</label
+              >
+              <input
+                id="username"
+                type="email"
+                required
+                placeholder=" "
+                autocomplete="off"
+              />
+              <div class="labelline">Email-address</div>
+            </div>
+
+            <div class="inputGroup">
+              <label for="password" class="visually-hidden">Lösenord</label>
+              <input
+                id="password"
+                type="password"
+                required
+                placeholder=" "
+                autocomplete="off"
+              />
+              <div class="labelline">Lösenord</div>
+            </div>
+
+            <button type="submit">Logga in</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Höger sida – dekorativ yta -->
+      <aside class="art-side">
+        <img src="assets/ELLA-logo.png" alt="" aria-hidden="true" />
+      </aside>
+
+
