@@ -27,7 +27,7 @@ public class AuthenticationMiddleware(RequestDelegate next, ILogger<Authenticati
                 // Attach user to context for downstream middleware/endpoints
                 context.Items["User"] = user;
                 context.Items["UserId"] = user.Id;
-                context.Items["UserRole"] = user.Role.ToString().ToLowerInvariant();
+                context.Items["UserRole"] = user.Role.ToString();
 
                 logger.LogDebug("User {UserId} authenticated via JWT", user.Id);
             }

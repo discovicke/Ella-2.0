@@ -110,7 +110,7 @@ public static class AuthEndpoints
                         id = user.Id,
                         email = user.Email,
                         displayName = user.DisplayName,
-                        role = user.Role.ToString().ToLowerInvariant(),
+                        role = user.Role.ToString(),
                         userClass = user.UserClass,
                         isBanned = user.IsBanned == BannedStatus.Banned
                     }
