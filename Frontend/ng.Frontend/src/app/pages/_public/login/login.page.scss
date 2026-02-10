@@ -1,0 +1,250 @@
+/* LOGIN PAGE LAYOUT */
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+  min-height: calc(100vh - 120px); /* plats för header */
+  background: var(--color-bg-body);
+  gap: 40px;
+}
+
+/* Vänster och höger sida */
+.form-side,
+.art-side {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Inloggningsrutan */
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 380px;
+  width: 100%;
+  padding: 32px;
+  border-radius: 16px;
+  background: var(--color-bg-card);
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 6px -1px #0000000d, 0 2px 4px -1px #00000008;
+
+  opacity: 0;
+  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.form-content > *:nth-child(1) { animation-delay: 0.1s; }
+.form-content > *:nth-child(2) { animation-delay: 0.2s; }
+.form-content form { opacity: 0; animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form-content input::placeholder {
+  font-size: var(--font-sm);
+  color: #999;
+}
+
+.form-content h2 {
+  font-family: "Nunito Sans", sans-serif;
+  font-size: var(--font-xl);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  margin: 0;
+}
+
+.form-content p {
+  font-family: "Nunito Sans", sans-serif;
+  font-size: var(--font-base);
+  line-height: var(--leading-normal);
+  margin: 0;
+}
+
+.form-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 20px;
+}
+
+.form-content form div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-content label {
+  font-family: "Nunito Sans", sans-serif;
+  font-size: var(--font-sm);
+  font-weight: 600;
+}
+
+.form-content input {
+  font-family: "Nunito Sans", sans-serif;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: var(--font-base);
+  line-height: var(--leading-normal);
+}
+
+.inputGroup{
+  position: relative;
+}
+
+.inputGroup input{
+  font-family: "Nunito Sans", sans-serif;
+  padding: 12px;
+  font-size: var(--font-base);
+  border: 1px solid var(--color-border);
+  outline: none;
+  background: transparent;
+  border-radius: 8px;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  color: var(--color-text-main);
+}
+
+.labelline {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  transform-origin: left top;
+  transform: translateY(0) scale(1);
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 2;
+  background-color: var(--color-bg-card);
+  padding: 0 4px;
+  color: var(--color-text-muted);
+  user-select: none;
+}
+
+input:focus
+{
+  border-color: var(--color-primary);
+  /* box-shadow: 0 5px 15px rgba(0,123,255,0.1); */
+  box-shadow: 0 0 0 3px #9136cb1a;
+}
+
+.inputGroup input:focus + .labelline,
+.inputGroup input:not(:placeholder-shown) + .labelline
+{
+  transform: translateY(-22px) scale(.88);
+  color: #9136C8FF;
+}
+
+.inputGroup input:not(:placeholder-shown):not(:focus) + .labelline{
+  transform: translateY(-22px) scale(.88);
+  border-color: #A9A9A9FF;
+  color: #A9A9A9FF;
+}
+
+.form-content button {
+  font-family: "Nunito Sans", sans-serif;
+  position: relative;
+  padding: 14px;
+  font-size: var(--font-base);
+  font-weight: 700;
+  line-height: var(--leading-normal);
+  border: none;
+  border-radius: 8px;
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.3s, background 0.3s;
+  margin-top: 10px;
+  overflow: hidden;
+  user-select: none;
+}
+
+.form-content button:hover {
+  background: var(--color-primary-hover);
+  box-shadow: 0 10px 15px -3px #9136cb4d;
+  transform: translateY(-2px);
+}
+
+form button:focus {
+  outline-color: var(--color-primary-active);
+}
+
+.form-content button:active {
+  transform: scale(0.98);
+  background: var(--color-primary-active);
+}
+
+@keyframes shake-error {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.inputGroup.error {
+  animation: shake-error 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.inputGroup.error input {
+  border-color: #EF4444 !important;
+  color: #EF4444;
+}
+
+.inputGroup.error .labelline {
+  color: #EF4444 !important;
+}
+
+.inputGroup.error .password-toggle {
+  color: #EF4444;
+}
+
+.error-text {
+  font-family: "Nunito Sans", sans-serif;
+  display: none;
+  color: #EF4444;
+  font-size: var(--font-xs);
+  line-height: var(--leading-normal);
+  margin-top: 4px;
+  margin-left: 4px;
+  font-weight: 500;
+}
+
+.inputGroup.error .error-text {
+  display: block;
+}
+
+/* Höger sida – stor logga */
+.art-side img {
+  max-width: 80%;
+  height: auto;
+}
+
+/* MOBIL: Visa bara login-rutan */
+@media (max-width: 768px) {
+  .art-side {
+    display: none;
+  }
+
+  .login-layout {
+    flex-direction: column;
+    gap: 20px;
+    min-height: auto; /* undvik scroll */
+  }
+}
+
+/* Hidden H1 */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
