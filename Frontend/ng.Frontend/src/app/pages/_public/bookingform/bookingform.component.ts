@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BookingService } from '../../../shared/services/booking.service';
 import { CreateBookingDto, RoomType, BookingStatus } from '../../../api/models';
@@ -44,14 +45,14 @@ export class BookingformComponent {
   });
 
   // Signals för formulärdata - uppdateras automatiskt när formuläret ändras
-  readonly name = computed(() => this.bookingForm.controls.name.value);
-  readonly selectedCity = computed(() => this.bookingForm.controls.selectedCity.value);
-  readonly selectedRoomId = computed(() => this.bookingForm.controls.selectedRoomId.value);
-  readonly startDate = computed(() => this.bookingForm.controls.startDate.value);
-  readonly startTime = computed(() => this.bookingForm.controls.startTime.value);
-  readonly endDate = computed(() => this.bookingForm.controls.endDate.value);
-  readonly endTime = computed(() => this.bookingForm.controls.endTime.value);
-  readonly notes = computed(() => this.bookingForm.controls.notes.value);
+  readonly name = toSignal(this.bookingForm.controls.name.valueChanges, { initialValue: '' });
+  readonly selectedCity = toSignal(this.bookingForm.controls.selectedCity.valueChanges, { initialValue: '' });
+  readonly selectedRoomId = toSignal(this.bookingForm.controls.selectedRoomId.valueChanges, { initialValue: null });
+  readonly startDate = toSignal(this.bookingForm.controls.startDate.valueChanges, { initialValue: '' });
+  readonly startTime = toSignal(this.bookingForm.controls.startTime.valueChanges, { initialValue: '' });
+  readonly endDate = toSignal(this.bookingForm.controls.endDate.valueChanges, { initialValue: '' });
+  readonly endTime = toSignal(this.bookingForm.controls.endTime.valueChanges, { initialValue: '' });
+  readonly notes = toSignal(this.bookingForm.controls.notes.valueChanges, { initialValue: '' });
 
   // Mockdata för städer
   readonly cities: City[] = [{ name: 'Hudiksvall' }, { name: 'Uppsala' }, { name: 'Stockholm' }];
@@ -124,7 +125,6 @@ export class BookingformComponent {
       ],
     },
   ];
-
 
   // Expanded rooms i listan (för collapsable)
   readonly expandedRooms = signal<Set<number>>(new Set());
