@@ -33,7 +33,8 @@ public static class RoomEndpoints
             .WithSummary("Get all rooms")
             .WithDescription("Retrieves all rooms. Optionally filter by type or address.\n\n🔒 **Authentication Required**")
             // UPDATED: Now produces RoomDetailModel (includes Assets list)
-            .Produces<IEnumerable<RoomDetailModel>>(StatusCodes.Status200OK);
+            .Produces<IEnumerable<RoomDetailModel>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized);
 
         // GET /api/rooms/{id}
         group
@@ -55,7 +56,8 @@ public static class RoomEndpoints
             // UPDATED: Now produces RoomDetailModel (includes Assets list)
             .Produces<RoomDetailModel>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
-            .Produces<string>(StatusCodes.Status404NotFound);
+            .Produces<string>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized);
 
         // POST /api/rooms
         group
@@ -79,7 +81,9 @@ public static class RoomEndpoints
             .WithDescription("Creates a new room. You can optionally provide a list of 'assetIds' to link existing assets (e.g., Projector) to the room immediately.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin")
             .Accepts<CreateRoomDto>("application/json")
             .Produces<RoomResponseDto>(StatusCodes.Status201Created)
-            .Produces<string>(StatusCodes.Status400BadRequest);
+            .Produces<string>(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         // PUT /api/rooms/{id}
         group
@@ -106,7 +110,9 @@ public static class RoomEndpoints
             .Accepts<UpdateRoomDto>("application/json")
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
-            .Produces<string>(StatusCodes.Status404NotFound);
+            .Produces<string>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         // DELETE /api/rooms/{id}
         group
@@ -128,7 +134,9 @@ public static class RoomEndpoints
             .WithDescription("Permanently deletes a room by its unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin")
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
-            .Produces<string>(StatusCodes.Status404NotFound);
+            .Produces<string>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         return group;
     }

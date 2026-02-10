@@ -26,7 +26,7 @@ public static class AuthEndpoints
                     return Results.BadRequest(new { error = "Registration failed", message = "Email may already exist" });
 
                 // Set auth cookie for browser clients
-                return Results.Ok(new
+                return Results.Created($"/api/users/{result.User.Id}", new
                 {
                     message = "Registration successful",
                     token = result.Token,
@@ -37,7 +37,7 @@ public static class AuthEndpoints
             .WithSummary("Register a new user")
             .WithDescription("Creates a new user account and returns an authentication token.")
             .Accepts<RegisterDto>("application/json")
-            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest);
 
         // POST /auth/login - Authenticate user and get JWT token
