@@ -1,1 +1,16 @@
-<p>manage-users-page works!</p>
+<div class="manage-users-container">
+  <header class="page-header">
+    <h1>Hantera användare</h1>
+    <button class="btn-primary" (click)="openAddUserModal()">
+      + Skapa användare
+    </button>
+  </header>
+
+  <div class="user-list-mock">
+    <p>Exempel på användare:</p>
+    <div class="user-card" (click)="openEditUserModal({ name: 'Ella Nord', email: 'ella@example.com', role: 'admin' })">
+      <span>Ella Nord (Admin)</span>
+      <button class="btn-ghost">Redigera</button>
+    </div>
+  </div>
+</div>
