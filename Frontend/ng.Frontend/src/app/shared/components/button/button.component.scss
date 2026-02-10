@@ -1,0 +1,29 @@
+@use "styles/mixins.scss" as *;
+
+
+button {
+    @include button-base;
+    
+    &.primary {
+        @include button-primary;
+    }
+    &.success {
+        @include button-success;
+    }
+    
+    //  Stil för "secondary"
+    &.secondary {
+        @include button-secondary;
+    }
+
+    // Stil för "danger"
+    &.danger {
+        @include button-danger;
+    }
+
+    &.tertiary {
+        @include button-ghost;
+    }
+
+
+}
