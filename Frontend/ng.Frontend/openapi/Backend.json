@@ -26,7 +26,14 @@
         },
         "responses": {
           "201": {
-            "description": "Created"
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad Request"
@@ -54,7 +61,14 @@
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized"
@@ -1134,6 +1148,55 @@
           },
           "description": {
             "type": "string"
+          }
+        }
+      },
+      "AuthedUserResponseDto": {
+        "required": [
+          "email",
+          "role"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "email": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string"
+          },
+          "userClass": {
+            "type": "string",
+            "nullable": true
+          },
+          "isBanned": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AuthResponseDto": {
+        "required": [
+          "message",
+          "token",
+          "user"
+        ],
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/AuthedUserResponseDto"
           }
         }
       },

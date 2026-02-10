@@ -6,12 +6,6 @@ public record LoginDto
     public required string Password { get; set; }
 }
 
-public record LoginResultDto
-{
-    public required string Token { get; set; }
-    public required AuthedUserResponseDto User { get; set; }
-}
-
 public record RegisterDto
 {
     public required string Email { get; set; }
@@ -19,8 +13,9 @@ public record RegisterDto
     public string? DisplayName { get; set; }
 }
 
-public record RegisterResultDto
+public record AuthResponseDto
 {
+    public required string Message { get; set; }
     public required string Token { get; set; }
     public required AuthedUserResponseDto User { get; set; }
 }

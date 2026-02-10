@@ -178,3 +178,19 @@ export interface UserResponseDto {
   role: UserRole;
   userClass: string | null;
 }
+
+export interface AuthedUserResponseDto {
+  /** @format int64 */
+  id: number;
+  email: string;
+  displayName: string | null;
+  role: string;
+  userClass: string | null;
+  isBanned: boolean;
+}
+
+export interface AuthResponseDto {
+  message: string;
+  token: string;
+  user: AuthedUserResponseDto;
+}

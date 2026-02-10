@@ -26,18 +26,13 @@ public static class AuthEndpoints
                     return Results.BadRequest(new { error = "Registration failed", message = "Email may already exist" });
 
                 // Set auth cookie for browser clients
-                return Results.Created($"/api/users/{result.User.Id}", new
-                {
-                    message = "Registration successful",
-                    token = result.Token,
-                    user = result.User
-                });
+                return Results.Created($"/api/users/{result.User.Id}", result);
             })
             .WithName("RegisterUser")
             .WithSummary("Register a new user")
             .WithDescription("Creates a new user account and returns an authentication token.")
             .Accepts<RegisterDto>("application/json")
-            .Produces(StatusCodes.Status201Created)
+            .Produces<AuthResponseDto>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest);
 
         // POST /auth/login - Authenticate user and get JWT token
@@ -59,18 +54,13 @@ public static class AuthEndpoints
                     Path = "/"
                 });
 
-                return Results.Ok(new
-                {
-                    message = "Login successful",
-                    token = result.Token,
-                    user = result.User
-                });
+                return Results.Ok(result);
             })
             .WithName("LoginUser")
             .WithSummary("Login user")
             .WithDescription("Authenticates a user with email and password, returning a JWT token.")
             .Accepts<LoginDto>("application/json")
-            .Produces(StatusCodes.Status200OK)
+            .Produces<AuthResponseDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
 
         // POST /auth/logout - Invalidate current user's tokens
