@@ -47,7 +47,7 @@
           "Auth"
         ],
         "summary": "Login user",
-        "description": "Authenticates a user with email and password, returning a JWT token.",
+        "description": "Authenticates a user with email and password, returning a JWT token and user info on success. \n\n*Note: In production, the token is not returned in the response body to prevent it from being stolen or accidentally stored in local storage. The token is still set in an HttpOnly cookie and can be used for authenticated requests.*",
         "operationId": "LoginUser",
         "requestBody": {
           "content": {
