@@ -1,0 +1,67 @@
+@use 'styles/mixins' as *;
+@use 'styles/variables' as *;
+
+.administrator-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-bg-body);
+}
+
+.sidebar {
+  width: 250px;
+  background: var(--color-bg-card);
+  border-right: 1px solid var(--color-border);
+  padding: map-get($spacing, '6');
+
+  h2 {
+    @include heading(3);
+    margin-bottom: map-get($spacing, '6');
+    color: var(--color-primary);
+  }
+
+  nav ul {
+    @include stack(map-get($spacing, '2'));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  nav a {
+    @include transition(all);
+    display: block;
+    padding: map-get($spacing, '3') map-get($spacing, '4');
+    border-radius: map-get($radii, 'md');
+    text-decoration: none;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+
+    &:hover {
+      background: var(--color-bg-panel);
+      color: var(--color-primary);
+    }
+
+    &.active {
+      background: var(--color-primary-surface);
+      color: var(--color-primary);
+    }
+  }
+}
+
+.content {
+  flex: 1;
+  padding: map-get($spacing, '8');
+  overflow-y: auto;
+}
+
+@include breakpoint-down('md') {
+  .administrator-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+}
+
