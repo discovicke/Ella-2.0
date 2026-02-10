@@ -1,0 +1,57 @@
+@use 'styles/mixins' as *;
+@use 'styles/variables' as *;
+
+.manage-users-container {
+  @include stack(map-get($spacing, '6'));
+}
+
+.page-header {
+  @include flex-between;
+  @include gap('4');
+  margin-bottom: map-get($spacing, '6');
+
+  h1 {
+    @include heading(1);
+    margin: 0;
+  }
+}
+
+.btn-primary {
+  @include button-primary;
+  padding: map-get($spacing, '3') map-get($spacing, '5');
+}
+
+.user-list-mock {
+  @include stack(map-get($spacing, '4'));
+
+  p {
+    font-size: var(--font-base);
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+}
+
+.user-card {
+  @include card(map-get($spacing, '4'));
+  @include flex-between;
+  cursor: pointer;
+  @include transition(all);
+
+  &:hover {
+    @include shadow('md');
+    transform: translateY(-2px);
+  }
+
+  span {
+    font-size: var(--font-base);
+    color: var(--color-text-primary);
+    font-weight: 500;
+  }
+}
+
+.btn-ghost {
+  @include button-ghost;
+  padding: map-get($spacing, '2') map-get($spacing, '4');
+  font-size: var(--font-sm);
+}
+
