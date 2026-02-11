@@ -136,7 +136,43 @@ public class UserService(
             throw new Exception("Failed to update user.");
         }
 
+        // If user was just banned, revoke tokens
+        if (existing.IsBanned != BannedStatus.Banned && updated.IsBanned == BannedStatus.Banned)
+        {
+            await RevokeTokensAsync(id);
+        }
+
         logger.LogInformation("User with ID {UserId} updated", id);
+    }
+
+    // Set user ban status
+    public async Task SetBannedStatusAsync(long id, BannedStatus status)
+    {
+        logger.LogInformation("Setting ban status to {Status} for user with ID {UserId}", status, id);
+
+        var user = await repo.GetUserByIdAsync(id);
+        if (user is null)
+        {
+            logger.LogWarning("Cannot set ban status - user with ID {UserId} not found", id);
+            throw new KeyNotFoundException($"User with ID {id} does not exist.");
+        }
+
+        user.IsBanned = status;
+
+        var success = await repo.UpdateUserAsync(id, user);
+        if (!success)
+        {
+            logger.LogError("Failed to update ban status for user with ID {UserId}", id);
+            throw new Exception("Failed to update user ban status.");
+        }
+
+        // If banning, also revoke all tokens immediately
+        if (status == BannedStatus.Banned)
+        {
+            await RevokeTokensAsync(id);
+        }
+
+        logger.LogInformation("Ban status updated for user {UserId}", id);
     }
 
     // Force logout (revoke all tokens)
@@ -196,7 +232,8 @@ public class UserService(
             user.Email,
             user.DisplayName,
             user.Role,
-            user.UserClass
+            user.UserClass,
+            user.IsBanned
         );
     }
 }
