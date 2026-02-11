@@ -1,8 +1,20 @@
-import { ChangeDetectionStrategy, Component, inject, signal, effect } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
 import { UserRole, BannedStatus } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
+
+/**
+ * Validator som ser till att lösenorden matchar
+ */
+export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const password = control.get('password');
+  const confirmPassword = control.get('confirmPassword');
+
+  if (!password || !confirmPassword) return null;
+
+  return password.value === confirmPassword.value ? null : { passwordMismatch: true };
+};
 
 @Component({
   selector: 'app-user-form-modal',
@@ -26,12 +38,22 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
         }
       </div>
 
-      <div class="form-group">
-        <label for="password">Lösenord</label>
-        <input id="password" type="password" formControlName="password" placeholder="{{ initialData ? 'Lämna tomt för att behålla' : 'Minst 6 tecken' }}" />
-        @if (!initialData && userForm.get('password')?.invalid && userForm.get('password')?.touched) {
-          <span class="error-msg">Lösenord krävs (minst 6 tecken)</span>
-        }
+      <div class="form-row">
+        <div class="form-group">
+          <label for="password">Lösenord</label>
+          <input id="password" type="password" formControlName="password" placeholder="{{ initialData ? 'Lämna tomt för att behålla' : 'Minst 6 tecken' }}" />
+          @if (!initialData && userForm.get('password')?.invalid && userForm.get('password')?.touched) {
+            <span class="error-msg">Lösenord krävs (minst 6 tecken)</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Bekräfta lösenord</label>
+          <input id="confirmPassword" type="password" formControlName="confirmPassword" placeholder="Upprepa lösenordet" />
+          @if (userForm.errors?.['passwordMismatch'] && userForm.get('confirmPassword')?.touched) {
+            <span class="error-msg">Lösenorden matchar inte</span>
+          }
+        </div>
       </div>
 
       <div class="form-row">
@@ -151,13 +173,15 @@ export class UserFormModalComponent {
       nonNullable: true,
       validators: this.initialData ? [] : [Validators.required, Validators.minLength(6)]
     }),
+    confirmPassword: new FormControl('', {
+      nonNullable: true
+    }),
     isBanned: new FormControl<BannedStatus>(this.initialData?.isBanned || BannedStatus.NotBanned, {
       nonNullable: true
     }),
-  });
+  }, { validators: [passwordMatchValidator] });
 
   constructor() {
-    // Reaktivt hantera userClass baserat på roll
     this.userForm.controls.role.valueChanges.subscribe(role => {
       if (role === UserRole.Admin) {
         this.userForm.controls.userClass.disable();
@@ -167,7 +191,6 @@ export class UserFormModalComponent {
       }
     });
 
-    // Kör en initial koll
     if (this.userForm.controls.role.value === UserRole.Admin) {
       this.userForm.controls.userClass.disable();
     }
@@ -176,13 +199,13 @@ export class UserFormModalComponent {
   onSubmit() {
     if (this.userForm.invalid) return;
 
-    const rawValue = this.userForm.getRawValue();
+    const { confirmPassword, ...formData } = this.userForm.getRawValue();
 
     const payload = {
       ...this.initialData,
-      ...rawValue,
-      // Se till att password inte skickas med om det är tomt vid edit
-      ...(this.initialData && !rawValue.password ? { password: this.initialData.password } : {})
+      ...formData,
+      // Vid edit: använd det nya lösenordet om det angetts, annars behåll det gamla
+      ...(this.initialData && !formData.password ? { password: this.initialData.password } : {})
     };
 
     if (this.config?.onSave) {
