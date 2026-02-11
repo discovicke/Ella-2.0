@@ -7,6 +7,7 @@ export interface UserState {
   displayName: string;
   role: UserRole;
   isBanned: boolean;
+  token?: string; // JWT token
 }
 
 const STORAGE_KEY = 'auth_user';

@@ -6,13 +6,13 @@ import { PanelComponent } from '../../shared/components/panel/panel.component';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { RoomService } from '../../shared/services/room.service';
 import { BookingService } from '../../shared/services/booking.service';
-import { RoomResponseDto, BookingDetailedReadModel } from '../../models/models';
-import { CommonModule } from '@angular/common';
+import { SessionService } from '../../core/session.service';
+import { RoomResponseDto } from '../../models/models';
 import { HeaderComponent } from '../../shared/components/header/header.component';
-
 
 @Component({
   selector: 'app-student-layout',
+  standalone: true,
   imports: [DatePipe, ButtonComponent, PanelComponent, CardComponent, HeaderComponent],
   templateUrl: './student.layout.html',
   styleUrl: './student.layout.scss',
@@ -21,6 +21,7 @@ import { HeaderComponent } from '../../shared/components/header/header.component
 export class StudentLayout {
   private readonly roomService = inject(RoomService);
   private readonly bookingService = inject(BookingService);
+  private readonly sessionService = inject(SessionService);
 
   activeTab = signal<'upcoming' | 'history'>('upcoming');
 
@@ -30,8 +31,14 @@ export class StudentLayout {
   });
 
   // Resource för bokningar
+  // Genom att anropa sessionService.currentUser() inuti loadern
+  // kommer resursen automatiskt att laddas om när användaren ändras.
   bookingsResource = resource({
-    loader: () => firstValueFrom(this.bookingService.getBookings())
+    loader: () => {
+      const user = this.sessionService.currentUser();
+      if (!user?.id) return Promise.resolve([]);
+      return firstValueFrom(this.bookingService.getBookingsByUserId(user.id));
+    }
   });
 
   setActiveTab(tab: 'upcoming' | 'history') {
