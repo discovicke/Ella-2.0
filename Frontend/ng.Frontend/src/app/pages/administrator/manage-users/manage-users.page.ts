@@ -14,15 +14,16 @@ import { UserService } from '../../../shared/services/user.service';
 export class ManageUsersPage {
   private modalService = inject(ModalService);
   private userService = inject(UserService);
-  
+
   userResource = resource({
     loader: () => firstValueFrom(this.userService.getAllUsers())
   });
 
 
-  openAddUserModal() {
+  openAddUserModal(user: any) {
     this.modalService.open(UserFormModalComponent, {
       title: 'Skapa ny användare',
+      data: user,
       width: '500px'
     });
   }
