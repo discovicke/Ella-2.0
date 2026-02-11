@@ -29,7 +29,7 @@
         </div>
 
         <div class="booking-scroll" aria-live="polite">
-            @for (booking of bookingsResource.value(); track booking.bookingId) {
+            @for (booking of bookingsResource.value() ?? []; track booking.bookingId) {
                 <app-card
                     [title]="booking.roomName ?? 'Okänt rum'"
                     [subtitle]="(booking.startTime | date: 'short') ?? ''">
@@ -50,10 +50,10 @@
         title="Tillgängliga rum"
         description="Bläddra och boka studierum">
 
-        @for (room of roomsResource.value(); track room.id) {
+        @for (room of roomsResource.value() ?? []; track room.id) {
             <app-card
-                [title]="room.name"
-                [subtitle]="room.type"
+                [title]="room.name ?? 'Okänt rum'"
+                [subtitle]="room.type ?? ''"
                 (book)="onBookRoom(room)">
             </app-card>
         } @empty {

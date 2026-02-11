@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { rxResource } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { firstValueFrom } from 'rxjs';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { PanelComponent } from '../../shared/components/panel/panel.component';
 import { CardComponent } from '../../shared/components/card/card.component';
@@ -11,7 +11,7 @@ import { RoomResponseDto, BookingDetailedReadModel } from '../../models/models';
 @Component({
   selector: 'app-student-layout',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, PanelComponent, CardComponent],
+  imports: [DatePipe, ButtonComponent, PanelComponent, CardComponent],
   templateUrl: './student.layout.html',
   styleUrl: './student.layout.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,13 +23,13 @@ export class StudentLayout {
   activeTab = signal<'upcoming' | 'history'>('upcoming');
 
   // Resource för rum
-  roomsResource = rxResource({
-    loader: () => this.roomService.getAllRooms()
+  roomsResource = resource({
+    loader: () => firstValueFrom(this.roomService.getAllRooms())
   });
 
   // Resource för bokningar
-  bookingsResource = rxResource({
-    loader: () => this.bookingService.getBookings()
+  bookingsResource = resource({
+    loader: () => firstValueFrom(this.bookingService.getBookings())
   });
 
   setActiveTab(tab: 'upcoming' | 'history') {
@@ -38,6 +38,5 @@ export class StudentLayout {
 
   onBookRoom(room: RoomResponseDto) {
     console.log('Open booking modal for room:', room);
-    // Logik för extern modal kommer senare
   }
 }
