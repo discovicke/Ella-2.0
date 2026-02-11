@@ -495,3 +495,7 @@ $RECYCLE.BIN/
 *.sqlite-shm
 *.sqlite-wal
 *.sqlite
+Frontend/ng.Frontend/openapi/models.json
+Frontend/ng.Frontend/src/app/models/models.ts
+Frontend/ng.Frontend/src/app/models/models.ts
+Frontend/ng.Frontend/openapi/models.json
