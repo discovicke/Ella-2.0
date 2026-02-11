@@ -42,8 +42,8 @@ export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): V
       <div class="form-row">
         <div class="form-group">
           <label for="password">Lösenord</label>
-          <input id="password" type="password" formControlName="password" placeholder="{{ initialData ? 'Lämna tomt för att behålla' : 'Minst 6 tecken' }}" />
-          @if (!initialData && userForm.get('password')?.invalid && userForm.get('password')?.touched) {
+          <input id="password" type="password" formControlName="password" placeholder="Minst 6 tecken (krävs)" />
+          @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
             <span class="error-msg">Lösenord krävs (minst 6 tecken)</span>
           }
         </div>
@@ -172,10 +172,11 @@ export class UserFormModalComponent {
     }),
     password: new FormControl('', {
       nonNullable: true,
-      validators: this.initialData ? [] : [Validators.required, Validators.minLength(6)]
+      validators: [Validators.required, Validators.minLength(6)]
     }),
     confirmPassword: new FormControl({ value: '', disabled: true }, {
-      nonNullable: true
+      nonNullable: true,
+      validators: [Validators.required]
     }),
     isBanned: new FormControl<BannedStatus>(this.initialData?.isBanned || BannedStatus.NotBanned, {
       nonNullable: true
@@ -217,8 +218,13 @@ export class UserFormModalComponent {
     const payload = {
       ...this.initialData,
       ...formData,
-      ...(this.initialData && !formData.password ? { password: this.initialData.password } : {})
     };
+
+    // Om vi redigerar och lösenordet är tomt -> Ta bort det helt från payloaden
+    // så att backend inte försöker validera en tom sträng.
+    if (this.initialData && !formData.password) {
+      delete (payload as any).password;
+    }
 
     if (this.config?.onSave) {
       this.isSubmitting.set(true);

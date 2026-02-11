@@ -65,21 +65,43 @@ export class ManageUsersPage {
     });
   }
 
-  private handleSave(payload: any, userId?: number) {
-    const obs = userId
-      ? this.userService.updateUser(userId, payload)
-      : this.userService.createUser(payload);
+    private handleSave(payload: any, userId?: number) {
 
-    obs.subscribe({
-      next: () => {
-        this.toastService.showSuccess(`Användaren ${userId ? 'uppdaterad' : 'skapad'}!`);
-        this.modalService.close();
-        this.userResource.reload(); // Uppdatera listan direkt
-      },
-      error: (err) => {
-        console.error('Save failed', err);
-        this.toastService.showError('Kunde inte spara användaren.');
-      }
-    });
-  }
+      console.log('Sending payload:', payload); // DEBUG
+
+  
+
+      const obs = userId 
+
+        ? this.userService.updateUser(userId, payload)
+
+        : this.userService.createUser(payload);
+
+  
+
+      obs.subscribe({
+
+        next: () => {
+
+          this.toastService.showSuccess(`Användaren ${userId ? 'uppdaterad' : 'skapad'}!`);
+
+          this.modalService.close();
+
+          this.userResource.reload();
+
+        },
+
+        error: (err) => {
+
+          console.error('Save failed. Server responded with:', err.error); // Se exakt valideringsfel
+
+          this.toastService.showError(err.error || 'Kunde inte spara användaren.');
+
+        }
+
+      });
+
+    }
+
+  
 }
