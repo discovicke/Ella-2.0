@@ -1,20 +1,16 @@
 <header class="top-header">
-    <img class="top-logo" src="../assets/ELLA-header.png" alt="ELLA – rumbokningssystem" />
+    <img class="top-logo" src="assets/ELLA-header.png" alt="ELLA – rumbokningssystem" />
     <div class="user-actions">
-        <div class="user-box">
-            <!--Place holder-->
+        <div class="user-box" *ngIf="sessionService.currentUser() as user">
             <span class="user-icon" aria-hidden="true">👤</span>
-            <span class="user-label" id="username"></span>
-            <span class="user-role teacher" id="user-role">Laddar..</span>
-            <!--Place holder-->
-            
-            <!--INSERT user + role components here-->
-
+            <div class="user-info">
+              <span class="user-label">{{ user.displayName || user.email }}</span>
+              <span class="user-role" [ngClass]="user.role.toLowerCase()">{{ user.role }}</span>
+            </div>
         </div>
 
-        <app-button (click)="onClick()">
-            {{ 'Logga ut' }}
+        <app-button variant="secondary" (clicked)="logout()">
+            Logga ut
         </app-button>
-
     </div>
 </header>

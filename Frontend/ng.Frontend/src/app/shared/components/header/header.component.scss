@@ -16,28 +16,38 @@
     font-family: "Nunito Sans", sans-serif;
     display: flex;
     align-items: center;
-    gap: 2px;
-    background: var(--color-primary-surface);
-    padding: 6px 12px;
-    border-radius: 10px;
-    font-size: var(--font-sm);
-    font-weight: 600;
+    gap: 12px;
+    background: var(--color-bg-card);
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
 }
 
-.top-logo {
-    height: auto;
-    width: 150px;
-    user-select: none;
-}
-
-.user-actions {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+.user-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
 }
 
 .user-label {
-    font-weight: 500;
-    color: #333;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    font-size: var(--font-sm);
+}
+
+.user-role {
+  font-size: var(--font-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  
+  &.admin { color: var(--color-danger); }
+  &.educator { color: var(--color-primary); }
+  &.student { color: var(--color-success); }
+}
+
+.user-icon {
+  font-size: 1.25rem;
 }
 

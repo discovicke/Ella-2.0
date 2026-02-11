@@ -26,6 +26,7 @@ export class AuthService {
       );
 
       const userState = this.mapToUserState(response.user);
+      userState.token = response.token; // Spara JWT token
 
       // 2. Update session
       this.sessionService.setUser(userState);

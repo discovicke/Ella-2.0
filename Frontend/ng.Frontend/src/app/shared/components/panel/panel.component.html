@@ -1,9 +1,20 @@
-<div class="panel-header">
-  <h2>{{ title() }}</h2>
-  @if (description()) {
-    <p>{{ description() }}</p>
-  }
-</div>
-<div class="panel-content">
-  <ng-content></ng-content>
+@if (mode() === 'overlay') {
+  <div class="panel-backdrop"></div>
+}
+
+<div class="panel-container" [class]="mode()" [class.left]="position() === 'left'" [class.right]="position() === 'right'" [style.width]="width()">
+  <div class="panel-header">
+    <div class="header-main">
+      <h2>{{ title() }}</h2>
+      @if (description()) {
+        <p>{{ description() }}</p>
+      }
+    </div>
+    <div class="header-actions">
+      <ng-content select="[header-actions]"></ng-content>
+    </div>
+  </div>
+  <div class="panel-content">
+    <ng-content></ng-content>
+  </div>
 </div>

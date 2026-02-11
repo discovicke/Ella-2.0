@@ -1,11 +1,13 @@
 <div class="card-container">
-  <div class="card-info">
-    <h3>{{ title() }}</h3>
-    @if (subtitle()) {
-      <p>{{ subtitle() }}</p>
-    }
+  <div class="card-body">
+    <div class="card-header">
+      <ng-content select="[card-header]"></ng-content>
+    </div>
+    <div class="card-content">
+      <ng-content select="[card-content]"></ng-content>
+    </div>
   </div>
-  <app-button variant="primary" (clicked)="onBook()">
-    {{ buttonText() }}
-  </app-button>
+  <div class="card-footer">
+    <ng-content select="[card-footer]"></ng-content>
+  </div>
 </div>

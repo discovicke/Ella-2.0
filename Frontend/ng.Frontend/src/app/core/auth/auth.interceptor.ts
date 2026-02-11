@@ -10,11 +10,20 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const sessionService = inject(SessionService);
   const router = inject(Router);
 
-  // Note: We no longer manually attach the Authorization header.
-  // We rely on the HttpOnly cookie ('auth_token') sent by the backend.
-  // The browser automatically attaches this cookie to same-origin requests (proxied via /api).
+  // Hämta token från sessionen
+  const token = sessionService.currentUser()?.token;
 
-  return next(req).pipe(
+  // Lägg till Authorization header om vi har en token och anropet går mot /api
+  let authReq = req;
+  if (token && req.url.includes('/api')) {
+    authReq = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+  }
+
+  return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
         // Token is invalid (expired, revoked via validafter, etc.)

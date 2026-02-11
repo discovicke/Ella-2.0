@@ -14,6 +14,10 @@ export class BookingService {
     return this.http.get<BookingDetailedReadModel[]>(this.apiUrl);
   }
 
+  getBookingsByUserId(userId: number): Observable<BookingDetailedReadModel[]> {
+    return this.http.get<BookingDetailedReadModel[]>(`${this.apiUrl}/user/${userId}`);
+  }
+
   createBooking(booking: CreateBookingDto): Observable<unknown> {
     return this.http.post(this.apiUrl, booking);
   }

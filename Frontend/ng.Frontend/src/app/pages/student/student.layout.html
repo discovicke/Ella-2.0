@@ -1,69 +1,86 @@
-<app-header />
+<app-header/>
 <main class="dashboard-layout">
-    <div class="content-container">
+  <div class="content-container">
 
 
     <!-- vänster sektion bokningar -->
     <app-panel
-        class="left-panel"
-        title="Mina bokningar">
-        <div class="booking-tabs">
-            <app-button
-            variant="tertiary"
-            [class.active]="activeTab() === 'upcoming'"
-             (click)="activeTab.set('upcoming')"
-             >Kommande
-            </app-button>
+      class="left-panel"
+      title="Mina bokningar">
+      <div class="booking-tabs">
+        <app-button
+          variant="tertiary"
+          [class.active]="activeTab() === 'upcoming'"
+          (click)="activeTab.set('upcoming')"
+        >Kommande
+        </app-button>
 
-             <app-button
-            variant="tertiary"
-            [class.active]="activeTab() === 'history'"
-             (click)="activeTab.set('history')"
-             >Historik
-            </app-button>
+        <app-button
+          variant="tertiary"
+          [class.active]="activeTab() === 'history'"
+          (click)="activeTab.set('history')"
+        >Historik
+        </app-button>
 
-            <label class="toggle-label">
-                <input type="checkbox" id="show-cancelled" />
-                Visa avbokade
-            </label>
-        </div>
+        <label class="toggle-label">
+          <input type="checkbox" id="show-cancelled"/>
+          Visa avbokade
+        </label>
+      </div>
 
-        <div class="booking-scroll" aria-live="polite">
-            @for (booking of bookingsResource.value() ?? []; track booking.bookingId) {
-                <app-card
-                    [title]="booking.roomName ?? 'Okänt rum'"
-                    [subtitle]="(booking.startTime | date: 'short') ?? ''">
-                </app-card>
-            } @empty {
-                @if (bookingsResource.isLoading()) {
-                    <p>Laddar bokningar...</p>
-                } @else {
-                    <p>Inga bokningar hittades.</p>
+      <div class="booking-scroll" aria-live="polite">
+                @for (booking of bookingsResource.value() ?? []; track booking.bookingId) {
+                  <app-card>
+                    <div card-header><h3>{{ booking.roomName ?? 'Okänt rum' }}</h3></div>
+                    <div card-content>
+                      <div class="text-wrapper">
+                        <p>{{ (booking.startTime | date: 'short') ?? '' }}</p>
+                        <p>{{ (booking.endTime | date: 'short') ?? '' }}</p>
+                        <p>Anteckning: {{ booking.notes }}</p>
+                      </div>
+                    </div>
+                  </app-card>
                 }
-            }
-        </div>
-    </app-panel>
-</div>
-    <!-- höger sektion rum -->
-    <app-panel
-        class="right-panel"
-        title="Tillgängliga rum"
-        description="Bläddra och boka studierum">
-
-        @for (room of roomsResource.value() ?? []; track room.id) {
-            <app-card
-                [title]="room.name ?? 'Okänt rum'"
-                [subtitle]="room.type ?? ''"
-                (book)="onBookRoom(room)">
-            </app-card>
-        } @empty {
-            @if (roomsResource.isLoading()) {
-                <p>Laddar rum...</p>
-            } @else {
-                <p>Inga rum tillgängliga för tillfället.</p>
-            }
+         @empty {
+          @if (bookingsResource.isLoading()) {
+            <p>Laddar bokningar...</p>
+          } @else {
+            <p>Inga bokningar hittades.</p>
+          }
         }
+      </div>
     </app-panel>
+  </div>
+  <!-- höger sektion rum -->
+  <app-panel
+    class="right-panel"
+    title="Tillgängliga rum"
+    description="Bläddra och boka studierum">
+
+    @for (room of roomsResource.value() ?? []; track room.id) {
+      <app-card>
+        <div card-header><h3>{{ room.name ?? 'Okänt rum' }}</h3></div>
+        <div card-content>
+          <div class="text-wrapper">
+            <p>{{ room.type ?? '' }}</p>
+            <p>{{ room.capacity ?? '' }} platser</p>
+          </div>
+          <app-button variant="success" (clicked)="onBookRoom(room)">Boka</app-button>
+        </div>
+        <div card-footer class="assets-chips">
+          @for (asset of room.assets ?? []; track asset) {
+            <span class="asset-chip"> {{ asset }} </span>
+          }
+        </div>
+      </app-card>
+    } @empty {
+      @if (roomsResource.isLoading()) {
+        <p>Laddar rum...</p>
+      } @else {
+        <p>Inga rum tillgängliga för tillfället.</p>
+      }
+    }
+  </app-panel>
 
 </main>
 <!-- här  ska app-modal ligga -->
