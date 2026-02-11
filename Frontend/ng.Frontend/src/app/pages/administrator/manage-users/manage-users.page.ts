@@ -7,11 +7,13 @@ import { UserService } from '../../../shared/services/user.service';
 import { CreateUserDto, UpdateUserDto, UserResponseDto } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import {UserFormModalComponent} from './user-form-modal.component';
+import {PanelComponent} from '../../../shared/components/panel/panel.component';
+import {CardComponent} from '../../../shared/components/card/card.component';
 
 @Component({
   selector: 'app-manage-users-page',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, UserFormModalComponent],
+  imports: [CommonModule, ButtonComponent, UserFormModalComponent, PanelComponent, CardComponent],
   templateUrl: './manage-users.page.html',
   styleUrl: './manage-users.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
