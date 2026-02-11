@@ -11,7 +11,7 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   if (!sessionService.isAuthenticated()) {
     console.log('AuthGuard: not authenticated, redirecting to login');
-    return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
+    return router.createUrlTree(['/login']);
   }
 
   // Check if user is banned

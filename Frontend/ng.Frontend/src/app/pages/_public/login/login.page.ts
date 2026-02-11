@@ -61,22 +61,16 @@ export class LoginPage {
 
       // Short delay for visual feedback before nav
       setTimeout(() => {
-        // Check for returnUrl or default based on role
-        const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+        const role = this.sessionService.userRole();
 
-        if (returnUrl) {
-          this.router.navigateByUrl(returnUrl);
+        if (role === UserRole.Admin) {
+          this.router.navigate(['/administrator']);
+        } else if (role === UserRole.Educator) {
+          this.router.navigate(['/educator']);
+        } else if (role === UserRole.Student) {
+          this.router.navigate(['/student']);
         } else {
-          const role = this.sessionService.userRole();
-          if (role === UserRole.Admin) {
-            this.router.navigate(['/administrator']);
-          } else if (role === UserRole.Educator) {
-            this.router.navigate(['/educator']);
-          } else if (role === UserRole.Student) {
-            this.router.navigate(['/student']);
-          } else {
-            this.router.navigate(['/']);
-          }
+          this.router.navigate(['/']);
         }
 
         this.isSubmitting.set(false);
