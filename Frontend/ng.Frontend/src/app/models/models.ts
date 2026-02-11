@@ -40,6 +40,22 @@ export interface AssetTypeResponseDto {
   description: string;
 }
 
+export interface AuthedUserResponseDto {
+  /** @format int64 */
+  id?: number;
+  email: string;
+  displayName?: string | null;
+  role: string;
+  userClass?: string | null;
+  isBanned?: boolean;
+}
+
+export interface AuthResponseDto {
+  message: string;
+  token: string;
+  user: AuthedUserResponseDto;
+}
+
 export interface BookingDetailedReadModel {
   /** @format int64 */
   bookingId?: number;

@@ -1,1 +1,48 @@
-<p>student works!</p>
+<!-- här ska app-header ligga -->
+<main class="dashboard-layout">
+    <div class="content-container">
+
+    
+    <!-- vänster sektion bokningar -->
+    <section class="left-panel">
+        <div class="booking-header">
+            <div class="header-top">
+                <h2>Mina bokningar</h2>
+            </div>
+            <div class="booking-tabs">
+                <app-button 
+                variant="tertiary"
+                [class.active]="activeTab() === 'upcoming'"
+                 (click)="activeTab.set('upcoming')"
+                 >Kommande
+                </app-button>
+                
+                 <app-button 
+                variant="tertiary"
+                [class.active]="activeTab() === 'history'"
+                 (click)="activeTab.set('history')"
+                 >Historik
+                </app-button>
+
+                <label class="toggle-label">
+                    <input type="checkbox" id="show-cancelled" />
+                    Visa avbokade
+                </label>
+            </div>
+
+        </div>
+        <div class="booking-scroll" aria-live="polite"></div>
+
+    </section>
+</div>
+    <!-- höger sektion rum -->
+    <section class="right-panel">
+        <div class="room-header">
+            <h2>Tillgängliga rum</h2>
+            <p>Bläddra och boka studierum</p>
+        </div>
+        <div class="room-scroll" id="student-room-list" aria-live="polite"></div>
+    </section>
+
+</main>
+<!-- här  ska app-modal ligga -->

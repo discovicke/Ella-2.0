@@ -39,11 +39,11 @@ This is the main command. It executes a strictly ordered chain reaction:
 1. **Clean:** Runs `dotnet clean` to remove stale artifacts.
 2. **Build:** Runs `dotnet build`.
 
-- _Trigger:_ This forces the `Microsoft.Extensions.ApiDescription.Server` tool to generate a fresh `Backend.json` OpenAPI spec.
+- _Trigger:_ This forces the `Microsoft.Extensions.ApiDescription.Server` tool to generate a fresh `models.json` OpenAPI spec.
 
 3. **Sync:** Runs `frontend:sync`.
 
-- _Trigger:_ Uses `swagger-typescript-api` to read `Backend.json` and update `src/app/api/models.ts`.
+- _Trigger:_ Uses `swagger-typescript-api` to read `models.json` and update `src/app/models/models.ts`.
 
 4. **Run:** Uses `concurrently` to launch:
 

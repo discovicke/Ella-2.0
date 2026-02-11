@@ -23,7 +23,7 @@ public class AuthService(
     /// Security: Uses identical error for "user not found" and "wrong password"
     /// to prevent user enumeration attacks.
     /// </summary>
-    public async Task<LoginResultDto?> LoginAsync(LoginDto request)
+    public async Task<AuthResponseDto?> LoginAsync(LoginDto request)
     {
         logger.LogInformation("Login attempt for email: {Email}", request.Email);
 
@@ -53,11 +53,11 @@ public class AuthService(
         }
 
         // Generate JWT token
-        var token = tokenProvider.GenerateAccessToken(user.Id, user.Email);
+        var token = tokenProvider.GenerateAccessToken(user.Id, user.Email, user.Role.ToString());
 
         logger.LogInformation("Login successful for user {UserId} ({Email})", user.Id, user.Email);
 
-        return new LoginResultDto { Token = token, User = MapToUserDto(user) };
+        return new AuthResponseDto { Message = "Login successful", Token = token, User = MapToUserDto(user) };
     }
 
     /// <summary>
@@ -138,7 +138,7 @@ public class AuthService(
     /// <summary>
     /// Registers a new user with the given credentials.
     /// </summary>
-    public async Task<RegisterResultDto?> RegisterAsync(RegisterDto request)
+    public async Task<AuthResponseDto?> RegisterAsync(RegisterDto request)
     {
         logger.LogInformation("Registration attempt for email: {Email}", request.Email);
 
@@ -182,7 +182,7 @@ public class AuthService(
         }
 
         // Generate JWT for immediate login
-        var token = tokenProvider.GenerateAccessToken(createdUser.Id, createdUser.Email);
+        var token = tokenProvider.GenerateAccessToken(createdUser.Id, createdUser.Email, createdUser.Role.ToString());
 
         logger.LogInformation(
             "Registration successful for user {UserId} ({Email})",
@@ -190,7 +190,7 @@ public class AuthService(
             createdUser.Email
         );
 
-        return new RegisterResultDto { Token = token, User = MapToUserDto(createdUser) };
+        return new AuthResponseDto { Message = "Registration successful", Token = token, User = MapToUserDto(createdUser) };
     }
 
     private static AuthedUserResponseDto MapToUserDto(User user)
@@ -200,7 +200,7 @@ public class AuthService(
             Id = user.Id,
             Email = user.Email,
             DisplayName = user.DisplayName,
-            Role = user.Role.ToString().ToLowerInvariant(),
+            Role = user.Role.ToString(),
             UserClass = user.UserClass,
             IsBanned = user.IsBanned == BannedStatus.Banned,
         };
