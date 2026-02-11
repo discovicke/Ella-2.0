@@ -3,6 +3,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ModalService } from '../../../shared/services/modal.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { UserService } from '../../../shared/services/user.service';
 
 @Component({
   selector: 'app-user-form-modal',
@@ -129,6 +130,14 @@ export class UserFormModalComponent {
 
     this.isSubmitting.set(true);
     
+    const userData = this.userForm.getRawValue();
+    inject (UserService).updateUser(userData).subscribe({
+      next: () => {
+        this.toastService.showSuccess('Användaren har sparats!');
+        this.isSubmitting.set(false);
+        this.modalService.close();
+      }});
+
     // Simulera API-anrop
     setTimeout(() => {
       console.log('Sparar data:', this.userForm.getRawValue());

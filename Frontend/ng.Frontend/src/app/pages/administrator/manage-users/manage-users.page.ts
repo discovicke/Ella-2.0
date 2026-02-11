@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, resource } from '@angular/core';
 import { ModalService } from '../../../shared/services/modal.service';
 import { UserFormModalComponent } from './user-form-modal.component';
+import { firstValueFrom } from 'rxjs';
+import { UserService } from '../../../shared/services/user.service';
 
 @Component({
   selector: 'app-manage-users-page',
@@ -11,6 +13,12 @@ import { UserFormModalComponent } from './user-form-modal.component';
 })
 export class ManageUsersPage {
   private modalService = inject(ModalService);
+  private userService = inject(UserService);
+  
+  userResource = resource({
+    loader: () => firstValueFrom(this.userService.getAllUsers())
+  });
+
 
   openAddUserModal() {
     this.modalService.open(UserFormModalComponent, {
