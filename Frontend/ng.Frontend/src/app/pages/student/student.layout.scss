@@ -46,4 +46,29 @@
   .right-panel {
     height: 100%;
   }
+
+  .asset-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    align-items: center;
+  }
+
+  .asset-chip {
+    font-family: "Nunito Sans", sans-serif;
+    display: inline-block;
+    background: var(--color-asset-bg);
+    color: var(--color-asset-text);
+    padding: 6px 10px;
+    border-radius: 3px;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    line-height: 1;
+    border: 1px solid var(--color-asset-border);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }

@@ -10,11 +10,12 @@
   border-radius: 8px;
   padding: 16px;
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   border: 1px solid var(--color-border);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  gap: 16px;
 
   &:hover {
     transform: translateY(-2px);
@@ -22,16 +23,51 @@
   }
 }
 
-.card-info {
-  h3 {
+.card-body {
+  flex: 1 1 auto;
+}
+
+.card-header {
+  margin: 0;
+  ::ng-deep h3 {
     margin: 0;
     font-size: 1.125rem;
     color: var(--color-text-primary);
+    font-weight: 700;
   }
+}
 
-  p {
-    margin: 4px 0 0 0;
+.card-content {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  ::ng-deep p {
+    margin: 0;
     font-size: 0.875rem;
     color: var(--color-text-muted);
+  }
+
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .card-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .card-footer {
+    width: 100%;
+    ::ng-deep app-button {
+      width: 100%;
+      button {
+        width: 100%;
+      }
+    }
   }
 }
