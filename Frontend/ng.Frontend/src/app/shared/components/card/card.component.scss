@@ -29,6 +29,7 @@
 
 .card-header {
   margin: 0;
+  padding-bottom: 0.3em;
   ::ng-deep h3 {
     margin: 0;
     font-size: 1.125rem;
@@ -71,6 +72,7 @@
   display: flex;
   align-items: center;
   margin: 0;
+  padding-top: 0.5em;
 }
 
 @media (max-width: 480px) {

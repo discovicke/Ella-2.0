@@ -43,7 +43,7 @@
   /* I static mode tar vi bara den bredd som ges utifrån (t.ex. flex-basis) */
   &.static {
     position: relative;
-    width: 100% !important; 
+    width: 100% !important;
   }
 }
 
@@ -68,7 +68,7 @@
       font-size: 0.875rem;
     }
   }
-  
+
   .header-actions {
     display: flex;
     gap: 8px;
@@ -78,8 +78,9 @@
 .panel-content {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding: 24px;
-  
+
   &::-webkit-scrollbar {
     width: 8px;
   }
