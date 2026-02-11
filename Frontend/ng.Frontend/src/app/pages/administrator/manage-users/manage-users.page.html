@@ -1,21 +1,27 @@
 <div class="manage-users-container">
   <header class="page-header">
     <h1>Hantera användare</h1>
-    <button class="btn-primary" (click)="openAddUserModal(userResource)">
+    <button class="btn-primary" (click)="openAddUserModal()">
       + Skapa användare
     </button>
   </header>
 
-  <div class="user-list-mock">
-    <p>Exempel på användare:</p>
-    <!-- div class="user-card" (click)="openEditUserModal({ name: 'Ella Nord', email: 'ella@example.com', role: 'admin' })" -->
-    @for(user of userResource.value() ?? []; track user.id) {
-      <div class="user-card" (click)="openEditUserModal({ name: user.displayName, email: user.email, role: user.role, id: user.id})">
-        <span>{{ user.displayName }} ({{ user.role }})</span>
-        <button class="btn-ghost">Redigera</button>
-      </div>
+  <div class="user-list">
+    @if (userResource.isLoading()) {
+      <p>Laddar användare...</p>
+    } @else {
+      @for(user of userResource.value() ?? []; track user.id) {
+        <div class="user-card" (click)="openEditUserModal(user)">
+          <div class="user-info">
+            <span class="user-name">{{ user.displayName }}</span>
+            <span class="user-email">{{ user.email }}</span>
+            <span class="user-role-badge" [class]="user.role.toLowerCase()">{{ user.role }}</span>
+          </div>
+          <button class="btn-ghost">Redigera</button>
+        </div>
+      } @empty {
+        <p>Inga användare hittades.</p>
+      }
     }
-
-    <!--/div-->
   </div>
 </div>
