@@ -1,1 +1,17 @@
-<p>header works!</p>
+<header class="top-header">
+    <img class="top-logo" src="../assets/ELLA-header.png" alt="ELLA – rumbokningssystem" />
+    <div class="user-actions">
+        <div class="user-box">
+            <span class="user-icon" aria-hidden="true">👤</span>
+            <span class="user-label" id="username"></span>
+            <span class="user-role teacher" id="user-role">Laddar..</span>
+            <!--INSERT user + role components here-->
+
+        </div>
+
+        <app-button (click)="onClick()">
+            {{ 'Logga ut' }}
+        </app-button>
+
+    </div>
+</header>
