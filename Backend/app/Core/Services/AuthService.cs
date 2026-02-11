@@ -18,12 +18,12 @@ public class AuthService(
 {
     /// <summary>
     /// Authenticates a user by email and password.
-    /// Returns JWT token and user info on success, null on failure.
+    /// Returns JWT token and user info on success.
     ///
     /// Security: Uses identical error for "user not found" and "wrong password"
     /// to prevent user enumeration attacks.
     /// </summary>
-    public async Task<AuthResponseDto?> LoginAsync(LoginDto request)
+    public async Task<LoginResultDto> LoginAsync(LoginDto request)
     {
         logger.LogInformation("Login attempt for email: {Email}", request.Email);
 
@@ -33,14 +33,19 @@ public class AuthService(
         if (user is null)
         {
             logger.LogWarning("Login failed: user not found for email {Email}", request.Email);
-            return null; // Don't reveal that user doesn't exist
+            return new LoginResultDto();
         }
 
         // Check if user is banned
         if (user.IsBanned == BannedStatus.Banned)
         {
             logger.LogWarning("Login failed: user {UserId} is banned", user.Id);
-            return null;
+            return new LoginResultDto { IsBanned = true, Response = new AuthResponseDto 
+            { 
+                Message = "Account suspended", 
+                Token = "", 
+                User = MapToUserDto(user) 
+            }};
         }
 
         // Verify password using Argon2id
@@ -49,7 +54,7 @@ public class AuthService(
         if (!isValidPassword)
         {
             logger.LogWarning("Login failed: invalid password for user {UserId}", user.Id);
-            return null; // Same error as "user not found" for security
+            return new LoginResultDto();
         }
 
         // Generate JWT token
@@ -57,21 +62,24 @@ public class AuthService(
 
         logger.LogInformation("Login successful for user {UserId} ({Email})", user.Id, user.Email);
 
-        return new AuthResponseDto { Message = "Login successful", Token = token, User = MapToUserDto(user) };
+        return new LoginResultDto 
+        { 
+            Response = new AuthResponseDto { Message = "Login successful", Token = token, User = MapToUserDto(user) } 
+        };
     }
 
     /// <summary>
     /// Validates a JWT token and returns the authenticated user if valid.
     /// Also checks token_valid_after to support token invalidation.
     /// </summary>
-    public async Task<User?> ValidateTokenAndGetUserAsync(string token)
+    public async Task<TokenValidationResultDto> ValidateTokenAndGetUserAsync(string token)
     {
         // Step 1: Validate JWT signature and expiration
         var principal = tokenProvider.ValidateToken(token);
         if (principal is null)
         {
             logger.LogDebug("Token validation failed: invalid JWT");
-            return null;
+            return new TokenValidationResultDto();
         }
 
         // Step 2: Extract user ID from claims
@@ -79,7 +87,7 @@ public class AuthService(
         if (userId is null)
         {
             logger.LogWarning("Token validation failed: no user ID in claims");
-            return null;
+            return new TokenValidationResultDto();
         }
 
         // Step 3: Get user from database
@@ -87,10 +95,17 @@ public class AuthService(
         if (user is null)
         {
             logger.LogWarning("Token validation failed: user {UserId} not found", userId);
-            return null;
+            return new TokenValidationResultDto();
         }
 
-        // Step 4: Check tokens_valid_after (invalidates all tokens issued before this timestamp)
+        // Step 4: Check if user is banned (Check this BEFORE token expiration logic)
+        if (user.IsBanned == BannedStatus.Banned)
+        {
+            logger.LogWarning("Token validation failed: user {UserId} is banned", userId);
+            return new TokenValidationResultDto { User = user, IsBanned = true };
+        }
+
+        // Step 5: Check tokens_valid_after (invalidates all tokens issued before this timestamp)
         var issuedAt = tokenProvider.GetIssuedAtFromClaims(principal);
         if (issuedAt is null || issuedAt < user.TokensValidAfter)
         {
@@ -98,17 +113,10 @@ public class AuthService(
                 "Token validation failed: token issued before tokens_valid_after for user {UserId}",
                 userId
             );
-            return null;
+            return new TokenValidationResultDto();
         }
 
-        // Step 5: Check if user is banned
-        if (user.IsBanned == BannedStatus.Banned)
-        {
-            logger.LogWarning("Token validation failed: user {UserId} is banned", userId);
-            return null;
-        }
-
-        return user;
+        return new TokenValidationResultDto { User = user };
     }
 
     /// <summary>
@@ -138,7 +146,7 @@ public class AuthService(
     /// <summary>
     /// Registers a new user with the given credentials.
     /// </summary>
-    public async Task<AuthResponseDto?> RegisterAsync(RegisterDto request)
+    public async Task<LoginResultDto> RegisterAsync(RegisterDto request)
     {
         logger.LogInformation("Registration attempt for email: {Email}", request.Email);
 
@@ -147,7 +155,7 @@ public class AuthService(
         if (existingUser is not null)
         {
             logger.LogWarning("Registration failed: email {Email} already exists", request.Email);
-            return null;
+            return new LoginResultDto();
         }
 
         // Hash password with Argon2id
@@ -167,7 +175,7 @@ public class AuthService(
         if (!success)
         {
             logger.LogError("Registration failed: could not create user {Email}", request.Email);
-            return null;
+            return new LoginResultDto();
         }
 
         // Fetch the created user to get the ID
@@ -178,7 +186,7 @@ public class AuthService(
                 "Registration failed: user created but not found {Email}",
                 request.Email
             );
-            return null;
+            return new LoginResultDto();
         }
 
         // Generate JWT for immediate login
@@ -190,7 +198,7 @@ public class AuthService(
             createdUser.Email
         );
 
-        return new AuthResponseDto { Message = "Registration successful", Token = token, User = MapToUserDto(createdUser) };
+        return new LoginResultDto { Response = new AuthResponseDto { Message = "Registration successful", Token = token, User = MapToUserDto(createdUser) } };
     }
 
     private static AuthedUserResponseDto MapToUserDto(User user)

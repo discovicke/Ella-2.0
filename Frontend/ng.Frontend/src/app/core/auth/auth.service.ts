@@ -18,16 +18,25 @@ export class AuthService {
    * Login user and update session state
    */
   async login(credentials: LoginDto): Promise<void> {
-    // 1. Perform Login and capture user data
-    // The backend returns { message, token, user }
-    const response = await lastValueFrom(
-      this.http.post<AuthResponseDto>(`${this.apiUrl}/login`, credentials),
-    );
+    try {
+      // 1. Perform Login and capture user data
+      // The backend returns { message, token, user }
+      const response = await lastValueFrom(
+        this.http.post<AuthResponseDto>(`${this.apiUrl}/login`, credentials),
+      );
 
-    const userState = this.mapToUserState(response.user);
+      const userState = this.mapToUserState(response.user);
 
-    // 2. Update session
-    this.sessionService.setUser(userState);
+      // 2. Update session
+      this.sessionService.setUser(userState);
+    } catch (error: any) {
+      // If the user is banned, the backend returns 403 with user info in the body
+      if (error.status === 403 && error.error?.code === 'USER_BANNED' && error.error?.user) {
+        const userState = this.mapToUserState(error.error.user);
+        this.sessionService.setUser(userState);
+      }
+      throw error;
+    }
   }
 
   /**
@@ -45,12 +54,13 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  private mapToUserState(apiUser: any): UserState {
+  public mapToUserState(apiUser: any): UserState {
     return {
       id: apiUser.id,
       email: apiUser.email,
       displayName: apiUser.displayName,
       role: apiUser.role as UserRole,
+      isBanned: !!apiUser.isBanned,
     };
   }
 }

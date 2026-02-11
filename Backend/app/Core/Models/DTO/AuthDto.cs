@@ -1,3 +1,5 @@
+using Backend.app.Core.Models.Entities;
+
 namespace Backend.app.Core.Models.DTO;
 
 public record LoginDto
@@ -28,6 +30,20 @@ public record AuthedUserResponseDto
     public required string Role { get; set; }
     public string? UserClass { get; set; }
     public bool IsBanned { get; set; }
+}
+
+public record TokenValidationResultDto
+{
+    public User? User { get; init; }
+    public bool IsBanned { get; init; }
+    public bool IsValid => User != null && !IsBanned;
+}
+
+public record LoginResultDto
+{
+    public AuthResponseDto? Response { get; init; }
+    public bool IsBanned { get; init; }
+    public bool Success => Response != null;
 }
 
 // Data Transfer Objects for User

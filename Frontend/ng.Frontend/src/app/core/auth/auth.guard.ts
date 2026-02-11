@@ -14,6 +14,12 @@ export const authGuard: CanActivateFn = (route, state) => {
     return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
   }
 
+  // Check if user is banned
+  if (sessionService.currentUser()?.isBanned) {
+    console.log('AuthGuard: user is banned, redirecting to /banned');
+    return router.createUrlTree(['/banned']);
+  }
+
   // Check for required roles
   const requiredRoles = route.data['roles'] as UserRole[];
   if (requiredRoles && requiredRoles.length > 0) {
