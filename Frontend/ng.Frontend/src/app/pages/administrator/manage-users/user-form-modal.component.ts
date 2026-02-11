@@ -12,6 +12,7 @@ export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): V
   const confirmPassword = control.get('confirmPassword');
 
   if (!password || !confirmPassword) return null;
+  if (confirmPassword.disabled) return null; // Ignorera om fältet är disabled
 
   return password.value === confirmPassword.value ? null : { passwordMismatch: true };
 };
@@ -173,7 +174,7 @@ export class UserFormModalComponent {
       nonNullable: true,
       validators: this.initialData ? [] : [Validators.required, Validators.minLength(6)]
     }),
-    confirmPassword: new FormControl('', {
+    confirmPassword: new FormControl({ value: '', disabled: true }, {
       nonNullable: true
     }),
     isBanned: new FormControl<BannedStatus>(this.initialData?.isBanned || BannedStatus.NotBanned, {
@@ -182,6 +183,7 @@ export class UserFormModalComponent {
   }, { validators: [passwordMatchValidator] });
 
   constructor() {
+    // Hantera userClass baserat på roll
     this.userForm.controls.role.valueChanges.subscribe(role => {
       if (role === UserRole.Admin) {
         this.userForm.controls.userClass.disable();
@@ -191,6 +193,17 @@ export class UserFormModalComponent {
       }
     });
 
+    // Hantera confirmPassword baserat på om password har ett värde
+    this.userForm.controls.password.valueChanges.subscribe(pwd => {
+      if (pwd && pwd.length > 0) {
+        this.userForm.controls.confirmPassword.enable();
+      } else {
+        this.userForm.controls.confirmPassword.disable();
+        this.userForm.controls.confirmPassword.setValue('');
+      }
+    });
+
+    // Initial check för admin-roll
     if (this.userForm.controls.role.value === UserRole.Admin) {
       this.userForm.controls.userClass.disable();
     }
@@ -204,7 +217,6 @@ export class UserFormModalComponent {
     const payload = {
       ...this.initialData,
       ...formData,
-      // Vid edit: använd det nya lösenordet om det angetts, annars behåll det gamla
       ...(this.initialData && !formData.password ? { password: this.initialData.password } : {})
     };
 
