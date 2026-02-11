@@ -2,47 +2,68 @@
 <main class="dashboard-layout">
     <div class="content-container">
 
-    
+
     <!-- vänster sektion bokningar -->
-    <section class="left-panel">
-        <div class="booking-header">
-            <div class="header-top">
-                <h2>Mina bokningar</h2>
-            </div>
-            <div class="booking-tabs">
-                <app-button 
-                variant="tertiary"
-                [class.active]="activeTab() === 'upcoming'"
-                 (click)="activeTab.set('upcoming')"
-                 >Kommande
-                </app-button>
-                
-                 <app-button 
-                variant="tertiary"
-                [class.active]="activeTab() === 'history'"
-                 (click)="activeTab.set('history')"
-                 >Historik
-                </app-button>
+    <app-panel
+        class="left-panel"
+        title="Mina bokningar">
+        <div class="booking-tabs">
+            <app-button
+            variant="tertiary"
+            [class.active]="activeTab() === 'upcoming'"
+             (click)="activeTab.set('upcoming')"
+             >Kommande
+            </app-button>
 
-                <label class="toggle-label">
-                    <input type="checkbox" id="show-cancelled" />
-                    Visa avbokade
-                </label>
-            </div>
+             <app-button
+            variant="tertiary"
+            [class.active]="activeTab() === 'history'"
+             (click)="activeTab.set('history')"
+             >Historik
+            </app-button>
 
+            <label class="toggle-label">
+                <input type="checkbox" id="show-cancelled" />
+                Visa avbokade
+            </label>
         </div>
-        <div class="booking-scroll" aria-live="polite"></div>
 
-    </section>
+        <div class="booking-scroll" aria-live="polite">
+            @for (booking of bookingsResource.value(); track booking.bookingId) {
+                <app-card
+                    [title]="booking.roomName ?? 'Okänt rum'"
+                    [subtitle]="(booking.startTime | date: 'short') ?? ''">
+                </app-card>
+            } @empty {
+                @if (bookingsResource.isLoading()) {
+                    <p>Laddar bokningar...</p>
+                } @else {
+                    <p>Inga bokningar hittades.</p>
+                }
+            }
+        </div>
+    </app-panel>
 </div>
     <!-- höger sektion rum -->
-    <section class="right-panel">
-        <div class="room-header">
-            <h2>Tillgängliga rum</h2>
-            <p>Bläddra och boka studierum</p>
-        </div>
-        <div class="room-scroll" id="student-room-list" aria-live="polite"></div>
-    </section>
+    <app-panel
+        class="right-panel"
+        title="Tillgängliga rum"
+        description="Bläddra och boka studierum">
+
+        @for (room of roomsResource.value(); track room.id) {
+            <app-card
+                [title]="room.name"
+                [subtitle]="room.type"
+                (book)="onBookRoom(room)">
+            </app-card>
+        } @empty {
+            @if (roomsResource.isLoading()) {
+                <p>Laddar rum...</p>
+            } @else {
+                <p>Inga rum tillgängliga för tillfället.</p>
+            }
+        }
+    </app-panel>
 
 </main>
 <!-- här  ska app-modal ligga -->

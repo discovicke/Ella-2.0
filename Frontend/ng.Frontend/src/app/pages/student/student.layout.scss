@@ -1,36 +1,49 @@
 @use 'styles/variables' as *;
 
-:host{
-    .dashboard-layout {
-        display: grid;
-        grid-template-columns: repeat(2,1fr);
-        gap: 24px;
-        height: calc(100vh);
-        overflow: hidden;
-    }
-    .left-panel, .right-panel {
-        background-color: var(--color-bg-panel);
-        border-radius: 8px;
-        display: flex;
-        flex-direction: column;
-        border: 1px solid var(--color-border);
-        border-radius: 10px;
-        height: 100%;
-        overflow: hidden;
-        .h2
-        {
-            color: var(--color-primary);
-        }
-        .p
-        {
-            color: var(--color-text-muted);
+:host {
+  .dashboard-layout {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    height: 100vh;
+    padding: 24px;
+    overflow: hidden;
+    background-color: var(--color-bg-body);
+  }
 
-        }
-        .app-button.active
-        {   border-bottom: 2px solid var(--color-primary);
-            color: var(--color-primary);
-        }
+  /* Temporär styling för vänsterpanelen tills den också blir en app-panel */
+  .left-panel {
+    background-color: var(--color-bg-panel);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+
+    .booking-header {
+      padding: 24px;
+      border-bottom: 1px solid var(--color-border);
     }
 
+    h2 {
+      color: var(--color-primary);
+      margin: 0;
+    }
 
+    .booking-tabs {
+      display: flex;
+      gap: 16px;
+      margin-top: 16px;
+
+      app-button.active {
+        border-bottom: 2px solid var(--color-primary);
+        color: var(--color-primary);
+      }
+    }
+  }
+
+  .right-panel {
+    height: 100%;
+  }
 }
