@@ -8,9 +8,13 @@
 
   <div class="user-list-mock">
     <p>Exempel på användare:</p>
-    <div class="user-card" (click)="openEditUserModal({ name: 'Ella Nord', email: 'ella@example.com', role: 'admin' })">
-      <span>Ella Nord (Admin)</span>
-      <button class="btn-ghost">Redigera</button>
-    </div>
+    <!-- div class="user-card" (click)="openEditUserModal({ name: 'Ella Nord', email: 'ella@example.com', role: 'admin' })" -->
+      @for(user of userResource.value() ?? []; track user.id) {
+        <div class="user-card" (click)="openEditUserModal({ name: user.displayName, email: user.email, role: user.role })">
+          <span>{{ user.displayName }} ({{ user.role }})</span>
+          <button class="btn-ghost">Redigera</button>
+        </div>
+      }
+    <!--/div-->
   </div>
 </div>
