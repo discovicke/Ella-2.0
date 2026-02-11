@@ -1,12 +1,26 @@
-import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
 import { UserRole, BannedStatus } from '../../../models/models';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+
+/**
+ * Validator som ser till att lösenorden matchar
+ */
+export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const password = control.get('password');
+  const confirmPassword = control.get('confirmPassword');
+
+  if (!password || !confirmPassword) return null;
+  if (confirmPassword.disabled) return null; // Ignorera om fältet är disabled
+
+  return password.value === confirmPassword.value ? null : { passwordMismatch: true };
+};
 
 @Component({
   selector: 'app-user-form-modal',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ButtonComponent],
   template: `
     <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
       <div class="form-group">
@@ -25,34 +39,61 @@ import { UserRole, BannedStatus } from '../../../models/models';
         }
       </div>
 
-      <div class="form-group">
-        <label for="password">Lösenord</label>
-        <input id="password" type="password" formControlName="password" placeholder="Minst 6 tecken" />
-        @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
-          <span class="error-msg">Lösenord krävs (minst 6 tecken)</span>
-        }
+      <div class="form-row">
+        <div class="form-group">
+          <label for="password">Lösenord</label>
+          <input id="password" type="password" formControlName="password" placeholder="Minst 6 tecken (krävs)" />
+          @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
+            <span class="error-msg">Lösenord krävs (minst 6 tecken)</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Bekräfta lösenord</label>
+          <input id="confirmPassword" type="password" formControlName="confirmPassword" placeholder="Upprepa lösenordet" />
+          @if (userForm.errors?.['passwordMismatch'] && userForm.get('confirmPassword')?.touched) {
+            <span class="error-msg">Lösenorden matchar inte</span>
+          }
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="role">Roll</label>
-        <select id="role" formControlName="role">
-          <option value="">-- Välj roll --</option>
-          <option [value]="UserRole.Student">Student</option>
-          <option [value]="UserRole.Educator">Lärare</option>
-          <option [value]="UserRole.Admin">Admin</option>
-        </select>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="role">Roll</label>
+          <select id="role" formControlName="role">
+            <option value="">-- Välj roll --</option>
+            <option [value]="UserRole.Student">Student</option>
+            <option [value]="UserRole.Educator">Lärare</option>
+            <option [value]="UserRole.Admin">Admin</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="userClass">Kurs / Klass</label>
+          <input id="userClass" type="text" formControlName="userClass" placeholder="t.ex. NET25" />
+        </div>
       </div>
+
+      @if (initialData) {
+        <div class="form-group">
+          <label for="isBanned">Status</label>
+          <select id="isBanned" formControlName="isBanned">
+            <option [value]="BannedStatus.NotBanned">Aktiv</option>
+            <option [value]="BannedStatus.Banned">Bannlyst</option>
+          </select>
+        </div>
+      }
 
       <div class="form-actions">
-        <button type="button" class="btn-secondary" (click)="onCancel()">Avbryt</button>
+        <app-button variant="tertiary" (clicked)="onCancel()">Avbryt</app-button>
         @if (initialData) {
-          <button type="button" class="btn-danger" (click)="onDelete()" [disabled]="isSubmitting()">
+          <app-button variant="danger" (clicked)="onDelete()" [disabled]="isSubmitting()">
             Radera
-          </button>
+          </app-button>
         }
-        <button type="submit" class="btn-primary" [disabled]="userForm.invalid || isSubmitting()">
+        <app-button type="submit" variant="primary" [disabled]="userForm.invalid || isSubmitting()">
           {{ isSubmitting() ? 'Sparar...' : 'Spara' }}
-        </button>
+        </app-button>
       </div>
     </form>
   `,
@@ -63,6 +104,12 @@ import { UserRole, BannedStatus } from '../../../models/models';
       display: flex;
       flex-direction: column;
       gap: 1rem;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 1rem;
+      & > * { flex: 1; }
     }
 
     .form-group {
@@ -100,8 +147,8 @@ import { UserRole, BannedStatus } from '../../../models/models';
 export class UserFormModalComponent {
   private modalService = inject(ModalService);
   protected readonly UserRole = UserRole;
+  protected readonly BannedStatus = BannedStatus;
 
-  // Hämta data och callbacks från modalData
   private config = this.modalService.modalData();
   protected initialData = this.config?.user;
 
@@ -116,27 +163,68 @@ export class UserFormModalComponent {
       nonNullable: true,
       validators: [Validators.required, Validators.email]
     }),
-    role: new FormControl(this.initialData?.role || '', {
+    role: new FormControl<UserRole>(this.initialData?.role || ('' as any), {
       nonNullable: true,
       validators: [Validators.required]
     }),
+    userClass: new FormControl(this.initialData?.userClass || '', {
+      nonNullable: true
+    }),
     password: new FormControl('', {
       nonNullable: true,
-      validators: this.initialData ? [] : [Validators.required, Validators.minLength(6)]
+      validators: [Validators.required, Validators.minLength(6)]
     }),
-  });
+    confirmPassword: new FormControl({ value: '', disabled: true }, {
+      nonNullable: true,
+      validators: [Validators.required]
+    }),
+    isBanned: new FormControl<BannedStatus>(this.initialData?.isBanned || BannedStatus.NotBanned, {
+      nonNullable: true
+    }),
+  }, { validators: [passwordMatchValidator] });
+
+  constructor() {
+    // Hantera userClass baserat på roll
+    this.userForm.controls.role.valueChanges.subscribe(role => {
+      if (role === UserRole.Admin) {
+        this.userForm.controls.userClass.disable();
+        this.userForm.controls.userClass.setValue('');
+      } else {
+        this.userForm.controls.userClass.enable();
+      }
+    });
+
+    // Hantera confirmPassword baserat på om password har ett värde
+    this.userForm.controls.password.valueChanges.subscribe(pwd => {
+      if (pwd && pwd.length > 0) {
+        this.userForm.controls.confirmPassword.enable();
+      } else {
+        this.userForm.controls.confirmPassword.disable();
+        this.userForm.controls.confirmPassword.setValue('');
+      }
+    });
+
+    // Initial check för admin-roll
+    if (this.userForm.controls.role.value === UserRole.Admin) {
+      this.userForm.controls.userClass.disable();
+    }
+  }
 
   onSubmit() {
     if (this.userForm.invalid) return;
 
-    const rawValue = this.userForm.getRawValue();
+    const { confirmPassword, ...formData } = this.userForm.getRawValue();
 
     const payload = {
       ...this.initialData,
-      ...rawValue,
-      userClass: this.initialData?.userClass || 'net25',
-      isBanned: this.initialData?.isBanned ?? BannedStatus.NotBanned
+      ...formData,
     };
+
+    // Om vi redigerar och lösenordet är tomt -> Ta bort det helt från payloaden
+    // så att backend inte försöker validera en tom sträng.
+    if (this.initialData && !formData.password) {
+      delete (payload as any).password;
+    }
 
     if (this.config?.onSave) {
       this.isSubmitting.set(true);

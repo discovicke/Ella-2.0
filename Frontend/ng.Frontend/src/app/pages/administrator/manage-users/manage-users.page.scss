@@ -1,14 +1,23 @@
 @use 'styles/mixins' as *;
 @use 'styles/variables' as *;
 
+:host {
+  display: block;
+  height: 100%;
+}
+
 .manage-users-container {
-  @include stack(map-get($spacing, '6'));
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 24px;
 }
 
 .page-header {
   @include flex-between;
   @include gap('4');
-  margin-bottom: map-get($spacing, '6');
+  flex: 0 0 auto;
+  margin: 0;
 
   h1 {
     @include heading(1);
@@ -16,32 +25,19 @@
   }
 }
 
-.btn-primary {
-  @include button-primary;
-  padding: map-get($spacing, '3') map-get($spacing, '5');
+/* Panelen ska ta upp resten av platsen och sköta scroll */
+.users-panel {
+  flex: 1;
+  min-height: 0; /* Möjliggör scroll inuti panel-content */
 }
 
-.user-list {
-  @include stack(map-get($spacing, '3'));
-}
-
-.user-card {
-  @include card(map-get($spacing, '4'));
-  @include flex-between;
-  @include gap('4');
-  cursor: pointer;
-  @include transition(all);
-
-  &:hover {
-    @include shadow('md');
-    transform: translateY(-2px);
+/* Ta bort lift-effekten på korten i admin-vyn */
+.admin-user-card {
+  ::ng-deep .card-container {
+    transform: none !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+    cursor: default; /* Man ska inte tro att hela kortet är klickbart */
   }
-}
-
-.user-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 
 .user-name {

@@ -1,27 +1,41 @@
 <div class="manage-users-container">
   <header class="page-header">
     <h1>Hantera användare</h1>
-    <button class="btn-primary" (click)="openAddUserModal()">
+    <app-button variant="primary" (clicked)="openAddUserModal()">
       + Skapa användare
-    </button>
+    </app-button>
   </header>
 
-  <div class="user-list">
+  <app-panel
+    title="Användarlista"
+    description="Hantera systemets användare och deras rättigheter"
+    class="users-panel">
+
     @if (userResource.isLoading()) {
       <p>Laddar användare...</p>
     } @else {
       @for(user of userResource.value() ?? []; track user.id) {
-        <div class="user-card" (click)="openEditUserModal(user)">
-          <div class="user-info">
-            <span class="user-name">{{ user.displayName }}</span>
-            <span class="user-email">{{ user.email }}</span>
-            <span class="user-role-badge" [class]="user.role.toLowerCase()">{{ user.role }}</span>
+        <app-card class="admin-user-card">
+          <div card-header>{{ user.displayName }}</div>
+          <div card-content>
+            <div class="text-wrapper">
+              <span class="user-email">ID: {{ user.id }}</span>
+              <span class="user-email">Email: {{ user.email }}</span>
+              @if (user.userClass !== null) {
+              <span class="user-email">Kurs: {{ user.userClass }}</span>}
+              <span class="user-email">BanStatus: {{ user.isBanned }}</span>
+            </div>
+            <app-button variant="tertiary" (clicked)="openEditUserModal(user)">
+              Redigera
+            </app-button>
           </div>
-          <button class="btn-ghost">Redigera</button>
-        </div>
+            <div card-footer>
+              <span class="user-role-badge" [class]="user.role.toLowerCase()">{{ user.role }}</span>
+            </div>
+        </app-card>
       } @empty {
         <p>Inga användare hittades.</p>
       }
     }
-  </div>
+  </app-panel>
 </div>
