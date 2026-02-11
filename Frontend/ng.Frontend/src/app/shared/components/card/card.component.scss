@@ -1,0 +1,37 @@
+@use 'styles/variables' as *;
+
+:host {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.card-container {
+  background-color: var(--color-bg-card);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--color-border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.card-info {
+  h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    color: var(--color-text-primary);
+  }
+
+  p {
+    margin: 4px 0 0 0;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+  }
+}
