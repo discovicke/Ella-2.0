@@ -29,12 +29,19 @@
       </div>
 
       <div class="booking-scroll" aria-live="polite">
-        @for (booking of bookingsResource.value() ?? []; track booking.bookingId) {
-          <app-card>
-            <div card-header><h3>{{ booking.roomName ?? 'Okänt rum' }}</h3></div>
-            <div card-content><p>{{ (booking.startTime | date: 'short') ?? '' }}</p></div>
-          </app-card>
-        } @empty {
+                @for (booking of bookingsResource.value() ?? []; track booking.bookingId) {
+                  <app-card>
+                    <div card-header><h3>{{ booking.roomName ?? 'Okänt rum' }}</h3></div>
+                    <div card-content>
+                      <div class="text-wrapper">
+                        <p>{{ (booking.startTime | date: 'short') ?? '' }}</p>
+                        <p>{{ (booking.endTime | date: 'short') ?? '' }}</p>
+                        <p>Anteckning: {{ booking.notes }}</p>
+                      </div>
+                    </div>
+                  </app-card>
+                }
+         @empty {
           @if (bookingsResource.isLoading()) {
             <p>Laddar bokningar...</p>
           } @else {
@@ -54,9 +61,11 @@
       <app-card>
         <div card-header><h3>{{ room.name ?? 'Okänt rum' }}</h3></div>
         <div card-content>
-          <p>{{ room.type ?? '' }}</p>
-          <p>{{ room.capacity ?? '' }} platser</p>
-          <app-button variant="primary" (clicked)="onBookRoom(room)">Boka</app-button>
+          <div class="text-wrapper">
+            <p>{{ room.type ?? '' }}</p>
+            <p>{{ room.capacity ?? '' }} platser</p>
+          </div>
+          <app-button variant="success" (clicked)="onBookRoom(room)">Boka</app-button>
         </div>
         <div card-footer class="assets-chips">
           @for (asset of room.assets ?? []; track asset) {
