@@ -31,5 +31,11 @@ export class UserService {
     return this.http.put(`${this.apiUrl}/${userId}`, userData, { withCredentials: true }).pipe(
       tap(() => this.refresh()) // Detta gör att admin-listan hoppar till liv med ny data!
     );
-    }
   }
+
+  deleteUser(userId: number): Observable<unknown> {
+    return this.http.delete(`${this.apiUrl}/${userId}`, { withCredentials: true }).pipe(
+      tap(() => this.refresh())
+    );
+  }
+}
