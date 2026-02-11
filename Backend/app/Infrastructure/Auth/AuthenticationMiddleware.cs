@@ -20,16 +20,32 @@ public class AuthenticationMiddleware(RequestDelegate next, ILogger<Authenticati
 
         if (!string.IsNullOrEmpty(token))
         {
-            var user = await authService.ValidateTokenAndGetUserAsync(token);
+            var result = await authService.ValidateTokenAndGetUserAsync(token);
 
-            if (user is not null)
+            if (result.IsBanned)
+            {
+                logger.LogWarning("Banned user {UserId} attempted access", result.User?.Id);
+                
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new 
+                { 
+                    error = "Banned", 
+                    message = "Your account has been suspended.",
+                    code = "USER_BANNED",
+                    isBanned = true 
+                });
+                return; // Stop the pipeline
+            }
+
+            if (result.IsValid && result.User is not null)
             {
                 // Attach user to context for downstream middleware/endpoints
-                context.Items["User"] = user;
-                context.Items["UserId"] = user.Id;
-                context.Items["UserRole"] = user.Role.ToString();
+                context.Items["User"] = result.User;
+                context.Items["UserId"] = result.User.Id;
+                context.Items["UserRole"] = result.User.Role.ToString();
 
-                logger.LogDebug("User {UserId} authenticated via JWT", user.Id);
+                logger.LogDebug("User {UserId} authenticated via JWT", result.User.Id);
             }
             else
             {

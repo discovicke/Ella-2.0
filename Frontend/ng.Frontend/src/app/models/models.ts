@@ -193,4 +193,5 @@ export interface UserResponseDto {
   displayName: string | null;
   role: UserRole;
   userClass: string | null;
+  isBanned: BannedStatus;
 }

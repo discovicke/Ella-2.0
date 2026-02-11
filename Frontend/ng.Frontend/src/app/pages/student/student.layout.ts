@@ -7,11 +7,13 @@ import { CardComponent } from '../../shared/components/card/card.component';
 import { RoomService } from '../../shared/services/room.service';
 import { BookingService } from '../../shared/services/booking.service';
 import { RoomResponseDto, BookingDetailedReadModel } from '../../models/models';
+import { CommonModule } from '@angular/common';
+import { HeaderComponent } from '../../shared/components/header/header.component';
+
 
 @Component({
   selector: 'app-student-layout',
-  standalone: true,
-  imports: [DatePipe, ButtonComponent, PanelComponent, CardComponent],
+  imports: [DatePipe, ButtonComponent, PanelComponent, CardComponent, HeaderComponent],
   templateUrl: './student.layout.html',
   styleUrl: './student.layout.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

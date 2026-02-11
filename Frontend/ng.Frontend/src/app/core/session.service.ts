@@ -6,6 +6,7 @@ export interface UserState {
   email: string;
   displayName: string;
   role: UserRole;
+  isBanned: boolean;
 }
 
 const STORAGE_KEY = 'auth_user';

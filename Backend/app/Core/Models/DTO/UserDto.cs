@@ -9,7 +9,8 @@ public record UserResponseDto(
     string Email,
     string? DisplayName,
     UserRole Role,
-    string? UserClass
+    string? UserClass,
+    BannedStatus IsBanned
 );
 
 public record CreateUserDto(

@@ -22,13 +22,13 @@ public static class AuthEndpoints
             {
                 var result = await authService.RegisterAsync(request);
 
-                if (result is null)
+                if (!result.Success || result.Response is null)
                     return Results.BadRequest(new { error = "Registration failed", message = "Email may already exist" });
 
                 var expirationMinutes = int.Parse(configuration["JwtSettings:AccessTokenExpirationMinutes"] ?? "60");
 
                 // Set auth cookie for browser clients
-                httpContext.Response.Cookies.Append("auth_token", result.Token, new CookieOptions
+                httpContext.Response.Cookies.Append("auth_token", result.Response.Token, new CookieOptions
                 {
                     HttpOnly = true,
                     SameSite = SameSiteMode.Lax,
@@ -40,11 +40,11 @@ public static class AuthEndpoints
                 // In production, do not return the token in the body to prevent it from being stolen or accidentally stored in local storage
                 if (!env.IsDevelopment())
                 {
-                    result.Token = "";
+                    result.Response.Token = "";
                 }
 
                 // Set auth cookie for browser clients
-                return Results.Created($"/api/users/{result.User.Id}", result);
+                return Results.Created($"/api/users/{result.Response.User.Id}", result.Response);
             })
             .WithName("RegisterUser")
             .WithSummary("Register a new user")
@@ -59,13 +59,24 @@ public static class AuthEndpoints
             {
                 var result = await authService.LoginAsync(request);
 
-                if (result is null)
+                if (result.IsBanned)
+                {
+                    return Results.Json(new 
+                    { 
+                        error = "Banned", 
+                        message = "Your account has been suspended.",
+                        code = "USER_BANNED",
+                        user = result.Response?.User 
+                    }, statusCode: StatusCodes.Status403Forbidden);
+                }
+
+                if (!result.Success || result.Response is null)
                     return Results.Unauthorized();
 
                 var expirationMinutes = int.Parse(configuration["JwtSettings:AccessTokenExpirationMinutes"] ?? "60");
 
                 // Set auth cookie for browser clients
-                httpContext.Response.Cookies.Append("auth_token", result.Token, new CookieOptions
+                httpContext.Response.Cookies.Append("auth_token", result.Response.Token, new CookieOptions
                 {
                     HttpOnly = true,
                     SameSite = SameSiteMode.Lax,
@@ -77,10 +88,10 @@ public static class AuthEndpoints
                 // In production, do not return the token in the body to prevent it from being stored in local storage
                 if (!env.IsDevelopment())
                 {
-                    result.Token = "";
+                    result.Response.Token = "";
                 }
 
-                return Results.Ok(result);
+                return Results.Ok(result.Response);
             })
             .WithName("LoginUser")
             .WithSummary("Login user")
