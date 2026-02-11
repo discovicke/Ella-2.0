@@ -183,7 +183,7 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
     {
         try
         {
-            using var conn = (SqliteConnection)connectionFactory.CreateConnection();
+            using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = @"
             SELECT * FROM bookings

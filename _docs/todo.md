@@ -1,0 +1,3 @@
+- separate the registration logic into a dedicated RegistrationsRepository (with interface and  all that)
+- Remove the not used Rooms view, or update it to be as it is actually used in the repo
+- Koppla in BAN funktionaliteten i frontend när man redigerar en användare, så att det faktiskt går att banna för ADMINS.
