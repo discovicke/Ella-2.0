@@ -32,6 +32,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       }
 
       if (error.status === 403 && error.error?.code === 'USER_BANNED') {
+        // TODO: Fixa toasten om man loggar in som bannad användare, det är fel text i den toasten för tillfället
         // Update session so Guard knows for future navigations
         if (error.error.user) {
           sessionService.setUser(authService.mapToUserState(error.error.user));

@@ -23,6 +23,7 @@ export class ManageUsersPage {
   private userService = inject(UserService);
   private toastService = inject(ToastService);
 
+  // TODO: Implementera sökning och filtrering baserat på alla värden (namn, e-post, roll, klass, status)
   // Resource för användarlistan
   userResource = resource({
     loader: () => firstValueFrom(this.userService.getAllUsers())

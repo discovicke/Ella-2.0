@@ -23,6 +23,7 @@ export class StudentLayout {
   private readonly bookingService = inject(BookingService);
   private readonly sessionService = inject(SessionService);
 
+  // TODO: Implementera filtrering av bokningar baserat på status (aktiv, cancelled checkbox, historik)
   activeTab = signal<'upcoming' | 'history'>('upcoming');
 
   // Resource för rum
@@ -46,6 +47,7 @@ export class StudentLayout {
   }
 
   onBookRoom(room: RoomResponseDto) {
+    // TODO: Skapa en bokningsmodal som öppnas när man trycker på boka i studentvyn
     console.log('Open booking modal for room:', room);
   }
 }

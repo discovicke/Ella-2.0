@@ -8,4 +8,7 @@ import { HeaderComponent } from '../../shared/components/header/header.component
   styleUrl: './educator.layout.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EducatorLayout {}
+export class EducatorLayout {
+  // TODO: Fixa bokningspanelen med korten så de har rätt layout i teacher-layout
+  // TODO: Implementera en kalender-komponent för lärare
+}

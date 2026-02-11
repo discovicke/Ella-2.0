@@ -8,5 +8,5 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManageRoomsPage {
-
+  // TODO: Implementera rums-vyn i user (admin/manage-rooms) med sökning och filtrering
 }

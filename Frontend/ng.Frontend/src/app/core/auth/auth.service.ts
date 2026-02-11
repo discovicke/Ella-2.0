@@ -33,6 +33,7 @@ export class AuthService {
     } catch (error: any) {
       // If the user is banned, the backend returns 403 with user info in the body
       if (error.status === 403 && error.error?.code === 'USER_BANNED' && error.error?.user) {
+        // TODO: Fixa toasten om man loggar in som bannad användare, det är fel text i den toasten för tillfället
         const userState = this.mapToUserState(error.error.user);
         this.sessionService.setUser(userState);
       }

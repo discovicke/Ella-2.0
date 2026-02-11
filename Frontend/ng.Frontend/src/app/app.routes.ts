@@ -7,11 +7,11 @@ export const routes: Routes = [
   // 1. PUBLIC AREA (No Login Required)
   // =========================================================
 
+  // TODO: Överväg att återinföra HomePage och redirecta till login om ej autentiserad
   // {
   //   path: '',
   //   loadComponent: () => import('./pages/_public/home/home.page').then((m) => m.HomePage),
   // },
-  // COMMENTED OUT HOME PAGE FOR NOW and REDIRECTING ROOT TO LOGIN INSTEAD, MAY RE-ADD LATER
 
   {
     path: 'login',
@@ -93,7 +93,7 @@ export const routes: Routes = [
   },
 
   // =========================================================
-  // 3. STUDENT AREA (Placeholder)
+  // 3. STUDENT AREA
   // =========================================================
   {
     path: 'student',
@@ -101,12 +101,12 @@ export const routes: Routes = [
     data: { roles: [UserRole.Student] },
     loadComponent: () => import('./pages/student/student.layout').then((m) => m.StudentLayout),
     children: [
-      // Add student pages here later
+      // TODO: Lägg till student-sidor här senare
     ],
   },
 
   // =========================================================
-  // 4. EDUCATOR AREA (Placeholder)
+  // 4. EDUCATOR AREA
   // =========================================================
   {
     path: 'educator',
@@ -114,7 +114,7 @@ export const routes: Routes = [
     data: { roles: [UserRole.Educator] },
     loadComponent: () => import('./pages/educator/educator.layout').then((m) => m.EducatorLayout),
     children: [
-      // Add educator pages here later
+      // TODO: Implementera hela teacher routen och dess undersidor
     ],
   },
 

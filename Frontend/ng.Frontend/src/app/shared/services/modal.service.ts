@@ -46,6 +46,7 @@ export class ModalService {
   close() {
     this.isOpenSignal.set(false);
     
+    // TODO: Implementera fördröjning här så att ut-animationen hinner spelas klart innan komponenten rensas
     // Rensa efter animationen (vi använder setTimeout eller bara rensar direkt beroende på CSS-setup, 
     // men för enkelhetens skull i Angular Signals-flödet rensar vi komponenten direkt eller låter CSS hantera fade-out)
     this.activeComponentSignal.set(null);
