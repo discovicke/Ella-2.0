@@ -32,6 +32,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/_public/forbidden/forbidden.page').then((m) => m.ForbiddenPage),
   },
+    {
+    path: 'banned',
+    loadComponent: () =>
+      import('./pages/_public/banned/banned.page').then((m) => m.BannedPage),
+  },
   {
     path: 'bookingform',
     loadComponent: () =>
