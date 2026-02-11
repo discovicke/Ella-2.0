@@ -1,10 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
-import { ToastService } from '../../../shared/services/toast.service';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { UserService } from '../../../shared/services/user.service';
-import {BannedStatus} from '../../../models/models';
+import { UserRole, BannedStatus } from '../../../models/models';
 
 @Component({
   selector: 'app-user-form-modal',
@@ -13,19 +10,10 @@ import {BannedStatus} from '../../../models/models';
   template: `
     <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
       <div class="form-group">
-        <label for="name">Namn</label>
-        <input id="name" type="text" formControlName="name" placeholder="Förnamn Efternamn" />
-        @if (userForm.get('name')?.invalid && userForm.get('name')?.touched) {
+        <label for="displayName">Namn</label>
+        <input id="displayName" type="text" formControlName="displayName" placeholder="Förnamn Efternamn" />
+        @if (userForm.get('displayName')?.invalid && userForm.get('displayName')?.touched) {
           <span class="error-msg">Namn krävs</span>
-        }
-      </div>
-
-      <div class="form-group">
-        <label for="password">Lösenord</label>
-        <input id="password" type="text" formControlName="password" placeholder="Lösenord minst 6 tecken" />
-
-        @if (userForm.get('password')?.errors?.['minlength'] && userForm.get('password')?.touched) {
-          <span class="error-msg">Lösenord måste vara minst 6 tecken långt</span>
         }
       </div>
 
@@ -38,19 +26,27 @@ import {BannedStatus} from '../../../models/models';
       </div>
 
       <div class="form-group">
+        <label for="password">Lösenord</label>
+        <input id="password" type="password" formControlName="password" placeholder="Minst 6 tecken" />
+        @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
+          <span class="error-msg">Lösenord krävs (minst 6 tecken)</span>
+        }
+      </div>
+
+      <div class="form-group">
         <label for="role">Roll</label>
         <select id="role" formControlName="role">
           <option value="">-- Välj roll --</option>
-          <option value="student">Student</option>
-          <option value="teacher">Lärare</option>
-          <option value="admin">Admin</option>
+          <option [value]="UserRole.Student">Student</option>
+          <option [value]="UserRole.Educator">Lärare</option>
+          <option [value]="UserRole.Admin">Admin</option>
         </select>
       </div>
 
       <div class="form-actions">
         <button type="button" class="btn-secondary" (click)="onCancel()">Avbryt</button>
         <button type="submit" class="btn-primary" [disabled]="userForm.invalid || isSubmitting()">
-          {{ isSubmitting() ? 'Sparar...' : 'Spara ändringar' }}
+          {{ isSubmitting() ? 'Sparar...' : 'Spara' }}
         </button>
       </div>
     </form>
@@ -58,12 +54,15 @@ import {BannedStatus} from '../../../models/models';
   styles: [`
     @use 'styles/mixins' as *;
 
-    // .user-form {
-    //   @include stack(0rem);
-    // }
+    .user-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
 
     .form-group {
       @include stack(0.5rem);
+      margin-bottom: 0;
 
       label {
         font-weight: 600;
@@ -94,15 +93,16 @@ import {BannedStatus} from '../../../models/models';
 })
 export class UserFormModalComponent {
   private modalService = inject(ModalService);
-  private toastService = inject(ToastService);
+  protected readonly UserRole = UserRole;
 
-  // Hämta data som skickades med modalService.open(comp, { data: ... })
-  private initialData = this.modalService.modalData();
+  // Hämta data och callbacks från modalData
+  private config = this.modalService.modalData();
+  private initialData = this.config?.user;
 
   readonly isSubmitting = signal(false);
 
   readonly userForm = new FormGroup({
-    name: new FormControl(this.initialData?.name || '', {
+    displayName: new FormControl(this.initialData?.displayName || '', {
       nonNullable: true,
       validators: [Validators.required]
     }),
@@ -114,50 +114,30 @@ export class UserFormModalComponent {
       nonNullable: true,
       validators: [Validators.required]
     }),
-    password: new FormControl(this.initialData?.password || '', {
+    password: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.minLength(6)],
-      }
-    ),
+      validators: this.initialData ? [] : [Validators.required, Validators.minLength(6)]
+    }),
   });
-
-
-
-  // Signals för att spegla värden (SignalForms approach)
-  readonly nameValue = toSignal(this.userForm.controls.name.valueChanges, { initialValue: '' });
 
   onSubmit() {
     if (this.userForm.invalid) return;
 
-    this.isSubmitting.set(true);
+    const rawValue = this.userForm.getRawValue();
 
-    const userData = this.userForm.getRawValue();
-    const userId = this.initialData?.id;
-
+    // Om vi redigerar en användare skickar vi med befintliga värden som inte ändras i formuläret
     const payload = {
-      id: userId,
-      displayName: userData.name,
-      email: userData.email,
-      role: userData.role,
-      password: userData.password,
-      userClass: 'net25',
-      isBanned: BannedStatus.NotBanned
+      ...this.initialData,
+      ...rawValue,
+      userClass: this.initialData?.userClass || 'net25',
+      isBanned: this.initialData?.isBanned ?? BannedStatus.NotBanned
     };
 
-    inject (UserService).updateUser(userId, payload).subscribe({
-      next: () => {
-        this.toastService.showSuccess('Användaren har sparats!');
-        this.isSubmitting.set(false);
-        this.modalService.close();
-      }});
-
-    // Simulera API-anrop
-    setTimeout(() => {
-      console.log('Sparar data:', this.userForm.getRawValue());
-      this.toastService.showSuccess('Användaren har sparats!');
-      this.isSubmitting.set(false);
-      this.modalService.close();
-    }, 1000);
+    // Anropa callbacken som skickades med
+    if (this.config?.onSave) {
+      this.isSubmitting.set(true);
+      this.config.onSave(payload);
+    }
   }
 
   onCancel() {
