@@ -45,6 +45,11 @@ import { UserRole, BannedStatus } from '../../../models/models';
 
       <div class="form-actions">
         <button type="button" class="btn-secondary" (click)="onCancel()">Avbryt</button>
+        @if (initialData) {
+          <button type="button" class="btn-danger" (click)="onDelete()" [disabled]="isSubmitting()">
+            Radera
+          </button>
+        }
         <button type="submit" class="btn-primary" [disabled]="userForm.invalid || isSubmitting()">
           {{ isSubmitting() ? 'Sparar...' : 'Spara' }}
         </button>
@@ -87,6 +92,7 @@ import { UserRole, BannedStatus } from '../../../models/models';
 
       .btn-primary { @include button-primary; }
       .btn-secondary { @include button-ghost; }
+      .btn-danger { @include button-danger; }
     }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -97,7 +103,7 @@ export class UserFormModalComponent {
 
   // Hämta data och callbacks från modalData
   private config = this.modalService.modalData();
-  private initialData = this.config?.user;
+  protected initialData = this.config?.user;
 
   readonly isSubmitting = signal(false);
 
@@ -125,7 +131,6 @@ export class UserFormModalComponent {
 
     const rawValue = this.userForm.getRawValue();
 
-    // Om vi redigerar en användare skickar vi med befintliga värden som inte ändras i formuläret
     const payload = {
       ...this.initialData,
       ...rawValue,
@@ -133,10 +138,16 @@ export class UserFormModalComponent {
       isBanned: this.initialData?.isBanned ?? BannedStatus.NotBanned
     };
 
-    // Anropa callbacken som skickades med
     if (this.config?.onSave) {
       this.isSubmitting.set(true);
       this.config.onSave(payload);
+    }
+  }
+
+  onDelete() {
+    if (this.config?.onDelete && this.initialData?.id) {
+      this.isSubmitting.set(true);
+      this.config.onDelete(this.initialData.id);
     }
   }
 
