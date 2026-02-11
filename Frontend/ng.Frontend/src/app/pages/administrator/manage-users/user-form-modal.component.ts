@@ -19,6 +19,15 @@ import { toSignal } from '@angular/core/rxjs-interop';
       </div>
 
       <div class="form-group">
+        <label for="password">Lösenord</label>
+        <input id="password" type="text" formControlName="password" placeholder="Lösenord minst 6 tecken" />
+        
+        @if (userForm.get('password')?.errors?.['minlength'] && userForm.get('password')?.touched) {
+          <span class="error-msg">Lösenord måste vara minst 6 tecken långt</span>
+        }
+      </div>
+
+      <div class="form-group">
         <label for="email">E-post</label>
         <input id="email" type="email" formControlName="email" placeholder="namn@example.com" />
         @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
@@ -47,9 +56,9 @@ import { toSignal } from '@angular/core/rxjs-interop';
   styles: [`
     @use 'styles/mixins' as *;
 
-    .user-form {
-      @include stack(1.5rem);
-    }
+    // .user-form {
+    //   @include stack(0rem);
+    // }
 
     .form-group {
       @include stack(0.5rem);
@@ -103,7 +112,14 @@ export class UserFormModalComponent {
       nonNullable: true, 
       validators: [Validators.required] 
     }),
+    password: new FormControl(this.initialData?.password || '', { 
+      nonNullable: true, 
+      validators: [Validators.required, Validators.minLength(6)],
+      }
+    ),
   });
+
+  
 
   // Signals för att spegla värden (SignalForms approach)
   readonly nameValue = toSignal(this.userForm.controls.name.valueChanges, { initialValue: '' });
