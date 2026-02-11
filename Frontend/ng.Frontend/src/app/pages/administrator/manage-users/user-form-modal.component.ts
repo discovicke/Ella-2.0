@@ -2,11 +2,12 @@ import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@a
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
 import { UserRole, BannedStatus } from '../../../models/models';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-user-form-modal',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ButtonComponent],
   template: `
     <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
       <div class="form-group">
@@ -44,15 +45,15 @@ import { UserRole, BannedStatus } from '../../../models/models';
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn-secondary" (click)="onCancel()">Avbryt</button>
+        <app-button variant="tertiary" (clicked)="onCancel()">Avbryt</app-button>
         @if (initialData) {
-          <button type="button" class="btn-danger" (click)="onDelete()" [disabled]="isSubmitting()">
+          <app-button variant="danger" (clicked)="onDelete()" [disabled]="isSubmitting()">
             Radera
-          </button>
+          </app-button>
         }
-        <button type="submit" class="btn-primary" [disabled]="userForm.invalid || isSubmitting()">
+        <app-button type="submit" variant="primary" [disabled]="userForm.invalid || isSubmitting()">
           {{ isSubmitting() ? 'Sparar...' : 'Spara' }}
-        </button>
+        </app-button>
       </div>
     </form>
   `,

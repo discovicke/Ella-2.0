@@ -1,9 +1,9 @@
 <div class="manage-users-container">
   <header class="page-header">
     <h1>Hantera användare</h1>
-    <button class="btn-primary" (click)="openAddUserModal()">
+    <app-button variant="primary" (clicked)="openAddUserModal()">
       + Skapa användare
-    </button>
+    </app-button>
   </header>
 
   <div class="user-list">
@@ -11,13 +11,15 @@
       <p>Laddar användare...</p>
     } @else {
       @for(user of userResource.value() ?? []; track user.id) {
-        <div class="user-card" (click)="openEditUserModal(user)">
+        <div class="user-card">
           <div class="user-info">
             <span class="user-name">{{ user.displayName }}</span>
             <span class="user-email">{{ user.email }}</span>
             <span class="user-role-badge" [class]="user.role.toLowerCase()">{{ user.role }}</span>
           </div>
-          <button class="btn-ghost">Redigera</button>
+          <app-button variant="tertiary" (clicked)="openEditUserModal(user)">
+            Redigera
+          </app-button>
         </div>
       } @empty {
         <p>Inga användare hittades.</p>

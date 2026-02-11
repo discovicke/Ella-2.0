@@ -2,15 +2,16 @@ import { ChangeDetectionStrategy, Component, inject, resource } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ToastService } from '../../../shared/services/toast.service';
-import { UserFormModalComponent } from './user-form-modal.component';
 import { firstValueFrom } from 'rxjs';
 import { UserService } from '../../../shared/services/user.service';
 import { CreateUserDto, UpdateUserDto, UserResponseDto } from '../../../models/models';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import {UserFormModalComponent} from './user-form-modal.component';
 
 @Component({
   selector: 'app-manage-users-page',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ButtonComponent, UserFormModalComponent],
   templateUrl: './manage-users.page.html',
   styleUrl: './manage-users.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,7 +64,7 @@ export class ManageUsersPage {
   }
 
   private handleSave(payload: any, userId?: number) {
-    const obs = userId 
+    const obs = userId
       ? this.userService.updateUser(userId, payload)
       : this.userService.createUser(payload);
 

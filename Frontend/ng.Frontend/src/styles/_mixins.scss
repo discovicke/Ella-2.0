@@ -263,6 +263,7 @@
 
   &:active:not(:disabled) {
     background: var(--color-primary-active);
+    transform: translateY(3px);
   }
 }
 
@@ -275,6 +276,12 @@
   &:hover:not(:disabled) {
     background: var(--color-primary-surface);
   }
+
+  &:active:not(:disabled) {
+    background: var(--color-primary-surface);
+    transform: translateY(3px);
+    filter: brightness(0.9);
+  }
 }
 
 @mixin button-ghost {
@@ -285,6 +292,12 @@
   &:hover:not(:disabled) {
     background: var(--color-bg-elevated);
   }
+
+  &:active:not(:disabled) {
+    background: var(--color-bg-elevated);
+    transform: translateY(3px);
+    filter: brightness(0.9);
+  }
 }
 @mixin button-success {
   @include button-base;
@@ -293,6 +306,11 @@
 
   &:hover:not(:disabled) {
     background: var(--color-success-hover);
+  }
+
+  &:active:not(:disabled) {
+    background: var(--color-success-active);
+    transform: translateY(3px);
   }
 }
 
@@ -303,6 +321,11 @@
 
   &:hover:not(:disabled) {
     background: var(--color-danger-hover);
+  }
+
+  &:active:not(:disabled) {
+    background: var(--color-danger-active);
+    transform: translateY(3px);
   }
 }
 
