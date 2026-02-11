@@ -44,9 +44,23 @@ export class ManageUsersPage {
       title: 'Redigera användare',
       data: {
         user: user,
-        onSave: (payload: UpdateUserDto) => this.handleSave(payload, user.id)
+        onSave: (payload: UpdateUserDto) => this.handleSave(payload, user.id),
+        onDelete: (id: number) => this.handleDelete(id)
       },
       width: '500px'
+    });
+  }
+
+  private handleDelete(id: number) {
+    this.userService.deleteUser(id).subscribe({
+      next: () => {
+        this.toastService.showSuccess('Användaren raderad!');
+        this.modalService.close();
+      },
+      error: (err) => {
+        console.error('Delete failed', err);
+        this.toastService.showError('Kunde inte radera användaren.');
+      }
     });
   }
 
