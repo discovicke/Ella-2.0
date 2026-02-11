@@ -20,12 +20,9 @@ export class ManageUsersPage {
   private userService = inject(UserService);
   private toastService = inject(ToastService);
 
-  // Resource för användarlistan - laddar om automatiskt när userService.refreshTrigger() ändras
+  // Resource för användarlistan
   userResource = resource({
-    loader: () => {
-      this.userService.refreshTrigger(); // Skapar beroende på signalen
-      return firstValueFrom(this.userService.getAllUsers());
-    }
+    loader: () => firstValueFrom(this.userService.getAllUsers())
   });
 
   openAddUserModal() {
@@ -56,6 +53,7 @@ export class ManageUsersPage {
       next: () => {
         this.toastService.showSuccess('Användaren raderad!');
         this.modalService.close();
+        this.userResource.reload(); // Uppdatera listan direkt
       },
       error: (err) => {
         console.error('Delete failed', err);
@@ -73,7 +71,7 @@ export class ManageUsersPage {
       next: () => {
         this.toastService.showSuccess(`Användaren ${userId ? 'uppdaterad' : 'skapad'}!`);
         this.modalService.close();
-        // userResource kommer ladda om automatiskt pga tap(() => this.refresh()) i servicen
+        this.userResource.reload(); // Uppdatera listan direkt
       },
       error: (err) => {
         console.error('Save failed', err);
