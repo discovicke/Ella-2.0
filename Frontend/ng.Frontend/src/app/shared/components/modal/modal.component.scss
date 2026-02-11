@@ -4,14 +4,14 @@
   position: fixed;
   inset: 0; // top: 0, right: 0, bottom: 0, left: 0
   z-index: 1000;
-  
+
   // Glass effect on background
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(4px);
-  
+
   @include flex-center;
   padding: 1rem;
-  
+
   // Animation for fade in
   animation: fadeIn 0.2s ease-out;
 }
@@ -21,17 +21,17 @@
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  
+
   // Use existing mixins for consistent look
   @include card(0); // 0 padding because we split header/body
   @include shadow('xl');
   background: var(--color-bg-card);
-  
+
   // Animation for slide up/zoom
   animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  
+
   // Scroll internal content if too tall
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 .modal-header {
@@ -51,7 +51,7 @@
   padding: 0.5rem;
   border-radius: 50%;
   color: var(--color-text-muted);
-  
+
   &:hover {
     color: var(--color-text-primary);
     background: var(--color-bg-elevated);
@@ -71,12 +71,19 @@
 }
 
 @keyframes slideIn {
-  from { 
+  from {
     opacity: 0;
     transform: scale(0.95) translateY(10px);
   }
-  to { 
+  to {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
 }
+
+// Shake animation triggered when data-shake attribute changes
+// Uses global shake animation from _animations.scss
+.modal-container[data-shake] {
+  animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+

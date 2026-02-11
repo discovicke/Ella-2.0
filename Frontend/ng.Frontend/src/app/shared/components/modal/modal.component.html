@@ -1,17 +1,18 @@
 @if (modalService.isOpen()) {
   <div class="modal-backdrop" (click)="onBackdropClick($event)">
-    <div 
-      class="modal-container" 
+    <div
+      class="modal-container"
+      [attr.data-shake]="shakeCounter()"
       [style.max-width]="modalService.options().width || '500px'"
-      role="dialog" 
+      role="dialog"
       aria-modal="true">
-      
+
       <!-- Header -->
       <header class="modal-header">
         <h2 class="modal-title">
           {{ modalService.options().title || 'Information' }}
         </h2>
-        
+
         @if (!modalService.options().hideCloseButton) {
           <button class="close-btn" (click)="modalService.close()" aria-label="Stäng">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
