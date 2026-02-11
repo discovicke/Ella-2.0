@@ -106,6 +106,29 @@ public static class UserEndpoints
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
 
+        // POST /api/users/{id}/ban-status
+        group
+            .MapPost(
+                "/{id}/ban-status",
+                async (long id, BannedStatus status, UserService service) =>
+                {
+                    if (id <= 0)
+                        return Results.BadRequest("ID must be a positive integer.");
+
+                    await service.SetBannedStatusAsync(id, status);
+                    return Results.NoContent();
+                }
+            )
+            .RequireRoles(UserRole.Admin) // Only Admin can ban/unban users
+            .WithName("SetUserBanStatus")
+            .WithSummary("Set user ban status")
+            .WithDescription("Bans or unbans a user. If banned, all active tokens are revoked.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces<string>(StatusCodes.Status400BadRequest)
+            .Produces<string>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
         // POST /api/users/{id}/revoke-tokens
         group
             .MapPost(
