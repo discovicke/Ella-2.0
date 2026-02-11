@@ -1,1 +1,11 @@
-<p>card works!</p>
+<div class="card-container">
+  <div class="card-info">
+    <h3>{{ title() }}</h3>
+    @if (subtitle()) {
+      <p>{{ subtitle() }}</p>
+    }
+  </div>
+  <app-button variant="primary" (clicked)="onBook()">
+    {{ buttonText() }}
+  </app-button>
+</div>
