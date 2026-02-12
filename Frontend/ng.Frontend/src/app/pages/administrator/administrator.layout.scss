@@ -1,9 +1,20 @@
 @use 'styles/mixins' as *;
 @use 'styles/variables' as *;
 
+/* 
+  FIX: Layout filling viewport correctly without manual calc() 
+*/
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
 .administrator-layout {
   display: flex;
-  height: calc(100dvh - 64px);
+  flex: 1; /* Take all remaining space below header */
+  min-height: 0; /* Important for nested scrolling */
   background: var(--color-bg-body);
   overflow: hidden;
 }
@@ -53,12 +64,17 @@
 .content {
   flex: 1;
   padding: map-get($spacing, '8');
-  overflow: hidden;
+  overflow: hidden; /* Pass scrolling to children if needed, or set auto here if content scrolls directly */
   display: flex;
   flex-direction: column;
 }
 
 @include breakpoint-down('md') {
+  :host {
+    height: auto;
+    overflow: auto;
+  }
+
   .administrator-layout {
     flex-direction: column;
     height: auto;
