@@ -23,7 +23,7 @@
 - [ ] Säkerställ att översättningar från databasen används korrekt
 	- Konsekvent språk
 	- Rätt termer per roll/status
-- [ ] Se över stavfel i Banned page
+- [x] Se över stavfel i Banned page
 - [ ] Fixa översättningar från databasen för korrekt användarupplevelse
 
 ### Bokningar & närvaro (Registrations)
