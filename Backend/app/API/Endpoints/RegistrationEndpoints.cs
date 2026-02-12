@@ -1,6 +1,5 @@
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.app.API.Endpoints;
 

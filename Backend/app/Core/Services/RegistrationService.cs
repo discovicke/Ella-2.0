@@ -6,7 +6,8 @@ namespace Backend.app.Core.Services;
 
 public class RegistrationService(
     IRegistrationRepository repo,
-    IBookingReadModelRepository bookingReadModelRepo
+    IBookingReadModelRepository bookingReadModelRepo,
+    ILogger<RegistrationService> logger
 )
 {
     /// <summary>
@@ -15,10 +16,9 @@ public class RegistrationService(
     /// </summary>
     public async Task<bool> RegisterParticipantAsync(long userId, long bookingId)
     {
-        var booking = await bookingReadModelRepo.GetDetailedBookingByIdAsync(bookingId);
-        if (booking is null)
-            throw new KeyNotFoundException("Booking not found.");
-
+        var booking =
+            await bookingReadModelRepo.GetDetailedBookingByIdAsync(bookingId)
+            ?? throw new KeyNotFoundException("Booking not found.");
         if (booking.Status == BookingStatus.Cancelled)
             throw new InvalidOperationException("Cannot register for a cancelled booking.");
 
@@ -31,8 +31,9 @@ public class RegistrationService(
             && booking.RegistrationCount >= booking.RoomCapacity.Value
         )
         {
-            // We proceed anyway as per requirement, but we could log it or return a specific status if needed.
-            // For now, we just fulfill the "don't hard stop" rule.
+            // Log a warning but allow registration to proceed
+            // (In a real app, consider notifying the user about overbooking)
+            logger.LogWarning("Booking {BookingId} is over capacity.", bookingId);
         }
 
         return await repo.AddRegistrationAsync(userId, bookingId);

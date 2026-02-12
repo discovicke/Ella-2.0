@@ -3,10 +3,10 @@
 ## Backend
 
 ### Arkitektur & struktur
-- [ ] Bryt ut registration logik till en separat RegistrationsRepository
-    - Interface
-    - Dependency injection?
-    - Tydlig ansvarsfördelning
+- [x] Bryt ut registration logik till en separat RegistrationsRepository
+    - [x] Interface
+    - [x] Dependency injection?
+    - [x] Tydlig ansvarsfördelning
 - [ ] Ta bort den oanvända **Rooms view**
     - Eller uppdatera den så den speglar faktisk användning i repot
 - [ ] Fixa adresser i en egen **AddressRepository**
@@ -26,14 +26,14 @@
 - [ ] Fixa översättningar från databasen för korrekt användarupplevelse
 
 ### Bokningar & närvaro (Registrations)
-- [ ] Implementera `RegistrationsRepository`
-  - Koppling mellan användare och bokning
-  - Skapa/uppdatera närvaro (anmäld: ja/nej)
+- [x] Implementera `RegistrationsRepository`
+  - [x] Koppling mellan användare och bokning
+  - [x] Skapa/uppdatera närvaro (anmäld: ja/nej)
 - [ ] Hämta alla bokningar kopplade till en klass
   - Inkludera information om vilka elever som är anmälda
-- [ ] API-endpoint för att anmäla närvaro till en bokning
-  - Skydda så endast elever i rätt klass kan anmäla sig
-- [ ] Säkerställ att duplicerade registrations inte kan skapas
+- [x] API-endpoint för att anmäla närvaro till en bokning
+  - [ ] Skydda så endast elever i rätt klass kan anmäla sig
+- [x] Säkerställ att duplicerade registrations inte kan skapas
 - Ska en elev se alla bokningar gjord av andra elever i sin klass?
 
 ## Backend ↔ Frontend
