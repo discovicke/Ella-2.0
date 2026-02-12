@@ -15,7 +15,12 @@ export class BookingService {
   }
 
   getBookingsByUserId(userId: number): Observable<BookingDetailedReadModel[]> {
-    return this.http.get<BookingDetailedReadModel[]>(`${this.apiUrl}/my-registrations`);
+    // Note: userId param is ignored as the backend uses the token to identify the user
+    return this.http.get<BookingDetailedReadModel[]>(`${this.apiUrl}/my-owned`);
+  }
+
+  cancelBooking(bookingId: number): Observable<unknown> {
+    return this.http.put(`${this.apiUrl}/${bookingId}?newStatus=Cancelled`, {});
   }
 
   createBooking(booking: CreateBookingDto): Observable<unknown> {

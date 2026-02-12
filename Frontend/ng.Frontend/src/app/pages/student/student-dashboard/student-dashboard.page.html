@@ -1,56 +1,79 @@
 <main class="dashboard-layout">
   <div class="content-container">
 
-
-    <!-- vänster sektion bokningar -->
+    <!-- Vänster sektion: Bokningar -->
     <app-panel
       class="left-panel"
       title="Mina bokningar">
+      
       <div class="booking-tabs">
         <app-button
           variant="tertiary"
           [class.active]="activeTab() === 'upcoming'"
-          (click)="activeTab.set('upcoming')"
+          (clicked)="setActiveTab('upcoming')"
         >Kommande
         </app-button>
 
         <app-button
           variant="tertiary"
           [class.active]="activeTab() === 'history'"
-          (click)="activeTab.set('history')"
+          (clicked)="setActiveTab('history')"
         >Historik
         </app-button>
 
         <label class="toggle-label">
-          <input type="checkbox" id="show-cancelled"/>
+          <input 
+            type="checkbox" 
+            id="show-cancelled"
+            [checked]="showCancelled()"
+            (change)="toggleCancelled($event)"
+          />
           Visa avbokade
         </label>
       </div>
 
       <div class="booking-scroll" aria-live="polite">
-                @for (booking of bookingsResource.value() ?? []; track booking.bookingId) {
-                  <app-card>
-                    <div card-header><h3>{{ booking.roomName ?? 'Okänt rum' }}</h3></div>
-                    <div card-content>
-                      <div class="text-wrapper">
-                        <p>{{ (booking.startTime | date: 'short') ?? '' }}</p>
-                        <p>{{ (booking.endTime | date: 'short') ?? '' }}</p>
-                        <p>Anteckning: {{ booking.notes }}</p>
-                      </div>
-                    </div>
-                  </app-card>
+        <!-- Notera: Vi itererar över filteredBookings() nu, som är en computed signal -->
+        @for (booking of filteredBookings(); track booking.bookingId) {
+          <app-card [class.cancelled-card]="booking.status === 'Cancelled'">
+            <div card-header>
+              <h3>{{ booking.roomName ?? 'Okänt rum' }}</h3>
+              @if (booking.status === 'Cancelled') {
+                <span class="badge-cancelled">Avbokad</span>
+              }
+            </div>
+            <div card-content>
+              <div class="text-wrapper">
+                <p><strong>Datum:</strong> {{ booking.startTime | date: 'shortDate' }}</p>
+                <p><strong>Tid:</strong> {{ booking.startTime | date: 'shortTime' }} - {{ booking.endTime | date: 'shortTime' }}</p>
+                @if (booking.notes) {
+                  <p><em>"{{ booking.notes }}"</em></p>
                 }
-         @empty {
+              </div>
+
+              <!-- Avboka-knapp (Endast för kommande, aktiva bokningar) -->
+              @if (activeTab() === 'upcoming' && booking.status !== 'Cancelled') {
+                <div class="card-actions">
+                   <app-button variant="danger" (clicked)="onCancelBooking(booking)">Avboka</app-button>
+                </div>
+              }
+            </div>
+          </app-card>
+        } 
+        @empty {
           @if (bookingsResource.isLoading()) {
-            <p>Laddar bokningar...</p>
+            <p class="empty-state">Laddar bokningar...</p>
           } @else {
-            <p>Inga bokningar hittades.</p>
+            <p class="empty-state">
+              {{ activeTab() === 'upcoming' ? 'Inga kommande bokningar.' : 'Ingen historik hittades.' }}
+            </p>
           }
         }
       </div>
     </app-panel>
   </div>
-  <!-- höger sektion rum -->
+
+  <!-- Höger sektion: Rum -->
   <app-panel
     class="right-panel"
     title="Tillgängliga rum"
@@ -74,12 +97,11 @@
       </app-card>
     } @empty {
       @if (roomsResource.isLoading()) {
-        <p>Laddar rum...</p>
+        <p class="empty-state">Laddar rum...</p>
       } @else {
-        <p>Inga rum tillgängliga för tillfället.</p>
+        <p class="empty-state">Inga rum tillgängliga för tillfället.</p>
       }
     }
   </app-panel>
 
 </main>
-<!-- TODO: Placera app-modal här eller i en global layout -->
