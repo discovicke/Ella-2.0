@@ -1,3 +1,4 @@
+@use "sass:map";
 // =============================================
 // 🎨 COMPONENT STYLES
 // =============================================
@@ -67,11 +68,11 @@
     border-radius: 0;
 
     &:first-child {
-      border-radius: map-get($radii, 'md') 0 0 map-get($radii, 'md');
+      border-radius: map.get($radii, 'md') 0 0 map.get($radii, 'md');
     }
 
     &:last-child {
-      border-radius: 0 map-get($radii, 'md') map-get($radii, 'md') 0;
+      border-radius: 0 map.get($radii, 'md') map.get($radii, 'md') 0;
     }
   }
 }
@@ -205,7 +206,7 @@
 // ---------------------------------------------
 .alert {
   padding: 1rem 1.25rem;
-  border-radius: map-get($radii, 'md');
+  border-radius: map.get($radii, 'md');
   border-left: 4px solid;
   margin-bottom: 1rem;
 }
@@ -241,7 +242,7 @@
   @include flex-center;
   width: 40px;
   height: 40px;
-  border-radius: map-get($radii, 'full');
+  border-radius: map.get($radii, 'full');
   background: var(--color-primary-surface);
   color: var(--color-primary);
   font-weight: 600;

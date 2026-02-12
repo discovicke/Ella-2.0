@@ -1,3 +1,5 @@
+@use "sass:map";
+@use "sass:meta";
 // =============================================
 // 🔧 SCSS MIXINS
 // =============================================
@@ -12,8 +14,8 @@
 /// Mobile-first media query
 /// @param {String} $breakpoint - Breakpoint name (sm, md, lg, xl, 2xl)
 @mixin breakpoint($breakpoint) {
-  @if map-has-key($breakpoints, $breakpoint) {
-    @media (min-width: map-get($breakpoints, $breakpoint)) {
+  @if map.has-key($breakpoints, $breakpoint) {
+    @media (min-width: map.get($breakpoints, $breakpoint)) {
       @content;
     }
   } @else {
@@ -23,8 +25,8 @@
 
 /// Max-width media query (mobile-first inverse)
 @mixin breakpoint-down($breakpoint) {
-  @if map-has-key($breakpoints, $breakpoint) {
-    @media (max-width: #{map-get($breakpoints, $breakpoint) - 1px}) {
+  @if map.has-key($breakpoints, $breakpoint) {
+    @media (max-width: #{map.get($breakpoints, $breakpoint) - 1px}) {
       @content;
     }
   }
@@ -34,8 +36,8 @@
 // TYPOGRAPHY
 // ---------------------------------------------
 @mixin font-size($size) {
-  @if map-has-key($font-sizes, $size) {
-    font-size: map-get($font-sizes, $size);
+  @if map.has-key($font-sizes, $size) {
+    font-size: map.get($font-sizes, $size);
   } @else {
     font-size: $size;
   }
@@ -122,8 +124,8 @@
 // SPACING
 // ---------------------------------------------
 @mixin spacing($property, $size) {
-  @if map-has-key($spacing, $size) {
-    #{$property}: map-get($spacing, $size);
+  @if map.has-key($spacing, $size) {
+    #{$property}: map.get($spacing, $size);
   } @else {
     #{$property}: $size;
   }
@@ -139,7 +141,7 @@
 @mixin card($padding: 1.5rem) {
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
-  border-radius: map-get($radii, 'lg');
+  border-radius: map.get($radii, 'lg');
   padding: $padding;
   box-shadow: var(--shadow-sm);
 }
@@ -166,8 +168,8 @@
 }
 
 @mixin shadow($size: 'md') {
-  @if map-has-key($shadows, $size) {
-    box-shadow: map-get($shadows, $size);
+  @if map.has-key($shadows, $size) {
+    box-shadow: map.get($shadows, $size);
   }
 }
 
@@ -176,13 +178,13 @@
 // ---------------------------------------------
 @mixin transition($properties: all, $duration: 'base', $easing: 'smooth') {
   $dur: $duration;
-  @if type-of($duration) == 'string' and map-get($transitions, $duration) {
-    $dur: map-get($transitions, $duration);
+  @if meta.type-of($duration) == 'string' and map.get($transitions, $duration) {
+    $dur: map.get($transitions, $duration);
   }
 
   $ease: $easing;
-  @if type-of($easing) == 'string' and map-get($easings, $easing) {
-    $ease: map-get($easings, $easing);
+  @if meta.type-of($easing) == 'string' and map.get($easings, $easing) {
+    $ease: map.get($easings, $easing);
   }
 
   transition: $properties $dur $ease;
@@ -241,7 +243,7 @@
   line-height: 1;
   text-decoration: none;
   border: none;
-  border-radius: map-get($radii, 'md');
+  border-radius: map.get($radii, 'md');
   cursor: pointer;
   @include transition(all);
   @include focus-ring;
@@ -341,7 +343,7 @@
   color: var(--color-text-primary);
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
-  border-radius: map-get($radii, 'md');
+  border-radius: map.get($radii, 'md');
   @include transition(border-color, 'fast');
   @include focus-ring;
 
@@ -385,7 +387,7 @@
   line-height: 1.4;
   color: $color;
   background: $bg;
-  border-radius: map-get($radii, 'full');
+  border-radius: map.get($radii, 'full');
 }
 
 @mixin role-badge($role) {

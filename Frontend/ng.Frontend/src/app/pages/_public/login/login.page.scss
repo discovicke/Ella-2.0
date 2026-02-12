@@ -1,3 +1,4 @@
+@use "sass:map";
 @use 'styles/mixins' as *;
 @use 'styles/variables' as *;
 
@@ -5,7 +6,7 @@
 :host {
   @include flex-center;
   @include gap('10');
-  padding: map-get($spacing, '4');
+  padding: map.get($spacing, '4');
   min-height: calc(100dvh - 120px); /* plats för header */
   background: var(--color-bg-body);
   font-family: var(--font-family);
@@ -29,14 +30,14 @@
   @include gap('5');
   max-width: 380px;
   width: 100%;
-  padding: map-get($spacing, '8');
-  border-radius: map-get($radii, 'xl');
+  padding: map.get($spacing, '8');
+  border-radius: map.get($radii, 'xl');
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
   @include shadow('sm');
 
   opacity: 0;
-  animation: fadeUp 0.6s map-get($easings, 'smooth') forwards;
+  animation: fadeUp 0.6s map.get($easings, 'smooth') forwards;
 
   > *:nth-child(1) {
     animation-delay: 0.1s;
@@ -48,7 +49,7 @@
 
   form {
     opacity: 0;
-    animation: fadeUp 0.6s map-get($easings, 'smooth') 0.3s forwards;
+    animation: fadeUp 0.6s map.get($easings, 'smooth') 0.3s forwards;
   }
 
   input::placeholder {
@@ -70,8 +71,8 @@
   }
 
   form {
-    @include stack(map-get($spacing, '6'));
-    margin-top: map-get($spacing, '5');
+    @include stack(map.get($spacing, '6'));
+    margin-top: map.get($spacing, '5');
   }
 
   form div {
@@ -90,9 +91,9 @@ label {
 
 input {
   font-family: var(--font-family);
-  padding: map-get($spacing, '3') map-get($spacing, '3');
+  padding: map.get($spacing, '3') map.get($spacing, '3');
   border: 1px solid var(--color-border);
-  border-radius: map-get($radii, 'md');
+  border-radius: map.get($radii, 'md');
   font-size: var(--font-base);
   line-height: var(--leading-normal);
   color: var(--color-text-primary);
@@ -103,7 +104,7 @@ input {
 
   input {
     @include input-base;
-    padding: map-get($spacing, '3');
+    padding: map.get($spacing, '3');
     background: transparent;
 
     &:focus {
@@ -115,15 +116,15 @@ input {
 
 .labelline {
   position: absolute;
-  left: map-get($spacing, '3');
-  top: map-get($spacing, '3');
+  left: map.get($spacing, '3');
+  top: map.get($spacing, '3');
   transform-origin: left top;
   transform: translateY(0) scale(1);
   @include transition(all, 'slow', 'smooth');
   pointer-events: none;
   z-index: 2;
   background-color: var(--color-bg-card);
-  padding: 0 map-get($spacing, '1');
+  padding: 0 map.get($spacing, '1');
   color: var(--color-text-muted);
   user-select: none;
   font-size: var(--font-base);
@@ -142,8 +143,8 @@ input {
 
 .form-content button {
   @include button-primary;
-  padding: map-get($spacing, '4');
-  margin-top: map-get($spacing, '3');
+  padding: map.get($spacing, '4');
+  margin-top: map.get($spacing, '3');
   overflow: hidden;
   user-select: none;
 
@@ -180,7 +181,7 @@ input {
 }
 
 .inputGroup.error {
-  animation: shake-error 0.4s map-get($easings, 'bounce') both;
+  animation: shake-error 0.4s map.get($easings, 'bounce') both;
 }
 
 .inputGroup.error input {
@@ -202,8 +203,8 @@ input {
   color: var(--color-danger);
   font-size: var(--font-xs);
   line-height: var(--leading-normal);
-  margin-top: map-get($spacing, '1');
-  margin-left: map-get($spacing, '1');
+  margin-top: map.get($spacing, '1');
+  margin-left: map.get($spacing, '1');
   font-weight: 500;
 }
 
@@ -236,7 +237,7 @@ input {
 
   .login-layout {
     flex-direction: column;
-    gap: map-get($spacing, '5');
+    gap: map.get($spacing, '5');
     min-height: auto; /* undvik scroll */
   }
 }

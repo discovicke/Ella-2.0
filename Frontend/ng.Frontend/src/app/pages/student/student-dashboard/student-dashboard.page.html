@@ -37,7 +37,7 @@
         @for (booking of filteredBookings(); track booking.bookingId) {
           <app-card [class.cancelled-card]="booking.status === 'Cancelled'">
             <div card-header>
-              <h3>{{ booking.roomName ?? 'Okänt rum' }}</h3>
+              <h3>{{ booking.roomName }}</h3>
               @if (booking.status === 'Cancelled') {
                 <span class="badge-cancelled">Avbokad</span>
               }
@@ -81,11 +81,11 @@
 
     @for (room of roomsResource.value() ?? []; track room.id) {
       <app-card>
-        <div card-header><h3>{{ room.name ?? 'Okänt rum' }}</h3></div>
+        <div card-header><h3>{{ room.name }}</h3></div>
         <div card-content>
           <div class="text-wrapper">
-            <p>{{ room.type ?? '' }}</p>
-            <p>{{ room.capacity ?? '' }} platser</p>
+            <p>{{ room.type }}</p>
+            <p>{{ room.capacity }} platser</p>
           </div>
           <app-button variant="success" (clicked)="onBookRoom(room)">Boka</app-button>
         </div>

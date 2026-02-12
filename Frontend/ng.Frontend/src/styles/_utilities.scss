@@ -1,3 +1,4 @@
+@use "sass:map";
 // =============================================
 // 🛠️ UTILITY CLASSES
 // =============================================
@@ -108,10 +109,10 @@
 .text-center { text-align: center; }
 .text-right { text-align: right; }
 
-.leading-tight { line-height: map-get($line-heights, 'tight'); }
-.leading-snug { line-height: map-get($line-heights, 'snug'); }
-.leading-normal { line-height: map-get($line-heights, 'normal'); }
-.leading-relaxed { line-height: map-get($line-heights, 'relaxed'); }
+.leading-tight { line-height: map.get($line-heights, 'tight'); }
+.leading-snug { line-height: map.get($line-heights, 'snug'); }
+.leading-normal { line-height: map.get($line-heights, 'normal'); }
+.leading-relaxed { line-height: map.get($line-heights, 'relaxed'); }
 
 .uppercase { text-transform: uppercase; }
 .lowercase { text-transform: lowercase; }
@@ -159,7 +160,7 @@
 @each $name, $value in $radii {
   .rounded-#{$name} { border-radius: $value; }
 }
-.rounded { border-radius: map-get($radii, 'md'); }
+.rounded { border-radius: map.get($radii, 'md'); }
 
 // ---------------------------------------------
 // SHADOWS
@@ -244,13 +245,13 @@
 // RESPONSIVE VISIBILITY
 // ---------------------------------------------
 .hide-mobile {
-  @media (max-width: #{map-get($breakpoints, 'md') - 1px}) {
+  @media (max-width: #{map.get($breakpoints, 'md') - 1px}) {
     display: none !important;
   }
 }
 
 .hide-desktop {
-  @media (min-width: map-get($breakpoints, 'md')) {
+  @media (min-width: map.get($breakpoints, 'md')) {
     display: none !important;
   }
 }

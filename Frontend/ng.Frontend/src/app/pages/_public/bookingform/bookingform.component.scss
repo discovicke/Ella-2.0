@@ -1,3 +1,4 @@
+@use "sass:map";
 @use 'styles/mixins' as *;
 @use 'styles/variables' as *;
 
@@ -5,7 +6,7 @@
   @include flex-start;
   @include gap('8');
   @include container;
-  padding-block: map-get($spacing, '8');
+  padding-block: map.get($spacing, '8');
   background: var(--color-bg-body);
   font-family: var(--font-family);
 
@@ -17,16 +18,16 @@
 
 .booking-form {
   flex: 1;
-  @include card(map-get($spacing, '8'));
+  @include card(map.get($spacing, '8'));
 
   h2 {
     @include heading(2);
-    margin-bottom: map-get($spacing, '6');
+    margin-bottom: map.get($spacing, '6');
   }
 }
 
 .form-group {
-  @include stack(map-get($spacing, '2'));
+  @include stack(map.get($spacing, '2'));
   flex: 1;
 
   label {
@@ -53,7 +54,7 @@
 }
 
 .form-row {
-  @include cluster(map-get($spacing, '4'));
+  @include cluster(map.get($spacing, '4'));
   align-items: flex-start;
 
   @include breakpoint-down('sm') {
@@ -64,27 +65,27 @@
 .submit-btn {
   @include button-primary;
   width: 100%;
-  padding: map-get($spacing, '4') map-get($spacing, '6');
-  margin-top: map-get($spacing, '4');
+  padding: map.get($spacing, '4') map.get($spacing, '6');
+  margin-top: map.get($spacing, '4');
 }
 
 .rooms-list {
   flex: 1;
-  @include card(map-get($spacing, '8'));
+  @include card(map.get($spacing, '8'));
   @include custom-scrollbar;
   max-height: 600px;
   overflow-y: auto;
 
   h2 {
     @include heading(2);
-    margin-bottom: map-get($spacing, '6');
+    margin-bottom: map.get($spacing, '6');
   }
 }
 
 .room-item {
   border: 1px solid var(--color-border);
-  border-radius: map-get($radii, 'md');
-  margin-bottom: map-get($spacing, '2');
+  border-radius: map.get($radii, 'md');
+  margin-bottom: map.get($spacing, '2');
   overflow: hidden;
   @include transition(box-shadow);
 
@@ -97,7 +98,7 @@
   @include flex-start;
   @include gap('3');
   width: 100%;
-  padding: map-get($spacing, '4');
+  padding: map.get($spacing, '4');
   background: var(--color-bg-panel);
   border: none;
   cursor: pointer;
@@ -136,7 +137,7 @@
 }
 
 .room-details {
-  padding: map-get($spacing, '4');
+  padding: map.get($spacing, '4');
   background: var(--color-bg-card);
   border-top: 1px solid var(--color-border);
 }
@@ -144,7 +145,7 @@
 .detail-row {
   @include flex-start;
   @include gap('4');
-  margin-bottom: map-get($spacing, '2');
+  margin-bottom: map.get($spacing, '2');
 
   .label {
     font-weight: 600;
@@ -161,11 +162,11 @@
 
 .assets-list {
   margin: 0;
-  padding-left: map-get($spacing, '6');
+  padding-left: map.get($spacing, '6');
 
   li {
     color: var(--color-text-primary);
-    margin-bottom: map-get($spacing, '1');
+    margin-bottom: map.get($spacing, '1');
     font-size: var(--font-base);
   }
 }

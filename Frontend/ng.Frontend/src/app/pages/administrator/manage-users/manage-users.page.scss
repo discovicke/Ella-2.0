@@ -1,3 +1,4 @@
+@use "sass:map";
 @use 'styles/mixins' as *;
 @use 'styles/variables' as *;
 
@@ -63,7 +64,7 @@
 
 .btn-ghost {
   @include button-ghost;
-  padding: map-get($spacing, '2') map-get($spacing, '4');
+  padding: map.get($spacing, '2') map.get($spacing, '4');
   font-size: var(--font-sm);
 }
 

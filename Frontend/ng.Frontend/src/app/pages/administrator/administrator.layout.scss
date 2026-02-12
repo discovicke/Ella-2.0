@@ -1,3 +1,4 @@
+@use "sass:map";
 @use 'styles/mixins' as *;
 @use 'styles/variables' as *;
 
@@ -24,17 +25,17 @@
   flex: 0 0 auto;
   background: var(--color-bg-card);
   border-right: 1px solid var(--color-border);
-  padding: map-get($spacing, '6');
+  padding: map.get($spacing, '6');
   overflow-y: auto;
 
   h2 {
     @include heading(3);
-    margin-bottom: map-get($spacing, '6');
+    margin-bottom: map.get($spacing, '6');
     color: var(--color-primary);
   }
 
   nav ul {
-    @include stack(map-get($spacing, '2'));
+    @include stack(map.get($spacing, '2'));
     list-style: none;
     margin: 0;
     padding: 0;
@@ -43,8 +44,8 @@
   nav a {
     @include transition(all);
     display: block;
-    padding: map-get($spacing, '3') map-get($spacing, '4');
-    border-radius: map-get($radii, 'md');
+    padding: map.get($spacing, '3') map.get($spacing, '4');
+    border-radius: map.get($radii, 'md');
     text-decoration: none;
     color: var(--color-text-secondary);
     font-weight: 500;
@@ -63,7 +64,7 @@
 
 .content {
   flex: 1;
-  padding: map-get($spacing, '8');
+  padding: map.get($spacing, '8');
   overflow: hidden; /* Pass scrolling to children if needed, or set auto here if content scrolls directly */
   display: flex;
   flex-direction: column;
