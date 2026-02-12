@@ -101,7 +101,18 @@ export const routes: Routes = [
     data: { roles: [UserRole.Student] },
     loadComponent: () => import('./pages/student/student.layout').then((m) => m.StudentLayout),
     children: [
-      // TODO: Lägg till student-sidor här senare
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
+      },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./pages/student/student-dashboard/student-dashboard.page').then(
+            (m) => m.StudentDashboardPage,
+          ),
+      },
     ],
   },
 
