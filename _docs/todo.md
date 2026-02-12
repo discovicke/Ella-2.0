@@ -11,7 +11,8 @@
     - Eller uppdatera den så den speglar faktisk användning i repot
 - [ ] Fixa adresser i en egen **AddressRepository**
     - Rum har ett AddressId kopplat till Address-table
-
+- [ ] Background Clean-up worker
+  - Sortera upp och filtrera bokningar som passerat 
 ### Autentisering & användarhantering
 - [ ] Se över kravet på att lösenord måste skickas med vid användaruppdatering
     - Borde endast krävas vid ett lösenordsbyte
