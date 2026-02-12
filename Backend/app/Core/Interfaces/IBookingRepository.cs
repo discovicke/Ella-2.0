@@ -20,9 +20,4 @@ public interface IBookingRepository
     );
     Task<bool> UpdateBookingAsync(long bookingId, Booking booking);
     Task<bool> CancelBookingAsync(long bookingId);
-
-    // Registration Methods
-    Task<bool> AddRegistrationAsync(long userId, long bookingId);
-    Task<bool> RemoveRegistrationAsync(long userId, long bookingId);
-    Task<bool> IsUserRegisteredAsync(long userId, long bookingId);
 }

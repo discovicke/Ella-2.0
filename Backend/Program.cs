@@ -90,6 +90,7 @@ api.MapUserEndpoints();
 api.MapRoomEndpoints();
 api.MapAssetEndpoints();
 api.MapBookingEndpoints();
+api.MapRegistrationEndpoints();
 
 // 5. THE CATCH-ALL (SPA Fallback)
 app.MapFallbackToFile("index.html");
@@ -192,6 +193,7 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
             services.AddScoped<IBookingRepository, SqliteBookingRepo>();
             services.AddScoped<IBookingReadModelRepository, SqliteBookingReadModelRepo>();
             services.AddScoped<IAssetRepository, SqliteAssetRepo>();
+            services.AddScoped<IRegistrationRepository, SqliteRegistrationRepo>();
             services.AddScoped<IDbInitializer, SqliteDbInitializer>();
             break;
 
@@ -215,4 +217,5 @@ static void ConfigureCoreServices(IServiceCollection services)
     services.AddScoped<UserService>();
     services.AddScoped<BookingService>();
     services.AddScoped<AssetService>();
+    services.AddScoped<RegistrationService>();
 }
