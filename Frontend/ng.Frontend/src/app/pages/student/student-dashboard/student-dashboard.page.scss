@@ -1,14 +1,22 @@
 @use 'styles/variables' as *;
 
 :host {
+  /* Ensure the host element fills the router-outlet space */
+  display: block;
+  height: 100%; 
+
   .dashboard-layout {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 24px;
-    height: calc(100vh - 64px);
+    
+    /* REMOVED: height: calc(100vh - 64px); */
+    height: 100%; /* Fill parent (.content) */
+    
     padding: 24px;
-    overflow: hidden;
+    overflow: hidden; /* Panels handle their own scrolling */
     background-color: var(--color-bg-body);
+    box-sizing: border-box; /* Include padding in height calculation */
   }
 
   .content-container {

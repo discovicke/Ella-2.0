@@ -6,7 +6,7 @@
   @include flex-center;
   @include gap('10');
   padding: map-get($spacing, '4');
-  min-height: calc(100vh - 120px); /* plats för header */
+  min-height: calc(100dvh - 120px); /* plats för header */
   background: var(--color-bg-body);
   font-family: var(--font-family);
 }

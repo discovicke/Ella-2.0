@@ -1,3 +1,13 @@
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh; /* Fill the viewport */
+  overflow: hidden; /* Prevent body scroll */
+}
+
+.content {
+  flex: 1; /* Take remaining space below header */
+  overflow: hidden; /* Pass scroll responsibility to child */
+  display: flex;
+  flex-direction: column;
 }
