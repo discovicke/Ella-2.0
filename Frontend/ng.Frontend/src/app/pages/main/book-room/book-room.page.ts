@@ -1,0 +1,72 @@
+import { ChangeDetectionStrategy, Component, computed, inject, resource, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { CardComponent } from '../../../shared/components/card/card.component';
+import { RoomService } from '../../../shared/services/room.service';
+import { ModalService } from '../../../shared/services/modal.service';
+import { RoomDetailModel, RoomType } from '../../../models/models';
+import { BookingModalComponent } from './booking-modal/booking-modal.component';
+
+@Component({
+  selector: 'app-book-room-page',
+  standalone: true,
+  imports: [ButtonComponent, CardComponent],
+  templateUrl: './book-room.page.html',
+  styleUrl: './book-room.page.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class BookRoomPage {
+  private readonly roomService = inject(RoomService);
+  private readonly modalService = inject(ModalService);
+
+  // --- STATE ---
+  searchQuery = signal('');
+  selectedType = signal<RoomType | 'All'>('All');
+  minCapacity = signal<number>(0);
+
+  // --- RESOURCES ---
+
+  // Rooms
+  roomsResource = resource({
+    loader: () => firstValueFrom(this.roomService.getAllRooms())
+  });
+
+  // --- COMPUTED ---
+  filteredRooms = computed(() => {
+    const all = this.roomsResource.value() ?? [];
+    const query = this.searchQuery().toLowerCase();
+    const type = this.selectedType();
+    const capacity = this.minCapacity();
+
+    return all.filter(r => {
+      const matchesSearch = !query || r.name?.toLowerCase().includes(query) || r.address?.toLowerCase().includes(query);
+      const matchesType = type === 'All' || r.type === type;
+      const matchesCapacity = (r.capacity ?? 0) >= capacity;
+      return matchesSearch && matchesType && matchesCapacity;
+    });
+  });
+
+  readonly roomTypes = Object.values(RoomType);
+
+  // --- ACTIONS ---
+
+  onBookRoom(room: RoomDetailModel) {
+    this.modalService.open(BookingModalComponent, {
+      title: `Boka ${room.name}`,
+      data: room,
+      width: '600px'
+    });
+  }
+
+  updateSearch(event: Event) {
+    this.searchQuery.set((event.target as HTMLInputElement).value);
+  }
+
+  updateType(event: Event) {
+    this.selectedType.set((event.target as HTMLSelectElement).value as RoomType | 'All');
+  }
+
+  updateCapacity(event: Event) {
+    this.minCapacity.set(Number((event.target as HTMLInputElement).value));
+  }
+}

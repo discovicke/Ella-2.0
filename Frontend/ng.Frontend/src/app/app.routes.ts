@@ -75,16 +75,23 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'my-bookings',
+        path: 'see-bookings',
         loadComponent: () =>
-          import('./pages/main/my-bookings/my-bookings.page').then(
-            (m) => m.MyBookingsPage,
+          import('./pages/main/see-bookings/see-bookings.page').then(
+            (m) => m.SeeBookingsPage,
           ),
       },
-      // Redirect root of authenticated area to my-bookings
+      {
+        path: 'book-room',
+        loadComponent: () =>
+          import('./pages/main/book-room/book-room.page').then(
+            (m) => m.BookRoomPage,
+          ),
+      },
+      // Redirect root of authenticated area to see-bookings
       {
         path: '',
-        redirectTo: 'my-bookings',
+        redirectTo: 'see-bookings',
         pathMatch: 'full',
       }
     ],

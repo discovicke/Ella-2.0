@@ -89,10 +89,7 @@
 }
 
 .card-header {
-  @include flex-between;
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid var(--color-border);
+  /* Spacing and borders moved to component-level styling to avoid conflicts */
 }
 
 .card-title {

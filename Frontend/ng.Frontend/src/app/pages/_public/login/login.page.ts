@@ -62,7 +62,7 @@ export class LoginPage {
       // Short delay for visual feedback before nav
       setTimeout(() => {
         // Redirect all users to the main dashboard
-        this.router.navigate(['/my-bookings']);
+        this.router.navigate(['/see-bookings']);
 
         this.isSubmitting.set(false);
       }, 1000);
