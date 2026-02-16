@@ -1,0 +1,51 @@
+<div class="manage-users-container">
+  <header class="page-header">
+    <h1>Hantera användare</h1>
+    <app-button variant="primary" (clicked)="openAddUserModal()">
+      + Skapa användare
+    </app-button>
+  </header>
+
+  <div class="users-content">
+    <app-table
+      [data]="paginatedUsers()"
+      [columns]="columns"
+      [isLoading]="userResource.isLoading()"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize"
+      [total]="totalUsers()"
+      (pageChange)="handlePageChange($event)"
+      (rowClicked)="openEditUserModal($event)"
+      emptyMessage="Inga användare hittades.">
+    </app-table>
+
+    <!-- Templates for custom cells -->
+    
+    <!-- Avatar Template -->
+    <ng-template #avatarTpl let-user>
+      <div class="avatar-circle">
+        {{ getInitials(user.displayName) }}
+      </div>
+    </ng-template>
+
+    <!-- Role Template -->
+    <ng-template #roleTpl let-user>
+      <span class="user-role-badge" [class]="user.role.toLowerCase()">{{ user.role }}</span>
+    </ng-template>
+
+    <!-- Status Template -->
+    <ng-template #statusTpl let-user>
+      <div class="status-indicator" [class.banned]="user.isBanned === 'Banned'" [class.active]="user.isBanned !== 'Banned'">
+        <span class="status-dot"></span>
+        <span class="status-text">{{ user.isBanned === 'Banned' ? 'Bannlyst' : 'Aktiv' }}</span>
+      </div>
+    </ng-template>
+
+    <!-- Actions Template -->
+    <ng-template #actionsTpl let-user>
+      <app-button variant="tertiary" (clicked)="openEditUserModal(user, $event)">
+        Redigera
+      </app-button>
+    </ng-template>
+  </div>
+</div>

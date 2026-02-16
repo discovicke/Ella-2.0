@@ -61,17 +61,8 @@ export class LoginPage {
 
       // Short delay for visual feedback before nav
       setTimeout(() => {
-        const role = this.sessionService.userRole();
-
-        if (role === UserRole.Admin) {
-          this.router.navigate(['/administrator']);
-        } else if (role === UserRole.Educator) {
-          this.router.navigate(['/educator']);
-        } else if (role === UserRole.Student) {
-          this.router.navigate(['/student']);
-        } else {
-          this.router.navigate(['/']);
-        }
+        // Redirect all users to the main dashboard
+        this.router.navigate(['/my-bookings']);
 
         this.isSubmitting.set(false);
       }, 1000);

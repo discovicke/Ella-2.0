@@ -1,0 +1,205 @@
+@use 'styles/mixins' as *;
+@use 'styles/variables' as *;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: var(--radii-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  overflow: hidden;
+}
+
+.table-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  
+  th, td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+    
+    &.align-right { text-align: right; }
+    &.align-center { text-align: center; }
+  }
+
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--color-bg-panel);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    font-size: var(--font-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+  }
+
+  td {
+    color: var(--color-text-primary);
+    font-size: var(--font-sm);
+    vertical-align: middle;
+  }
+}
+
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--color-bg-body);
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--color-text-muted);
+}
+
+/* Skeleton Loading */
+.skeleton-row {
+  td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+}
+
+.skeleton-cell {
+  height: 1rem;
+  width: 100%;
+  background: var(--color-bg-body);
+  border-radius: var(--radii-sm);
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 0.3; }
+  100% { opacity: 0.6; }
+}
+
+/* Pagination Footer */
+.table-footer {
+  margin-top: auto;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg-panel);
+  @include flex-between;
+  gap: 1rem;
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  
+  /* Make sure footer stays at bottom */
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-icon {
+  @include flex-center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  border-radius: var(--radii-md);
+  cursor: pointer;
+  color: var(--color-text-primary);
+  font-weight: bold;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-primary-surface);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: var(--color-border);
+    background: var(--color-bg-body);
+  }
+}
+
+.current-page {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  min-width: 4rem;
+  text-align: center;
+}
+
+/* Mobile Card View */
+@media (max-width: 768px) {
+  .data-table {
+    display: block;
+    
+    thead {
+      display: none; /* Hide headers on mobile */
+    }
+
+    tbody {
+      display: block;
+      width: 100%;
+    }
+
+    tr {
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      border-bottom: 1px solid var(--color-border);
+      gap: 0.5rem;
+      background: var(--color-bg-card);
+      margin-bottom: 0.5rem;
+      border-radius: var(--radii-md);
+      border: 1px solid var(--color-border);
+      
+      /* Make it look like a card */
+      &:hover {
+        transform: none;
+        box-shadow: var(--shadow-sm);
+      }
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0;
+      border: none;
+      text-align: right;
+      
+      /* Add label via CSS or attribute? 
+         Since we can't easily inject dynamic labels via CSS content without data attrs,
+         we rely on the layout being clean enough or just stack them.
+         Here we just stack content.
+      */
+      width: 100%;
+      justify-content: flex-start;
+      gap: 0.5rem;
+
+      /* For specific columns like ID or Actions, we might want custom styling */
+      &:last-child {
+        margin-top: 0.5rem;
+        justify-content: flex-end;
+      }
+    }
+  }
+}
