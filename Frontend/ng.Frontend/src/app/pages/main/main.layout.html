@@ -1,12 +1,24 @@
-<app-header />
+<!-- Mobile-only header bar -->
+<div class="mobile-header">
+  <button class="menu-button" (click)="layoutService.toggleSidebar()" aria-label="Menu">
+    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="menu-icon">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+    </svg>
+  </button>
+  <span class="mobile-title">ELLA</span>
+</div>
 
 <div class="main-layout">
   <div class="sidebar-backdrop" [class.show]="layoutService.isSidebarOpen()" (click)="layoutService.closeSidebar()"></div>
   
   <aside class="sidebar" [class.open]="layoutService.isSidebarOpen()">
-    <!-- Mobile Header inside Sidebar -->
-    <div class="sidebar-mobile-header" *ngIf="sessionService.currentUser() as user">
+    <!-- Desktop & Mobile Header -->
+    <div class="sidebar-header">
       <img class="sidebar-logo" src="assets/ELLA-header.png" alt="ELLA" />
+    </div>
+
+    <!-- Desktop & Mobile User Info -->
+    <div class="sidebar-user" *ngIf="sessionService.currentUser() as user">
       <div class="sidebar-user-info">
         <span class="user-icon">👤</span>
         <div class="user-details">
@@ -18,6 +30,7 @@
 
     <!-- Section: Bokning -->
     <div class="nav-section">
+      
       <h3 class="nav-header">Bokning</h3>
       <nav>
         <ul>
@@ -82,9 +95,10 @@
       </nav>
     </div>
 
-    <div class="sidebar-mobile-footer">
+    <!-- Desktop & Mobile Footer -->
+    <div class="sidebar-footer">
       <button class="logout-button" (click)="logout()">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="nav-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="nav-icon">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
         </svg>
         <span>Logga ut</span>

@@ -76,8 +76,13 @@
   padding-bottom: 20px;
 
   @include breakpoint-down('sm') {
-    flex-direction: column;
+    flex-direction: row;
     align-items: stretch;
+  }
+  @media screen and (max-width: 492px) {
+    svg {
+      display: none;
+    }
   }
 }
 

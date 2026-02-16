@@ -3,7 +3,7 @@
 @use 'styles/variables' as *;
 
 /* 
-  FIX: Layout filling viewport correctly without manual calc() 
+  SIDEBAR-ONLY LAYOUT - No separate header component
 */
 :host {
   display: flex;
@@ -13,10 +13,15 @@
   overflow: hidden;
 }
 
+// Mobile-only header bar (just hamburger menu)
+.mobile-header {
+  display: none; // Hidden on desktop
+}
+
 .main-layout {
   display: flex;
-  flex: 1; /* Take all remaining space below header */
-  min-height: 0; /* Important for nested scrolling */
+  flex: 1;
+  min-height: 0;
   background: var(--color-bg-body);
   overflow: hidden;
   position: relative;
@@ -26,30 +31,115 @@
   display: none; // Only used on mobile
 }
 
-.sidebar-mobile-header,
-.sidebar-mobile-footer {
-  display: none; // Only visible on mobile
-}
-
 .sidebar {
   width: var(--sidebar-width);
   flex: 0 0 auto;
   background: var(--color-bg-card);
   border-right: 1px solid var(--color-border);
-  padding: map.get($spacing, '6') map.get($spacing, '4');
+  padding: 0;
   overflow-y: auto;
 
   display: flex;
   flex-direction: column;
-  gap: map.get($spacing, '8');
 
-  // Section styling
+  // Logo section at top
+  .sidebar-header {
+    padding: map.get($spacing, '6') map.get($spacing, '5');
+    border-bottom: 1px solid var(--color-border);
+    background: linear-gradient(135deg, var(--color-bg-panel) 0%, transparent 100%);
+
+    .sidebar-logo {
+      height: 2.5rem;
+      object-fit: contain;
+      display: block;
+    }
+  }
+
+  // User info section
+  .sidebar-user {
+    padding: map.get($spacing, '5') map.get($spacing, '4');
+    border-bottom: 1px solid var(--color-border);
+
+    .sidebar-user-info {
+      display: flex;
+      align-items: center;
+      gap: map.get($spacing, '3');
+      padding: map.get($spacing, '3');
+      background: var(--color-bg-panel);
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+
+      .user-icon {
+        font-size: 1.75rem;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-primary-surface);
+        border-radius: 50%;
+      }
+
+      .user-details {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        line-height: 1.2;
+        flex: 1;
+
+        .user-name {
+          font-weight: 700;
+          font-size: 0.9375rem;
+          color: var(--color-text-primary);
+        }
+
+        .user-role {
+          font-size: 0.75rem;
+          color: var(--color-text-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+          font-weight: 600;
+          padding: 2px 8px;
+          background: var(--color-bg-card);
+          border-radius: 4px;
+          display: inline-block;
+          width: fit-content;
+
+          &.admin {
+            background: var(--color-danger-surface);
+            color: var(--color-danger);
+          }
+          &.educator {
+            background: var(--color-primary-surface);
+            color: var(--color-primary);
+          }
+          &.student {
+            background: var(--color-success-surface);
+            color: var(--color-success);
+          }
+        }
+      }
+    }
+  }
+
+  // Navigation sections (with top padding)
   .nav-section {
+    padding: 0 map.get($spacing, '4');
+
+    &:first-of-type {
+      margin-top: map.get($spacing, '6');
+    }
+
+    &:not(:last-of-type) {
+      margin-bottom: map.get($spacing, '8');
+    }
+
     .nav-header {
       font-size: 0.6875rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--color-text-muted);
+      margin-top: map.get($spacing, '6');
       margin-bottom: map.get($spacing, '3');
       padding-left: map.get($spacing, '2');
       font-weight: 700;
@@ -127,6 +217,46 @@
     color: var(--color-text-muted);
     transition: all 0.2s ease;
   }
+
+  // Logout footer at bottom
+  .sidebar-footer {
+    margin-top: auto;
+    padding: map.get($spacing, '5');
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg-panel);
+
+    .logout-button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: map.get($spacing, '3');
+      padding: 12px 20px;
+      background: transparent;
+      color: var(--color-danger);
+      border: 1.5px solid var(--color-danger);
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: var(--color-danger);
+        color: white;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+
+      .nav-icon {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
 }
 
 .content {
@@ -138,13 +268,54 @@
 }
 
 @include breakpoint-down('md') {
+  // Show minimal mobile header bar
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, '3');
+    height: 48px;
+    padding: 0 map.get($spacing, '4');
+    background: var(--color-bg-card);
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: map.get($z-layers, 'sticky') + 1;
+
+    .menu-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      padding: map.get($spacing, '2');
+      cursor: pointer;
+      color: var(--color-text-primary);
+      border-radius: 6px;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: var(--color-bg-panel);
+      }
+
+      .menu-icon {
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    .mobile-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--color-primary);
+    }
+  }
+
   :host {
     height: 100vh;
     overflow: hidden;
   }
 
   .main-layout {
-    flex-direction: column;
     height: 100%;
     overflow: hidden;
     position: relative;
@@ -152,7 +323,7 @@
 
   .sidebar {
     position: fixed;
-    top: var(--header-height);
+    top: 48px; // Height of mobile header
     left: 0;
     bottom: 0;
     width: min(var(--sidebar-width), 85vw);
@@ -161,148 +332,18 @@
     transition: transform var(--transition-base) var(--ease-smooth);
     border-right: 1px solid var(--color-border);
     border-bottom: none;
-    height: calc(100% - var(--header-height));
+    height: calc(100% - 48px);
     background: var(--color-bg-card);
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
 
     &.open {
       transform: translateX(0);
       box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2);
     }
-
-    .nav-section {
-      padding: 0 map.get($spacing, '4');
-
-      &:first-of-type {
-        margin-top: map.get($spacing, '4');
-      }
-    }
-
-    // Mobile specific sections
-    .sidebar-mobile-header {
-      display: flex;
-      flex-direction: column;
-      gap: map.get($spacing, '5');
-      padding: map.get($spacing, '6') map.get($spacing, '5');
-      border-bottom: 1px solid var(--color-border);
-      background: linear-gradient(135deg, var(--color-bg-panel) 0%, transparent 100%);
-      margin-bottom: map.get($spacing, '2');
-
-      .sidebar-logo {
-        height: 2.5rem;
-        object-fit: contain;
-        align-self: flex-start;
-      }
-
-      .sidebar-user-info {
-        display: flex;
-        align-items: center;
-        gap: map.get($spacing, '3');
-        padding: map.get($spacing, '3');
-        background: var(--color-bg-panel);
-        border-radius: 8px;
-        border: 1px solid var(--color-border);
-
-        .user-icon {
-          font-size: 1.75rem;
-          width: 40px;
-          height: 40px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: var(--color-primary-surface);
-          border-radius: 50%;
-        }
-
-        .user-details {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          line-height: 1.2;
-          flex: 1;
-
-          .user-name {
-            font-weight: 700;
-            font-size: 0.9375rem;
-            color: var(--color-text-primary);
-          }
-
-          .user-role {
-            font-size: 0.75rem;
-            color: var(--color-text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            font-weight: 600;
-            padding: 2px 8px;
-            background: var(--color-bg-card);
-            border-radius: 4px;
-            display: inline-block;
-            width: fit-content;
-
-            &.admin {
-              background: var(--color-danger-surface);
-              color: var(--color-danger);
-            }
-            &.educator {
-              background: var(--color-primary-surface);
-              color: var(--color-primary);
-            }
-            &.student {
-              background: var(--color-success-surface);
-              color: var(--color-success);
-            }
-          }
-        }
-      }
-    }
-
-    .sidebar-mobile-footer {
-      display: block;
-      margin-top: auto;
-      padding: map.get($spacing, '5');
-      border-top: 1px solid var(--color-border);
-      background: var(--color-bg-panel);
-
-      .logout-button {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: map.get($spacing, '3');
-        padding: 12px 20px;
-        background: transparent;
-        color: var(--color-danger);
-        border: 1.5px solid var(--color-danger);
-        border-radius: 8px;
-        font-weight: 700;
-        font-size: 0.875rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-
-        &:hover {
-          background: var(--color-danger);
-          color: white;
-          box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-        }
-
-        &:active {
-          transform: scale(0.98);
-        }
-
-        .nav-icon {
-          width: 20px;
-          height: 20px;
-        }
-      }
-    }
   }
 
   .sidebar-backdrop {
     position: fixed;
-    top: var(--header-height);
+    top: 48px;
     left: 0;
     right: 0;
     bottom: 0;
@@ -321,5 +362,6 @@
 
   .content {
     overflow-y: auto;
+    height: 100%;
   }
 }
