@@ -1,4 +1,4 @@
-@use "sass:map";
+@use 'sass:map';
 @use 'styles/mixins' as *;
 @use 'styles/variables' as *;
 
@@ -34,24 +34,24 @@
 .sidebar {
   width: var(--sidebar-width);
   flex: 0 0 auto;
-  background: var(--color-bg-panel); /* Slightly different from main content */
+  background: var(--color-bg-card);
   border-right: 1px solid var(--color-border);
   padding: map.get($spacing, '6') map.get($spacing, '4');
   overflow-y: auto;
-  
+
   display: flex;
   flex-direction: column;
-  gap: map.get($spacing, '8'); // More space between sections
+  gap: map.get($spacing, '8');
 
   // Section styling
   .nav-section {
     .nav-header {
-      font-size: 0.7rem; 
+      font-size: 0.6875rem;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       color: var(--color-text-muted);
-      margin-bottom: map.get($spacing, '4');
-      padding-left: map.get($spacing, '4');
+      margin-bottom: map.get($spacing, '3');
+      padding-left: map.get($spacing, '2');
       font-weight: 700;
     }
   }
@@ -62,54 +62,70 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: map.get($spacing, '2');
+    gap: map.get($spacing, '1');
   }
 
   nav li a {
     @include transition(all);
     display: flex;
-    align-items: flex-start; /* Icon stays at top if text wraps */
+    align-items: center;
     gap: map.get($spacing, '3');
-    padding: map.get($spacing, '3') map.get($spacing, '4');
-    border-radius: 0; /* Sharp corners as requested */
+    padding: 11px 14px;
+    border-radius: 8px;
     text-decoration: none;
     color: var(--color-text-secondary);
     font-weight: 600;
-    background: var(--color-bg-card);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
-    
+    font-size: 0.875rem;
+    background: transparent;
+    border: 1px solid transparent;
+    position: relative;
+
     .text {
-      line-height: 1.4;
-      padding-top: 1px; /* Align with icon top */
+      line-height: 1.3;
     }
 
     &:hover {
-      border-color: var(--color-primary);
-      color: var(--color-primary);
-      transform: translateX(4px); /* Slide effect instead of lift */
-      box-shadow: var(--shadow-md);
+      background: var(--color-bg-panel);
+      color: var(--color-text-primary);
+      border-color: var(--color-border);
+
+      .nav-icon {
+        color: var(--color-primary);
+        transform: scale(1.1);
+      }
     }
 
     &.active {
       background: var(--color-primary);
-      color: var(--color-text-on-primary);
+      color: white;
       border-color: var(--color-primary);
-      box-shadow: var(--shadow-md);
-      transform: translateX(4px); /* Keep it pushed in when active */
+      box-shadow: 0 2px 8px rgba(145, 54, 203, 0.3);
 
       .nav-icon {
-        color: inherit;
+        color: white;
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: -16px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 24px;
+        background: var(--color-primary);
+        border-radius: 0 4px 4px 0;
       }
     }
   }
 
   // Icon styling
   .nav-icon {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     flex-shrink: 0;
     color: var(--color-text-muted);
+    transition: all 0.2s ease;
   }
 }
 
@@ -146,12 +162,12 @@
     border-right: 1px solid var(--color-border);
     border-bottom: none;
     height: calc(100% - var(--header-height));
-    background: var(--color-bg-panel);
+    background: var(--color-bg-card);
     padding: 0;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    
+
     &.open {
       transform: translateX(0);
       box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2);
@@ -159,17 +175,21 @@
 
     .nav-section {
       padding: 0 map.get($spacing, '4');
+
+      &:first-of-type {
+        margin-top: map.get($spacing, '4');
+      }
     }
 
     // Mobile specific sections
     .sidebar-mobile-header {
       display: flex;
       flex-direction: column;
-      gap: map.get($spacing, '6');
-      padding: map.get($spacing, '6') map.get($spacing, '4');
+      gap: map.get($spacing, '5');
+      padding: map.get($spacing, '6') map.get($spacing, '5');
       border-bottom: 1px solid var(--color-border);
-      background: var(--color-bg-card);
-      margin-bottom: map.get($spacing, '4');
+      background: linear-gradient(135deg, var(--color-bg-panel) 0%, transparent 100%);
+      margin-bottom: map.get($spacing, '2');
 
       .sidebar-logo {
         height: 2.5rem;
@@ -181,31 +201,59 @@
         display: flex;
         align-items: center;
         gap: map.get($spacing, '3');
-        
+        padding: map.get($spacing, '3');
+        background: var(--color-bg-panel);
+        border-radius: 8px;
+        border: 1px solid var(--color-border);
+
         .user-icon {
-          font-size: 1.5rem;
+          font-size: 1.75rem;
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--color-primary-surface);
+          border-radius: 50%;
         }
 
         .user-details {
           display: flex;
           flex-direction: column;
+          gap: 2px;
           line-height: 1.2;
+          flex: 1;
 
           .user-name {
             font-weight: 700;
-            font-size: var(--font-sm);
+            font-size: 0.9375rem;
             color: var(--color-text-primary);
           }
 
           .user-role {
-            font-size: var(--font-xs);
+            font-size: 0.75rem;
             color: var(--color-text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            
-            &.admin { color: var(--color-danger); }
-            &.educator { color: var(--color-primary); }
-            &.student { color: var(--color-success); }
+            letter-spacing: 0.03em;
+            font-weight: 600;
+            padding: 2px 8px;
+            background: var(--color-bg-card);
+            border-radius: 4px;
+            display: inline-block;
+            width: fit-content;
+
+            &.admin {
+              background: var(--color-danger-surface);
+              color: var(--color-danger);
+            }
+            &.educator {
+              background: var(--color-primary-surface);
+              color: var(--color-primary);
+            }
+            &.student {
+              background: var(--color-success-surface);
+              color: var(--color-success);
+            }
           }
         }
       }
@@ -214,26 +262,34 @@
     .sidebar-mobile-footer {
       display: block;
       margin-top: auto;
-      padding: map.get($spacing, '6') map.get($spacing, '4');
+      padding: map.get($spacing, '5');
       border-top: 1px solid var(--color-border);
+      background: var(--color-bg-panel);
 
       .logout-button {
         width: 100%;
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: map.get($spacing, '3');
-        padding: map.get($spacing, '3') map.get($spacing, '4');
-        background: var(--color-danger-surface);
+        padding: 12px 20px;
+        background: transparent;
         color: var(--color-danger);
-        border: 1px solid var(--color-danger);
-        border-radius: var(--radius-md);
+        border: 1.5px solid var(--color-danger);
+        border-radius: 8px;
         font-weight: 700;
+        font-size: 0.875rem;
         cursor: pointer;
-        transition: all var(--transition-fast);
+        transition: all 0.2s ease;
 
         &:hover {
           background: var(--color-danger);
           color: white;
+          box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+
+        &:active {
+          transform: scale(0.98);
         }
 
         .nav-icon {
