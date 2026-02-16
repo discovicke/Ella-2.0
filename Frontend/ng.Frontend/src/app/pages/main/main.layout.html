@@ -1,0 +1,54 @@
+<app-header />
+
+<div class="main-layout">
+  <aside class="sidebar">
+    
+    <!-- Section: My Zone -->
+    <div class="nav-section">
+      <h3 class="nav-header">Min Zon</h3>
+      <nav>
+        <ul>
+          <li>
+            <a routerLink="/my-bookings" routerLinkActive="active">
+              <span class="text">Mina Bokningar</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Section: Administration -->
+    <div class="nav-section">
+      <h3 class="nav-header">Administration</h3>
+      <nav>
+        <ul>
+          <li>
+            <a routerLink="/system-overview" routerLinkActive="active">
+              <span class="text">Systemöversikt</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/manage-users" routerLinkActive="active">
+              <span class="text">Användare</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/manage-rooms" routerLinkActive="active">
+              <span class="text">Rum</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/manage-bookings" routerLinkActive="active">
+              <span class="text">Alla Bokningar</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+  </aside>
+
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>

@@ -3,10 +3,10 @@ import { RouterOutlet, RouterLink } from '@angular/router';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 
 @Component({
-  selector: 'app-administrator-layout',
+  selector: 'app-main-layout',
   imports: [RouterOutlet, RouterLink, HeaderComponent],
-  templateUrl: './administrator.layout.html',
-  styleUrl: './administrator.layout.scss',
+  templateUrl: './main.layout.html',
+  styleUrl: './main.layout.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdministratorLayout {}
+export class MainLayout {}

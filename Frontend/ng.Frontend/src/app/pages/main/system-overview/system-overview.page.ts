@@ -1,23 +1,12 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-
-  selector: 'app-overview-page',
-
+  selector: 'app-system-overview-page',
   imports: [],
-
-  templateUrl: './overview.page.html',
-
-  styleUrl: './overview.page.scss',
-
+  templateUrl: './system-overview.page.html',
+  styleUrl: './system-overview.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-
 })
-
-export class OverviewPage {
-
+export class SystemOverviewPage {
   // TODO: Implementera overview-sidan i admin med statistik och sammanfattning
-
 }
-
-

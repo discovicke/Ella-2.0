@@ -10,14 +10,14 @@ import { SessionService } from '../../../core/session.service';
 import { BookingDetailedReadModel, BookingStatus, RoomResponseDto } from '../../../models/models';
 
 @Component({
-  selector: 'app-student-dashboard-page',
+  selector: 'app-my-bookings-page',
   standalone: true,
   imports: [DatePipe, ButtonComponent, PanelComponent, CardComponent],
-  templateUrl: './student-dashboard.page.html',
-  styleUrl: './student-dashboard.page.scss',
+  templateUrl: './my-bookings.page.html',
+  styleUrl: './my-bookings.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class StudentDashboardPage {
+export class MyBookingsPage {
   private readonly roomService = inject(RoomService);
   private readonly bookingService = inject(BookingService);
   private readonly sessionService = inject(SessionService);

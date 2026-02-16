@@ -1,0 +1,120 @@
+@use "sass:map";
+@use 'styles/mixins' as *;
+@use 'styles/variables' as *;
+
+/* 
+  FIX: Layout filling viewport correctly without manual calc() 
+*/
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main-layout {
+  display: flex;
+  flex: 1; /* Take all remaining space below header */
+  min-height: 0; /* Important for nested scrolling */
+  background: var(--color-bg-body);
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 250px;
+  flex: 0 0 auto;
+  background: var(--color-bg-card);
+  border-right: 1px solid var(--color-border);
+  padding: map.get($spacing, '6');
+  overflow-y: auto;
+  
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, '6'); // Gap between sections
+
+  // Section styling
+  .nav-section {
+    .nav-header {
+      // Small uppercase label style
+      font-size: 0.75rem; 
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-tertiary, var(--color-text-secondary)); // Fallback if tertiary missing
+      opacity: 0.8;
+      margin-bottom: map.get($spacing, '3');
+      padding-left: map.get($spacing, '4');
+      font-weight: 600;
+    }
+  }
+
+  nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, '1'); // Small gap between links
+  }
+
+  nav li a {
+    @include transition(all);
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, '3'); // Space between icon and text (if icon added later)
+    padding: map.get($spacing, '2') map.get($spacing, '4');
+    border-radius: map.get($radii, 'md');
+    text-decoration: none;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    
+    // No .icon style needed for plain text
+
+    &:hover {
+      background: var(--color-bg-panel);
+      color: var(--color-primary); // Use primary color on hover
+    }
+
+    &.active {
+      background: var(--color-primary-surface); // Subtle highlight
+      color: var(--color-primary);
+      font-weight: 600; // Bold text for active
+      
+      // Optional: Left border accent
+      // border-left: 3px solid var(--color-primary); 
+    }
+  }
+}
+
+.content {
+  flex: 1;
+  padding: map.get($spacing, '8');
+  overflow: hidden; /* Pass scrolling to children if needed */
+  display: flex;
+  flex-direction: column;
+}
+
+@include breakpoint-down('md') {
+  :host {
+    height: auto;
+    overflow: auto;
+  }
+
+  .main-layout {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    height: auto;
+    overflow: visible;
+    padding: map.get($spacing, '4');
+    gap: map.get($spacing, '4');
+
+    // Mobile: Maybe grid or simpler list?
+    // Keep it flex column for now.
+  }
+}

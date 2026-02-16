@@ -1,6 +1,5 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { UserRole } from '../../models/models';
 import { SessionService } from '../session.service';
 
 export const authGuard: CanActivateFn = (route, state) => {
@@ -20,15 +19,8 @@ export const authGuard: CanActivateFn = (route, state) => {
     return router.createUrlTree(['/banned']);
   }
 
-  // Check for required roles
-  const requiredRoles = route.data['roles'] as UserRole[];
-  if (requiredRoles && requiredRoles.length > 0) {
-    if (!sessionService.hasRole(requiredRoles)) {
-      console.log('AuthGuard: forbidden, missing required roles');
-      // User is logged in but doesn't have the right role
-      return router.createUrlTree(['/forbidden']);
-    }
-  }
+  // Role checks are removed as per new permission-based architecture plan.
+  // Access is granted if authenticated.
 
   console.log('AuthGuard: access granted');
   return true;
