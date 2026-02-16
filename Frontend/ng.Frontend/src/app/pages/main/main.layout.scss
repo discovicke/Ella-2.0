@@ -9,6 +9,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh; /* Use dynamic viewport height if supported */
   overflow: hidden;
 }
 
@@ -18,6 +19,16 @@
   min-height: 0; /* Important for nested scrolling */
   background: var(--color-bg-body);
   overflow: hidden;
+  position: relative;
+}
+
+.sidebar-backdrop {
+  display: none; // Only used on mobile
+}
+
+.sidebar-mobile-header,
+.sidebar-mobile-footer {
+  display: none; // Only visible on mobile
 }
 
 .sidebar {
@@ -112,26 +123,147 @@
 
 @include breakpoint-down('md') {
   :host {
-    height: auto;
-    overflow: auto;
+    height: 100vh;
+    overflow: hidden;
   }
 
   .main-layout {
     flex-direction: column;
-    height: auto;
-    overflow: visible;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
   }
 
   .sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid var(--color-border);
-    height: auto;
-    overflow: visible;
-    padding: map.get($spacing, '4');
-    gap: map.get($spacing, '4');
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    bottom: 0;
+    width: min(var(--sidebar-width), 85vw);
+    z-index: map.get($z-layers, 'sticky');
+    transform: translateX(-100%);
+    transition: transform var(--transition-base) var(--ease-smooth);
+    border-right: 1px solid var(--color-border);
+    border-bottom: none;
+    height: calc(100% - var(--header-height));
+    background: var(--color-bg-panel);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    
+    &.open {
+      transform: translateX(0);
+      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2);
+    }
 
-    // Mobile: Maybe grid or simpler list?
-    // Keep it flex column for now.
+    .nav-section {
+      padding: 0 map.get($spacing, '4');
+    }
+
+    // Mobile specific sections
+    .sidebar-mobile-header {
+      display: flex;
+      flex-direction: column;
+      gap: map.get($spacing, '6');
+      padding: map.get($spacing, '6') map.get($spacing, '4');
+      border-bottom: 1px solid var(--color-border);
+      background: var(--color-bg-card);
+      margin-bottom: map.get($spacing, '4');
+
+      .sidebar-logo {
+        height: 2.5rem;
+        object-fit: contain;
+        align-self: flex-start;
+      }
+
+      .sidebar-user-info {
+        display: flex;
+        align-items: center;
+        gap: map.get($spacing, '3');
+        
+        .user-icon {
+          font-size: 1.5rem;
+        }
+
+        .user-details {
+          display: flex;
+          flex-direction: column;
+          line-height: 1.2;
+
+          .user-name {
+            font-weight: 700;
+            font-size: var(--font-sm);
+            color: var(--color-text-primary);
+          }
+
+          .user-role {
+            font-size: var(--font-xs);
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            
+            &.admin { color: var(--color-danger); }
+            &.educator { color: var(--color-primary); }
+            &.student { color: var(--color-success); }
+          }
+        }
+      }
+    }
+
+    .sidebar-mobile-footer {
+      display: block;
+      margin-top: auto;
+      padding: map.get($spacing, '6') map.get($spacing, '4');
+      border-top: 1px solid var(--color-border);
+
+      .logout-button {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: map.get($spacing, '3');
+        padding: map.get($spacing, '3') map.get($spacing, '4');
+        background: var(--color-danger-surface);
+        color: var(--color-danger);
+        border: 1px solid var(--color-danger);
+        border-radius: var(--radius-md);
+        font-weight: 700;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+
+        &:hover {
+          background: var(--color-danger);
+          color: white;
+        }
+
+        .nav-icon {
+          width: 20px;
+          height: 20px;
+        }
+      }
+    }
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: map.get($z-layers, 'sticky') - 1;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-base) var(--ease-smooth);
+
+    &.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  .content {
+    overflow-y: auto;
   }
 }

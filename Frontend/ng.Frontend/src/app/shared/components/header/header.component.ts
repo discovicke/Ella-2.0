@@ -3,6 +3,7 @@ import { ButtonComponent } from '../button/button.component';
 import { SessionService } from '../../../core/session.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { CommonModule } from '@angular/common';
+import { LayoutService } from '../../services/layout.service';
 
 @Component({
   selector: 'app-header',
@@ -14,6 +15,7 @@ import { CommonModule } from '@angular/common';
 })
 export class HeaderComponent {
   public readonly sessionService = inject(SessionService);
+  public readonly layoutService = inject(LayoutService);
   private readonly authService = inject(AuthService);
 
   async logout() {
