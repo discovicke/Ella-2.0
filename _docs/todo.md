@@ -18,6 +18,13 @@
     - Borde endast krävas vid ett lösenordsbyte
     - Det borde inte skötas av en admin
         - Egen "återställ lösenord"-funktion?
+### Databas
+- Se över databasmodeller och relationer
+    - [ ] Separat `Address`-tabell kopplad till `Rooms`.
+    - [ ] `Class`-tabell kopplad till `Users`.
+      - Separera klasser över städer.
+    - [ ] Två olika typer av `Booking` - privat eller lektion.
+    - [ ] Lägga till Notes i `RoomAssets`-bryggan.
 
 ### Data & Internationalisering
 - [ ] Säkerställ att översättningar från databasen används korrekt
@@ -42,6 +49,9 @@
 ### Närvaro-flöde
 - [ ] Backend: Exponera klassens bokningar med registrations per användare
 - [ ] Frontend: Mappa bokning → registration-status för inloggad elev
+
+### Formuläret
+* [ ] Se över registrering i databas för det fristående formuläret
 
 ## Frontend
 
