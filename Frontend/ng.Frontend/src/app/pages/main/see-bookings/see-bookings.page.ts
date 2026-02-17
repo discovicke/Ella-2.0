@@ -198,7 +198,7 @@ export class SeeBookingsPage {
 
     const confirmed = await this.confirmService.show('Vill du avboka bokningen?', {
       title: 'Avboka bokning',
-      icon: '🗓️',
+      icon: 'warning' as const,
       confirmText: 'Avboka',
       cancelText: 'Behåll',
       dangerConfirm: true,

@@ -1,10 +1,12 @@
 import { Injectable, signal } from '@angular/core';
 
+export type ConfirmIcon = 'warning' | 'question' | 'info';
+
 export interface ConfirmOptions {
   title?: string;
   confirmText?: string;
   cancelText?: string;
-  icon?: string;
+  icon?: ConfirmIcon;
   dangerConfirm?: boolean;
 }
 
@@ -18,7 +20,7 @@ export class ConfirmService {
   readonly title = signal('Bekräfta');
   readonly confirmText = signal('Ja');
   readonly cancelText = signal('Avbryt');
-  readonly icon = signal('⚠️');
+  readonly icon = signal<ConfirmIcon>('warning');
   readonly dangerConfirm = signal(true);
 
   private resolveRef: ((value: boolean) => void) | null = null;
@@ -31,7 +33,7 @@ export class ConfirmService {
     this.title.set(options.title ?? 'Bekräfta');
     this.confirmText.set(options.confirmText ?? 'Ja');
     this.cancelText.set(options.cancelText ?? 'Avbryt');
-    this.icon.set(options.icon ?? '⚠️');
+    this.icon.set(options.icon ?? 'warning');
     this.dangerConfirm.set(options.dangerConfirm ?? true);
     this.isOpen.set(true);
     document.body.style.overflow = 'hidden';
@@ -65,7 +67,7 @@ export class ConfirmService {
   danger(message: string, title = 'Varning'): Promise<boolean> {
     return this.show(message, {
       title,
-      icon: '⚠️',
+      icon: 'warning',
       confirmText: 'Ta bort',
       cancelText: 'Avbryt',
       dangerConfirm: true,
@@ -76,7 +78,7 @@ export class ConfirmService {
   standard(message: string, title = 'Bekräfta'): Promise<boolean> {
     return this.show(message, {
       title,
-      icon: '❓',
+      icon: 'question',
       confirmText: 'Ja',
       cancelText: 'Nej',
       dangerConfirm: false,

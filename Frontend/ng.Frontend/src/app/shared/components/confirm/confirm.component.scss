@@ -75,10 +75,19 @@
 }
 
 .confirm-icon {
-  font-size: 22px;
-  line-height: 1;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
 }
+
+.confirm-icon-warning svg { color: var(--color-warning); }
+.confirm-icon-question svg,
+.confirm-icon-info svg { color: var(--color-primary); }
 
 .confirm-title {
   margin: 0;
