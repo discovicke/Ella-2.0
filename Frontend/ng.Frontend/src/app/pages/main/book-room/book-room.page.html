@@ -1,8 +1,8 @@
 <div class="page-container">
   <div class="page-content">
     <!-- Filter Panel -->
-    <div class="filter-panel">
-      <div class="filter-header">
+    <div class="filter-panel" [class.collapsed]="!filtersOpen()">
+      <div class="filter-header" (click)="toggleFilters()">
         <div class="header-left">
           <svg
             class="header-icon"
@@ -15,7 +15,7 @@
           </svg>
           <h2>Sök & Filtrera</h2>
         </div>
-        <div class="header-right">
+        <div class="header-right" (click)="$event.stopPropagation()">
           @if (hasActiveFilters()) {
             <span class="result-count"
               >Visar {{ filteredRooms().length }} av {{ totalRooms() }} rum</span

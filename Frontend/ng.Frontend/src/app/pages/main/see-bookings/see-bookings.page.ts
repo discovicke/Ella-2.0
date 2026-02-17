@@ -6,7 +6,7 @@ import {
   resource,
   signal,
 } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, TitleCasePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { BookingService } from '../../../shared/services/booking.service';
@@ -22,7 +22,7 @@ interface BookingGroup {
 @Component({
   selector: 'app-see-bookings-page',
   standalone: true,
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, TitleCasePipe, RouterLink],
   templateUrl: './see-bookings.page.html',
   styleUrl: './see-bookings.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

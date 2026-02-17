@@ -50,6 +50,7 @@ export class ManageUsersPage implements OnInit {
   selectedRole = signal<UserRole | 'All'>('All');
   selectedStatus = signal<BannedStatus | 'All'>('All');
   searchClass = signal('');
+  filtersOpen = signal(typeof window !== 'undefined' ? window.innerWidth > 768 : true);
 
   readonly userRoles = Object.values(UserRole);
 
@@ -152,6 +153,10 @@ export class ManageUsersPage implements OnInit {
     this.selectedStatus.set('All');
     this.searchClass.set('');
     this.pageIndex.set(0);
+  }
+
+  toggleFilters() {
+    this.filtersOpen.update((v) => !v);
   }
 
   openAddUserModal() {

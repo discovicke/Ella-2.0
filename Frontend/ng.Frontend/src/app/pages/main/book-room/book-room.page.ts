@@ -28,6 +28,7 @@ export class BookRoomPage {
   searchQuery = signal('');
   selectedType = signal<RoomType | 'All'>('All');
   minCapacity = signal<number>(0);
+  filtersOpen = signal(typeof window !== 'undefined' ? window.innerWidth > 768 : true);
 
   // --- RESOURCES ---
 
@@ -86,5 +87,9 @@ export class BookRoomPage {
     this.searchQuery.set('');
     this.selectedType.set('All');
     this.minCapacity.set(0);
+  }
+
+  toggleFilters() {
+    this.filtersOpen.update((v) => !v);
   }
 }

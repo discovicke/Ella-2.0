@@ -89,7 +89,9 @@
                           <span class="separator">—</span>
                           <strong>{{ booking.endTime | date: 'HH:mm' }}</strong>
                         </div>
-                        <div class="weekday">{{ booking.startTime | date: 'EEEE' }}</div>
+                        <div class="weekday">
+                          {{ booking.startTime | date: 'EEEE' | titlecase }}
+                        </div>
                       </div>
                     </div>
 

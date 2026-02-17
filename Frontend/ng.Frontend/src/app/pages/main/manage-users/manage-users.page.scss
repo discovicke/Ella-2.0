@@ -17,34 +17,7 @@
   @media (max-width: 768px) {
     padding: 16px;
     gap: 16px;
-  }
-}
-
-.page-header {
-  @include flex-between;
-  @include gap('4');
-  flex: 0 0 auto;
-  margin: 0;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-
-  h1 {
-    @include heading(1);
-    margin: 0;
-
-    @media (max-width: 768px) {
-      font-size: 1.5rem;
-    }
-  }
-
-  app-button {
-    @media (max-width: 768px) {
-      width: 100%;
-    }
+    overflow-y: auto;
   }
 }
 
@@ -71,10 +44,15 @@
   border-radius: 12px;
   box-shadow: var(--shadow-sm);
   overflow: hidden;
-  transition: box-shadow 0.2s ease;
 
-  &:hover {
-    box-shadow: var(--shadow-md);
+  @media (max-width: 768px) {
+    &.collapsed .filter-body {
+      display: none;
+    }
+
+    &.collapsed .header-icon {
+      transform: rotate(-90deg);
+    }
   }
 }
 
@@ -86,9 +64,21 @@
   gap: 12px;
 
   @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+
+    &:hover {
+      background: var(--color-bg-panel);
+    }
+
+    &:active {
+      background: var(--color-primary-surface);
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-wrap: nowrap;
     padding: 12px 16px;
   }
 
@@ -102,6 +92,7 @@
       height: 20px;
       stroke: var(--color-primary);
       flex-shrink: 0;
+      transition: transform 0.25s ease;
     }
 
     h2 {
@@ -123,45 +114,99 @@
     }
   }
 
-  .result-count {
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-    font-weight: 500;
-    padding: 6px 12px;
-    background: var(--color-bg-panel);
-    border-radius: 6px;
-    white-space: nowrap;
+  .btn-filter-toggle {
+    display: none;
+  }
+}
+
+// Desktop: show inline create button, hide FAB
+.create-btn-desktop {
+  display: inline-flex;
+}
+
+.fab-create {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .create-btn-desktop {
+    display: none !important;
   }
 
-  .btn-reset {
+  .fab-create {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--color-text-secondary);
-    background: transparent;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
+    justify-content: center;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 100;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: var(--color-text-on-primary);
+    border: none;
     cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     transition: all 0.2s ease;
 
     svg {
-      width: 16px;
-      height: 16px;
+      width: 24px;
+      height: 24px;
       stroke: currentColor;
     }
 
     &:hover {
-      color: var(--color-primary);
-      border-color: var(--color-primary);
-      background: var(--color-primary-surface);
+      background: var(--color-primary-hover);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+      transform: scale(1.06);
     }
 
     &:active {
-      transform: scale(0.98);
+      transform: scale(0.95);
     }
+  }
+}
+
+.result-count {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  padding: 6px 12px;
+  background: var(--color-bg-panel);
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.btn-reset {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+  }
+
+  &:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    background: var(--color-primary-surface);
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 }
 
@@ -258,11 +303,14 @@
   }
 
   @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
-    > * {
-      flex: none;
-      min-width: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: 10px;
+
+    // Kurs/Klass spans full width
+    > *:last-child {
+      grid-column: 1 / -1;
     }
   }
 }
