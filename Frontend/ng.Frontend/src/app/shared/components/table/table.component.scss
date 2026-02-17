@@ -96,18 +96,6 @@
   animation: pulse 1.5s infinite ease-in-out;
 }
 
-@keyframes pulse {
-  0% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 0.3;
-  }
-  100% {
-    opacity: 0.6;
-  }
-}
-
 /* Pagination Footer */
 .table-footer {
   margin-top: auto;

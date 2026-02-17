@@ -10,8 +10,7 @@
 // ├── _mixins.scss      → Reusable SCSS mixins
 // ├── _animations.scss  → Keyframes & animation utilities
 // ├── _base.scss        → Reset & base element styles
-// ├── _components.scss  → Pre-built component classes
-// └── _utilities.scss   → Atomic utility classes
+// └── _components.scss  → Minimal shared component classes
 //
 // 💡 USAGE IN COMPONENTS:
 // For component-specific styles that need mixins/variables:
@@ -27,9 +26,5 @@
 // 3. Animations (keyframes & animation utilities)
 @use 'styles/animations';
 
-// 4. Pre-built component classes
+// 4. Minimal shared component classes
 @use 'styles/components';
-
-// 5. Utility classes (spacing, flexbox, etc.)
-@use 'styles/utilities';
-
