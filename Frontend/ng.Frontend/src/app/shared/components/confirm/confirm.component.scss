@@ -85,9 +85,13 @@
   }
 }
 
-.confirm-icon-warning svg { color: var(--color-warning); }
+.confirm-icon-warning svg {
+  color: var(--color-warning);
+}
 .confirm-icon-question svg,
-.confirm-icon-info svg { color: var(--color-primary); }
+.confirm-icon-info svg {
+  color: var(--color-primary);
+}
 
 .confirm-title {
   margin: 0;
