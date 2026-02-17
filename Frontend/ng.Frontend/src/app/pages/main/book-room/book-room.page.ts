@@ -52,6 +52,12 @@ export class BookRoomPage {
     });
   });
 
+  totalRooms = computed(() => this.roomsResource.value()?.length ?? 0);
+
+  hasActiveFilters = computed(
+    () => this.searchQuery() !== '' || this.selectedType() !== 'All' || this.minCapacity() > 0,
+  );
+
   readonly roomTypes = Object.values(RoomType);
 
   // --- ACTIONS ---
@@ -74,5 +80,11 @@ export class BookRoomPage {
 
   updateCapacity(event: Event) {
     this.minCapacity.set(Number((event.target as HTMLInputElement).value));
+  }
+
+  resetFilters() {
+    this.searchQuery.set('');
+    this.selectedType.set('All');
+    this.minCapacity.set(0);
   }
 }

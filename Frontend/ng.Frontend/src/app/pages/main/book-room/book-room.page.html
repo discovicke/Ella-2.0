@@ -1,37 +1,88 @@
 <div class="page-container">
   <div class="page-content">
-    <!-- Filter Bar -->
-    <div class="filter-bar">
-      <div class="search-field">
-        <svg
-          class="field-icon"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.35-4.35" />
-        </svg>
-        <input
-          type="text"
-          placeholder="Sök på rum eller plats..."
-          (input)="updateSearch($event)"
-          [value]="searchQuery()"
-        />
+    <!-- Filter Panel -->
+    <div class="filter-panel">
+      <div class="filter-header">
+        <div class="header-left">
+          <svg
+            class="header-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+          </svg>
+          <h2>Sök & Filtrera</h2>
+        </div>
+        <div class="header-right">
+          @if (hasActiveFilters()) {
+            <span class="result-count"
+              >Visar {{ filteredRooms().length }} av {{ totalRooms() }} rum</span
+            >
+            <button class="btn-reset" (click)="resetFilters()" title="Rensa alla filter">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="1 4 1 10 7 10" />
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+              </svg>
+              Rensa
+            </button>
+          }
+        </div>
       </div>
 
-      <div class="filters">
-        <select (change)="updateType($event)" [value]="selectedType()">
-          <option value="All">Alla rumstyper</option>
-          @for (type of roomTypes; track type) {
-            <option [value]="type">{{ type }}</option>
-          }
-        </select>
+      <div class="filter-body">
+        <div class="search-field">
+          <label class="filter-label">Sök</label>
+          <div class="search-input">
+            <svg
+              class="field-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Sök på rum eller plats..."
+              (input)="updateSearch($event)"
+              [value]="searchQuery()"
+            />
+          </div>
+        </div>
 
-        <div class="capacity-filter">
-          <label>Min. platser</label>
-          <input type="number" min="0" [value]="minCapacity()" (input)="updateCapacity($event)" />
+        <div class="filters-group">
+          <div class="filter-item">
+            <label class="filter-label">Rumstyp</label>
+            <select (change)="updateType($event)" [value]="selectedType()">
+              <option value="All">Alla</option>
+              @for (type of roomTypes; track type) {
+                <option [value]="type">{{ type }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="filter-item">
+            <label class="filter-label">Min. kapacitet</label>
+            <div class="capacity-input">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              <input
+                type="number"
+                min="0"
+                placeholder="0"
+                [value]="minCapacity()"
+                (input)="updateCapacity($event)"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
