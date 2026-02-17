@@ -12,6 +12,7 @@ import { firstValueFrom } from 'rxjs';
 import { BookingService } from '../../../shared/services/booking.service';
 import { SessionService } from '../../../core/session.service';
 import { BookingDetailedReadModel, BookingStatus } from '../../../models/models';
+import { ConfirmService } from '../../../shared/services/confirm.service';
 
 interface BookingGroup {
   label: string;
@@ -28,6 +29,7 @@ interface BookingGroup {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeeBookingsPage {
+  private readonly confirmService = inject(ConfirmService);
   private readonly bookingService = inject(BookingService);
   private readonly sessionService = inject(SessionService);
 
@@ -194,7 +196,14 @@ export class SeeBookingsPage {
   async onCancelBooking(booking: BookingDetailedReadModel) {
     if (!booking.bookingId) return;
 
-    if (!confirm('Vill du avboka bokningen?')) return;
+    const confirmed = await this.confirmService.show('Vill du avboka bokningen?', {
+      title: 'Avboka bokning',
+      icon: '🗓️',
+      confirmText: 'Avboka',
+      cancelText: 'Behåll',
+      dangerConfirm: true,
+    });
+    if (!confirmed) return;
 
     try {
       await firstValueFrom(this.bookingService.cancelBooking(booking.bookingId));

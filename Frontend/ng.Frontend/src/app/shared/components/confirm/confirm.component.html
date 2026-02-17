@@ -1,0 +1,38 @@
+@if (confirmService.isOpen()) {
+  <div
+    class="confirm-backdrop"
+    [class.open]="confirmService.isOpen()"
+    (click)="onBackdropClick($event)"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="confirmService.title()"
+  >
+    <div class="confirm-content" [attr.data-shake]="shakeCounter()">
+      <div class="confirm-header">
+        <span class="confirm-icon" aria-hidden="true">{{ confirmService.icon() }}</span>
+        <h3 class="confirm-title">{{ confirmService.title() }}</h3>
+      </div>
+
+      <p class="confirm-message">{{ confirmService.message() }}</p>
+
+      <div class="confirm-actions">
+        <button
+          class="confirm-btn confirm-btn-cancel"
+          (click)="confirmService.cancel()"
+          type="button"
+        >
+          {{ confirmService.cancelText() }}
+        </button>
+        <button
+          class="confirm-btn"
+          [class.confirm-btn-danger]="confirmService.dangerConfirm()"
+          [class.confirm-btn-primary]="!confirmService.dangerConfirm()"
+          (click)="confirmService.confirm()"
+          type="button"
+        >
+          {{ confirmService.confirmText() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

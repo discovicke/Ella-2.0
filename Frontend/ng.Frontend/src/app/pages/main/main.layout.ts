@@ -4,6 +4,7 @@ import { LayoutService } from '../../shared/services/layout.service';
 import { CommonModule } from '@angular/common';
 import { SessionService } from '../../core/session.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { ConfirmService } from '../../shared/services/confirm.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -16,6 +17,7 @@ export class MainLayout {
   public readonly layoutService = inject(LayoutService);
   public readonly sessionService = inject(SessionService);
   private readonly authService = inject(AuthService);
+  private readonly confirmService = inject(ConfirmService);
 
   getInitials(name: string): string {
     if (!name) return '?';
@@ -27,6 +29,8 @@ export class MainLayout {
   }
 
   async logout() {
+    const confirmed = await this.confirmService.standard('Vill du logga ut?', 'Logga ut');
+    if (!confirmed) return;
     this.layoutService.closeSidebar();
     await this.authService.logout();
   }
