@@ -1,10 +1,26 @@
-import { ChangeDetectionStrategy, Component, inject, resource, ViewChild, TemplateRef, OnInit, signal, computed } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  resource,
+  ViewChild,
+  TemplateRef,
+  OnInit,
+  signal,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { firstValueFrom } from 'rxjs';
 import { UserService } from '../../../shared/services/user.service';
-import { CreateUserDto, UpdateUserDto, UserResponseDto } from '../../../models/models';
+import {
+  BannedStatus,
+  CreateUserDto,
+  UpdateUserDto,
+  UserResponseDto,
+  UserRole,
+} from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { UserFormModalComponent } from './user-form-modal.component';
 import { TableComponent, TableColumn } from '../../../shared/components/table/table.component';
@@ -29,24 +45,60 @@ export class ManageUsersPage implements OnInit {
 
   columns: TableColumn<UserResponseDto>[] = [];
 
+  // --- FILTER STATE ---
+  searchQuery = signal('');
+  selectedRole = signal<UserRole | 'All'>('All');
+  selectedStatus = signal<BannedStatus | 'All'>('All');
+  searchClass = signal('');
+
+  readonly userRoles = Object.values(UserRole);
+
   // Pagination state
   pageIndex = signal(0);
   pageSize = 10;
 
   // Resource för användarlistan
   userResource = resource({
-    loader: () => firstValueFrom(this.userService.getAllUsers())
+    loader: () => firstValueFrom(this.userService.getAllUsers()),
   });
 
-  // Computed values for pagination
-  totalUsers = computed(() => this.userResource.value()?.length ?? 0);
-  
+  // --- COMPUTED ---
+  filteredUsers = computed(() => {
+    const all = this.userResource.value() ?? [];
+    const query = this.searchQuery().toLowerCase();
+    const role = this.selectedRole();
+    const status = this.selectedStatus();
+    const classQuery = this.searchClass().toLowerCase();
+
+    return all.filter((u) => {
+      const matchesSearch =
+        !query ||
+        u.displayName?.toLowerCase().includes(query) ||
+        u.email?.toLowerCase().includes(query);
+      const matchesRole = role === 'All' || u.role === role;
+      const matchesStatus = status === 'All' || u.isBanned === status;
+      const matchesClass = !classQuery || u.userClass?.toLowerCase().includes(classQuery);
+      return matchesSearch && matchesRole && matchesStatus && matchesClass;
+    });
+  });
+
+  totalUsers = computed(() => this.filteredUsers().length);
+  totalAllUsers = computed(() => this.userResource.value()?.length ?? 0);
+
   paginatedUsers = computed(() => {
-    const users = this.userResource.value() ?? [];
+    const users = this.filteredUsers();
     const start = this.pageIndex() * this.pageSize;
     const end = start + this.pageSize;
     return users.slice(start, end);
   });
+
+  hasActiveFilters = computed(
+    () =>
+      this.searchQuery() !== '' ||
+      this.selectedRole() !== 'All' ||
+      this.selectedStatus() !== 'All' ||
+      this.searchClass() !== '',
+  );
 
   ngOnInit() {
     this.columns = [
@@ -56,7 +108,7 @@ export class ManageUsersPage implements OnInit {
       { header: 'Kurs/Klass', field: 'userClass' },
       { header: 'Roll', template: this.roleTpl, width: '100px' },
       { header: 'Status', template: this.statusTpl, width: '100px' },
-      { header: '', template: this.actionsTpl, width: '80px', align: 'right' }
+      { header: '', template: this.actionsTpl, width: '80px', align: 'right' },
     ];
   }
 
@@ -73,14 +125,43 @@ export class ManageUsersPage implements OnInit {
     this.pageIndex.set(page);
   }
 
+  // --- FILTER ACTIONS ---
+  updateSearch(event: Event) {
+    this.searchQuery.set((event.target as HTMLInputElement).value);
+    this.pageIndex.set(0);
+  }
+
+  updateRole(event: Event) {
+    this.selectedRole.set((event.target as HTMLSelectElement).value as UserRole | 'All');
+    this.pageIndex.set(0);
+  }
+
+  updateStatus(event: Event) {
+    this.selectedStatus.set((event.target as HTMLSelectElement).value as BannedStatus | 'All');
+    this.pageIndex.set(0);
+  }
+
+  updateClass(event: Event) {
+    this.searchClass.set((event.target as HTMLInputElement).value);
+    this.pageIndex.set(0);
+  }
+
+  resetFilters() {
+    this.searchQuery.set('');
+    this.selectedRole.set('All');
+    this.selectedStatus.set('All');
+    this.searchClass.set('');
+    this.pageIndex.set(0);
+  }
+
   openAddUserModal() {
     this.modalService.open(UserFormModalComponent, {
       title: 'Skapa ny användare',
       data: {
         user: null,
-        onSave: (payload: CreateUserDto) => this.handleSave(payload)
+        onSave: (payload: CreateUserDto) => this.handleSave(payload),
       },
-      width: '500px'
+      width: '500px',
     });
   }
 
@@ -88,15 +169,15 @@ export class ManageUsersPage implements OnInit {
     if (event) {
       event.stopPropagation();
     }
-    
+
     this.modalService.open(UserFormModalComponent, {
       title: 'Redigera användare',
       data: {
         user: user,
         onSave: (payload: UpdateUserDto) => this.handleSave(payload, user.id),
-        onDelete: (id: number) => this.handleDelete(id)
+        onDelete: (id: number) => this.handleDelete(id),
       },
-      width: '500px'
+      width: '500px',
     });
   }
 
@@ -108,18 +189,18 @@ export class ManageUsersPage implements OnInit {
         this.userResource.reload();
         // Reset page if we delete the last item on the current page
         if (this.paginatedUsers().length === 0 && this.pageIndex() > 0) {
-          this.pageIndex.update(p => p - 1);
+          this.pageIndex.update((p) => p - 1);
         }
       },
       error: (err) => {
         console.error('Delete failed', err);
         this.toastService.showError('Kunde inte radera användaren.');
-      }
+      },
     });
   }
 
   private handleSave(payload: any, userId?: number) {
-    const obs = userId 
+    const obs = userId
       ? this.userService.updateUser(userId, payload)
       : this.userService.createUser(payload);
 
@@ -132,7 +213,7 @@ export class ManageUsersPage implements OnInit {
       error: (err) => {
         console.error('Save failed', err);
         this.toastService.showError(err.error || 'Kunde inte spara användaren.');
-      }
+      },
     });
   }
 }
