@@ -1,4 +1,4 @@
-@use "sass:map";
+@use 'sass:map';
 @use 'styles/mixins' as *;
 @use 'styles/variables' as *;
 
@@ -13,6 +13,11 @@
   height: 100%;
   padding: 24px;
   gap: 24px;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+    gap: 16px;
+  }
 }
 
 .page-header {
@@ -21,9 +26,25 @@
   flex: 0 0 auto;
   margin: 0;
 
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
   h1 {
     @include heading(1);
     margin: 0;
+
+    @media (max-width: 768px) {
+      font-size: 1.5rem;
+    }
+  }
+
+  app-button {
+    @media (max-width: 768px) {
+      width: 100%;
+    }
   }
 }
 
@@ -32,7 +53,7 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  
+
   /* Ensure the table component fills the content area */
   app-table {
     height: 100%;
@@ -45,9 +66,15 @@
   @include badge;
   width: fit-content;
 
-  &.admin { @include role-badge('admin'); }
-  &.educator { @include role-badge('teacher'); }
-  &.student { @include role-badge('student'); }
+  &.admin {
+    @include role-badge('admin');
+  }
+  &.educator {
+    @include role-badge('teacher');
+  }
+  &.student {
+    @include role-badge('student');
+  }
 }
 
 /* New Status Indicator Styles (Dot + Text) */
@@ -57,7 +84,7 @@
   gap: 0.5rem;
   font-size: var(--font-sm);
   font-weight: 500;
-  
+
   .status-dot {
     width: 0.5rem;
     height: 0.5rem;
@@ -66,12 +93,16 @@
 
   &.active {
     color: var(--color-success);
-    .status-dot { background-color: var(--color-success); }
+    .status-dot {
+      background-color: var(--color-success);
+    }
   }
 
   &.banned {
     color: var(--color-danger);
-    .status-dot { background-color: var(--color-danger); }
+    .status-dot {
+      background-color: var(--color-danger);
+    }
   }
 }
 

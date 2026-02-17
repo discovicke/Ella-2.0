@@ -16,6 +16,64 @@
 // Mobile-only header bar (just hamburger menu)
 .mobile-header {
   display: none; // Hidden on desktop
+
+  .mobile-actions {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, '1');
+    margin-left: auto;
+  }
+
+  .icon-button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 2;
+    }
+
+    &:hover {
+      background: var(--color-bg-panel);
+      color: var(--color-text-primary);
+      border-color: var(--color-border);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 4px;
+      background: var(--color-danger);
+      color: white;
+      border-radius: 8px;
+      font-size: 0.625rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      border: 2px solid var(--color-bg-card);
+    }
+  }
 }
 
 .main-layout {
@@ -44,80 +102,78 @@
 
   // Logo section at top
   .sidebar-header {
-    padding: map.get($spacing, '6') map.get($spacing, '5');
+    padding: map.get($spacing, '4');
     border-bottom: 1px solid var(--color-border);
-    background: linear-gradient(135deg, var(--color-bg-panel) 0%, transparent 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: map.get($spacing, '3');
 
     .sidebar-logo {
-      height: 2.5rem;
+      height: 1.75rem;
       object-fit: contain;
       display: block;
     }
-  }
 
-  // User info section
-  .sidebar-user {
-    padding: map.get($spacing, '5') map.get($spacing, '4');
-    border-bottom: 1px solid var(--color-border);
-
-    .sidebar-user-info {
+    .header-actions {
       display: flex;
       align-items: center;
-      gap: map.get($spacing, '3');
-      padding: map.get($spacing, '3');
-      background: var(--color-bg-panel);
-      border-radius: 8px;
-      border: 1px solid var(--color-border);
+      gap: map.get($spacing, '1');
 
-      .user-icon {
-        font-size: 1.75rem;
-        width: 40px;
-        height: 40px;
+      &.desktop-only {
+        display: flex;
+      }
+    }
+
+    .icon-button {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      svg {
+        width: 18px;
+        height: 18px;
+        stroke-width: 2;
+      }
+
+      &:hover {
+        background: var(--color-bg-panel);
+        color: var(--color-text-primary);
+        border-color: var(--color-border);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+
+      // Optional notification badge
+      .notification-badge {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        background: var(--color-danger);
+        color: white;
+        border-radius: 8px;
+        font-size: 0.625rem;
+        font-weight: 700;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--color-primary-surface);
-        border-radius: 50%;
-      }
-
-      .user-details {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        line-height: 1.2;
-        flex: 1;
-
-        .user-name {
-          font-weight: 700;
-          font-size: 0.9375rem;
-          color: var(--color-text-primary);
-        }
-
-        .user-role {
-          font-size: 0.75rem;
-          color: var(--color-text-muted);
-          text-transform: uppercase;
-          letter-spacing: 0.03em;
-          font-weight: 600;
-          padding: 2px 8px;
-          background: var(--color-bg-card);
-          border-radius: 4px;
-          display: inline-block;
-          width: fit-content;
-
-          &.admin {
-            background: var(--color-danger-surface);
-            color: var(--color-danger);
-          }
-          &.educator {
-            background: var(--color-primary-surface);
-            color: var(--color-primary);
-          }
-          &.student {
-            background: var(--color-success-surface);
-            color: var(--color-success);
-          }
-        }
+        line-height: 1;
+        border: 2px solid var(--color-bg-card);
       }
     }
   }
@@ -218,42 +274,106 @@
     transition: all 0.2s ease;
   }
 
-  // Logout footer at bottom
+  // Footer at bottom with user info and logout
   .sidebar-footer {
     margin-top: auto;
-    padding: map.get($spacing, '5');
+    padding: map.get($spacing, '4');
     border-top: 1px solid var(--color-border);
-    background: var(--color-bg-panel);
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, '3');
+
+    // User info (compact version)
+    .sidebar-user {
+      display: flex;
+      align-items: center;
+      gap: map.get($spacing, '3');
+      padding: map.get($spacing, '2') map.get($spacing, '3');
+      border-radius: 6px;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: var(--color-bg-panel);
+      }
+
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--color-primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+
+      .user-details {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        line-height: 1.2;
+        flex: 1;
+        min-width: 0;
+
+        .user-name {
+          font-weight: 600;
+          font-size: 0.8125rem;
+          color: var(--color-text-primary);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .user-role {
+          font-size: 0.6875rem;
+          color: var(--color-text-secondary);
+          font-weight: 500;
+
+          &.admin {
+            color: var(--color-danger);
+          }
+          &.educator {
+            color: var(--color-primary);
+          }
+          &.student {
+            color: var(--color-success);
+          }
+        }
+      }
+    }
 
     .logout-button {
       width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: map.get($spacing, '3');
-      padding: 12px 20px;
+      gap: map.get($spacing, '2');
+      padding: 8px 12px;
       background: transparent;
-      color: var(--color-danger);
-      border: 1.5px solid var(--color-danger);
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.8125rem;
       cursor: pointer;
       transition: all 0.2s ease;
 
       &:hover {
-        background: var(--color-danger);
-        color: white;
-        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        background: var(--color-danger-surface);
+        color: var(--color-danger);
+        border-color: var(--color-danger);
       }
 
       &:active {
         transform: scale(0.98);
       }
 
-      .nav-icon {
-        width: 20px;
-        height: 20px;
+      .logout-icon {
+        width: 16px;
+        height: 16px;
       }
     }
   }
@@ -308,6 +428,64 @@
       font-weight: 700;
       color: var(--color-primary);
     }
+
+    .mobile-actions {
+      display: flex;
+      align-items: center;
+      gap: map.get($spacing, '1');
+      margin-left: auto;
+    }
+
+    .icon-button {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      svg {
+        width: 18px;
+        height: 18px;
+        stroke-width: 2;
+      }
+
+      &:hover {
+        background: var(--color-bg-panel);
+        color: var(--color-text-primary);
+        border-color: var(--color-border);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+
+      .notification-badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        background: var(--color-danger);
+        color: white;
+        border-radius: 8px;
+        font-size: 0.625rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        border: 2px solid var(--color-bg-card);
+      }
+    }
   }
 
   :host {
@@ -322,6 +500,11 @@
   }
 
   .sidebar {
+    // Hide entire sidebar header on mobile (logo + icons)
+    .sidebar-header {
+      display: none;
+    }
+
     position: fixed;
     top: 48px; // Height of mobile header
     left: 0;

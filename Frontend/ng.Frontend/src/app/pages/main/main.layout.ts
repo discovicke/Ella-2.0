@@ -17,6 +17,15 @@ export class MainLayout {
   public readonly sessionService = inject(SessionService);
   private readonly authService = inject(AuthService);
 
+  getInitials(name: string): string {
+    if (!name) return '?';
+    const parts = name.split(' ').filter((p) => p.length > 0);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  }
+
   async logout() {
     this.layoutService.closeSidebar();
     await this.authService.logout();
