@@ -1,13 +1,24 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
+import { ConfirmService } from '../../../shared/services/confirm.service';
 import { UserRole, BannedStatus } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 /**
  * Validator som ser till att lösenorden matchar
  */
-export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+export const passwordMatchValidator: ValidatorFn = (
+  control: AbstractControl,
+): ValidationErrors | null => {
   const password = control.get('password');
   const confirmPassword = control.get('confirmPassword');
 
@@ -25,7 +36,12 @@ export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): V
     <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
       <div class="form-group">
         <label for="displayName">Namn</label>
-        <input id="displayName" type="text" formControlName="displayName" placeholder="Förnamn Efternamn" />
+        <input
+          id="displayName"
+          type="text"
+          formControlName="displayName"
+          placeholder="Förnamn Efternamn"
+        />
         @if (userForm.get('displayName')?.invalid && userForm.get('displayName')?.touched) {
           <span class="error-msg">Namn krävs</span>
         }
@@ -42,7 +58,12 @@ export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): V
       <div class="form-row">
         <div class="form-group">
           <label for="password">Lösenord</label>
-          <input id="password" type="password" formControlName="password" placeholder="Minst 6 tecken (krävs)" />
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            placeholder="Minst 6 tecken (krävs)"
+          />
           @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
             <span class="error-msg">Lösenord krävs (minst 6 tecken)</span>
           }
@@ -50,7 +71,12 @@ export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): V
 
         <div class="form-group">
           <label for="confirmPassword">Bekräfta lösenord</label>
-          <input id="confirmPassword" type="password" formControlName="confirmPassword" placeholder="Upprepa lösenordet" />
+          <input
+            id="confirmPassword"
+            type="password"
+            formControlName="confirmPassword"
+            placeholder="Upprepa lösenordet"
+          />
           @if (userForm.errors?.['passwordMismatch'] && userForm.get('confirmPassword')?.touched) {
             <span class="error-msg">Lösenorden matchar inte</span>
           }
@@ -97,55 +123,67 @@ export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): V
       </div>
     </form>
   `,
-  styles: [`
-    @use 'styles/mixins' as *;
+  styles: [
+    `
+      @use 'styles/mixins' as *;
 
-    .user-form {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .form-row {
-      display: flex;
-      gap: 1rem;
-      & > * { flex: 1; }
-    }
-
-    .form-group {
-      @include stack(0.5rem);
-      margin-bottom: 0;
-
-      label {
-        font-weight: 600;
-        color: var(--color-text-primary);
+      .user-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
       }
 
-      input, select {
-        @include input-base;
+      .form-row {
+        display: flex;
+        gap: 1rem;
+        & > * {
+          flex: 1;
+        }
       }
-    }
 
-    .error-msg {
-      font-size: var(--font-sm);
-      color: var(--color-danger);
-    }
+      .form-group {
+        @include stack(0.5rem);
+        margin-bottom: 0;
 
-    .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      margin-top: 1rem;
+        label {
+          font-weight: 600;
+          color: var(--color-text-primary);
+        }
 
-      .btn-primary { @include button-primary; }
-      .btn-secondary { @include button-ghost; }
-      .btn-danger { @include button-danger; }
-    }
-  `],
+        input,
+        select {
+          @include input-base;
+        }
+      }
+
+      .error-msg {
+        font-size: var(--font-sm);
+        color: var(--color-danger);
+      }
+
+      .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 1rem;
+
+        .btn-primary {
+          @include button-primary;
+        }
+        .btn-secondary {
+          @include button-ghost;
+        }
+        .btn-danger {
+          @include button-danger;
+        }
+      }
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserFormModalComponent {
   private modalService = inject(ModalService);
+  private confirmService = inject(ConfirmService);
   protected readonly UserRole = UserRole;
   protected readonly BannedStatus = BannedStatus;
 
@@ -154,38 +192,47 @@ export class UserFormModalComponent {
 
   readonly isSubmitting = signal(false);
 
-  readonly userForm = new FormGroup({
-    displayName: new FormControl(this.initialData?.displayName || '', {
-      nonNullable: true,
-      validators: [Validators.required]
-    }),
-    email: new FormControl(this.initialData?.email || '', {
-      nonNullable: true,
-      validators: [Validators.required, Validators.email]
-    }),
-    role: new FormControl<UserRole>(this.initialData?.role || ('' as any), {
-      nonNullable: true,
-      validators: [Validators.required]
-    }),
-    userClass: new FormControl(this.initialData?.userClass || '', {
-      nonNullable: true
-    }),
-    password: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, Validators.minLength(6)]
-    }),
-    confirmPassword: new FormControl({ value: '', disabled: true }, {
-      nonNullable: true,
-      validators: [Validators.required]
-    }),
-    isBanned: new FormControl<BannedStatus>(this.initialData?.isBanned || BannedStatus.NotBanned, {
-      nonNullable: true
-    }),
-  }, { validators: [passwordMatchValidator] });
+  readonly userForm = new FormGroup(
+    {
+      displayName: new FormControl(this.initialData?.displayName || '', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      email: new FormControl(this.initialData?.email || '', {
+        nonNullable: true,
+        validators: [Validators.required, Validators.email],
+      }),
+      role: new FormControl<UserRole>(this.initialData?.role || ('' as any), {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      userClass: new FormControl(this.initialData?.userClass || '', {
+        nonNullable: true,
+      }),
+      password: new FormControl('', {
+        nonNullable: true,
+        validators: [Validators.required, Validators.minLength(6)],
+      }),
+      confirmPassword: new FormControl(
+        { value: '', disabled: true },
+        {
+          nonNullable: true,
+          validators: [Validators.required],
+        },
+      ),
+      isBanned: new FormControl<BannedStatus>(
+        this.initialData?.isBanned || BannedStatus.NotBanned,
+        {
+          nonNullable: true,
+        },
+      ),
+    },
+    { validators: [passwordMatchValidator] },
+  );
 
   constructor() {
     // Hantera userClass baserat på roll
-    this.userForm.controls.role.valueChanges.subscribe(role => {
+    this.userForm.controls.role.valueChanges.subscribe((role) => {
       if (role === UserRole.Admin) {
         this.userForm.controls.userClass.disable();
         this.userForm.controls.userClass.setValue('');
@@ -195,7 +242,7 @@ export class UserFormModalComponent {
     });
 
     // Hantera confirmPassword baserat på om password har ett värde
-    this.userForm.controls.password.valueChanges.subscribe(pwd => {
+    this.userForm.controls.password.valueChanges.subscribe((pwd) => {
       if (pwd && pwd.length > 0) {
         this.userForm.controls.confirmPassword.enable();
       } else {
@@ -232,11 +279,17 @@ export class UserFormModalComponent {
     }
   }
 
-  onDelete() {
-    if (this.config?.onDelete && this.initialData?.id) {
-      this.isSubmitting.set(true);
-      this.config.onDelete(this.initialData.id);
-    }
+  async onDelete() {
+    if (!this.config?.onDelete || !this.initialData?.id) return;
+
+    const confirmed = await this.confirmService.danger(
+      'Anv\u00e4ndaren kommer att raderas permanent och kan inte \u00e5terst\u00e4llas.',
+      'Radera anv\u00e4ndare',
+    );
+    if (!confirmed) return;
+
+    this.isSubmitting.set(true);
+    this.config.onDelete(this.initialData.id);
   }
 
   onCancel() {

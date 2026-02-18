@@ -1,49 +1,146 @@
-@use "sass:map";
+@use 'sass:map';
 @use 'styles/mixins' as *;
 @use 'styles/variables' as *;
 
 /* 
-  FIX: Layout filling viewport correctly without manual calc() 
+  SIDEBAR-ONLY LAYOUT - No separate header component
 */
 :host {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh; /* Use dynamic viewport height if supported */
   overflow: hidden;
+}
+
+// Mobile-only header bar (hidden on desktop, styled inside breakpoint)
+.mobile-header {
+  display: none;
 }
 
 .main-layout {
   display: flex;
-  flex: 1; /* Take all remaining space below header */
-  min-height: 0; /* Important for nested scrolling */
+  flex: 1;
+  min-height: 0;
   background: var(--color-bg-body);
   overflow: hidden;
+  position: relative;
+}
+
+.sidebar-backdrop {
+  display: none; // Only used on mobile
 }
 
 .sidebar {
-  width: 250px;
+  width: var(--sidebar-width);
   flex: 0 0 auto;
   background: var(--color-bg-card);
   border-right: 1px solid var(--color-border);
-  padding: map.get($spacing, '6');
+  padding: 0;
   overflow-y: auto;
-  
+
   display: flex;
   flex-direction: column;
-  gap: map.get($spacing, '6'); // Gap between sections
 
-  // Section styling
+  // Logo section at top
+  .sidebar-header {
+    padding: map.get($spacing, '4');
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: map.get($spacing, '3');
+
+    .sidebar-logo {
+      height: 1.75rem;
+      object-fit: contain;
+      display: block;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: map.get($spacing, '1');
+
+      &.desktop-only {
+        display: flex;
+      }
+    }
+
+    .icon-button {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      svg {
+        width: 18px;
+        height: 18px;
+        stroke-width: 2;
+      }
+
+      &:hover {
+        background: var(--color-bg-panel);
+        color: var(--color-text-primary);
+        border-color: var(--color-border);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+
+      // Optional notification badge
+      .notification-badge {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        background: var(--color-danger);
+        color: white;
+        border-radius: 8px;
+        font-size: 0.625rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        border: 2px solid var(--color-bg-card);
+      }
+    }
+  }
+
+  // Navigation sections (with top padding)
   .nav-section {
+    padding: 0 map.get($spacing, '4');
+
+    &:first-of-type {
+      margin-top: map.get($spacing, '6');
+    }
+
+    &:not(:last-of-type) {
+      margin-bottom: map.get($spacing, '8');
+    }
+
     .nav-header {
-      // Small uppercase label style
-      font-size: 0.75rem; 
+      font-size: 0.6875rem;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--color-text-tertiary, var(--color-text-secondary)); // Fallback if tertiary missing
-      opacity: 0.8;
+      letter-spacing: 0.08em;
+      color: var(--color-text-muted);
+      margin-top: map.get($spacing, '6');
       margin-bottom: map.get($spacing, '3');
-      padding-left: map.get($spacing, '4');
-      font-weight: 600;
+      padding-left: map.get($spacing, '2');
+      font-weight: 700;
     }
   }
 
@@ -53,68 +150,322 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: map.get($spacing, '1'); // Small gap between links
+    gap: map.get($spacing, '1');
   }
 
   nav li a {
     @include transition(all);
     display: flex;
     align-items: center;
-    gap: map.get($spacing, '3'); // Space between icon and text (if icon added later)
-    padding: map.get($spacing, '2') map.get($spacing, '4');
-    border-radius: map.get($radii, 'md');
+    gap: map.get($spacing, '3');
+    padding: 11px 14px;
+    border-radius: 8px;
     text-decoration: none;
     color: var(--color-text-secondary);
-    font-weight: 500;
-    
-    // No .icon style needed for plain text
+    font-weight: 600;
+    font-size: 0.875rem;
+    background: transparent;
+    border: 1px solid transparent;
+    position: relative;
+
+    .text {
+      line-height: 1.3;
+    }
 
     &:hover {
       background: var(--color-bg-panel);
-      color: var(--color-primary); // Use primary color on hover
+      color: var(--color-text-primary);
+      border-color: var(--color-border);
+
+      .nav-icon {
+        color: var(--color-primary);
+        transform: scale(1.1);
+      }
     }
 
     &.active {
-      background: var(--color-primary-surface); // Subtle highlight
-      color: var(--color-primary);
-      font-weight: 600; // Bold text for active
-      
-      // Optional: Left border accent
-      // border-left: 3px solid var(--color-primary); 
+      background: var(--color-primary);
+      color: white;
+      border-color: var(--color-primary);
+      box-shadow: 0 2px 8px rgba(145, 54, 203, 0.3);
+
+      .nav-icon {
+        color: white;
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: -16px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 24px;
+        background: var(--color-primary);
+        border-radius: 0 4px 4px 0;
+      }
+    }
+  }
+
+  // Icon styling
+  .nav-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+    transition: all 0.2s ease;
+  }
+
+  // Footer at bottom with user info and logout
+  .sidebar-footer {
+    margin-top: auto;
+    padding: map.get($spacing, '4');
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, '3');
+
+    // User info (compact version)
+    .sidebar-user {
+      display: flex;
+      align-items: center;
+      gap: map.get($spacing, '3');
+      padding: map.get($spacing, '2') map.get($spacing, '3');
+      border-radius: 6px;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: var(--color-bg-panel);
+      }
+
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--color-primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+
+      .user-details {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        line-height: 1.2;
+        flex: 1;
+        min-width: 0;
+
+        .user-name {
+          font-weight: 600;
+          font-size: 0.8125rem;
+          color: var(--color-text-primary);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .user-role {
+          font-size: 0.6875rem;
+          color: var(--color-text-secondary);
+          font-weight: 500;
+
+          &.admin {
+            color: var(--color-danger);
+          }
+          &.educator {
+            color: var(--color-primary);
+          }
+          &.student {
+            color: var(--color-success);
+          }
+        }
+      }
+    }
+
+    .logout-button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: map.get($spacing, '2');
+      padding: 8px 12px;
+      background: transparent;
+      color: var(--color-text-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.8125rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: var(--color-danger-surface);
+        color: var(--color-danger);
+        border-color: var(--color-danger);
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+
+      .logout-icon {
+        width: 16px;
+        height: 16px;
+      }
     }
   }
 }
 
 .content {
   flex: 1;
-  padding: map.get($spacing, '8');
+  padding: 0; /* Removed global padding for edge-to-edge feel */
   overflow: hidden; /* Pass scrolling to children if needed */
   display: flex;
   flex-direction: column;
 }
 
 @include breakpoint-down('md') {
+  // Show minimal mobile header bar
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, '3');
+    height: 52px;
+    padding: 0 map.get($spacing, '4');
+    background: var(--color-bg-card);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+    position: sticky;
+    top: 0;
+    z-index: map.get($z-layers, 'sticky') + 1;
+
+    .mobile-logo {
+      height: 1.625rem;
+      object-fit: contain;
+      flex: 1;
+    }
+
+    .mobile-actions {
+      display: flex;
+      align-items: center;
+      gap: map.get($spacing, '1');
+    }
+
+    .icon-button {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+
+      svg {
+        width: 20px;
+        height: 20px;
+        stroke-width: 1.75;
+      }
+
+      &:hover {
+        background: var(--color-bg-panel);
+        color: var(--color-text-primary);
+        border-color: var(--color-border);
+      }
+
+      &:active {
+        transform: scale(0.92);
+      }
+
+      .notification-badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        background: var(--color-danger);
+        color: white;
+        border-radius: 8px;
+        font-size: 0.625rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        border: 2px solid var(--color-bg-card);
+      }
+    }
+  }
+
   :host {
-    height: auto;
-    overflow: auto;
+    height: 100vh;
+    overflow: hidden;
   }
 
   .main-layout {
-    flex-direction: column;
-    height: auto;
-    overflow: visible;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
   }
 
   .sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid var(--color-border);
-    height: auto;
-    overflow: visible;
-    padding: map.get($spacing, '4');
-    gap: map.get($spacing, '4');
+    // Hide entire sidebar header on mobile (logo + icons)
+    .sidebar-header {
+      display: none;
+    }
 
-    // Mobile: Maybe grid or simpler list?
-    // Keep it flex column for now.
+    position: fixed;
+    top: 52px;
+    left: 0;
+    bottom: 0;
+    width: min(var(--sidebar-width), 85vw);
+    z-index: map.get($z-layers, 'sticky');
+    transform: translateX(-100%);
+    transition: transform var(--transition-base) var(--ease-smooth);
+    border-right: 1px solid var(--color-border);
+    border-bottom: none;
+    height: calc(100% - 52px);
+    background: var(--color-bg-card);
+
+    &.open {
+      transform: translateX(0);
+      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    top: 52px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: map.get($z-layers, 'sticky') - 1;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-base) var(--ease-smooth);
+
+    &.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  .content {
+    overflow-y: auto;
+    height: 100%;
   }
 }

@@ -1,35 +1,32 @@
 @use 'styles/variables' as *;
 
 :host {
-  display: block;
-  margin-bottom: 12px;
-}
-
-.card-container {
+  display: flex;
+  flex-direction: column;
   background-color: var(--color-bg-card);
   border-radius: 8px;
   padding: 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   border: 1px solid var(--color-border);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  gap: 16px;
+  height: auto; /* Default to auto height */
+  box-sizing: border-box;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 }
 
 .card-body {
-  flex: 1 1 auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .card-header {
-  margin: 0;
-  padding-bottom: 0.3em;
+  margin-bottom: 12px;
+  
   ::ng-deep h3 {
     margin: 0;
     font-size: 1.125rem;
@@ -39,55 +36,16 @@
 }
 
 .card-content {
-  margin-top: 8px;
-
-  /* Vi målar om det projicerade elementet som har [card-content] */
-  ::ng-deep [card-content] {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    width: 100%;
-
-    .text-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    app-button {
-      flex-shrink: 0;
-    }
-
-    p {
-      margin: 0;
-      font-size: 0.875rem;
-      color: var(--color-text-muted);
-    }
-  }
+  flex: 1;
 }
 
 .card-footer {
-  display: flex;
-  align-items: center;
-  margin: 0;
-  padding-top: 0.5em;
-}
-
-@media (max-width: 480px) {
-  .card-container {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .card-footer {
-    width: 100%;
-    ::ng-deep app-button {
-      width: 100%;
-      button {
-        width: 100%;
-      }
-    }
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+  
+  /* Use CSS to hide if empty - note: :empty only works if there is NO whitespace */
+  &:empty {
+    display: none;
   }
 }
