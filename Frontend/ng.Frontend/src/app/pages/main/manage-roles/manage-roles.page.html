@@ -50,14 +50,16 @@
                 />
               </div>
               <div class="field">
-                <label class="field-label">CSS-klass</label>
-                <input
-                  type="text"
-                  class="field-input css-class-input"
+                <label class="field-label">Färg</label>
+                <select
+                  class="field-input"
                   [ngModel]="template.cssClass"
                   (ngModelChange)="updateCssClass(tplIdx, $event)"
-                  placeholder="t.ex. student"
-                />
+                >
+                  @for (color of colorOptions; track color.cssClass) {
+                    <option [value]="color.cssClass">{{ color.label }}</option>
+                  }
+                </select>
               </div>
             </div>
             <button

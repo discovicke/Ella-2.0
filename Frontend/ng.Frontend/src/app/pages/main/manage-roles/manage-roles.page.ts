@@ -27,6 +27,11 @@ interface EditableTemplate {
   isNew?: boolean;
 }
 
+interface RoleColorOption {
+  label: string;
+  cssClass: string;
+}
+
 let nextUid = 0;
 
 @Component({
@@ -48,6 +53,25 @@ export class ManageRolesPage implements OnInit {
   saving = signal(false);
   loading = signal(true);
 
+  readonly colorOptions: RoleColorOption[] = [
+    { label: 'Grön', cssClass: 'student' },
+    { label: 'Blå', cssClass: 'educator' },
+    { label: 'Orange', cssClass: 'admin' },
+    { label: 'Grå', cssClass: 'custom' },
+  ];
+
+  private readonly permissionLabelMap: Record<string, string> = {
+    book_room: 'Boka rum',
+    my_bookings: 'Mina bokningar',
+    manage_users: 'Hantera användare',
+    manage_classes: 'Hantera klasser',
+    manage_rooms: 'Hantera rum',
+    manage_assets: 'Hantera tillgångar',
+    manage_bookings: 'Hantera bokningar',
+    manage_campuses: 'Hantera campus',
+    manage_roles: 'Hantera roller',
+  };
+
   /** All unique permission keys across templates (sorted). */
   permissionKeys = computed(() => {
     const keys = new Set<string>();
@@ -61,6 +85,10 @@ export class ManageRolesPage implements OnInit {
 
   /** Formats snake_case keys to human-readable labels. */
   formatKey(key: string): string {
+    if (this.permissionLabelMap[key]) {
+      return this.permissionLabelMap[key];
+    }
+
     return key
       .split('_')
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
@@ -82,7 +110,7 @@ export class ManageRolesPage implements OnInit {
           uid: nextUid++,
           id: t.id,
           label: t.label ?? '',
-          cssClass: t.cssClass ?? '',
+          cssClass: this.normalizeCssClass(t.cssClass),
           permissions: { ...(t.permissions ?? {}) },
         })),
       );
@@ -148,7 +176,7 @@ export class ManageRolesPage implements OnInit {
         return;
       }
       if (!tpl.cssClass.trim()) {
-        this.toastService.show(`Roll "${tpl.label}" saknar CSS-klass.`, 'error');
+        this.toastService.show(`Roll "${tpl.label}" saknar färg.`, 'error');
         return;
       }
     }
@@ -188,7 +216,7 @@ export class ManageRolesPage implements OnInit {
           uid: nextUid++,
           id: t.id,
           label: t.label ?? '',
-          cssClass: t.cssClass ?? '',
+          cssClass: this.normalizeCssClass(t.cssClass),
           permissions: { ...(t.permissions ?? {}) },
         })),
       );
@@ -208,5 +236,11 @@ export class ManageRolesPage implements OnInit {
 
   discard() {
     this.loadTemplates();
+  }
+
+  private normalizeCssClass(value: string | undefined | null): string {
+    const cssClass = (value ?? '').trim().toLowerCase();
+    const isKnown = this.colorOptions.some((option) => option.cssClass === cssClass);
+    return isKnown ? cssClass : 'custom';
   }
 }
