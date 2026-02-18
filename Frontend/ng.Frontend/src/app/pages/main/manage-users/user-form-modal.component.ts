@@ -10,7 +10,7 @@ import {
 } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ConfirmService } from '../../../shared/services/confirm.service';
-import { UserRole, BannedStatus } from '../../../models/models';
+import { BannedStatus } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 /**
@@ -80,23 +80,6 @@ export const passwordMatchValidator: ValidatorFn = (
           @if (userForm.errors?.['passwordMismatch'] && userForm.get('confirmPassword')?.touched) {
             <span class="error-msg">Lösenorden matchar inte</span>
           }
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="role">Roll</label>
-          <select id="role" formControlName="role">
-            <option value="">-- Välj roll --</option>
-            <option [value]="UserRole.Student">Student</option>
-            <option [value]="UserRole.Educator">Lärare</option>
-            <option [value]="UserRole.Admin">Admin</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="userClass">Kurs / Klass</label>
-          <input id="userClass" type="text" formControlName="userClass" placeholder="t.ex. NET25" />
         </div>
       </div>
 
@@ -184,7 +167,6 @@ export const passwordMatchValidator: ValidatorFn = (
 export class UserFormModalComponent {
   private modalService = inject(ModalService);
   private confirmService = inject(ConfirmService);
-  protected readonly UserRole = UserRole;
   protected readonly BannedStatus = BannedStatus;
 
   private config = this.modalService.modalData();
@@ -201,13 +183,6 @@ export class UserFormModalComponent {
       email: new FormControl(this.initialData?.email || '', {
         nonNullable: true,
         validators: [Validators.required, Validators.email],
-      }),
-      role: new FormControl<UserRole>(this.initialData?.role || ('' as any), {
-        nonNullable: true,
-        validators: [Validators.required],
-      }),
-      userClass: new FormControl(this.initialData?.userClass || '', {
-        nonNullable: true,
       }),
       password: new FormControl('', {
         nonNullable: true,
@@ -231,16 +206,6 @@ export class UserFormModalComponent {
   );
 
   constructor() {
-    // Hantera userClass baserat på roll
-    this.userForm.controls.role.valueChanges.subscribe((role) => {
-      if (role === UserRole.Admin) {
-        this.userForm.controls.userClass.disable();
-        this.userForm.controls.userClass.setValue('');
-      } else {
-        this.userForm.controls.userClass.enable();
-      }
-    });
-
     // Hantera confirmPassword baserat på om password har ett värde
     this.userForm.controls.password.valueChanges.subscribe((pwd) => {
       if (pwd && pwd.length > 0) {
@@ -250,11 +215,6 @@ export class UserFormModalComponent {
         this.userForm.controls.confirmPassword.setValue('');
       }
     });
-
-    // Initial check för admin-roll
-    if (this.userForm.controls.role.value === UserRole.Admin) {
-      this.userForm.controls.userClass.disable();
-    }
   }
 
   onSubmit() {

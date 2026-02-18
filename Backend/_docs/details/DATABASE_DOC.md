@@ -1,4 +1,4 @@
-<img alt="image" src="../images/ChartDB_screenshot_NEW_NEW_NEW_NEW_NEW.png" />
+<img alt="image" src="../images/ELLA 2.0_2026-02-18T11_36_56.558Z.png" />
 
 ### **1. Auth & Identity**
 

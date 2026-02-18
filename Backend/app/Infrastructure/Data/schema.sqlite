@@ -4,96 +4,168 @@
 PRAGMA foreign_keys = ON;
 
 BEGIN TRANSACTION;
+
 -- 0. Versioning
-CREATE TABLE IF NOT EXISTS database_versions
-(
-    "version"    INTEGER PRIMARY KEY,
-    "name"       TEXT NOT NULL UNIQUE,
-    "applied_at" TEXT NOT NULL DEFAULT (datetime('now'))
+CREATE TABLE IF NOT EXISTS "database_versions" (
+    "version" INTEGER,
+    "name" TEXT NOT NULL UNIQUE,
+    -- FIX: Wrapped function in parentheses or use CURRENT_TIMESTAMP
+    "applied_at" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY("version")
 );
 
--- 1. Users & Auth
-CREATE TABLE IF NOT EXISTS "users"
-(
-    "id"                 INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    "email"              TEXT                              NOT NULL UNIQUE,
-    "password_hash"      TEXT                              NOT NULL,
-    "display_name"       TEXT,
-    "role"               INTEGER                           NOT NULL, -- 0=Student, 1=Teacher, 2=Admin
-    "user_class"         TEXT,
-    "is_banned"          INTEGER                           NOT NULL DEFAULT 0,
-    "tokens_valid_after" DATETIME                          NOT NULL DEFAULT CURRENT_TIMESTAMP 
+CREATE TABLE IF NOT EXISTS "class" (
+    "id" INTEGER NOT NULL,
+    "class_name" TEXT NOT NULL,
+    PRIMARY KEY("id")
 );
 
--- 2. Rooms & Equipment
-CREATE TABLE IF NOT EXISTS "rooms"
-(
-    "id"       INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    "name"     TEXT                              NOT NULL,
+CREATE TABLE IF NOT EXISTS "campus" (
+    "id" INTEGER NOT NULL,
+    "street" TEXT NOT NULL,
+    "zip" TEXT,
+    "city" TEXT NOT NULL,
+    "country" TEXT NOT NULL,
+    "contact" TEXT,
+    PRIMARY KEY("id")
+);
+
+CREATE TABLE IF NOT EXISTS "users" (
+    "id" INTEGER NOT NULL,
+    "email" TEXT NOT NULL UNIQUE,
+    "password_hash" TEXT NOT NULL,
+    "display_name" TEXT,
+    "is_banned" INTEGER NOT NULL DEFAULT 0,
+    "tokens_valid_after" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY("id")
+);
+
+CREATE TABLE IF NOT EXISTS "asset_types" (
+    "id" INTEGER NOT NULL,
+    "description" TEXT NOT NULL UNIQUE,
+    PRIMARY KEY("id")
+);
+
+CREATE TABLE IF NOT EXISTS "rooms" (
+    "id" INTEGER NOT NULL,
+    "campus_id" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
     "capacity" INTEGER,
-    "type"     INTEGER                           NOT NULL,
-    "floor"    TEXT,
-    "address"  TEXT,
-    "notes"    TEXT
-    -- REMOVED: Circular FK to bookings
+    "type" INTEGER NOT NULL,
+    "floor" TEXT,
+    "notes" TEXT,
+    PRIMARY KEY("id"),
+    FOREIGN KEY ("campus_id") REFERENCES "campus"("id")
+    ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
-CREATE TABLE IF NOT EXISTS "asset_types"
-(
-    "id"          INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    "description" TEXT                              NOT NULL UNIQUE
+CREATE TABLE IF NOT EXISTS "permissions" (
+    "user_id" INTEGER NOT NULL UNIQUE,
+    "book_room" INTEGER DEFAULT 0,
+    "my_bookings" INTEGER DEFAULT 0,
+    "manage_users" INTEGER DEFAULT 0,
+    "manage_classes" INTEGER,
+    "manage_rooms" INTEGER DEFAULT 0,
+    "manage_assets" INTEGER DEFAULT 0,
+    "manage_bookings" INTEGER DEFAULT 0,
+    "manage_campuses" INTEGER DEFAULT 0,
+    "manage_roles" INTEGER DEFAULT 0,
+    FOREIGN KEY ("user_id") REFERENCES "users"("id")
+    ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
-CREATE TABLE IF NOT EXISTS "room_assets"
-(
-    "id"            INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, -- Added PK for the specific physical item
-    "asset_type_id" INTEGER                           NOT NULL, -- Renamed from asset_id for clarity
-    "room_id"       INTEGER                           NOT NULL,
-    FOREIGN KEY ("asset_type_id") REFERENCES "asset_types" ("id"),
-    FOREIGN KEY ("room_id") REFERENCES "rooms" ("id") ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS "user_class" (
+    "id" INTEGER NOT NULL UNIQUE,
+    "class_id" INTEGER NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    PRIMARY KEY("id"),
+    FOREIGN KEY ("user_id") REFERENCES "users"("id")
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+    FOREIGN KEY ("class_id") REFERENCES "class"("id")
+    ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
--- 3. Bookings & Participants
-CREATE TABLE IF NOT EXISTS "bookings"
-(
-    "id"         INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL,
-    "user_id"    INTEGER                            NOT NULL, -- The Host
-    "room_id"    INTEGER                            NOT NULL,
-    "start_time" DATETIME                           NOT NULL,
-    "end_time"   DATETIME                           NOT NULL,
-    "status"     INTEGER                            NOT NULL DEFAULT 0,
-    "notes"      TEXT,
-    "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "updated_at" DATETIME,
-    FOREIGN KEY ("user_id") REFERENCES "users" ("id"),
-    FOREIGN KEY ("room_id") REFERENCES "rooms" ("id") ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS "user_campus" (
+    "id" INTEGER NOT NULL UNIQUE,
+    "user_id" INTEGER NOT NULL,
+    "campus_id" INTEGER NOT NULL,
+    PRIMARY KEY("id"),
+    FOREIGN KEY ("user_id") REFERENCES "users"("id")
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+    FOREIGN KEY ("campus_id") REFERENCES "campus"("id")
+    ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
-CREATE TABLE IF NOT EXISTS "registrations"
-(
-    "user_id"    INTEGER NOT NULL,
+CREATE TABLE IF NOT EXISTS "room_assets" (
+    "id" INTEGER NOT NULL,
+    "asset_type_id" INTEGER NOT NULL,
+    "room_id" INTEGER NOT NULL,
+    "notes" TEXT,
+    PRIMARY KEY("id"),
+    FOREIGN KEY ("room_id") REFERENCES "rooms"("id")
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+    FOREIGN KEY ("asset_type_id") REFERENCES "asset_types"("id")
+    ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+CREATE TABLE IF NOT EXISTS "bookings" (
+    "id" INTEGER NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "room_id" INTEGER NOT NULL,
+    "start_time" TEXT NOT NULL,
+    "end_time" TEXT NOT NULL,
+    "status" INTEGER NOT NULL DEFAULT 0,
+    "notes" TEXT,
+    "created_at" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TEXT,
+    PRIMARY KEY("id"),
+    FOREIGN KEY ("room_id") REFERENCES "rooms"("id")
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+    FOREIGN KEY ("user_id") REFERENCES "users"("id")
+    ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+CREATE TABLE IF NOT EXISTS "registrations" (
+    "user_id" INTEGER NOT NULL,
     "booking_id" INTEGER NOT NULL,
-    -- Composite Primary Key ensures a user can't register for the same booking twice
-    PRIMARY KEY ("user_id", "booking_id"),
-    FOREIGN KEY ("booking_id") REFERENCES "bookings" ("id") ON DELETE CASCADE,
-    FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE
+    PRIMARY KEY("user_id", "booking_id"),
+    FOREIGN KEY ("user_id") REFERENCES "users"("id")
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+    FOREIGN KEY ("booking_id") REFERENCES "bookings"("id")
+    ON UPDATE NO ACTION ON DELETE NO ACTION
 );
+
+CREATE TABLE IF NOT EXISTS "permission_templates" (
+    "id" INTEGER NOT NULL,
+    "label" TEXT NOT NULL UNIQUE,
+    "css_class" TEXT NOT NULL,
+    "sort_order" INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY("id")
+);
+
+CREATE TABLE IF NOT EXISTS "permission_template_flags" (
+    "template_id" INTEGER NOT NULL,
+    "permission_key" TEXT NOT NULL,
+    "value" INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY("template_id", "permission_key"),
+    FOREIGN KEY ("template_id") REFERENCES "permission_templates"("id")
+    ON UPDATE NO ACTION ON DELETE CASCADE
+);
+
 
 -- 4. Views for Read Models
 -- View: Bookings with enriched data (user and room names, registration count)
-CREATE VIEW IF NOT EXISTS "v_bookings_detailed" AS
+DROP VIEW IF EXISTS "v_bookings_detailed";
+CREATE VIEW "v_bookings_detailed" AS
 SELECT 
     b.id AS booking_id,
     b.user_id,
     u.display_name  AS user_name,
     u.email         AS user_email,
-    u.role          AS user_role,
-    u.user_class    AS user_class,
     b.room_id,
     r.name          AS room_name,
     r.capacity      AS room_capacity,
     r.type          AS room_type,
-    r.address       AS address,
     r.floor         AS room_floor,
     b.start_time,
     b.end_time,
@@ -106,11 +178,12 @@ FROM bookings b
 LEFT JOIN users u ON b.user_id = u.id
 LEFT JOIN rooms r ON b.room_id = r.id
 LEFT JOIN registrations reg ON b.id = reg.booking_id
-GROUP BY b.id, b.user_id, u.display_name, u.email, u.user_class, b.room_id, r.name, r.capacity, 
-         r.type, r.floor, r.address, b.start_time, b.end_time, b.status, b.notes, b.created_at, b.updated_at;
+GROUP BY b.id, b.user_id, u.display_name, u.email, b.room_id, r.name, r.capacity, 
+         r.type, r.floor, b.start_time, b.end_time, b.status, b.notes, b.created_at, b.updated_at;
 
 -- View: Room assets with asset type descriptions
-CREATE VIEW IF NOT EXISTS "v_room_assets_detailed" AS
+DROP VIEW IF EXISTS "v_room_assets_detailed";
+CREATE VIEW "v_room_assets_detailed" AS
 SELECT 
     ra.id           AS room_asset_id,
     ra.room_id,

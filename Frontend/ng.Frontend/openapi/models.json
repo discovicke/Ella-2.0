@@ -477,7 +477,7 @@
           "Rooms"
         ],
         "summary": "Get all rooms",
-        "description": "Retrieves all rooms. Optionally filter by type or address.\n\n🔒 **Authentication Required**",
+        "description": "Retrieves all rooms. Optionally filter by type or campus.\n\n🔒 **Authentication Required**",
         "operationId": "GetRooms",
         "parameters": [
           {
@@ -494,10 +494,11 @@
             }
           },
           {
-            "name": "address",
+            "name": "campusId",
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -1181,6 +1182,73 @@
           }
         }
       }
+    },
+    "/api/permission-templates": {
+      "get": {
+        "tags": [
+          "Permission Templates"
+        ],
+        "summary": "Get all permission templates",
+        "description": "Returns the named permission templates (Student, Educator, Admin, etc.) auto-synced with the current database permission columns. No authentication required — the frontend needs this before/during login.",
+        "operationId": "GetPermissionTemplates",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PermissionTemplateDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Permission Templates"
+        ],
+        "summary": "Replace all permission templates",
+        "description": "Replaces the full set of named permission templates. The server will auto-sync with the DB columns before persisting.\n\n🔒 **Requires manageRoles permission**",
+        "operationId": "UpdatePermissionTemplates",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PermissionTemplateDto"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PermissionTemplateDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1203,8 +1271,7 @@
       },
       "AuthedUserResponseDto": {
         "required": [
-          "email",
-          "role"
+          "email"
         ],
         "type": "object",
         "properties": {
@@ -1219,12 +1286,8 @@
             "type": "string",
             "nullable": true
           },
-          "role": {
-            "type": "string"
-          },
-          "userClass": {
-            "type": "string",
-            "nullable": true
+          "permissions": {
+            "$ref": "#/components/schemas/Permission"
           },
           "isBanned": {
             "type": "boolean"
@@ -1275,13 +1338,6 @@
             "type": "string",
             "nullable": true
           },
-          "userRole": {
-            "$ref": "#/components/schemas/UserRole"
-          },
-          "userClass": {
-            "type": "string",
-            "nullable": true
-          },
           "roomId": {
             "type": "integer",
             "format": "int64"
@@ -1299,10 +1355,6 @@
             "$ref": "#/components/schemas/RoomType"
           },
           "roomFloor": {
-            "type": "string",
-            "nullable": true
-          },
-          "roomAddress": {
             "type": "string",
             "nullable": true
           },
@@ -1392,16 +1444,20 @@
       },
       "CreateRoomDto": {
         "required": [
+          "campusId",
           "name",
           "capacity",
           "type",
           "floor",
-          "address",
           "notes",
           "assetIds"
         ],
         "type": "object",
         "properties": {
+          "campusId": {
+            "type": "integer",
+            "format": "int64"
+          },
           "name": {
             "type": "string"
           },
@@ -1414,10 +1470,6 @@
             "$ref": "#/components/schemas/RoomType"
           },
           "floor": {
-            "type": "string",
-            "nullable": true
-          },
-          "address": {
             "type": "string",
             "nullable": true
           },
@@ -1439,9 +1491,7 @@
         "required": [
           "email",
           "displayName",
-          "role",
-          "password",
-          "userClass"
+          "password"
         ],
         "type": "object",
         "properties": {
@@ -1452,15 +1502,8 @@
             "type": "string",
             "nullable": true
           },
-          "role": {
-            "$ref": "#/components/schemas/UserRole"
-          },
           "password": {
             "type": "string"
-          },
-          "userClass": {
-            "type": "string",
-            "nullable": true
           }
         }
       },
@@ -1476,6 +1519,60 @@
           },
           "password": {
             "type": "string"
+          }
+        }
+      },
+      "Permission": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "bookRoom": {
+            "type": "boolean"
+          },
+          "myBookings": {
+            "type": "boolean"
+          },
+          "manageUsers": {
+            "type": "boolean"
+          },
+          "manageClasses": {
+            "type": "boolean"
+          },
+          "manageRooms": {
+            "type": "boolean"
+          },
+          "manageAssets": {
+            "type": "boolean"
+          },
+          "manageBookings": {
+            "type": "boolean"
+          },
+          "manageCampuses": {
+            "type": "boolean"
+          },
+          "manageRoles": {
+            "type": "boolean"
+          }
+        },
+        "nullable": true
+      },
+      "PermissionTemplateDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "cssClass": {
+            "type": "string"
+          },
+          "permissions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            }
           }
         }
       },
@@ -1505,6 +1602,10 @@
             "type": "integer",
             "format": "int64"
           },
+          "campusId": {
+            "type": "integer",
+            "format": "int64"
+          },
           "name": {
             "type": "string"
           },
@@ -1517,10 +1618,6 @@
             "$ref": "#/components/schemas/RoomType"
           },
           "floor": {
-            "type": "string",
-            "nullable": true
-          },
-          "address": {
             "type": "string",
             "nullable": true
           },
@@ -1540,17 +1637,21 @@
       "RoomResponseDto": {
         "required": [
           "id",
+          "campusId",
           "name",
           "capacity",
           "type",
           "floor",
-          "address",
           "notes",
           "assets"
         ],
         "type": "object",
         "properties": {
           "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "campusId": {
             "type": "integer",
             "format": "int64"
           },
@@ -1566,10 +1667,6 @@
             "$ref": "#/components/schemas/RoomType"
           },
           "floor": {
-            "type": "string",
-            "nullable": true
-          },
-          "address": {
             "type": "string",
             "nullable": true
           },
@@ -1607,16 +1704,20 @@
       },
       "UpdateRoomDto": {
         "required": [
+          "campusId",
           "name",
           "capacity",
           "type",
           "floor",
-          "address",
           "notes",
           "assetIds"
         ],
         "type": "object",
         "properties": {
+          "campusId": {
+            "type": "integer",
+            "format": "int64"
+          },
           "name": {
             "type": "string"
           },
@@ -1629,10 +1730,6 @@
             "$ref": "#/components/schemas/RoomType"
           },
           "floor": {
-            "type": "string",
-            "nullable": true
-          },
-          "address": {
             "type": "string",
             "nullable": true
           },
@@ -1655,9 +1752,7 @@
           "id",
           "email",
           "displayName",
-          "role",
           "password",
-          "userClass",
           "isBanned"
         ],
         "type": "object",
@@ -1673,13 +1768,7 @@
             "type": "string",
             "nullable": true
           },
-          "role": {
-            "$ref": "#/components/schemas/UserRole"
-          },
           "password": {
-            "type": "string"
-          },
-          "userClass": {
             "type": "string",
             "nullable": true
           },
@@ -1693,9 +1782,8 @@
           "id",
           "email",
           "displayName",
-          "role",
-          "userClass",
-          "isBanned"
+          "isBanned",
+          "permissions"
         ],
         "type": "object",
         "properties": {
@@ -1710,24 +1798,13 @@
             "type": "string",
             "nullable": true
           },
-          "role": {
-            "$ref": "#/components/schemas/UserRole"
-          },
-          "userClass": {
-            "type": "string",
-            "nullable": true
-          },
           "isBanned": {
             "$ref": "#/components/schemas/BannedStatus"
+          },
+          "permissions": {
+            "$ref": "#/components/schemas/Permission"
           }
         }
-      },
-      "UserRole": {
-        "enum": [
-          "Student",
-          "Educator",
-          "Admin"
-        ]
       }
     },
     "securitySchemes": {
@@ -1762,6 +1839,9 @@
     },
     {
       "name": "Registrations"
+    },
+    {
+      "name": "Permission Templates"
     }
   ]
 }

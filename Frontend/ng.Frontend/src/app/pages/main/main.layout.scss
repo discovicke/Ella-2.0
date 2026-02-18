@@ -37,13 +37,14 @@
   background: var(--color-bg-card);
   border-right: 1px solid var(--color-border);
   padding: 0;
-  overflow-y: auto;
+  overflow: hidden;
 
   display: flex;
   flex-direction: column;
 
   // Logo section at top
   .sidebar-header {
+    flex-shrink: 0;
     padding: map.get($spacing, '4');
     border-bottom: 1px solid var(--color-border);
     display: flex;
@@ -118,6 +119,13 @@
         border: 2px solid var(--color-bg-card);
       }
     }
+  }
+
+  // Scrollable navigation area (between fixed header & footer)
+  .sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
   }
 
   // Navigation sections (with top padding)
@@ -218,7 +226,7 @@
 
   // Footer at bottom with user info and logout
   .sidebar-footer {
-    margin-top: auto;
+    flex-shrink: 0;
     padding: map.get($spacing, '4');
     border-top: 1px solid var(--color-border);
     display: flex;

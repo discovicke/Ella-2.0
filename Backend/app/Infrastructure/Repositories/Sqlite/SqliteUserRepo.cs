@@ -1,6 +1,5 @@
 ﻿using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.Entities;
-using Backend.app.Core.Models.Enums;
 using Dapper;
 
 namespace Backend.app.Infrastructure.Repositories.Sqlite;
@@ -8,9 +7,6 @@ namespace Backend.app.Infrastructure.Repositories.Sqlite;
 public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<SqliteUserRepo> logger)
     : IUserRepository
 {
-    // SQLite repository for User
-    // ⚠️ Update queries for new schema if columns/tables changed
-
     public async Task<IEnumerable<User>> GetAllUsersAsync()
     {
         try
@@ -18,8 +14,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = "SELECT * FROM users;";
-            var users = await conn.QueryAsync<User>(sql);
-            return users;
+            return await conn.QueryAsync<User>(sql);
         }
         catch (Exception ex)
         {
@@ -35,8 +30,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = "SELECT * FROM users WHERE id = @id;";
-            var user = await conn.QuerySingleOrDefaultAsync<User>(sql, new { id });
-            return user;
+            return await conn.QuerySingleOrDefaultAsync<User>(sql, new { id });
         }
         catch (Exception ex)
         {
@@ -52,29 +46,11 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = "SELECT * FROM users WHERE email = @email;";
-            var user = await conn.QuerySingleOrDefaultAsync<User>(sql, new { email });
-            return user;
+            return await conn.QuerySingleOrDefaultAsync<User>(sql, new { email });
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Database error while fetching user with email {Email}", email);
-            throw;
-        }
-    }
-
-    public async Task<User?> GetUserByRoleAsync(UserRole role)
-    {
-        try
-        {
-            await using var conn = connectionFactory.CreateConnection();
-            await conn.OpenAsync();
-            var sql = "SELECT * FROM users WHERE role = @role;";
-            var user = await conn.QuerySingleOrDefaultAsync<User>(sql, new { role });
-            return user;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Database error while fetching user with role {Role}", role);
             throw;
         }
     }
@@ -86,8 +62,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = "SELECT * FROM users WHERE display_name = @displayName;";
-            var user = await conn.QuerySingleOrDefaultAsync<User>(sql, new { displayName });
-            return user;
+            return await conn.QuerySingleOrDefaultAsync<User>(sql, new { displayName });
         }
         catch (Exception ex)
         {
@@ -109,8 +84,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
 
             var sql =
                 @"
-            INSERT INTO users (email, password_hash, role, display_name, user_class, is_banned)
-            VALUES (@Email, @PasswordHash, @Role, @DisplayName, @UserClass, @IsBanned);";
+            INSERT INTO users (email, password_hash, display_name, is_banned)
+            VALUES (@Email, @PasswordHash, @DisplayName, @IsBanned);";
 
             var rowsAffected = await conn.ExecuteAsync(
                 sql,
@@ -118,9 +93,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
                 {
                     user.Email,
                     user.PasswordHash,
-                    user.Role,
                     user.DisplayName,
-                    user.UserClass,
                     user.IsBanned,
                 }
             );
@@ -146,9 +119,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
             UPDATE users
             SET email = @Email,
                 password_hash = @PasswordHash,
-                role = @Role,
                 display_name = @DisplayName,
-                user_class = @UserClass,
                 is_banned = @IsBanned,
                 tokens_valid_after = @TokensValidAfter
             WHERE id = @Id;";
@@ -159,9 +130,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
                 {
                     user.Email,
                     user.PasswordHash,
-                    user.Role,
                     user.DisplayName,
-                    user.UserClass,
                     user.IsBanned,
                     user.TokensValidAfter,
                     Id = id,
@@ -183,54 +152,13 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-
             var sql = @"DELETE FROM users WHERE id = @id;";
-
             var rowsAffected = await conn.ExecuteAsync(sql, new { id });
-
             return rowsAffected == 1;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Database error while deleting user with ID {UserId}", id);
-            throw;
-        }
-    }
-
-    public async Task<IEnumerable<User>> GetUsersByClassAsync(string className)
-    {
-        try
-        {
-            await using var conn = connectionFactory.CreateConnection();
-            await conn.OpenAsync();
-            var sql = "SELECT * FROM users WHERE user_class = @className;";
-            var users = await conn.QueryAsync<User>(sql, new { className });
-            return users;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Database error while fetching users for class {ClassName}",
-                className
-            );
-            throw;
-        }
-    }
-
-    public async Task<IEnumerable<User>> GetUsersByRoleAsync(UserRole role)
-    {
-        try
-        {
-            await using var conn = connectionFactory.CreateConnection();
-            await conn.OpenAsync();
-            var sql = "SELECT * FROM users WHERE role = @role";
-            var users = await conn.QueryAsync<User>(sql, new { role });
-            return users;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Database error while fetching users with role {Role}", role);
             throw;
         }
     }

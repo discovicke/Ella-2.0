@@ -12,14 +12,11 @@ public record BookingDetailedReadModel
     public long UserId { get; init; }
     public string? UserName { get; init; }
     public string? UserEmail { get; init; }
-    public UserRole UserRole { get; init; }
-    public string? UserClass { get; init; }
     public long RoomId { get; init; }
     public string? RoomName { get; init; }
     public int? RoomCapacity { get; init; }
     public RoomType RoomType { get; init; }
     public string? RoomFloor { get; init; }
-    public string? RoomAddress { get; init; }
     public DateTime StartTime { get; init; }
     public DateTime EndTime { get; init; }
     public BookingStatus Status { get; init; }

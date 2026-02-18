@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { SessionService } from '../../core/session.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { ConfirmService } from '../../shared/services/confirm.service';
+import { resolveRoleLabel } from '../../core/permission-templates';
 
 @Component({
   selector: 'app-main-layout',
@@ -18,6 +19,8 @@ export class MainLayout {
   public readonly sessionService = inject(SessionService);
   private readonly authService = inject(AuthService);
   private readonly confirmService = inject(ConfirmService);
+
+  readonly resolveRoleLabel = resolveRoleLabel;
 
   getInitials(name: string): string {
     if (!name) return '?';

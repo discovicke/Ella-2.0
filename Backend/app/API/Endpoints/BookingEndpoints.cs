@@ -15,9 +15,7 @@ public static class BookingEndpoints
 
     public static RouteGroupBuilder MapBookingEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/bookings")
-            .WithTags("Bookings")
-            .RequireAuth();
+        var group = app.MapGroup("/bookings").WithTags("Bookings").RequireAuth();
 
         // GET /api/bookings
         group
@@ -32,13 +30,21 @@ public static class BookingEndpoints
                     BookingService service
                 ) =>
                 {
-                    var bookings = await service.GetFilteredBookingsAsync(userId, roomId, startDate, endDate, status);
+                    var bookings = await service.GetFilteredBookingsAsync(
+                        userId,
+                        roomId,
+                        startDate,
+                        endDate,
+                        status
+                    );
                     return Results.Ok(bookings);
                 }
             )
             .WithName("GetAllBookings")
             .WithSummary("Get all bookings")
-            .WithDescription("Retrieves a list of bookings, optionally filtered by user, room, date range, or status.\n\n🔒 **Authentication Required**")
+            .WithDescription(
+                "Retrieves a list of bookings, optionally filtered by user, room, date range, or status.\n\n🔒 **Authentication Required**"
+            )
             .Produces<IEnumerable<BookingDetailedReadModel>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
 
@@ -59,11 +65,14 @@ public static class BookingEndpoints
                     // SECURITY: Force UserId from authenticated context
                     if (context.Items["UserId"] is not long authenticatedUserId)
                     {
-                         return Results.Unauthorized();
+                        return Results.Unauthorized();
                     }
 
                     // Create a modified DTO with the trusted User ID
-                    var safeDto = dto with { UserId = authenticatedUserId };
+                    var safeDto = dto with
+                    {
+                        UserId = authenticatedUserId,
+                    };
 
                     var createdBooking = await service.CreateBookingAsync(safeDto);
 
@@ -74,15 +83,14 @@ public static class BookingEndpoints
                         );
                     }
 
-                    return Results.Created(
-                        $"/api/bookings/{createdBooking.Id}",
-                        createdBooking
-                    );
+                    return Results.Created($"/api/bookings/{createdBooking.Id}", createdBooking);
                 }
             )
             .WithName("CreateBooking")
             .WithSummary("Create a new booking")
-            .WithDescription("Creates a new booking for the authenticated user.\n\n🔒 **Authentication Required**")
+            .WithDescription(
+                "Creates a new booking for the authenticated user.\n\n🔒 **Authentication Required**"
+            )
             .Accepts<CreateBookingDto>("application/json")
             .Produces<BookingDetailedReadModel>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
@@ -104,7 +112,9 @@ public static class BookingEndpoints
             )
             .WithName("UpdateBookingStatus")
             .WithSummary("Update booking status by ID")
-            .WithDescription("Updates the status of a specific booking.\n\n🔒 **Authentication Required**")
+            .WithDescription(
+                "Updates the status of a specific booking.\n\n🔒 **Authentication Required**"
+            )
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
@@ -124,7 +134,9 @@ public static class BookingEndpoints
             )
             .WithName("GetMyOwnedBookings")
             .WithSummary("Get owned bookings")
-            .WithDescription("Retrieves all bookings created by the authenticated user.\n\n🔒 **Authentication Required**")
+            .WithDescription(
+                "Retrieves all bookings created by the authenticated user.\n\n🔒 **Authentication Required**"
+            )
             .Produces<IEnumerable<BookingDetailedReadModel>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
 

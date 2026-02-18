@@ -1,11 +1,11 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { UserRole } from '../models/models';
+import { Permission } from '../models/models';
 
 export interface UserState {
   id: number;
   email: string;
   displayName: string;
-  role: UserRole;
+  permissions: Permission;
   isBanned: boolean;
   token?: string; // JWT token
 }
@@ -22,7 +22,7 @@ export class SessionService {
   // Public Selectors
   readonly currentUser = computed(() => this._currentUser());
   readonly isAuthenticated = computed(() => !!this.currentUser());
-  readonly userRole = computed(() => this.currentUser()?.role);
+  readonly permissions = computed(() => this.currentUser()?.permissions);
 
   constructor() {
     this.restoreSession();
@@ -60,10 +60,10 @@ export class SessionService {
   }
 
   /**
-   * Check if current user has one of the required roles
+   * Check if current user has a specific permission
    */
-  hasRole(allowedRoles: UserRole[]): boolean {
-    const role = this.userRole();
-    return !!role && allowedRoles.includes(role);
+  hasPermission(permission: keyof NonNullable<Permission>): boolean {
+    const perms = this.permissions();
+    return !!perms && !!perms[permission];
   }
 }

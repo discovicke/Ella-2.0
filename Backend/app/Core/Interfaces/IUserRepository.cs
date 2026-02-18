@@ -1,24 +1,15 @@
 ﻿using Backend.app.Core.Models.Entities;
-using Backend.app.Core.Models.Enums;
 
 namespace Backend.app.Core.Interfaces;
 
 public interface IUserRepository
 {
-    // Repository interface for User data access
-    // Reference: src/modules/users/user.repo.js for all methods
-    // CRUD stands for Create, Read, Update, and Delete – basic operations used to add, fetch, modify, and remove data.
-
-    Task<IEnumerable<User>> GetAllUsersAsync(); //
-    Task<User?> GetUserByIdAsync(long id); //
-    Task<User?> GetUserByEmailAsync(string email); //
-    Task<User?> GetUserByRoleAsync(UserRole role); //
-    Task<User?> GetUserByDisplayNameAsync(string displayName); //
-    Task<bool> CreateUserAsync(User user); //
-    Task<bool> UpdateUserAsync(long id, User user); //
-    Task<bool> DeleteUserAsync(long id); //
-
-    // New query methods
-    Task<IEnumerable<User>> GetUsersByClassAsync(string classname); //
-    Task<IEnumerable<User>> GetUsersByRoleAsync(UserRole role);
+    // CRUD
+    Task<IEnumerable<User>> GetAllUsersAsync();
+    Task<User?> GetUserByIdAsync(long id);
+    Task<User?> GetUserByEmailAsync(string email);
+    Task<User?> GetUserByDisplayNameAsync(string displayName);
+    Task<bool> CreateUserAsync(User user);
+    Task<bool> UpdateUserAsync(long id, User user);
+    Task<bool> DeleteUserAsync(long id);
 }

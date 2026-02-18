@@ -20,20 +20,18 @@ public class SqliteRoomReadModelRepo(
                 @"
                 SELECT 
                     r.id AS RoomId, 
+                    r.campus_id AS CampusId,
                     r.name, 
                     r.capacity, 
                     r.type, 
                     r.floor, 
-                    r.address, 
                     r.notes,
-                    -- Combine assets into a single string using '|||' as the separator
                     GROUP_CONCAT(at.description, '|||') AS AssetsString
                 FROM rooms r
                 LEFT JOIN room_assets ra ON r.id = ra.room_id
                 LEFT JOIN asset_types at ON ra.asset_type_id = at.id
-                GROUP BY r.id, r.name, r.capacity, r.type, r.floor, r.address, r.notes;";
+                GROUP BY r.id, r.campus_id, r.name, r.capacity, r.type, r.floor, r.notes;";
 
-            // Dapper automatically matches columns to the RoomDetailModel constructor
             return await conn.QueryAsync<RoomDetailModel>(sql);
         }
         catch (Exception ex)
@@ -54,19 +52,18 @@ public class SqliteRoomReadModelRepo(
                 @"
                 SELECT 
                     r.id AS RoomId, 
+                    r.campus_id AS CampusId,
                     r.name, 
                     r.capacity, 
                     r.type, 
                     r.floor, 
-                    r.address, 
                     r.notes,
-                    -- Combine assets into a single string using '|||' as the separator
                     GROUP_CONCAT(at.description, '|||') AS AssetsString
                 FROM rooms r
                 LEFT JOIN room_assets ra ON r.id = ra.room_id
                 LEFT JOIN asset_types at ON ra.asset_type_id = at.id
                 WHERE r.id = @roomId
-                GROUP BY r.id, r.name, r.capacity, r.type, r.floor, r.address, r.notes;";
+                GROUP BY r.id, r.campus_id, r.name, r.capacity, r.type, r.floor, r.notes;";
 
             return await conn.QuerySingleOrDefaultAsync<RoomDetailModel>(sql, new { roomId });
         }

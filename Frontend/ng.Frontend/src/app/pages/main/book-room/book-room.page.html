@@ -95,7 +95,7 @@
               <h3>{{ room.name }}</h3>
               <span class="type-badge">{{ room.type }}</span>
             </div>
-            @if (room.address) {
+            @if (room.campusId) {
               <div class="room-location">
                 <svg
                   class="location-icon"
@@ -108,7 +108,7 @@
                   <circle cx="12" cy="10" r="3" />
                 </svg>
                 <span
-                  >{{ room.address }}
+                  >Campus {{ room.campusId }}
                   @if (room.floor) {
                     • Vån {{ room.floor }}
                   }

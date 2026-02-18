@@ -57,20 +57,18 @@ public class JwtTokenProvider : ITokenProvider
     /// Denna timestamp (iat) kan jämföras med user.token_valid_after i databasen
     /// för att invalidera alla tokens vid behov (t.ex. efter lösenordsbyte).
     /// </summary>
-    public string GenerateAccessToken(long userId, string email, string role)
+    public string GenerateAccessToken(long userId, string email)
     {
-        // Steg 1: Skapa claims (påståenden om användaren)
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()), // Subject: User ID
-            new Claim(JwtRegisteredClaimNames.Email, email), // Email
-            new Claim("role", role), // Role
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Unique token ID
+            new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, email),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(
                 JwtRegisteredClaimNames.Iat,
                 DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
                 ClaimValueTypes.Integer64
-            ), // Issued at
+            ),
         };
 
         // Steg 2: Skapa signeringsnyckel från secret
@@ -114,11 +112,8 @@ public class JwtTokenProvider : ITokenProvider
     {
         try
         {
-            var tokenHandler = new JwtSecurityTokenHandler
-            {
-                MapInboundClaims = false
-            };
-        
+            var tokenHandler = new JwtSecurityTokenHandler { MapInboundClaims = false };
+
             var key = Encoding.UTF8.GetBytes(_secretKey);
 
             // Konfigurera valideringsparametrar

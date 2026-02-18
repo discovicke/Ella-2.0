@@ -1,33 +1,25 @@
-﻿using Backend.app.Core.Models.Enums;
+﻿using Backend.app.Core.Models.Entities;
+using Backend.app.Core.Models.Enums;
 
 namespace Backend.app.Core.Models.DTO;
 
-// Data Transfer Objects for User
-// Reference: src/modules/users/user.dto.js
+// Data Transfer Objects for User (v2.0)
+// Roles/permissions are now separate — see PermissionDto
 public record UserResponseDto(
     long Id,
     string Email,
     string? DisplayName,
-    UserRole Role,
-    string? UserClass,
-    BannedStatus IsBanned
+    BannedStatus IsBanned,
+    Permission? Permissions
 );
 
-public record CreateUserDto(
-    string Email,
-    string? DisplayName,
-    UserRole Role,
-    string Password,
-    string? UserClass
-);
+public record CreateUserDto(string Email, string? DisplayName, string Password);
 
 public record UpdateUserDto(
     long Id,
     string Email,
     string? DisplayName,
-    UserRole Role,
-    string Password,
-    string? UserClass,
+    string? Password,
     BannedStatus IsBanned
 );
 

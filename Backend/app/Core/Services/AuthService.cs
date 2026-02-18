@@ -6,28 +6,20 @@ using Backend.app.Core.Models.Enums;
 namespace Backend.app.Core.Services;
 
 /// <summary>
-/// Handles authentication logic: login, logout, and current user retrieval.
-/// All password verification and JWT generation happens here, not in endpoints.
+/// Handles authentication logic: login, logout, register, and current user retrieval.
 /// </summary>
 public class AuthService(
     IUserRepository userRepo,
+    IPermissionRepository permissionRepo,
     IPasswordHasher passwordHasher,
     ITokenProvider tokenProvider,
     ILogger<AuthService> logger
 )
 {
-    /// <summary>
-    /// Authenticates a user by email and password.
-    /// Returns JWT token and user info on success.
-    ///
-    /// Security: Uses identical error for "user not found" and "wrong password"
-    /// to prevent user enumeration attacks.
-    /// </summary>
     public async Task<LoginResultDto> LoginAsync(LoginDto request)
     {
         logger.LogInformation("Login attempt for email: {Email}", request.Email);
 
-        // Find user by email
         var user = await userRepo.GetUserByEmailAsync(request.Email);
 
         if (user is null)
@@ -36,19 +28,22 @@ public class AuthService(
             return new LoginResultDto();
         }
 
-        // Check if user is banned
         if (user.IsBanned == BannedStatus.Banned)
         {
             logger.LogWarning("Login failed: user {UserId} is banned", user.Id);
-            return new LoginResultDto { IsBanned = true, Response = new AuthResponseDto 
-            { 
-                Message = "Account suspended", 
-                Token = "", 
-                User = MapToUserDto(user) 
-            }};
+            var perms = await permissionRepo.GetByUserIdAsync(user.Id);
+            return new LoginResultDto
+            {
+                IsBanned = true,
+                Response = new AuthResponseDto
+                {
+                    Message = "Account suspended",
+                    Token = "",
+                    User = MapToUserDto(user, perms),
+                },
+            };
         }
 
-        // Verify password using Argon2id
         var isValidPassword = passwordHasher.VerifyPassword(request.Password, user.PasswordHash);
 
         if (!isValidPassword)
@@ -57,24 +52,24 @@ public class AuthService(
             return new LoginResultDto();
         }
 
-        // Generate JWT token
-        var token = tokenProvider.GenerateAccessToken(user.Id, user.Email, user.Role.ToString());
+        var token = tokenProvider.GenerateAccessToken(user.Id, user.Email);
 
         logger.LogInformation("Login successful for user {UserId} ({Email})", user.Id, user.Email);
 
-        return new LoginResultDto 
-        { 
-            Response = new AuthResponseDto { Message = "Login successful", Token = token, User = MapToUserDto(user) } 
+        var permissions = await permissionRepo.GetByUserIdAsync(user.Id);
+        return new LoginResultDto
+        {
+            Response = new AuthResponseDto
+            {
+                Message = "Login successful",
+                Token = token,
+                User = MapToUserDto(user, permissions),
+            },
         };
     }
 
-    /// <summary>
-    /// Validates a JWT token and returns the authenticated user if valid.
-    /// Also checks token_valid_after to support token invalidation.
-    /// </summary>
     public async Task<TokenValidationResultDto> ValidateTokenAndGetUserAsync(string token)
     {
-        // Step 1: Validate JWT signature and expiration
         var principal = tokenProvider.ValidateToken(token);
         if (principal is null)
         {
@@ -82,7 +77,6 @@ public class AuthService(
             return new TokenValidationResultDto();
         }
 
-        // Step 2: Extract user ID from claims
         var userId = tokenProvider.GetUserIdFromClaims(principal);
         if (userId is null)
         {
@@ -90,7 +84,6 @@ public class AuthService(
             return new TokenValidationResultDto();
         }
 
-        // Step 3: Get user from database
         var user = await userRepo.GetUserByIdAsync(userId.Value);
         if (user is null)
         {
@@ -98,14 +91,12 @@ public class AuthService(
             return new TokenValidationResultDto();
         }
 
-        // Step 4: Check if user is banned (Check this BEFORE token expiration logic)
         if (user.IsBanned == BannedStatus.Banned)
         {
             logger.LogWarning("Token validation failed: user {UserId} is banned", userId);
             return new TokenValidationResultDto { User = user, IsBanned = true };
         }
 
-        // Step 5: Check tokens_valid_after (invalidates all tokens issued before this timestamp)
         var issuedAt = tokenProvider.GetIssuedAtFromClaims(principal);
         if (issuedAt is null || issuedAt < user.TokensValidAfter)
         {
@@ -116,13 +107,10 @@ public class AuthService(
             return new TokenValidationResultDto();
         }
 
-        return new TokenValidationResultDto { User = user };
+        var permissions = await permissionRepo.GetByUserIdAsync(user.Id);
+        return new TokenValidationResultDto { User = user, Permissions = permissions };
     }
 
-    /// <summary>
-    /// Invalidates all tokens for a user by updating tokens_valid_after.
-    /// Used for logout, password change, or security events.
-    /// </summary>
     public async Task<bool> InvalidateAllTokensAsync(long userId)
     {
         var user = await userRepo.GetUserByIdAsync(userId);
@@ -143,14 +131,10 @@ public class AuthService(
         return success;
     }
 
-    /// <summary>
-    /// Registers a new user with the given credentials.
-    /// </summary>
     public async Task<LoginResultDto> RegisterAsync(RegisterDto request)
     {
         logger.LogInformation("Registration attempt for email: {Email}", request.Email);
 
-        // Check if email already exists
         var existingUser = await userRepo.GetUserByEmailAsync(request.Email);
         if (existingUser is not null)
         {
@@ -158,17 +142,14 @@ public class AuthService(
             return new LoginResultDto();
         }
 
-        // Hash password with Argon2id
         var passwordHash = passwordHasher.HashPassword(request.Password);
 
-        // Create user entity
         var user = new User
         {
             Email = request.Email,
             PasswordHash = passwordHash,
             DisplayName = request.DisplayName,
-            Role = UserRole.Student, // Default role
-            TokensValidAfter = DateTime.MinValue, // Fix: Ensure new users don't have immediate token invalidation issues due to timestamp precision
+            TokensValidAfter = DateTime.MinValue,
         };
 
         var success = await userRepo.CreateUserAsync(user);
@@ -178,7 +159,6 @@ public class AuthService(
             return new LoginResultDto();
         }
 
-        // Fetch the created user to get the ID
         var createdUser = await userRepo.GetUserByEmailAsync(request.Email);
         if (createdUser is null)
         {
@@ -189,8 +169,16 @@ public class AuthService(
             return new LoginResultDto();
         }
 
-        // Generate JWT for immediate login
-        var token = tokenProvider.GenerateAccessToken(createdUser.Id, createdUser.Email, createdUser.Role.ToString());
+        // Create default permissions (basic booking)
+        var defaultPerms = new Permission
+        {
+            UserId = createdUser.Id,
+            BookRoom = true,
+            MyBookings = true,
+        };
+        await permissionRepo.CreateAsync(defaultPerms);
+
+        var token = tokenProvider.GenerateAccessToken(createdUser.Id, createdUser.Email);
 
         logger.LogInformation(
             "Registration successful for user {UserId} ({Email})",
@@ -198,18 +186,25 @@ public class AuthService(
             createdUser.Email
         );
 
-        return new LoginResultDto { Response = new AuthResponseDto { Message = "Registration successful", Token = token, User = MapToUserDto(createdUser) } };
+        return new LoginResultDto
+        {
+            Response = new AuthResponseDto
+            {
+                Message = "Registration successful",
+                Token = token,
+                User = MapToUserDto(createdUser, defaultPerms),
+            },
+        };
     }
 
-    private static AuthedUserResponseDto MapToUserDto(User user)
+    private static AuthedUserResponseDto MapToUserDto(User user, Permission? permissions)
     {
-        return new AuthedUserResponseDto()
+        return new AuthedUserResponseDto
         {
             Id = user.Id,
             Email = user.Email,
             DisplayName = user.DisplayName,
-            Role = user.Role.ToString(),
-            UserClass = user.UserClass,
+            Permissions = permissions,
             IsBanned = user.IsBanned == BannedStatus.Banned,
         };
     }

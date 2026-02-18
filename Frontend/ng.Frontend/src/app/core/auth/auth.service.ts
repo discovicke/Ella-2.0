@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
-import { AuthResponseDto, LoginDto, UserRole } from '../../models/models';
+import { AuthResponseDto, LoginDto, Permission } from '../../models/models';
 import { SessionService, UserState } from '../session.service';
 
 @Injectable({
@@ -61,7 +61,7 @@ export class AuthService {
       id: apiUser.id,
       email: apiUser.email,
       displayName: apiUser.displayName,
-      role: apiUser.role as UserRole,
+      permissions: apiUser.permissions ?? null,
       isBanned: !!apiUser.isBanned,
     };
   }

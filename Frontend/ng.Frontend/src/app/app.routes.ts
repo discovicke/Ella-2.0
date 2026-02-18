@@ -27,8 +27,7 @@ export const routes: Routes = [
   },
   {
     path: 'banned',
-    loadComponent: () =>
-      import('./pages/_public/banned/banned.page').then((m) => m.BannedPage),
+    loadComponent: () => import('./pages/_public/banned/banned.page').then((m) => m.BannedPage),
   },
   {
     path: 'bookingform',
@@ -56,16 +55,12 @@ export const routes: Routes = [
       {
         path: 'manage-users',
         loadComponent: () =>
-          import('./pages/main/manage-users/manage-users.page').then(
-            (m) => m.ManageUsersPage,
-          ),
+          import('./pages/main/manage-users/manage-users.page').then((m) => m.ManageUsersPage),
       },
       {
         path: 'manage-rooms',
         loadComponent: () =>
-          import('./pages/main/manage-rooms/manage-rooms.page').then(
-            (m) => m.ManageRoomsPage,
-          ),
+          import('./pages/main/manage-rooms/manage-rooms.page').then((m) => m.ManageRoomsPage),
       },
       {
         path: 'manage-bookings',
@@ -75,25 +70,26 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'manage-roles',
+        loadComponent: () =>
+          import('./pages/main/manage-roles/manage-roles.page').then((m) => m.ManageRolesPage),
+      },
+      {
         path: 'see-bookings',
         loadComponent: () =>
-          import('./pages/main/see-bookings/see-bookings.page').then(
-            (m) => m.SeeBookingsPage,
-          ),
+          import('./pages/main/see-bookings/see-bookings.page').then((m) => m.SeeBookingsPage),
       },
       {
         path: 'book-room',
         loadComponent: () =>
-          import('./pages/main/book-room/book-room.page').then(
-            (m) => m.BookRoomPage,
-          ),
+          import('./pages/main/book-room/book-room.page').then((m) => m.BookRoomPage),
       },
       // Redirect root of authenticated area to see-bookings
       {
         path: '',
         redirectTo: 'see-bookings',
         pathMatch: 'full',
-      }
+      },
     ],
   },
 

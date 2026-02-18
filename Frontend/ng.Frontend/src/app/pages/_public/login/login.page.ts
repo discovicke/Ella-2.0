@@ -5,7 +5,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { SessionService } from '../../../core/session.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { LoginDto, UserRole } from '../../../models/models';
+import { LoginDto } from '../../../models/models';
 
 @Component({
   selector: 'app-login-page',
