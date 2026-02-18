@@ -23,7 +23,11 @@ import {
   UserResponseDto,
 } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { UserFormModalComponent, UserFormPayload } from './user-form-modal.component';
+import {
+  UserFormModalComponent,
+  UserFormPayload,
+  CustomPermissionsPayload,
+} from './user-form-modal.component';
 import { TableComponent, TableColumn } from '../../../shared/components/table/table.component';
 import {
   permissionTemplates,
@@ -166,6 +170,17 @@ export class ManageUsersPage implements OnInit {
         user: null,
         templateOptions: this.templateOptions(),
         initialTemplateId: null,
+        initialPermissions: {
+          bookRoom: true,
+          myBookings: true,
+          manageUsers: false,
+          manageClasses: false,
+          manageRooms: false,
+          manageAssets: false,
+          manageBookings: false,
+          manageCampuses: false,
+          manageRoles: false,
+        },
         onSave: (payload: UserFormPayload) => this.handleSave(payload),
       },
       width: '500px',
@@ -183,6 +198,7 @@ export class ManageUsersPage implements OnInit {
         user: user,
         templateOptions: this.templateOptions(),
         initialTemplateId: user.permissions?.templateId ?? null,
+        initialPermissions: user.permissions,
         onSave: (payload: UserFormPayload) => this.handleSave(payload, user.id, user.permissions),
         onDelete: (id: number) => this.handleDelete(id),
       },
@@ -226,7 +242,12 @@ export class ManageUsersPage implements OnInit {
         };
 
         await firstValueFrom(this.userService.updateUser(userId, updatePayload));
-        await this.syncTemplateAssignment(userId, selectedTemplateId, existingPermissions);
+        await this.syncTemplateAssignment(
+          userId,
+          selectedTemplateId,
+          payload.customPermissions,
+          existingPermissions,
+        );
       } else {
         const createPayload: CreateUserDto = {
           email: payload.email,
@@ -235,8 +256,13 @@ export class ManageUsersPage implements OnInit {
         };
 
         const created = await firstValueFrom(this.userService.createUser(createPayload));
-        if (selectedTemplateId && created.id) {
-          await firstValueFrom(this.userService.applyTemplate(created.id, selectedTemplateId));
+        if (created.id) {
+          await this.syncTemplateAssignment(
+            created.id,
+            selectedTemplateId,
+            payload.customPermissions,
+            undefined,
+          );
         }
       }
 
@@ -252,6 +278,7 @@ export class ManageUsersPage implements OnInit {
   private async syncTemplateAssignment(
     userId: number,
     selectedTemplateId: number | null,
+    customPermissions: CustomPermissionsPayload,
     existingPermissions?: Permission,
   ) {
     if (selectedTemplateId && selectedTemplateId > 0) {
@@ -259,21 +286,41 @@ export class ManageUsersPage implements OnInit {
       return;
     }
 
-    if (selectedTemplateId === null && existingPermissions?.templateId) {
+    if (selectedTemplateId === null) {
+      const previousTemplateId = existingPermissions?.templateId ?? null;
+      const shouldUpdateCustom =
+        previousTemplateId !== null ||
+        this.permissionsChanged(existingPermissions, customPermissions);
+
+      if (!shouldUpdateCustom) {
+        return;
+      }
+
       await firstValueFrom(
         this.userService.updatePermissions(userId, {
           templateId: null,
-          bookRoom: !!existingPermissions.bookRoom,
-          myBookings: !!existingPermissions.myBookings,
-          manageUsers: !!existingPermissions.manageUsers,
-          manageClasses: !!existingPermissions.manageClasses,
-          manageRooms: !!existingPermissions.manageRooms,
-          manageAssets: !!existingPermissions.manageAssets,
-          manageBookings: !!existingPermissions.manageBookings,
-          manageCampuses: !!existingPermissions.manageCampuses,
-          manageRoles: !!existingPermissions.manageRoles,
+          ...customPermissions,
         }),
       );
     }
+  }
+
+  private permissionsChanged(
+    existingPermissions: Permission | undefined,
+    next: CustomPermissionsPayload,
+  ): boolean {
+    if (!existingPermissions) return true;
+
+    return (
+      !!existingPermissions.bookRoom !== next.bookRoom ||
+      !!existingPermissions.myBookings !== next.myBookings ||
+      !!existingPermissions.manageUsers !== next.manageUsers ||
+      !!existingPermissions.manageClasses !== next.manageClasses ||
+      !!existingPermissions.manageRooms !== next.manageRooms ||
+      !!existingPermissions.manageAssets !== next.manageAssets ||
+      !!existingPermissions.manageBookings !== next.manageBookings ||
+      !!existingPermissions.manageCampuses !== next.manageCampuses ||
+      !!existingPermissions.manageRoles !== next.manageRoles
+    );
   }
 }

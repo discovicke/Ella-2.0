@@ -10,8 +10,20 @@ import {
 } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ConfirmService } from '../../../shared/services/confirm.service';
-import { BannedStatus, PermissionTemplateDto } from '../../../models/models';
+import { BannedStatus, Permission, PermissionTemplateDto } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
+
+export interface CustomPermissionsPayload {
+  bookRoom: boolean;
+  myBookings: boolean;
+  manageUsers: boolean;
+  manageClasses: boolean;
+  manageRooms: boolean;
+  manageAssets: boolean;
+  manageBookings: boolean;
+  manageCampuses: boolean;
+  manageRoles: boolean;
+}
 
 export interface UserFormPayload {
   id?: number;
@@ -20,6 +32,7 @@ export interface UserFormPayload {
   password?: string;
   isBanned?: BannedStatus;
   selectedTemplateId: number | null;
+  customPermissions: CustomPermissionsPayload;
 }
 
 /**
@@ -73,6 +86,26 @@ export const passwordMatchValidator: ValidatorFn = (
           }
         </select>
       </div>
+
+      @if (userForm.controls.templateId.value === null) {
+        <div class="permissions-block">
+          <p class="permissions-title">Anpassade behörigheter</p>
+          <p class="permissions-hint">
+            Välj exakt vad användaren ska kunna göra. Avmarkerat betyder ingen åtkomst.
+          </p>
+          <div class="permissions-grid">
+            @for (permission of permissionOptions; track permission.key) {
+              <label class="permission-item" [class.active]="isPermissionEnabled(permission.key)">
+                <input type="checkbox" [formControlName]="permission.key" />
+                <span class="permission-label">{{ permission.label }}</span>
+                <span class="permission-switch" aria-hidden="true">
+                  <span class="switch-thumb"></span>
+                </span>
+              </label>
+            }
+          </div>
+        </div>
+      }
 
       <div class="form-row">
         <div class="form-group">
@@ -179,6 +212,100 @@ export const passwordMatchValidator: ValidatorFn = (
           @include button-danger;
         }
       }
+
+      .permissions-block {
+        @include stack(0.5rem);
+        padding: 0.75rem;
+        border: 1px solid var(--color-border);
+        border-radius: 0.5rem;
+        background: var(--color-bg-panel);
+      }
+
+      .permissions-title {
+        margin: 0;
+        font-size: var(--font-sm);
+        font-weight: 600;
+        color: var(--color-text-primary);
+      }
+
+      .permissions-hint {
+        margin: 0;
+        font-size: var(--font-xs);
+        color: var(--color-text-secondary);
+      }
+
+      .permissions-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+
+        @media (max-width: 640px) {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .permission-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.55rem 0.65rem;
+        border: 1px solid var(--color-border);
+        border-radius: 0.5rem;
+        background: var(--color-bg-card);
+        cursor: pointer;
+        transition: all var(--transition-fast) var(--ease-smooth);
+        font-size: var(--font-sm);
+        color: var(--color-text-primary);
+
+        &:hover {
+          border-color: var(--color-primary);
+          background: var(--color-primary-surface);
+        }
+
+        &.active {
+          border-color: var(--color-primary);
+          background: var(--color-primary-surface);
+        }
+
+        input[type='checkbox'] {
+          display: none;
+        }
+      }
+
+      .permission-label {
+        line-height: 1.25;
+      }
+
+      .permission-switch {
+        position: relative;
+        width: 2.15rem;
+        height: 1.2rem;
+        border-radius: 999px;
+        background: var(--color-divider);
+        transition: background var(--transition-fast) var(--ease-smooth);
+        flex-shrink: 0;
+      }
+
+      .switch-thumb {
+        position: absolute;
+        top: 0.13rem;
+        left: 0.13rem;
+        width: 0.94rem;
+        height: 0.94rem;
+        border-radius: 50%;
+        background: var(--color-bg-card);
+        box-shadow: var(--shadow-sm);
+        transition: transform var(--transition-fast) var(--ease-smooth);
+      }
+
+      .permission-item.active .permission-switch {
+        background: var(--color-primary);
+      }
+
+      .permission-item.active .switch-thumb {
+        transform: translateX(0.95rem);
+      }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -192,6 +319,22 @@ export class UserFormModalComponent {
   protected initialData = this.config?.user;
   protected templateOptions: PermissionTemplateDto[] = this.config?.templateOptions ?? [];
   protected initialTemplateId: number | null = this.config?.initialTemplateId ?? null;
+  protected initialPermissions: Permission | undefined = this.config?.initialPermissions;
+
+  protected readonly permissionOptions: Array<{
+    key: keyof CustomPermissionsPayload;
+    label: string;
+  }> = [
+    { key: 'bookRoom', label: 'Boka rum' },
+    { key: 'myBookings', label: 'Mina bokningar' },
+    { key: 'manageUsers', label: 'Hantera användare' },
+    { key: 'manageClasses', label: 'Hantera klasser' },
+    { key: 'manageRooms', label: 'Hantera rum' },
+    { key: 'manageAssets', label: 'Hantera tillgångar' },
+    { key: 'manageBookings', label: 'Hantera bokningar' },
+    { key: 'manageCampuses', label: 'Hantera campus' },
+    { key: 'manageRoles', label: 'Hantera roller' },
+  ];
 
   readonly isSubmitting = signal(false);
 
@@ -206,6 +349,33 @@ export class UserFormModalComponent {
         validators: [Validators.required, Validators.email],
       }),
       templateId: new FormControl<number | null>(this.initialTemplateId),
+      bookRoom: new FormControl<boolean>(this.initialPermissions?.bookRoom ?? true, {
+        nonNullable: true,
+      }),
+      myBookings: new FormControl<boolean>(this.initialPermissions?.myBookings ?? true, {
+        nonNullable: true,
+      }),
+      manageUsers: new FormControl<boolean>(this.initialPermissions?.manageUsers ?? false, {
+        nonNullable: true,
+      }),
+      manageClasses: new FormControl<boolean>(this.initialPermissions?.manageClasses ?? false, {
+        nonNullable: true,
+      }),
+      manageRooms: new FormControl<boolean>(this.initialPermissions?.manageRooms ?? false, {
+        nonNullable: true,
+      }),
+      manageAssets: new FormControl<boolean>(this.initialPermissions?.manageAssets ?? false, {
+        nonNullable: true,
+      }),
+      manageBookings: new FormControl<boolean>(this.initialPermissions?.manageBookings ?? false, {
+        nonNullable: true,
+      }),
+      manageCampuses: new FormControl<boolean>(this.initialPermissions?.manageCampuses ?? false, {
+        nonNullable: true,
+      }),
+      manageRoles: new FormControl<boolean>(this.initialPermissions?.manageRoles ?? false, {
+        nonNullable: true,
+      }),
       password: new FormControl('', {
         nonNullable: true,
         validators: [Validators.required, Validators.minLength(6)],
@@ -239,15 +409,43 @@ export class UserFormModalComponent {
     });
   }
 
+  isPermissionEnabled(key: keyof CustomPermissionsPayload): boolean {
+    return !!this.userForm.controls[key].value;
+  }
+
   onSubmit() {
     if (this.userForm.invalid) return;
 
-    const { confirmPassword, ...formData } = this.userForm.getRawValue();
+    const {
+      confirmPassword,
+      templateId,
+      bookRoom,
+      myBookings,
+      manageUsers,
+      manageClasses,
+      manageRooms,
+      manageAssets,
+      manageBookings,
+      manageCampuses,
+      manageRoles,
+      ...formData
+    } = this.userForm.getRawValue();
 
     const payload: UserFormPayload = {
       ...this.initialData,
       ...formData,
-      selectedTemplateId: formData.templateId ?? null,
+      selectedTemplateId: templateId ?? null,
+      customPermissions: {
+        bookRoom,
+        myBookings,
+        manageUsers,
+        manageClasses,
+        manageRooms,
+        manageAssets,
+        manageBookings,
+        manageCampuses,
+        manageRoles,
+      },
     };
 
     // Om vi redigerar och lösenordet är tomt -> Ta bort det helt från payloaden
