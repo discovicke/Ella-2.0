@@ -57,6 +57,8 @@ export class ManageRolesPage implements OnInit {
     { label: 'Grön', cssClass: 'student' },
     { label: 'Blå', cssClass: 'educator' },
     { label: 'Orange', cssClass: 'admin' },
+    { label: 'Lila', cssClass: 'purple' },
+    { label: 'Röd', cssClass: 'red' },
     { label: 'Grå', cssClass: 'custom' },
   ];
 

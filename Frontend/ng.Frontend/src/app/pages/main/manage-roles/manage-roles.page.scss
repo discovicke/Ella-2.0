@@ -221,6 +221,14 @@
     @include role-badge('student');
   }
 
+  &.purple {
+    @include badge(var(--color-primary-surface), var(--color-primary));
+  }
+
+  &.red {
+    @include badge(var(--color-danger-surface), var(--color-danger));
+  }
+
   &.custom {
     background: var(--color-bg-panel);
     color: var(--color-text-secondary);
