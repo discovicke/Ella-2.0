@@ -2,6 +2,7 @@ namespace Backend.app.Core.Models.DTO;
 
 public record PermissionResponseDto(
     long UserId,
+    long? TemplateId,
     bool BookRoom,
     bool MyBookings,
     bool ManageUsers,
@@ -14,6 +15,7 @@ public record PermissionResponseDto(
 );
 
 public record UpdatePermissionDto(
+    long? TemplateId,
     bool BookRoom,
     bool MyBookings,
     bool ManageUsers,

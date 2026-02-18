@@ -120,6 +120,8 @@ export interface LoginDto {
 export type Permission = {
   /** @format int64 */
   userId?: number;
+  /** @format int64 */
+  templateId?: number | null;
   bookRoom?: boolean;
   myBookings?: boolean;
   manageUsers?: boolean;
@@ -129,9 +131,27 @@ export type Permission = {
   manageBookings?: boolean;
   manageCampuses?: boolean;
   manageRoles?: boolean;
-} | null;
+};
+
+export interface Permission2 {
+  /** @format int64 */
+  userId?: number;
+  /** @format int64 */
+  templateId?: number | null;
+  bookRoom?: boolean;
+  myBookings?: boolean;
+  manageUsers?: boolean;
+  manageClasses?: boolean;
+  manageRooms?: boolean;
+  manageAssets?: boolean;
+  manageBookings?: boolean;
+  manageCampuses?: boolean;
+  manageRoles?: boolean;
+}
 
 export interface PermissionTemplateDto {
+  /** @format int64 */
+  id?: number | null;
   label?: string;
   cssClass?: string;
   permissions?: Record<string, boolean>;
@@ -173,6 +193,20 @@ export interface RoomResponseDto {
 
 export interface UpdateAssetTypeDto {
   description: string;
+}
+
+export interface UpdatePermissionDto {
+  /** @format int64 */
+  templateId: number | null;
+  bookRoom: boolean;
+  myBookings: boolean;
+  manageUsers: boolean;
+  manageClasses: boolean;
+  manageRooms: boolean;
+  manageAssets: boolean;
+  manageBookings: boolean;
+  manageCampuses: boolean;
+  manageRoles: boolean;
 }
 
 export interface UpdateRoomDto {

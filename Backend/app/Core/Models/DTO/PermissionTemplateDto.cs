@@ -8,6 +8,13 @@ namespace Backend.app.Core.Models.DTO;
 /// </summary>
 public class PermissionTemplateDto
 {
+    /// <summary>
+    /// Template ID from the database. Null/0 for new templates.
+    /// Used to track which users are assigned to this template.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public long? Id { get; set; }
+
     [JsonPropertyName("label")]
     public string Label { get; set; } = string.Empty;
 

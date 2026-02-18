@@ -43,6 +43,13 @@
     color: var(--color-text-secondary);
   }
 
+  .propagate-helper {
+    width: 100%;
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+  }
+
   .header-actions {
     display: flex;
     gap: 8px;

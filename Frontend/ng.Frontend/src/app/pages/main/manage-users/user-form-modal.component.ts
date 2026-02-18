@@ -10,8 +10,17 @@ import {
 } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ConfirmService } from '../../../shared/services/confirm.service';
-import { BannedStatus } from '../../../models/models';
+import { BannedStatus, PermissionTemplateDto } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
+
+export interface UserFormPayload {
+  id?: number;
+  email: string;
+  displayName: string;
+  password?: string;
+  isBanned?: BannedStatus;
+  selectedTemplateId: number | null;
+}
 
 /**
  * Validator som ser till att lösenorden matchar
@@ -53,6 +62,16 @@ export const passwordMatchValidator: ValidatorFn = (
         @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
           <span class="error-msg">Giltig e-post krävs</span>
         }
+      </div>
+
+      <div class="form-group">
+        <label for="templateId">Roll</label>
+        <select id="templateId" formControlName="templateId">
+          <option [ngValue]="null">Anpassad (ingen mall)</option>
+          @for (template of templateOptions; track template.id) {
+            <option [ngValue]="template.id">{{ template.label }}</option>
+          }
+        </select>
       </div>
 
       <div class="form-row">
@@ -171,6 +190,8 @@ export class UserFormModalComponent {
 
   private config = this.modalService.modalData();
   protected initialData = this.config?.user;
+  protected templateOptions: PermissionTemplateDto[] = this.config?.templateOptions ?? [];
+  protected initialTemplateId: number | null = this.config?.initialTemplateId ?? null;
 
   readonly isSubmitting = signal(false);
 
@@ -184,6 +205,7 @@ export class UserFormModalComponent {
         nonNullable: true,
         validators: [Validators.required, Validators.email],
       }),
+      templateId: new FormControl<number | null>(this.initialTemplateId),
       password: new FormControl('', {
         nonNullable: true,
         validators: [Validators.required, Validators.minLength(6)],
@@ -222,9 +244,10 @@ export class UserFormModalComponent {
 
     const { confirmPassword, ...formData } = this.userForm.getRawValue();
 
-    const payload = {
+    const payload: UserFormPayload = {
       ...this.initialData,
       ...formData,
+      selectedTemplateId: formData.templateId ?? null,
     };
 
     // Om vi redigerar och lösenordet är tomt -> Ta bort det helt från payloaden

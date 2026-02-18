@@ -477,6 +477,143 @@
         }
       }
     },
+    "/api/users/{id}/permissions": {
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update a user's permissions",
+        "description": "Directly updates permission flags for a specific user. Sets template_id to the value in the DTO (null for custom overrides).\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**",
+        "operationId": "UpdateUserPermissions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePermissionDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Permission2"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/users/{id}/apply-template/{templateId}": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Apply a permission template to a user",
+        "description": "Copies all permission flags from the specified template into the user's permissions row and stores the template_id for future propagation.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**",
+        "operationId": "ApplyTemplateToUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "templateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Permission2"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
     "/api/rooms": {
       "get": {
         "tags": [
@@ -1224,7 +1361,7 @@
           "Permission Templates"
         ],
         "summary": "Replace all permission templates",
-        "description": "Replaces the full set of named permission templates. The server will auto-sync with the DB columns before persisting.\n\n🔒 **Requires manageRoles permission**",
+        "description": "Replaces the full set of named permission templates. The server will auto-sync with the DB columns before persisting.\n\nAdd `?propagate=true` to also update all users whose `template_id` matches a changed template.\n\n🔒 **Requires manageRoles permission**",
         "operationId": "UpdatePermissionTemplates",
         "requestBody": {
           "content": {
@@ -1541,6 +1678,11 @@
             "type": "integer",
             "format": "int64"
           },
+          "templateId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
           "bookRoom": {
             "type": "boolean"
           },
@@ -1571,9 +1713,55 @@
         },
         "nullable": true
       },
+      "Permission2": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "templateId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "bookRoom": {
+            "type": "boolean"
+          },
+          "myBookings": {
+            "type": "boolean"
+          },
+          "manageUsers": {
+            "type": "boolean"
+          },
+          "manageClasses": {
+            "type": "boolean"
+          },
+          "manageRooms": {
+            "type": "boolean"
+          },
+          "manageAssets": {
+            "type": "boolean"
+          },
+          "manageBookings": {
+            "type": "boolean"
+          },
+          "manageCampuses": {
+            "type": "boolean"
+          },
+          "manageRoles": {
+            "type": "boolean"
+          }
+        }
+      },
       "PermissionTemplateDto": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
           "label": {
             "type": "string"
           },
@@ -1711,6 +1899,55 @@
         "properties": {
           "description": {
             "type": "string"
+          }
+        }
+      },
+      "UpdatePermissionDto": {
+        "required": [
+          "templateId",
+          "bookRoom",
+          "myBookings",
+          "manageUsers",
+          "manageClasses",
+          "manageRooms",
+          "manageAssets",
+          "manageBookings",
+          "manageCampuses",
+          "manageRoles"
+        ],
+        "type": "object",
+        "properties": {
+          "templateId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "bookRoom": {
+            "type": "boolean"
+          },
+          "myBookings": {
+            "type": "boolean"
+          },
+          "manageUsers": {
+            "type": "boolean"
+          },
+          "manageClasses": {
+            "type": "boolean"
+          },
+          "manageRooms": {
+            "type": "boolean"
+          },
+          "manageAssets": {
+            "type": "boolean"
+          },
+          "manageBookings": {
+            "type": "boolean"
+          },
+          "manageCampuses": {
+            "type": "boolean"
+          },
+          "manageRoles": {
+            "type": "boolean"
           }
         }
       },

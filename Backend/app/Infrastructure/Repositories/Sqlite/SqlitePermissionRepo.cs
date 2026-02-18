@@ -25,6 +25,22 @@ public class SqlitePermissionRepo(
         }
     }
 
+    public async Task<List<Permission>> GetByTemplateIdAsync(long templateId)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            const string sql = "SELECT * FROM permissions WHERE template_id = @templateId;";
+            return (await conn.QueryAsync<Permission>(sql, new { templateId })).ToList();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching permissions for template {TemplateId}", templateId);
+            throw;
+        }
+    }
+
     public async Task<bool> CreateAsync(Permission permission)
     {
         try
@@ -33,8 +49,8 @@ public class SqlitePermissionRepo(
             await conn.OpenAsync();
             const string sql =
                 @"
-                INSERT INTO permissions (user_id, book_room, my_bookings, manage_users, manage_classes, manage_rooms, manage_assets, manage_bookings, manage_campuses, manage_roles)
-                VALUES (@UserId, @BookRoom, @MyBookings, @ManageUsers, @ManageClasses, @ManageRooms, @ManageAssets, @ManageBookings, @ManageCampuses, @ManageRoles);";
+                INSERT INTO permissions (user_id, template_id, book_room, my_bookings, manage_users, manage_classes, manage_rooms, manage_assets, manage_bookings, manage_campuses, manage_roles)
+                VALUES (@UserId, @TemplateId, @BookRoom, @MyBookings, @ManageUsers, @ManageClasses, @ManageRooms, @ManageAssets, @ManageBookings, @ManageCampuses, @ManageRoles);";
             return await conn.ExecuteAsync(sql, permission) > 0;
         }
         catch (Exception ex)
@@ -53,7 +69,7 @@ public class SqlitePermissionRepo(
             const string sql =
                 @"
                 UPDATE permissions 
-                SET book_room = @BookRoom, my_bookings = @MyBookings, manage_users = @ManageUsers,
+                SET template_id = @TemplateId, book_room = @BookRoom, my_bookings = @MyBookings, manage_users = @ManageUsers,
                     manage_classes = @ManageClasses, manage_rooms = @ManageRooms, manage_assets = @ManageAssets,
                     manage_bookings = @ManageBookings, manage_campuses = @ManageCampuses, manage_roles = @ManageRoles
                 WHERE user_id = @UserId;";
@@ -62,6 +78,45 @@ public class SqlitePermissionRepo(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error updating permissions for user {UserId}", permission.UserId);
+            throw;
+        }
+    }
+
+    public async Task<int> BatchUpdateByTemplateIdAsync(
+        long templateId,
+        Dictionary<string, bool> flags
+    )
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+
+            // Build SET clauses from the flag dictionary
+            var setClauses = new List<string>();
+            var parameters = new DynamicParameters();
+            parameters.Add("TemplateId", templateId);
+
+            foreach (var (key, value) in flags)
+            {
+                setClauses.Add($"{key} = @flag_{key}");
+                parameters.Add($"flag_{key}", value);
+            }
+
+            if (setClauses.Count == 0)
+                return 0;
+
+            var sql =
+                $"UPDATE permissions SET {string.Join(", ", setClauses)} WHERE template_id = @TemplateId;";
+            return await conn.ExecuteAsync(sql, parameters);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Error batch-updating permissions for template {TemplateId}",
+                templateId
+            );
             throw;
         }
     }

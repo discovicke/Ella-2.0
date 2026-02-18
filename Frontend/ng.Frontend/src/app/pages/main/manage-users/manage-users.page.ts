@@ -17,13 +17,16 @@ import { UserService } from '../../../shared/services/user.service';
 import {
   BannedStatus,
   CreateUserDto,
+  Permission,
+  PermissionTemplateDto,
   UpdateUserDto,
   UserResponseDto,
 } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { UserFormModalComponent } from './user-form-modal.component';
+import { UserFormModalComponent, UserFormPayload } from './user-form-modal.component';
 import { TableComponent, TableColumn } from '../../../shared/components/table/table.component';
 import {
+  permissionTemplates,
   resolveRoleLabel,
   resolveRoleCssClass,
   getTemplateLabels,
@@ -57,6 +60,9 @@ export class ManageUsersPage implements OnInit {
   filtersOpen = signal(typeof window !== 'undefined' ? window.innerWidth > 768 : true);
 
   readonly roleLabels = computed(() => [...getTemplateLabels(), 'Custom']);
+  readonly templateOptions = computed<PermissionTemplateDto[]>(() =>
+    permissionTemplates().filter((template) => !!template.id),
+  );
   readonly resolveRoleLabel = resolveRoleLabel;
   readonly resolveRoleCssClass = resolveRoleCssClass;
 
@@ -158,7 +164,9 @@ export class ManageUsersPage implements OnInit {
       title: 'Skapa ny användare',
       data: {
         user: null,
-        onSave: (payload: CreateUserDto) => this.handleSave(payload),
+        templateOptions: this.templateOptions(),
+        initialTemplateId: null,
+        onSave: (payload: UserFormPayload) => this.handleSave(payload),
       },
       width: '500px',
     });
@@ -173,7 +181,9 @@ export class ManageUsersPage implements OnInit {
       title: 'Redigera användare',
       data: {
         user: user,
-        onSave: (payload: UpdateUserDto) => this.handleSave(payload, user.id),
+        templateOptions: this.templateOptions(),
+        initialTemplateId: user.permissions?.templateId ?? null,
+        onSave: (payload: UserFormPayload) => this.handleSave(payload, user.id, user.permissions),
         onDelete: (id: number) => this.handleDelete(id),
       },
       width: '500px',
@@ -198,21 +208,72 @@ export class ManageUsersPage implements OnInit {
     });
   }
 
-  private handleSave(payload: any, userId?: number) {
-    const obs = userId
-      ? this.userService.updateUser(userId, payload)
-      : this.userService.createUser(payload);
+  private async handleSave(
+    payload: UserFormPayload,
+    userId?: number,
+    existingPermissions?: Permission,
+  ) {
+    try {
+      const selectedTemplateId = payload.selectedTemplateId ?? null;
 
-    obs.subscribe({
-      next: () => {
-        this.toastService.showSuccess(`Användaren ${userId ? 'uppdaterad' : 'skapad'}!`);
-        this.modalService.close();
-        this.userResource.reload();
-      },
-      error: (err) => {
-        console.error('Save failed', err);
-        this.toastService.showError(err.error || 'Kunde inte spara användaren.');
-      },
-    });
+      if (userId) {
+        const updatePayload: UpdateUserDto = {
+          id: userId,
+          email: payload.email,
+          displayName: payload.displayName,
+          password: payload.password ?? null,
+          isBanned: payload.isBanned ?? BannedStatus.NotBanned,
+        };
+
+        await firstValueFrom(this.userService.updateUser(userId, updatePayload));
+        await this.syncTemplateAssignment(userId, selectedTemplateId, existingPermissions);
+      } else {
+        const createPayload: CreateUserDto = {
+          email: payload.email,
+          displayName: payload.displayName,
+          password: payload.password ?? '',
+        };
+
+        const created = await firstValueFrom(this.userService.createUser(createPayload));
+        if (selectedTemplateId && created.id) {
+          await firstValueFrom(this.userService.applyTemplate(created.id, selectedTemplateId));
+        }
+      }
+
+      this.toastService.showSuccess(`Användaren ${userId ? 'uppdaterad' : 'skapad'}!`);
+      this.modalService.close();
+      this.userResource.reload();
+    } catch (err: any) {
+      console.error('Save failed', err);
+      this.toastService.showError(err?.error || 'Kunde inte spara användaren.');
+    }
+  }
+
+  private async syncTemplateAssignment(
+    userId: number,
+    selectedTemplateId: number | null,
+    existingPermissions?: Permission,
+  ) {
+    if (selectedTemplateId && selectedTemplateId > 0) {
+      await firstValueFrom(this.userService.applyTemplate(userId, selectedTemplateId));
+      return;
+    }
+
+    if (selectedTemplateId === null && existingPermissions?.templateId) {
+      await firstValueFrom(
+        this.userService.updatePermissions(userId, {
+          templateId: null,
+          bookRoom: !!existingPermissions.bookRoom,
+          myBookings: !!existingPermissions.myBookings,
+          manageUsers: !!existingPermissions.manageUsers,
+          manageClasses: !!existingPermissions.manageClasses,
+          manageRooms: !!existingPermissions.manageRooms,
+          manageAssets: !!existingPermissions.manageAssets,
+          manageBookings: !!existingPermissions.manageBookings,
+          manageCampuses: !!existingPermissions.manageCampuses,
+          manageRoles: !!existingPermissions.manageRoles,
+        }),
+      );
+    }
   }
 }

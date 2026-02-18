@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS "rooms" (
 
 CREATE TABLE IF NOT EXISTS "permissions" (
     "user_id" INTEGER NOT NULL UNIQUE,
+    "template_id" INTEGER,
     "book_room" INTEGER DEFAULT 0,
     "my_bookings" INTEGER DEFAULT 0,
     "manage_users" INTEGER DEFAULT 0,
@@ -71,7 +72,9 @@ CREATE TABLE IF NOT EXISTS "permissions" (
     "manage_campuses" INTEGER DEFAULT 0,
     "manage_roles" INTEGER DEFAULT 0,
     FOREIGN KEY ("user_id") REFERENCES "users"("id")
-    ON UPDATE NO ACTION ON DELETE NO ACTION
+    ON UPDATE NO ACTION ON DELETE NO ACTION,
+    FOREIGN KEY ("template_id") REFERENCES "permission_templates"("id")
+    ON UPDATE NO ACTION ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS "user_class" (

@@ -172,6 +172,41 @@ public class UserService(
         logger.LogInformation("User with ID {UserId} deleted", id);
     }
 
+    public async Task<Permission> UpdatePermissionsAsync(long userId, UpdatePermissionDto dto)
+    {
+        logger.LogInformation("Updating permissions for user {UserId}", userId);
+
+        _ =
+            await repo.GetUserByIdAsync(userId)
+            ?? throw new KeyNotFoundException($"User with ID {userId} does not exist.");
+
+        var existing =
+            await permissionRepo.GetByUserIdAsync(userId)
+            ?? throw new KeyNotFoundException($"No permissions row found for user {userId}.");
+
+        var updated = new Permission
+        {
+            UserId = userId,
+            TemplateId = dto.TemplateId,
+            BookRoom = dto.BookRoom,
+            MyBookings = dto.MyBookings,
+            ManageUsers = dto.ManageUsers,
+            ManageClasses = dto.ManageClasses,
+            ManageRooms = dto.ManageRooms,
+            ManageAssets = dto.ManageAssets,
+            ManageBookings = dto.ManageBookings,
+            ManageCampuses = dto.ManageCampuses,
+            ManageRoles = dto.ManageRoles,
+        };
+
+        var success = await permissionRepo.UpdateAsync(updated);
+        if (!success)
+            throw new Exception("Failed to update permissions.");
+
+        logger.LogInformation("Permissions updated for user {UserId}", userId);
+        return updated;
+    }
+
     // Mapper: Entity → DTO
     private static UserResponseDto MapToDto(User user, Permission? permissions)
     {

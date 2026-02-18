@@ -7,6 +7,7 @@ namespace Backend.app.Core.Models.Entities;
 public class Permission
 {
     public long UserId { get; set; }
+    public long? TemplateId { get; set; }
     public bool BookRoom { get; set; }
     public bool MyBookings { get; set; }
     public bool ManageUsers { get; set; }

@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PermissionTemplateService } from '../../../shared/services/permission-template.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { ConfirmService } from '../../../shared/services/confirm.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { PermissionTemplateDto } from '../../../models/models';
 import { firstValueFrom } from 'rxjs';
@@ -18,6 +19,7 @@ import { initPermissionTemplates } from '../../../core/permission-templates';
 /** Local working copy of a template for editing. */
 interface EditableTemplate {
   uid: number;
+  id?: number | null;
   label: string;
   cssClass: string;
   permissions: Record<string, boolean>;
@@ -37,6 +39,7 @@ let nextUid = 0;
 export class ManageRolesPage implements OnInit {
   private templateService = inject(PermissionTemplateService);
   private toastService = inject(ToastService);
+  private confirmService = inject(ConfirmService);
 
   // --- State ---
   templates = signal<EditableTemplate[]>([]);
@@ -75,6 +78,7 @@ export class ManageRolesPage implements OnInit {
       this.templates.set(
         data.map((t) => ({
           uid: nextUid++,
+          id: t.id,
           label: t.label ?? '',
           cssClass: t.cssClass ?? '',
           permissions: { ...(t.permissions ?? {}) },
@@ -157,17 +161,30 @@ export class ManageRolesPage implements OnInit {
     this.saving.set(true);
     try {
       const dtos: PermissionTemplateDto[] = templates.map((t) => ({
+        id: t.id,
         label: t.label.trim(),
         cssClass: t.cssClass.trim(),
         permissions: { ...t.permissions },
       }));
 
-      const result = await firstValueFrom(this.templateService.updateAll(dtos));
+      const propagate = await this.confirmService.show(
+        'Vill du propagera ändrade rollbehörigheter till alla användare som är kopplade till dessa roller?',
+        {
+          title: 'Propagera ändringar?',
+          confirmText: 'Ja, propagera',
+          cancelText: 'Nej, spara bara mallar',
+          icon: 'question',
+          dangerConfirm: false,
+        },
+      );
+
+      const result = await firstValueFrom(this.templateService.updateAll(dtos, propagate));
 
       // Update local state with server response
       this.templates.set(
         result.map((t) => ({
           uid: nextUid++,
+          id: t.id,
           label: t.label ?? '',
           cssClass: t.cssClass ?? '',
           permissions: { ...(t.permissions ?? {}) },

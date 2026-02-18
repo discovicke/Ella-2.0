@@ -1,4 +1,5 @@
 ﻿using Backend.app.Core.Models.DTO;
+using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
@@ -161,6 +162,63 @@ public static class UserEndpoints
                 "Invalidates all existing tokens for a specific user.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
             )
             .Produces(StatusCodes.Status204NoContent)
+            .Produces<string>(StatusCodes.Status400BadRequest)
+            .Produces<string>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
+        // PUT /api/users/{id}/permissions — update a user's permission flags directly
+        group
+            .MapPut(
+                "/{id}/permissions",
+                async (long id, UpdatePermissionDto dto, UserService service) =>
+                {
+                    if (id <= 0)
+                        return Results.BadRequest("ID must be a positive integer.");
+
+                    var updated = await service.UpdatePermissionsAsync(id, dto);
+                    return Results.Ok(updated);
+                }
+            )
+            .RequirePermission("ManageUsers")
+            .WithName("UpdateUserPermissions")
+            .WithSummary("Update a user's permissions")
+            .WithDescription(
+                "Directly updates permission flags for a specific user. "
+                    + "Sets template_id to the value in the DTO (null for custom overrides).\n\n"
+                    + "🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
+            )
+            .Accepts<UpdatePermissionDto>("application/json")
+            .Produces<Permission>(StatusCodes.Status200OK)
+            .Produces<string>(StatusCodes.Status400BadRequest)
+            .Produces<string>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
+        // POST /api/users/{id}/apply-template/{templateId} — apply a template to a user
+        group
+            .MapPost(
+                "/{id}/apply-template/{templateId}",
+                async (long id, long templateId, PermissionTemplateService templateService) =>
+                {
+                    if (id <= 0)
+                        return Results.BadRequest("User ID must be a positive integer.");
+                    if (templateId <= 0)
+                        return Results.BadRequest("Template ID must be a positive integer.");
+
+                    var updated = await templateService.ApplyTemplateAsync(id, templateId);
+                    return Results.Ok(updated);
+                }
+            )
+            .RequirePermission("ManageUsers")
+            .WithName("ApplyTemplateToUser")
+            .WithSummary("Apply a permission template to a user")
+            .WithDescription(
+                "Copies all permission flags from the specified template into the user's permissions row "
+                    + "and stores the template_id for future propagation.\n\n"
+                    + "🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
+            )
+            .Produces<Permission>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized)

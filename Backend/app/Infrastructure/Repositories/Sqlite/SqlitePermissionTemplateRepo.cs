@@ -32,6 +32,7 @@ public class SqlitePermissionTemplateRepo(
             return templates
                 .Select(t => new PermissionTemplateDto
                 {
+                    Id = t.Id,
                     Label = t.Label,
                     CssClass = t.CssClass,
                     Permissions = flags
@@ -43,6 +44,43 @@ public class SqlitePermissionTemplateRepo(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching permission templates");
+            throw;
+        }
+    }
+
+    public async Task<PermissionTemplateDto?> GetByIdAsync(long id)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+
+            var template = await conn.QuerySingleOrDefaultAsync<PermissionTemplate>(
+                "SELECT * FROM permission_templates WHERE id = @id;",
+                new { id }
+            );
+
+            if (template is null)
+                return null;
+
+            var flags = (
+                await conn.QueryAsync<PermissionTemplateFlag>(
+                    "SELECT * FROM permission_template_flags WHERE template_id = @id;",
+                    new { id }
+                )
+            ).ToList();
+
+            return new PermissionTemplateDto
+            {
+                Id = template.Id,
+                Label = template.Label,
+                CssClass = template.CssClass,
+                Permissions = flags.ToDictionary(f => f.PermissionKey, f => f.Value),
+            };
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching permission template {TemplateId}", id);
             throw;
         }
     }
@@ -64,18 +102,40 @@ public class SqlitePermissionTemplateRepo(
             for (var i = 0; i < templates.Count; i++)
             {
                 var tpl = templates[i];
-                var templateId = await conn.ExecuteScalarAsync<long>(
-                    @"INSERT INTO permission_templates (label, css_class, sort_order)
-                      VALUES (@Label, @CssClass, @SortOrder);
-                      SELECT last_insert_rowid();",
-                    new
-                    {
-                        tpl.Label,
-                        tpl.CssClass,
-                        SortOrder = i,
-                    },
-                    transaction: tx
-                );
+
+                // If template has an existing Id, re-insert with that Id to preserve FK references
+                long templateId;
+                if (tpl.Id is > 0)
+                {
+                    await conn.ExecuteAsync(
+                        @"INSERT INTO permission_templates (id, label, css_class, sort_order)
+                          VALUES (@Id, @Label, @CssClass, @SortOrder);",
+                        new
+                        {
+                            Id = tpl.Id.Value,
+                            tpl.Label,
+                            tpl.CssClass,
+                            SortOrder = i,
+                        },
+                        transaction: tx
+                    );
+                    templateId = tpl.Id.Value;
+                }
+                else
+                {
+                    templateId = await conn.ExecuteScalarAsync<long>(
+                        @"INSERT INTO permission_templates (label, css_class, sort_order)
+                          VALUES (@Label, @CssClass, @SortOrder);
+                          SELECT last_insert_rowid();",
+                        new
+                        {
+                            tpl.Label,
+                            tpl.CssClass,
+                            SortOrder = i,
+                        },
+                        transaction: tx
+                    );
+                }
 
                 if (tpl.Permissions is { Count: > 0 })
                 {
@@ -120,7 +180,10 @@ public class SqlitePermissionTemplateRepo(
             foreach (var col in columns)
             {
                 string name = col.name;
-                if (!string.Equals(name, "user_id", StringComparison.OrdinalIgnoreCase))
+                if (
+                    !string.Equals(name, "user_id", StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(name, "template_id", StringComparison.OrdinalIgnoreCase)
+                )
                     result.Add(name);
             }
 
