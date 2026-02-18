@@ -1,4 +1,4 @@
-<img alt="image" src="../images/ELLA 2.0_2026-02-18T11_36_56.558Z.png" />
+<img alt="image" src="../images/ELLA2-permissions-based-managment.png" />
 
 ### **1. Auth & Identity**
 
