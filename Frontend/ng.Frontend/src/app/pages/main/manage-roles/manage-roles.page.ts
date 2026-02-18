@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../core/auth/auth.service';
 import { PermissionTemplateService } from '../../../shared/services/permission-template.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ConfirmService } from '../../../shared/services/confirm.service';
@@ -37,6 +38,7 @@ let nextUid = 0;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManageRolesPage implements OnInit {
+  private authService = inject(AuthService);
   private templateService = inject(PermissionTemplateService);
   private toastService = inject(ToastService);
   private confirmService = inject(ConfirmService);
@@ -168,10 +170,10 @@ export class ManageRolesPage implements OnInit {
       }));
 
       const propagate = await this.confirmService.show(
-        'Vill du propagera ändrade rollbehörigheter till alla användare som är kopplade till dessa roller?',
+        'Ska uppdaterade rollbehörigheter även gälla för användare som redan har de här rollerna?',
         {
-          title: 'Propagera ändringar?',
-          confirmText: 'Ja, propagera',
+          title: 'Tillämpa på befintliga användare?',
+          confirmText: 'Ja, uppdatera användare',
           cancelText: 'Nej, spara bara mallar',
           icon: 'question',
           dangerConfirm: false,
@@ -193,6 +195,7 @@ export class ManageRolesPage implements OnInit {
 
       // Refresh the global permission templates signal so the rest of the app updates
       await initPermissionTemplates();
+      await this.authService.refreshCurrentUser();
 
       this.hasChanges.set(false);
       this.toastService.show('Roller sparade!', 'success');

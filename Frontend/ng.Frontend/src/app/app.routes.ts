@@ -87,11 +87,15 @@ export const routes: Routes = [
       },
       {
         path: 'see-bookings',
+        canActivate: [permissionGuard],
+        data: { permission: 'myBookings' },
         loadComponent: () =>
           import('./pages/main/see-bookings/see-bookings.page').then((m) => m.SeeBookingsPage),
       },
       {
         path: 'book-room',
+        canActivate: [permissionGuard],
+        data: { permission: 'bookRoom' },
         loadComponent: () =>
           import('./pages/main/book-room/book-room.page').then((m) => m.BookRoomPage),
       },
