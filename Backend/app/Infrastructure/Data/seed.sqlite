@@ -28,9 +28,9 @@ VALUES
 INSERT INTO permissions (user_id, book_room, my_bookings, manage_users, manage_classes, manage_rooms, manage_assets, manage_bookings, manage_campuses, manage_roles)
 VALUES (1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
 
--- Role 1 (Teacher) -> Manage bookings/assets + basic booking
+-- Role 1 (Teacher) -> Manage bookings/classes + basic booking
 INSERT INTO permissions (user_id, book_room, my_bookings, manage_users, manage_classes, manage_rooms, manage_assets, manage_bookings, manage_campuses, manage_roles)
-VALUES (2, 1, 1, 0, 0, 0, 1, 1, 0, 0);
+VALUES (2, 1, 1, 0, 1, 0, 0, 1, 0, 0);
 
 -- Role 0 (Students) -> Basic booking only
 INSERT INTO permissions (user_id, book_room, my_bookings)

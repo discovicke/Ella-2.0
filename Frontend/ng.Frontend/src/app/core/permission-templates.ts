@@ -80,6 +80,8 @@ export function getTemplateLabels(): string[] {
 /**
  * Compares a user's permission object against a template's
  * permission dictionary (snake_case keys from the backend).
+ * Handles both boolean (true/false) and integer (1/0) values
+ * from the API by coercing to boolean before comparison.
  */
 function permissionsMatch(
   actual: NonNullable<Permission>,
@@ -100,9 +102,9 @@ function permissionsMatch(
 
   // Check every key in the template
   for (const [key, value] of Object.entries(expected)) {
-    const actualValue = actualMap[key];
-    // If the key is unknown (new permission not yet mapped), treat actual as false
-    if ((actualValue ?? false) !== value) return false;
+    const actualValue = actualMap[key] ?? false;
+    // Coerce both sides to boolean to handle integer 1/0 from SQLite
+    if (actualValue !== !!value) return false;
   }
 
   // If the actual object has permission keys NOT in the template, those must be false

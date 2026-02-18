@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS "permissions" (
     "book_room" INTEGER DEFAULT 0,
     "my_bookings" INTEGER DEFAULT 0,
     "manage_users" INTEGER DEFAULT 0,
-    "manage_classes" INTEGER,
+    "manage_classes" INTEGER DEFAULT 0,
     "manage_rooms" INTEGER DEFAULT 0,
     "manage_assets" INTEGER DEFAULT 0,
     "manage_bookings" INTEGER DEFAULT 0,
