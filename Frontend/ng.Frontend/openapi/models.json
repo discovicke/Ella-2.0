@@ -115,7 +115,7 @@
           "Users"
         ],
         "summary": "Get all users",
-        "description": "Retrieves all users in the system.\n\n🔒 **Authentication Required**",
+        "description": "Retrieves all users in the system.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**",
         "operationId": "GetUsers",
         "responses": {
           "200": {
@@ -133,6 +133,9 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
           }
         }
       },
@@ -199,7 +202,7 @@
           "Users"
         ],
         "summary": "Get user by ID",
-        "description": "Retrieves a specific user by their unique identifier.\n\n🔒 **Authentication Required**",
+        "description": "Retrieves a specific user by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**",
         "operationId": "GetUserById",
         "parameters": [
           {
@@ -245,6 +248,9 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
           }
         }
       },
@@ -925,7 +931,7 @@
           "Bookings"
         ],
         "summary": "Get all bookings",
-        "description": "Retrieves a list of bookings, optionally filtered by user, room, date range, or status.\n\n🔒 **Authentication Required**",
+        "description": "Retrieves a list of bookings, optionally filtered by user, room, date range, or status.\n\n🔒 **Authentication Required**\n🔑 **Requires manageBookings permission**",
         "operationId": "GetAllBookings",
         "parameters": [
           {
@@ -989,6 +995,9 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
           }
         }
       },
@@ -997,7 +1006,7 @@
           "Bookings"
         ],
         "summary": "Create a new booking",
-        "description": "Creates a new booking for the authenticated user.\n\n🔒 **Authentication Required**",
+        "description": "Creates a new booking for the authenticated user.\n\n🔒 **Authentication Required**\n🔑 **Requires bookRoom permission**",
         "operationId": "CreateBooking",
         "requestBody": {
           "content": {
@@ -1041,7 +1050,7 @@
           "Bookings"
         ],
         "summary": "Update booking status by ID",
-        "description": "Updates the status of a specific booking.\n\n🔒 **Authentication Required**",
+        "description": "Updates the status of a specific booking.\n\n🔒 **Authentication Required**\n🔑 **Requires manageBookings permission**",
         "operationId": "UpdateBookingStatus",
         "parameters": [
           {
@@ -1071,6 +1080,9 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
           }
         }
       }

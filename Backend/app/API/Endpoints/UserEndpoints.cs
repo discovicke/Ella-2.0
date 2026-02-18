@@ -21,11 +21,15 @@ public static class UserEndpoints
                     return Results.Ok(users);
                 }
             )
+            .RequirePermission("ManageUsers")
             .WithName("GetUsers")
             .WithSummary("Get all users")
-            .WithDescription("Retrieves all users in the system.\n\n🔒 **Authentication Required**")
+            .WithDescription(
+                "Retrieves all users in the system.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
+            )
             .Produces<IEnumerable<UserResponseDto>>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status401Unauthorized);
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         // GET /api/users/{id}
         group
@@ -40,15 +44,17 @@ public static class UserEndpoints
                     return Results.Ok(user);
                 }
             )
+            .RequirePermission("ManageUsers")
             .WithName("GetUserById")
             .WithSummary("Get user by ID")
             .WithDescription(
-                "Retrieves a specific user by their unique identifier.\n\n🔒 **Authentication Required**"
+                "Retrieves a specific user by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
             )
             .Produces<UserResponseDto>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status401Unauthorized);
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         // POST /api/users
         group

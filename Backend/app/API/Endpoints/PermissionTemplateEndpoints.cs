@@ -1,5 +1,6 @@
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Services;
+using Backend.app.Infrastructure.Auth;
 
 namespace Backend.app.API.Endpoints;
 
@@ -38,6 +39,8 @@ public static class PermissionTemplateEndpoints
                     return Results.Ok(result);
                 }
             )
+            .RequireAuth()
+            .RequirePermission("ManageRoles")
             .WithName("UpdatePermissionTemplates")
             .WithSummary("Replace all permission templates")
             .WithDescription(

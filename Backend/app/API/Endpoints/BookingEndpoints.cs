@@ -40,13 +40,15 @@ public static class BookingEndpoints
                     return Results.Ok(bookings);
                 }
             )
+            .RequirePermission("ManageBookings")
             .WithName("GetAllBookings")
             .WithSummary("Get all bookings")
             .WithDescription(
-                "Retrieves a list of bookings, optionally filtered by user, room, date range, or status.\n\n🔒 **Authentication Required**"
+                "Retrieves a list of bookings, optionally filtered by user, room, date range, or status.\n\n🔒 **Authentication Required**\n🔑 **Requires manageBookings permission**"
             )
             .Produces<IEnumerable<BookingDetailedReadModel>>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status401Unauthorized);
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         // POST /api/bookings
         group
@@ -86,10 +88,11 @@ public static class BookingEndpoints
                     return Results.Created($"/api/bookings/{createdBooking.Id}", createdBooking);
                 }
             )
+            .RequirePermission("BookRoom")
             .WithName("CreateBooking")
             .WithSummary("Create a new booking")
             .WithDescription(
-                "Creates a new booking for the authenticated user.\n\n🔒 **Authentication Required**"
+                "Creates a new booking for the authenticated user.\n\n🔒 **Authentication Required**\n🔑 **Requires bookRoom permission**"
             )
             .Accepts<CreateBookingDto>("application/json")
             .Produces<BookingDetailedReadModel>(StatusCodes.Status201Created)
@@ -110,14 +113,16 @@ public static class BookingEndpoints
                     return Results.Ok(booking);
                 }
             )
+            .RequirePermission("ManageBookings")
             .WithName("UpdateBookingStatus")
             .WithSummary("Update booking status by ID")
             .WithDescription(
-                "Updates the status of a specific booking.\n\n🔒 **Authentication Required**"
+                "Updates the status of a specific booking.\n\n🔒 **Authentication Required**\n🔑 **Requires manageBookings permission**"
             )
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status401Unauthorized);
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         // GET /api/bookings/my-owned
         group

@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
+import { permissionGuard } from './core/auth/permission.guard';
+import { adminGuard } from './core/auth/admin.guard';
 
 export const routes: Routes = [
   // =========================================================
@@ -47,6 +49,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'system-overview',
+        canActivate: [adminGuard],
         loadComponent: () =>
           import('./pages/main/system-overview/system-overview.page').then(
             (m) => m.SystemOverviewPage,
@@ -54,16 +57,22 @@ export const routes: Routes = [
       },
       {
         path: 'manage-users',
+        canActivate: [permissionGuard],
+        data: { permission: 'manageUsers' },
         loadComponent: () =>
           import('./pages/main/manage-users/manage-users.page').then((m) => m.ManageUsersPage),
       },
       {
         path: 'manage-rooms',
+        canActivate: [permissionGuard],
+        data: { permission: 'manageRooms' },
         loadComponent: () =>
           import('./pages/main/manage-rooms/manage-rooms.page').then((m) => m.ManageRoomsPage),
       },
       {
         path: 'manage-bookings',
+        canActivate: [permissionGuard],
+        data: { permission: 'manageBookings' },
         loadComponent: () =>
           import('./pages/main/manage-bookings/manage-bookings.page').then(
             (m) => m.ManageBookingsPage,
@@ -71,6 +80,8 @@ export const routes: Routes = [
       },
       {
         path: 'manage-roles',
+        canActivate: [permissionGuard],
+        data: { permission: 'manageRoles' },
         loadComponent: () =>
           import('./pages/main/manage-roles/manage-roles.page').then((m) => m.ManageRolesPage),
       },
