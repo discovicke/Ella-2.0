@@ -378,7 +378,9 @@ export class UserFormModalComponent {
       }),
       password: new FormControl('', {
         nonNullable: true,
-        validators: [Validators.required, Validators.minLength(6)],
+        validators: this.initialData
+          ? [Validators.minLength(6)]
+          : [Validators.required, Validators.minLength(6)],
       }),
       confirmPassword: new FormControl(
         { value: '', disabled: true },
