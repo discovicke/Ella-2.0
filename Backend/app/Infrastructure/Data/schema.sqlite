@@ -172,7 +172,12 @@ SELECT
     r.floor         AS room_floor,
     b.start_time,
     b.end_time,
-    b.status,
+    -- Automatically calculate status: Cancelled (1) stays, Active (0) becomes Expired (2) if end_time has passed
+    CASE 
+        WHEN b.status = 1 THEN 1
+        WHEN datetime(b.end_time) < datetime('now') THEN 2
+        ELSE b.status
+    END AS status,
     b.notes,
     b.created_at,
     b.updated_at,
