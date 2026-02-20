@@ -11,17 +11,7 @@ using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 
 // 1. LOAD SECRETS (.env)
-// Try explicit path inside the Backend project directory first (helps IDEs with different working directories)
-var envPathExplicit = Path.Combine(Directory.GetCurrentDirectory(), ".env");
-if (File.Exists(envPathExplicit))
-{
-    Env.Load(envPathExplicit);
-}
-else
-{
-    // Fallback to default behavior (searches upwards from current dir)
-    Env.Load();
-}
+LoadEnvironmentVariables();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -103,6 +93,44 @@ app.Run(); // <--- Start the machine!
 // ---------------------------------------------------------
 // LOCAL CONFIGURATION METHODS
 // ---------------------------------------------------------
+
+static void LoadEnvironmentVariables()
+{
+    var rootPath = Directory.GetCurrentDirectory();
+    var envPath = Path.Combine(rootPath, ".env");
+    var envExamplePath = Path.Combine(rootPath, ".env-example");
+
+    if (File.Exists(envPath))
+    {
+        Env.Load(envPath);
+    }
+    else
+    {
+        if (!File.Exists(envExamplePath))
+        {
+            var defaultEnvContent =
+                @"# --- Database Settings ---
+DatabaseSettings__Provider=sqlite
+DatabaseSettings__ConnectionString=Data Source=app/Infrastructure/Data/ellaDB.sqlite
+
+# --- JWT Settings ---
+# WARNING: Replace this with a secure key in your local @.env file
+JwtSettings__SecretKey=REPLACE_WITH_SECURE_KEY_MIN_32_CHARS
+JwtSettings__Issuer=EllaBookingAPI
+JwtSettings__Audience=EllaBookingClient
+JwtSettings__AccessTokenExpirationMinutes=60";
+
+            File.WriteAllText(envExamplePath, defaultEnvContent);
+            Console.WriteLine(".env file not found. Created .env-example with default settings.");
+        }
+
+        // Load from example if .env is missing
+        Env.Load(envExamplePath);
+        Console.WriteLine(
+            "Loaded configuration from .env-example. Please create a local .env file for production use."
+        );
+    }
+}
 
 static void ConfigureOpenApi(IServiceCollection services)
 {
