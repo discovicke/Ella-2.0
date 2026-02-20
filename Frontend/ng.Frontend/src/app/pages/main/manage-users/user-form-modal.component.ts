@@ -415,7 +415,7 @@ export class UserFormModalComponent {
     return !!this.userForm.controls[key].value;
   }
 
-  onSubmit() {
+  async onSubmit() {
     if (this.userForm.invalid) return;
 
     const {
@@ -458,7 +458,12 @@ export class UserFormModalComponent {
 
     if (this.config?.onSave) {
       this.isSubmitting.set(true);
-      this.config.onSave(payload);
+      try {
+        await this.config.onSave(payload);
+        // Note: Success usually closes the modal, which destroys this component.
+      } catch (error) {
+        this.isSubmitting.set(false);
+      }
     }
   }
 
@@ -466,13 +471,17 @@ export class UserFormModalComponent {
     if (!this.config?.onDelete || !this.initialData?.id) return;
 
     const confirmed = await this.confirmService.danger(
-      'Anv\u00e4ndaren kommer att raderas permanent och kan inte \u00e5terst\u00e4llas.',
-      'Radera anv\u00e4ndare',
+      'Användaren kommer att raderas permanent och kan inte återställas.',
+      'Radera användare',
     );
     if (!confirmed) return;
 
     this.isSubmitting.set(true);
-    this.config.onDelete(this.initialData.id);
+    try {
+      await this.config.onDelete(this.initialData.id);
+    } catch (error) {
+      this.isSubmitting.set(false);
+    }
   }
 
   onCancel() {

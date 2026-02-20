@@ -103,6 +103,7 @@ static void LoadEnvironmentVariables()
     if (File.Exists(envPath))
     {
         Env.Load(envPath);
+        Console.WriteLine("Configuration loaded from .env");
     }
     else
     {

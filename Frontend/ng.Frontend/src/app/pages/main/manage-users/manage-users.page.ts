@@ -206,21 +206,25 @@ export class ManageUsersPage implements OnInit {
     });
   }
 
-  private handleDelete(id: number) {
-    this.userService.deleteUser(id).subscribe({
-      next: () => {
-        this.toastService.showSuccess('Användaren raderad!');
-        this.modalService.close();
-        this.userResource.reload();
-        // Reset page if we delete the last item on the current page
-        if (this.paginatedUsers().length === 0 && this.pageIndex() > 0) {
-          this.pageIndex.update((p) => p - 1);
-        }
-      },
-      error: (err) => {
-        console.error('Delete failed', err);
-        this.toastService.showError('Kunde inte radera användaren.');
-      },
+  private handleDelete(id: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.userService.deleteUser(id).subscribe({
+        next: () => {
+          this.toastService.showSuccess('Användaren raderad!');
+          this.modalService.close();
+          this.userResource.reload();
+          // Reset page if we delete the last item on the current page
+          if (this.paginatedUsers().length === 0 && this.pageIndex() > 0) {
+            this.pageIndex.update((p) => p - 1);
+          }
+          resolve();
+        },
+        error: (err) => {
+          console.error('Delete failed', err);
+          this.toastService.showError('Kunde inte radera användaren.');
+          reject(err);
+        },
+      });
     });
   }
 
@@ -272,6 +276,7 @@ export class ManageUsersPage implements OnInit {
     } catch (err: any) {
       console.error('Save failed', err);
       this.toastService.showError(err?.error || 'Kunde inte spara användaren.');
+      throw err;
     }
   }
 

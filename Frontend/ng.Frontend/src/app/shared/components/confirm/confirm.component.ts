@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, HostListener, inject, signal } from '@angular/core';
+import { A11yModule } from '@angular/cdk/a11y';
 import { ConfirmService } from '../../services/confirm.service';
 
 @Component({
   selector: 'app-confirm',
   standalone: true,
-  imports: [],
+  imports: [A11yModule],
   templateUrl: './confirm.component.html',
   styleUrl: './confirm.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

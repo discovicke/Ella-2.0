@@ -5,7 +5,7 @@ export interface UserState {
   id: number;
   email: string;
   displayName: string;
-  permissions: Permission;
+  permissions: Permission | null;
   isBanned: boolean;
   token?: string; // JWT token
 }

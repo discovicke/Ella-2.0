@@ -1,4 +1,6 @@
-﻿using Backend.app.Core.Models.DTO;
+﻿using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
@@ -75,7 +77,7 @@ public static class UserEndpoints
             .WithName("CreateUser")
             .WithSummary("Create a new user")
             .WithDescription(
-                "Creates a new user with the provided details.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
+                "Creates a new user with the provided details.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
             )
             .Accepts<CreateUserDto>("application/json")
             .Produces<UserResponseDto>(StatusCodes.Status201Created)
@@ -108,7 +110,7 @@ public static class UserEndpoints
             .WithName("UpdateUser")
             .WithSummary("Update an existing user")
             .WithDescription(
-                "Updates a user's details by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
+                "Updates a user's details by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
             )
             .Accepts<UpdateUserDto>("application/json")
             .Produces(StatusCodes.Status204NoContent)
@@ -121,10 +123,14 @@ public static class UserEndpoints
         group
             .MapPost(
                 "/{id}/ban-status",
-                async (long id, BannedStatus status, UserService service) =>
+                async (long id, BannedStatus status, UserService service, ClaimsPrincipal user) =>
                 {
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
+
+                    var currentUserId = user.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                    if (currentUserId == id.ToString())
+                        return Results.BadRequest("You cannot change your own ban status.");
 
                     await service.SetBannedStatusAsync(id, status);
                     return Results.NoContent();
@@ -134,7 +140,7 @@ public static class UserEndpoints
             .WithName("SetUserBanStatus")
             .WithSummary("Set user ban status")
             .WithDescription(
-                "Bans or unbans a user. If banned, all active tokens are revoked.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
+                "Bans or unbans a user. If banned, all active tokens are revoked.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
             )
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
@@ -159,7 +165,7 @@ public static class UserEndpoints
             .WithName("RevokeTokens")
             .WithSummary("Force logout a user")
             .WithDescription(
-                "Invalidates all existing tokens for a specific user.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
+                "Invalidates all existing tokens for a specific user.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
             )
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
@@ -171,10 +177,14 @@ public static class UserEndpoints
         group
             .MapPut(
                 "/{id}/permissions",
-                async (long id, UpdatePermissionDto dto, UserService service) =>
+                async (long id, UpdatePermissionDto dto, UserService service, ClaimsPrincipal user) =>
                 {
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
+
+                    var currentUserId = user.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                    if (currentUserId == id.ToString())
+                        return Results.BadRequest("You cannot update your own permissions.");
 
                     var updated = await service.UpdatePermissionsAsync(id, dto);
                     return Results.Ok(updated);
@@ -199,12 +209,16 @@ public static class UserEndpoints
         group
             .MapPost(
                 "/{id}/apply-template/{templateId}",
-                async (long id, long templateId, PermissionTemplateService templateService) =>
+                async (long id, long templateId, PermissionTemplateService templateService, ClaimsPrincipal user) =>
                 {
                     if (id <= 0)
                         return Results.BadRequest("User ID must be a positive integer.");
                     if (templateId <= 0)
                         return Results.BadRequest("Template ID must be a positive integer.");
+
+                    var currentUserId = user.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                    if (currentUserId == id.ToString())
+                        return Results.BadRequest("You cannot apply a template to yourself.");
 
                     var updated = await templateService.ApplyTemplateAsync(id, templateId);
                     return Results.Ok(updated);
@@ -228,10 +242,14 @@ public static class UserEndpoints
         group
             .MapDelete(
                 "/{id}",
-                async (long id, UserService service) =>
+                async (long id, UserService service, ClaimsPrincipal user) =>
                 {
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
+
+                    var currentUserId = user.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                    if (currentUserId == id.ToString())
+                        return Results.BadRequest("You cannot delete your own account.");
 
                     await service.DeleteUserAsync(id);
                     return Results.NoContent();
@@ -241,7 +259,7 @@ public static class UserEndpoints
             .WithName("DeleteUser")
             .WithSummary("Delete a user")
             .WithDescription(
-                "Permanently deletes a user by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
+                "Permanently deletes a user by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
             )
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)

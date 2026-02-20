@@ -144,7 +144,7 @@
           "Users"
         ],
         "summary": "Create a new user",
-        "description": "Creates a new user with the provided details.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
+        "description": "Creates a new user with the provided details.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**",
         "operationId": "CreateUser",
         "requestBody": {
           "content": {
@@ -259,7 +259,7 @@
           "Users"
         ],
         "summary": "Update an existing user",
-        "description": "Updates a user's details by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
+        "description": "Updates a user's details by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**",
         "operationId": "UpdateUser",
         "parameters": [
           {
@@ -319,7 +319,7 @@
           "Users"
         ],
         "summary": "Delete a user",
-        "description": "Permanently deletes a user by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
+        "description": "Permanently deletes a user by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**",
         "operationId": "DeleteUser",
         "parameters": [
           {
@@ -371,7 +371,7 @@
           "Users"
         ],
         "summary": "Set user ban status",
-        "description": "Bans or unbans a user. If banned, all active tokens are revoked.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
+        "description": "Bans or unbans a user. If banned, all active tokens are revoked.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**",
         "operationId": "SetUserBanStatus",
         "parameters": [
           {
@@ -431,7 +431,7 @@
           "Users"
         ],
         "summary": "Force logout a user",
-        "description": "Invalidates all existing tokens for a specific user.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
+        "description": "Invalidates all existing tokens for a specific user.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**",
         "operationId": "RevokeTokens",
         "parameters": [
           {
