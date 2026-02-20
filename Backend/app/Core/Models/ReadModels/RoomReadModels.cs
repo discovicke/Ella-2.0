@@ -1,5 +1,5 @@
-using System.Text.Json.Serialization;
 using System.Linq;
+using System.Text.Json.Serialization;
 using Backend.app.Core.Models.Enums;
 
 namespace Backend.app.Core.Models.ReadModels;
