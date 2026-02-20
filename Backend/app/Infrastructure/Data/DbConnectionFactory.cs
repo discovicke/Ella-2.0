@@ -1,6 +1,8 @@
 using System.Data.Common;
 using Backend.app.Core.Interfaces;
+using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
+using Npgsql;
 
 namespace Backend.app.Infrastructure.Data;
 
@@ -30,19 +32,12 @@ public class DbConnectionFactory(IConfiguration configurationFile) : IDbConnecti
         return dbProvider.ToLower() switch
         {
             "sqlite" => new SqliteConnection(connectionString),
-
-            "postgresql" => throw new NotImplementedException(
-                "PostgreSQL support not implemented yet."
-            ),
-            "sqlserver" => throw new NotImplementedException(
-                "SQL Server support not implemented yet."
-            ),
+            "sqlserver" => new SqlConnection(connectionString),
+            "postgresql" => new NpgsqlConnection(connectionString),
             _ => throw new NotSupportedException(
                 $"Database provider '{dbProvider}' is not supported."
             ),
         };
     }
 
-    // SQLite connection factory implementation
-    // Reference: src/db/db.js for connection handling
 }
