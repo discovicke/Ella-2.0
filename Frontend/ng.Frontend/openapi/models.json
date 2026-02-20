@@ -1809,6 +1809,9 @@
           "name": {
             "type": "string"
           },
+          "campusCity": {
+            "type": "string"
+          },
           "capacity": {
             "type": "integer",
             "format": "int32",
@@ -1839,6 +1842,7 @@
           "id",
           "campusId",
           "name",
+          "campusCity",
           "capacity",
           "type",
           "floor",
@@ -1856,6 +1860,9 @@
             "format": "int64"
           },
           "name": {
+            "type": "string"
+          },
+          "campusCity": {
             "type": "string"
           },
           "capacity": {

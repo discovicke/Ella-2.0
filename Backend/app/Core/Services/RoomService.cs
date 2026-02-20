@@ -148,6 +148,7 @@ public class RoomService(
             model.RoomId,
             model.CampusId,
             model.Name,
+            model.CampusCity,
             model.Capacity,
             model.Type,
             model.Floor,

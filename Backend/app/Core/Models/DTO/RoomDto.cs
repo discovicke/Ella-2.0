@@ -27,6 +27,7 @@ public record RoomResponseDto(
     long Id,
     long CampusId,
     string Name,
+    string CampusCity,
     int? Capacity,
     RoomType Type,
     string? Floor,

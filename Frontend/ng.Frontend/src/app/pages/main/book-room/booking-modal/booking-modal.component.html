@@ -2,8 +2,8 @@
   <div class="room-info">
     <p><strong>Rum:</strong> {{ room.name }}</p>
     <p><strong>Kapacitet:</strong> {{ room.capacity }} platser</p>
-    @if (room.campusId) {
-      <p><strong>Plats:</strong> Campus {{ room.campusId }}</p>
+    @if (room.campusCity) {
+      <p><strong>Plats:</strong> {{ room.campusCity }}</p>
     }
   </div>
 

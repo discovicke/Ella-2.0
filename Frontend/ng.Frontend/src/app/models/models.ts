@@ -169,6 +169,7 @@ export interface RoomDetailModel {
   /** @format int64 */
   campusId?: number;
   name?: string;
+  campusCity?: string;
   /** @format int32 */
   capacity?: number | null;
   type?: RoomType;
@@ -183,6 +184,7 @@ export interface RoomResponseDto {
   /** @format int64 */
   campusId: number;
   name: string;
+  campusCity: string;
   /** @format int32 */
   capacity: number | null;
   type: RoomType;
