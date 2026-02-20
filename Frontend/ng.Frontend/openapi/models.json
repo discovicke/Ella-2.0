@@ -1187,7 +1187,7 @@
           "Bookings"
         ],
         "summary": "Update booking status by ID",
-        "description": "Updates the status of a specific booking.\n\n🔒 **Authentication Required**\n🔑 **Requires manageBookings permission**",
+        "description": "Updates the status of a specific booking. Users can cancel their own bookings; managers can update any booking.\n\n🔒 **Authentication Required**",
         "operationId": "UpdateBookingStatus",
         "parameters": [
           {

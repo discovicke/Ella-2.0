@@ -29,7 +29,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     );
 });
 
-// 3. SETUP (Using Local Methods)
+// 3. SETUP
 ConfigureDatabase(builder);
 ConfigureCoreServices(builder.Services);
 
