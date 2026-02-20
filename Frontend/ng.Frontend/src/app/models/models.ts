@@ -10,12 +10,6 @@
  * ---------------------------------------------------------------
  */
 
-export enum UserRole {
-  Student = "Student",
-  Educator = "Educator",
-  Admin = "Admin",
-}
-
 export enum RoomType {
   Classroom = "Classroom",
   Laboratory = "Laboratory",
@@ -45,8 +39,7 @@ export interface AuthedUserResponseDto {
   id?: number;
   email: string;
   displayName?: string | null;
-  role: string;
-  userClass?: string | null;
+  permissions?: Permission;
   isBanned?: boolean;
 }
 
@@ -63,8 +56,6 @@ export interface BookingDetailedReadModel {
   userId?: number;
   userName?: string | null;
   userEmail?: string | null;
-  userRole?: UserRole;
-  userClass?: string | null;
   /** @format int64 */
   roomId?: number;
   roomName?: string | null;
@@ -72,7 +63,6 @@ export interface BookingDetailedReadModel {
   roomCapacity?: number | null;
   roomType?: RoomType;
   roomFloor?: string | null;
-  roomAddress?: string | null;
   /** @format date-time */
   startTime?: string;
   /** @format date-time */
@@ -105,12 +95,13 @@ export interface CreateBookingDto {
 }
 
 export interface CreateRoomDto {
+  /** @format int64 */
+  campusId: number;
   name: string;
   /** @format int32 */
   capacity: number | null;
   type: RoomType;
   floor: string | null;
-  address: string | null;
   notes: string | null;
   assetIds: number[] | null;
 }
@@ -118,14 +109,52 @@ export interface CreateRoomDto {
 export interface CreateUserDto {
   email: string;
   displayName: string | null;
-  role: UserRole;
   password: string;
-  userClass: string | null;
 }
 
 export interface LoginDto {
   email: string;
   password: string;
+}
+
+export type Permission = {
+  /** @format int64 */
+  userId?: number;
+  /** @format int64 */
+  templateId?: number | null;
+  bookRoom?: boolean;
+  myBookings?: boolean;
+  manageUsers?: boolean;
+  manageClasses?: boolean;
+  manageRooms?: boolean;
+  manageAssets?: boolean;
+  manageBookings?: boolean;
+  manageCampuses?: boolean;
+  manageRoles?: boolean;
+};
+
+export interface Permission2 {
+  /** @format int64 */
+  userId?: number;
+  /** @format int64 */
+  templateId?: number | null;
+  bookRoom?: boolean;
+  myBookings?: boolean;
+  manageUsers?: boolean;
+  manageClasses?: boolean;
+  manageRooms?: boolean;
+  manageAssets?: boolean;
+  manageBookings?: boolean;
+  manageCampuses?: boolean;
+  manageRoles?: boolean;
+}
+
+export interface PermissionTemplateDto {
+  /** @format int64 */
+  id?: number | null;
+  label?: string;
+  cssClass?: string;
+  permissions?: Record<string, boolean>;
 }
 
 export interface RegisterDto {
@@ -137,12 +166,14 @@ export interface RegisterDto {
 export interface RoomDetailModel {
   /** @format int64 */
   roomId?: number;
+  /** @format int64 */
+  campusId?: number;
   name?: string;
+  campusCity?: string;
   /** @format int32 */
   capacity?: number | null;
   type?: RoomType;
   floor?: string | null;
-  address?: string | null;
   notes?: string | null;
   assets?: string[] | null;
 }
@@ -150,12 +181,14 @@ export interface RoomDetailModel {
 export interface RoomResponseDto {
   /** @format int64 */
   id: number;
+  /** @format int64 */
+  campusId: number;
   name: string;
+  campusCity: string;
   /** @format int32 */
   capacity: number | null;
   type: RoomType;
   floor: string | null;
-  address: string | null;
   notes: string | null;
   assets: string[] | null;
 }
@@ -164,13 +197,28 @@ export interface UpdateAssetTypeDto {
   description: string;
 }
 
+export interface UpdatePermissionDto {
+  /** @format int64 */
+  templateId: number | null;
+  bookRoom: boolean;
+  myBookings: boolean;
+  manageUsers: boolean;
+  manageClasses: boolean;
+  manageRooms: boolean;
+  manageAssets: boolean;
+  manageBookings: boolean;
+  manageCampuses: boolean;
+  manageRoles: boolean;
+}
+
 export interface UpdateRoomDto {
+  /** @format int64 */
+  campusId: number;
   name: string;
   /** @format int32 */
   capacity: number | null;
   type: RoomType;
   floor: string | null;
-  address: string | null;
   notes: string | null;
   assetIds: number[] | null;
 }
@@ -180,9 +228,7 @@ export interface UpdateUserDto {
   id: number;
   email: string;
   displayName: string | null;
-  role: UserRole;
-  password: string;
-  userClass: string | null;
+  password: string | null;
   isBanned: BannedStatus;
 }
 
@@ -191,7 +237,6 @@ export interface UserResponseDto {
   id: number;
   email: string;
   displayName: string | null;
-  role: UserRole;
-  userClass: string | null;
   isBanned: BannedStatus;
+  permissions: Permission;
 }

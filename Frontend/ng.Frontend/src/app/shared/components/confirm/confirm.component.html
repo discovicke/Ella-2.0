@@ -3,11 +3,16 @@
     class="confirm-backdrop"
     [class.open]="confirmService.isOpen()"
     (click)="onBackdropClick($event)"
-    role="dialog"
-    aria-modal="true"
-    [attr.aria-label]="confirmService.title()"
   >
-    <div class="confirm-content" [attr.data-shake]="shakeCounter()">
+    <div
+      class="confirm-content"
+      [attr.data-shake]="shakeCounter()"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-dialog-title"
+      cdkTrapFocus
+      cdkTrapFocusAutoCapture="true"
+    >
       <div class="confirm-header">
         <span
           class="confirm-icon"
@@ -62,7 +67,7 @@
             }
           }
         </span>
-        <h3 class="confirm-title">{{ confirmService.title() }}</h3>
+        <h3 class="confirm-title" id="confirm-dialog-title">{{ confirmService.title() }}</h3>
       </div>
 
       <p class="confirm-message">{{ confirmService.message() }}</p>
@@ -81,6 +86,7 @@
           [class.confirm-btn-primary]="!confirmService.dangerConfirm()"
           (click)="confirmService.confirm()"
           type="button"
+          cdkFocusInitial
         >
           {{ confirmService.confirmText() }}
         </button>

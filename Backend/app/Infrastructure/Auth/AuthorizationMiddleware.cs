@@ -1,16 +1,10 @@
 using Backend.app.Core.Models.Entities;
-using Backend.app.Core.Models.Enums;
 
 namespace Backend.app.Infrastructure.Auth;
 
 /// <summary>
-/// Authorization middleware/filter that checks if user has required role.
+/// Authorization middleware/filter that checks if user has required permissions.
 /// Must be used AFTER AuthenticationMiddleware.
-/// 
-/// Equivalent to the JS authorize middleware that:
-/// 1. Checks if user is authenticated (req.user exists)
-/// 2. Checks if user's role is in the allowed roles list
-/// 3. Returns 401/403 if not authorized
 /// </summary>
 public static class AuthorizationMiddleware
 {
@@ -18,7 +12,10 @@ public static class AuthorizationMiddleware
     /// Creates an endpoint filter that requires the user to be authenticated.
     /// Returns 401 Unauthorized if no user is attached to the request.
     /// </summary>
-    public static async ValueTask<object?> RequireAuthentication(EndpointFilterInvocationContext invocationContext, EndpointFilterDelegate next)
+    public static async ValueTask<object?> RequireAuthentication(
+        EndpointFilterInvocationContext invocationContext,
+        EndpointFilterDelegate next
+    )
     {
         var httpContext = invocationContext.HttpContext;
         var user = httpContext.Items["User"] as User;
@@ -35,12 +32,16 @@ public static class AuthorizationMiddleware
     }
 
     /// <summary>
-    /// Creates an endpoint filter that requires the user to have one of the specified roles.
-    /// Returns 401 if not authenticated, 403 if authenticated but wrong role.
-    /// 
-    /// Usage: .RequireRoles(UserRole.Admin, UserRole.Educator) to allow only admins and educators.
+    /// Creates an endpoint filter that requires the user to have a specific permission flag.
+    /// Returns 401 if not authenticated, 403 if authenticated but lacking the permission.
+    ///
+    /// Usage: .RequirePermission("ManageUsers") to allow only users with ManageUsers=true.
     /// </summary>
-    public static Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> RequireRoles(params UserRole[] allowedRoles)
+    public static Func<
+        EndpointFilterInvocationContext,
+        EndpointFilterDelegate,
+        ValueTask<object?>
+    > RequirePermission(string permissionName)
     {
         return async (invocationContext, next) =>
         {
@@ -55,18 +56,23 @@ public static class AuthorizationMiddleware
                 );
             }
 
-            if (!allowedRoles.Contains(user.Role))
+            var permissions = httpContext.Items["Permissions"] as Permission;
+
+            if (permissions is null || !HasPermission(permissions, permissionName))
             {
                 var logger = httpContext.RequestServices.GetRequiredService<ILogger<Program>>();
                 logger.LogWarning(
-                    "Authorization failed: user {UserId} with role {Role} attempted to access resource requiring {AllowedRoles}",
+                    "Authorization failed: user {UserId} lacks permission {Permission}",
                     user.Id,
-                    user.Role,
-                    string.Join(", ", allowedRoles)
+                    permissionName
                 );
 
                 return Results.Json(
-                    new { error = "Forbidden", message = "You do not have permission to perform this action" },
+                    new
+                    {
+                        error = "Forbidden",
+                        message = "You do not have permission to perform this action",
+                    },
                     statusCode: 403
                 );
             }
@@ -74,6 +80,21 @@ public static class AuthorizationMiddleware
             return await next(invocationContext);
         };
     }
+
+    private static bool HasPermission(Permission p, string permissionName) =>
+        permissionName switch
+        {
+            "BookRoom" => p.BookRoom,
+            "MyBookings" => p.MyBookings,
+            "ManageUsers" => p.ManageUsers,
+            "ManageClasses" => p.ManageClasses,
+            "ManageRooms" => p.ManageRooms,
+            "ManageAssets" => p.ManageAssets,
+            "ManageBookings" => p.ManageBookings,
+            "ManageCampuses" => p.ManageCampuses,
+            "ManageRoles" => p.ManageRoles,
+            _ => false,
+        };
 }
 
 /// <summary>
@@ -81,35 +102,29 @@ public static class AuthorizationMiddleware
 /// </summary>
 public static class AuthorizationExtensions
 {
-    /// <summary>
-    /// Requires authentication for all endpoints in this group.
-    /// </summary>
     public static RouteGroupBuilder RequireAuth(this RouteGroupBuilder group)
     {
         return group.AddEndpointFilter(AuthorizationMiddleware.RequireAuthentication);
     }
 
-    /// <summary>
-    /// Requires the user to have one of the specified roles.
-    /// </summary>
-    public static RouteGroupBuilder RequireRoles(this RouteGroupBuilder group, params UserRole[] roles)
+    public static RouteGroupBuilder RequirePermission(
+        this RouteGroupBuilder group,
+        string permissionName
+    )
     {
-        return group.AddEndpointFilter(AuthorizationMiddleware.RequireRoles(roles));
+        return group.AddEndpointFilter(AuthorizationMiddleware.RequirePermission(permissionName));
     }
 
-    /// <summary>
-    /// Requires authentication for this specific endpoint.
-    /// </summary>
     public static RouteHandlerBuilder RequireAuth(this RouteHandlerBuilder builder)
     {
         return builder.AddEndpointFilter(AuthorizationMiddleware.RequireAuthentication);
     }
 
-    /// <summary>
-    /// Requires the user to have one of the specified roles for this endpoint.
-    /// </summary>
-    public static RouteHandlerBuilder RequireRoles(this RouteHandlerBuilder builder, params UserRole[] roles)
+    public static RouteHandlerBuilder RequirePermission(
+        this RouteHandlerBuilder builder,
+        string permissionName
+    )
     {
-        return builder.AddEndpointFilter(AuthorizationMiddleware.RequireRoles(roles));
+        return builder.AddEndpointFilter(AuthorizationMiddleware.RequirePermission(permissionName));
     }
 }

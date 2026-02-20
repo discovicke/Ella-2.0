@@ -5,11 +5,9 @@ using Dapper;
 
 namespace Backend.app.Infrastructure.Repositories.Sqlite;
 
-public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<SqliteRoomRepo> logger) : IRoomRepository
+public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<SqliteRoomRepo> logger)
+    : IRoomRepository
 {
-    // SQLite repository for Room
-    // ⚠️ Update queries for new schema if columns/tables changed
-
     public async Task<IEnumerable<Room>> GetAllRoomsAsync()
     {
         try
@@ -17,8 +15,7 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             const string sql = "SELECT * FROM rooms;";
-            var rooms = await conn.QueryAsync<Room>(sql);
-            return rooms;
+            return await conn.QueryAsync<Room>(sql);
         }
         catch (Exception ex)
         {
@@ -33,9 +30,7 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-
             const string sql = "SELECT * FROM rooms WHERE id = @id;";
-
             return await conn.QuerySingleOrDefaultAsync<Room>(sql, new { id });
         }
         catch (Exception ex)
@@ -51,9 +46,7 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-
             const string sql = "SELECT * FROM rooms WHERE type = @type;";
-
             return await conn.QueryAsync<Room>(sql, new { type });
         }
         catch (Exception ex)
@@ -63,20 +56,22 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         }
     }
 
-    public async Task<IEnumerable<Room>> GetRoomsByAddressAsync(string address)
+    public async Task<IEnumerable<Room>> GetRoomsByCampusIdAsync(long campusId)
     {
         try
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-
-            const string sql = "SELECT * FROM rooms WHERE address = @address;";
-
-            return await conn.QueryAsync<Room>(sql, new { address });
+            const string sql = "SELECT * FROM rooms WHERE campus_id = @campusId;";
+            return await conn.QueryAsync<Room>(sql, new { campusId });
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching rooms with address {Address}", address);
+            logger.LogError(
+                ex,
+                "Database error while fetching rooms for campus {CampusId}",
+                campusId
+            );
             throw;
         }
     }
@@ -90,11 +85,11 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
 
             const string sql =
                 @"
-            INSERT INTO rooms (name, capacity, type, floor, address, notes) 
-            VALUES (@Name, @Capacity, @Type, @Floor, @Address, @Notes);
+            INSERT INTO rooms (campus_id, name, capacity, type, floor, notes) 
+            VALUES (@CampusId, @Name, @Capacity, @Type, @Floor, @Notes);
             SELECT last_insert_rowid();";
 
-            return await conn.ExecuteScalarAsync<int>(sql, room);
+            return await conn.ExecuteScalarAsync<long>(sql, room);
         }
         catch (Exception ex)
         {
@@ -111,7 +106,7 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
             await conn.OpenAsync();
 
             const string sql =
-                "UPDATE rooms SET name = @Name, capacity = @Capacity, type = @Type, floor = @Floor, address = @Address, notes = @Notes WHERE id = @Id;";
+                "UPDATE rooms SET campus_id = @CampusId, name = @Name, capacity = @Capacity, type = @Type, floor = @Floor, notes = @Notes WHERE id = @Id;";
             return await conn.ExecuteAsync(sql, room) > 0;
         }
         catch (Exception ex)
@@ -132,7 +127,6 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
 
             try
             {
-                // Delete assets first (manual cascade)
                 const string deleteAssetsSql = "DELETE FROM room_assets WHERE room_id = @id;";
                 await conn.ExecuteAsync(deleteAssetsSql, new { id }, transaction);
 
@@ -162,9 +156,12 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            const string sql = "INSERT INTO room_assets (room_id, asset_type_id) VALUES (@RoomId, @AssetId);";
-
-            await conn.ExecuteAsync(sql, assetIds.Select(assetId => new { RoomId = roomId, AssetId = assetId }));
+            const string sql =
+                "INSERT INTO room_assets (room_id, asset_type_id) VALUES (@RoomId, @AssetId);";
+            await conn.ExecuteAsync(
+                sql,
+                assetIds.Select(assetId => new { RoomId = roomId, AssetId = assetId })
+            );
         }
         catch (Exception ex)
         {

@@ -17,13 +17,25 @@ import { UserService } from '../../../shared/services/user.service';
 import {
   BannedStatus,
   CreateUserDto,
+  Permission,
+  PermissionTemplateDto,
   UpdateUserDto,
   UserResponseDto,
-  UserRole,
 } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { UserFormModalComponent } from './user-form-modal.component';
+import {
+  UserFormModalComponent,
+  UserFormPayload,
+  CustomPermissionsPayload,
+} from './user-form-modal.component';
 import { TableComponent, TableColumn } from '../../../shared/components/table/table.component';
+import {
+  permissionTemplates,
+  resolveRoleLabel,
+  resolveRoleCssClass,
+  getTemplateLabels,
+  RoleLabel,
+} from '../../../core/permission-templates';
 
 @Component({
   selector: 'app-manage-users-page',
@@ -47,12 +59,16 @@ export class ManageUsersPage implements OnInit {
 
   // --- FILTER STATE ---
   searchQuery = signal('');
-  selectedRole = signal<UserRole | 'All'>('All');
+  selectedRole = signal<RoleLabel | 'All'>('All');
   selectedStatus = signal<BannedStatus | 'All'>('All');
-  searchClass = signal('');
   filtersOpen = signal(typeof window !== 'undefined' ? window.innerWidth > 768 : true);
 
-  readonly userRoles = Object.values(UserRole);
+  readonly roleLabels = computed(() => [...getTemplateLabels(), 'Custom']);
+  readonly templateOptions = computed<PermissionTemplateDto[]>(() =>
+    permissionTemplates().filter((template) => !!template.id),
+  );
+  readonly resolveRoleLabel = resolveRoleLabel;
+  readonly resolveRoleCssClass = resolveRoleCssClass;
 
   // Pagination state
   pageIndex = signal(0);
@@ -69,17 +85,15 @@ export class ManageUsersPage implements OnInit {
     const query = this.searchQuery().toLowerCase();
     const role = this.selectedRole();
     const status = this.selectedStatus();
-    const classQuery = this.searchClass().toLowerCase();
 
     return all.filter((u) => {
       const matchesSearch =
         !query ||
         u.displayName?.toLowerCase().includes(query) ||
         u.email?.toLowerCase().includes(query);
-      const matchesRole = role === 'All' || u.role === role;
+      const matchesRole = role === 'All' || resolveRoleLabel(u.permissions) === role;
       const matchesStatus = status === 'All' || u.isBanned === status;
-      const matchesClass = !classQuery || u.userClass?.toLowerCase().includes(classQuery);
-      return matchesSearch && matchesRole && matchesStatus && matchesClass;
+      return matchesSearch && matchesRole && matchesStatus;
     });
   });
 
@@ -95,18 +109,14 @@ export class ManageUsersPage implements OnInit {
 
   hasActiveFilters = computed(
     () =>
-      this.searchQuery() !== '' ||
-      this.selectedRole() !== 'All' ||
-      this.selectedStatus() !== 'All' ||
-      this.searchClass() !== '',
+      this.searchQuery() !== '' || this.selectedRole() !== 'All' || this.selectedStatus() !== 'All',
   );
 
   ngOnInit() {
     this.columns = [
       { header: '', template: this.avatarTpl, width: '40px', align: 'center' },
-      { header: 'Namn', field: 'displayName' }, // Removed ID, moved name first
+      { header: 'Namn', field: 'displayName' },
       { header: 'E-post', field: 'email' },
-      { header: 'Kurs/Klass', field: 'userClass' },
       { header: 'Roll', template: this.roleTpl, width: '100px' },
       { header: 'Status', template: this.statusTpl, width: '100px' },
       { header: '', template: this.actionsTpl, width: '80px', align: 'right' },
@@ -132,18 +142,13 @@ export class ManageUsersPage implements OnInit {
     this.pageIndex.set(0);
   }
 
-  updateRole(event: Event) {
-    this.selectedRole.set((event.target as HTMLSelectElement).value as UserRole | 'All');
-    this.pageIndex.set(0);
-  }
-
   updateStatus(event: Event) {
     this.selectedStatus.set((event.target as HTMLSelectElement).value as BannedStatus | 'All');
     this.pageIndex.set(0);
   }
 
-  updateClass(event: Event) {
-    this.searchClass.set((event.target as HTMLInputElement).value);
+  updateRole(event: Event) {
+    this.selectedRole.set((event.target as HTMLSelectElement).value as RoleLabel | 'All');
     this.pageIndex.set(0);
   }
 
@@ -151,7 +156,6 @@ export class ManageUsersPage implements OnInit {
     this.searchQuery.set('');
     this.selectedRole.set('All');
     this.selectedStatus.set('All');
-    this.searchClass.set('');
     this.pageIndex.set(0);
   }
 
@@ -164,7 +168,20 @@ export class ManageUsersPage implements OnInit {
       title: 'Skapa ny användare',
       data: {
         user: null,
-        onSave: (payload: CreateUserDto) => this.handleSave(payload),
+        templateOptions: this.templateOptions(),
+        initialTemplateId: null,
+        initialPermissions: {
+          bookRoom: true,
+          myBookings: true,
+          manageUsers: false,
+          manageClasses: false,
+          manageRooms: false,
+          manageAssets: false,
+          manageBookings: false,
+          manageCampuses: false,
+          manageRoles: false,
+        },
+        onSave: (payload: UserFormPayload) => this.handleSave(payload),
       },
       width: '500px',
     });
@@ -179,46 +196,136 @@ export class ManageUsersPage implements OnInit {
       title: 'Redigera användare',
       data: {
         user: user,
-        onSave: (payload: UpdateUserDto) => this.handleSave(payload, user.id),
+        templateOptions: this.templateOptions(),
+        initialTemplateId: user.permissions?.templateId ?? null,
+        initialPermissions: user.permissions,
+        onSave: (payload: UserFormPayload) => this.handleSave(payload, user.id, user.permissions),
         onDelete: (id: number) => this.handleDelete(id),
       },
       width: '500px',
     });
   }
 
-  private handleDelete(id: number) {
-    this.userService.deleteUser(id).subscribe({
-      next: () => {
-        this.toastService.showSuccess('Användaren raderad!');
-        this.modalService.close();
-        this.userResource.reload();
-        // Reset page if we delete the last item on the current page
-        if (this.paginatedUsers().length === 0 && this.pageIndex() > 0) {
-          this.pageIndex.update((p) => p - 1);
-        }
-      },
-      error: (err) => {
-        console.error('Delete failed', err);
-        this.toastService.showError('Kunde inte radera användaren.');
-      },
+  private handleDelete(id: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.userService.deleteUser(id).subscribe({
+        next: () => {
+          this.toastService.showSuccess('Användaren raderad!');
+          this.modalService.close();
+          this.userResource.reload();
+          // Reset page if we delete the last item on the current page
+          if (this.paginatedUsers().length === 0 && this.pageIndex() > 0) {
+            this.pageIndex.update((p) => p - 1);
+          }
+          resolve();
+        },
+        error: (err) => {
+          console.error('Delete failed', err);
+          this.toastService.showError('Kunde inte radera användaren.');
+          reject(err);
+        },
+      });
     });
   }
 
-  private handleSave(payload: any, userId?: number) {
-    const obs = userId
-      ? this.userService.updateUser(userId, payload)
-      : this.userService.createUser(payload);
+  private async handleSave(
+    payload: UserFormPayload,
+    userId?: number,
+    existingPermissions?: Permission,
+  ) {
+    try {
+      const selectedTemplateId = payload.selectedTemplateId ?? null;
 
-    obs.subscribe({
-      next: () => {
-        this.toastService.showSuccess(`Användaren ${userId ? 'uppdaterad' : 'skapad'}!`);
-        this.modalService.close();
-        this.userResource.reload();
-      },
-      error: (err) => {
-        console.error('Save failed', err);
-        this.toastService.showError(err.error || 'Kunde inte spara användaren.');
-      },
-    });
+      if (userId) {
+        const updatePayload: UpdateUserDto = {
+          id: userId,
+          email: payload.email,
+          displayName: payload.displayName,
+          password: payload.password ?? null,
+          isBanned: payload.isBanned ?? BannedStatus.NotBanned,
+        };
+
+        await firstValueFrom(this.userService.updateUser(userId, updatePayload));
+        await this.syncTemplateAssignment(
+          userId,
+          selectedTemplateId,
+          payload.customPermissions,
+          existingPermissions,
+        );
+      } else {
+        const createPayload: CreateUserDto = {
+          email: payload.email,
+          displayName: payload.displayName,
+          password: payload.password ?? '',
+        };
+
+        const created = await firstValueFrom(this.userService.createUser(createPayload));
+        if (created.id) {
+          await this.syncTemplateAssignment(
+            created.id,
+            selectedTemplateId,
+            payload.customPermissions,
+            undefined,
+          );
+        }
+      }
+
+      this.toastService.showSuccess(`Användaren ${userId ? 'uppdaterad' : 'skapad'}!`);
+      this.modalService.close();
+      this.userResource.reload();
+    } catch (err: any) {
+      console.error('Save failed', err);
+      this.toastService.showError(err?.error || 'Kunde inte spara användaren.');
+      throw err;
+    }
+  }
+
+  private async syncTemplateAssignment(
+    userId: number,
+    selectedTemplateId: number | null,
+    customPermissions: CustomPermissionsPayload,
+    existingPermissions?: Permission,
+  ) {
+    if (selectedTemplateId && selectedTemplateId > 0) {
+      await firstValueFrom(this.userService.applyTemplate(userId, selectedTemplateId));
+      return;
+    }
+
+    if (selectedTemplateId === null) {
+      const previousTemplateId = existingPermissions?.templateId ?? null;
+      const shouldUpdateCustom =
+        previousTemplateId !== null ||
+        this.permissionsChanged(existingPermissions, customPermissions);
+
+      if (!shouldUpdateCustom) {
+        return;
+      }
+
+      await firstValueFrom(
+        this.userService.updatePermissions(userId, {
+          templateId: null,
+          ...customPermissions,
+        }),
+      );
+    }
+  }
+
+  private permissionsChanged(
+    existingPermissions: Permission | undefined,
+    next: CustomPermissionsPayload,
+  ): boolean {
+    if (!existingPermissions) return true;
+
+    return (
+      !!existingPermissions.bookRoom !== next.bookRoom ||
+      !!existingPermissions.myBookings !== next.myBookings ||
+      !!existingPermissions.manageUsers !== next.manageUsers ||
+      !!existingPermissions.manageClasses !== next.manageClasses ||
+      !!existingPermissions.manageRooms !== next.manageRooms ||
+      !!existingPermissions.manageAssets !== next.manageAssets ||
+      !!existingPermissions.manageBookings !== next.manageBookings ||
+      !!existingPermissions.manageCampuses !== next.manageCampuses ||
+      !!existingPermissions.manageRoles !== next.manageRoles
+    );
   }
 }

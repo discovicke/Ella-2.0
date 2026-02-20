@@ -1,14 +1,14 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { LayoutService } from '../../shared/services/layout.service';
-import { CommonModule } from '@angular/common';
 import { SessionService } from '../../core/session.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { ConfirmService } from '../../shared/services/confirm.service';
+import { resolveRoleLabel } from '../../core/permission-templates';
 
 @Component({
   selector: 'app-main-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './main.layout.html',
   styleUrl: './main.layout.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,6 +18,23 @@ export class MainLayout {
   public readonly sessionService = inject(SessionService);
   private readonly authService = inject(AuthService);
   private readonly confirmService = inject(ConfirmService);
+
+  readonly resolveRoleLabel = resolveRoleLabel;
+
+  /** True when the user has at least one admin-level permission */
+  readonly showAdminSection = computed(() => {
+    const perms = this.sessionService.permissions();
+    if (!perms) return false;
+    return !!(
+      perms.manageUsers ||
+      perms.manageRooms ||
+      perms.manageBookings ||
+      perms.manageRoles ||
+      perms.manageAssets ||
+      perms.manageClasses ||
+      perms.manageCampuses
+    );
+  });
 
   getInitials(name: string): string {
     if (!name) return '?';

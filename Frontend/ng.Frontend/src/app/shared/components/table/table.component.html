@@ -14,13 +14,13 @@
         @for (i of [1, 2, 3, 4, 5]; track i) {
           <tr class="skeleton-row">
             @for (col of columns(); track col.header) {
-              <td><div class="skeleton-cell"></div></td>
+              <td [attr.data-label]="col.header"><div class="skeleton-cell"></div></td>
             }
           </tr>
         }
       } @else if (!data() || data().length === 0) {
         <tr>
-          <td [attr.colspan]="columns().length" class="empty-state">
+          <td [attr.colspan]="columns().length" class="empty-state" [attr.data-label]="'Info'">
             {{ emptyMessage() }}
           </td>
         </tr>

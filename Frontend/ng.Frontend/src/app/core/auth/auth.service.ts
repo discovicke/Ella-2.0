@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
-import { AuthResponseDto, LoginDto, UserRole } from '../../models/models';
+import { AuthResponseDto, LoginDto, Permission } from '../../models/models';
 import { SessionService, UserState } from '../session.service';
 
 @Injectable({
@@ -56,12 +56,33 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
+  /**
+   * Refreshes the current session user from /auth/me so permission changes
+   * (e.g. after role updates) are reflected immediately in the UI.
+   */
+  async refreshCurrentUser(): Promise<void> {
+    const current = this.sessionService.currentUser();
+    if (!current) return;
+
+    try {
+      const response = await lastValueFrom(
+        this.http.get<{ user: any }>(`${this.apiUrl}/me`, { withCredentials: true }),
+      );
+
+      const userState = this.mapToUserState(response.user);
+      userState.token = current.token;
+      this.sessionService.setUser(userState);
+    } catch (error) {
+      console.warn('Failed to refresh current user from /auth/me', error);
+    }
+  }
+
   public mapToUserState(apiUser: any): UserState {
     return {
       id: apiUser.id,
       email: apiUser.email,
       displayName: apiUser.displayName,
-      role: apiUser.role as UserRole,
+      permissions: apiUser.permissions ?? null,
       isBanned: !!apiUser.isBanned,
     };
   }

@@ -24,8 +24,14 @@ export class BookingModalComponent {
   // Get the room from modal data
   readonly room = this.modalService.modalData() as RoomDetailModel;
 
-  // Set default dates (today)
-  private readonly today = new Date().toISOString().split('T')[0];
+  // Set default dates (today) - Local time
+  private readonly today = (() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  })();
 
   readonly bookingForm = new FormGroup({
     startDate: new FormControl(this.today, { nonNullable: true, validators: [Validators.required] }),
@@ -50,6 +56,12 @@ export class BookingModalComponent {
 
     const startDateTime = new Date(`${this.bookingForm.value.startDate}T${this.bookingForm.value.startTime}`);
     const endDateTime = new Date(`${this.bookingForm.value.endDate}T${this.bookingForm.value.endTime}`);
+
+    if (endDateTime <= startDateTime) {
+      this.toastService.showError('Sluttid måste vara efter starttid.');
+      this.isSubmitting.set(false);
+      return;
+    }
 
     if (!this.room.roomId) {
       this.toastService.showError('Ogiltigt rum.');

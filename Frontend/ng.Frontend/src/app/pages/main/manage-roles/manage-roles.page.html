@@ -1,0 +1,117 @@
+<div class="manage-roles-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Hantera roller</h1>
+      <p class="subtitle">
+        Definiera rollmallar som mappar behörighetskombinationer till namngivna roller.
+      </p>
+    </div>
+    <div class="header-actions">
+      @if (hasChanges()) {
+        <app-button variant="secondary" (clicked)="discard()" [disabled]="saving()">
+          Ångra
+        </app-button>
+      }
+      <app-button variant="primary" (clicked)="save()" [disabled]="saving() || !hasChanges()">
+        @if (saving()) {
+          Sparar...
+        } @else {
+          Spara ändringar
+        }
+      </app-button>
+    </div>
+    <p class="propagate-helper">
+      När du sparar kan du välja om uppdaterade rollbehörigheter även ska gälla för användare som
+      redan har den rollen.
+    </p>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <p>Laddar roller...</p>
+    </div>
+  } @else {
+    <!-- Template Cards -->
+    <div class="templates-grid">
+      @for (template of templates(); track template.uid; let tplIdx = $index) {
+        <div class="template-card" [class.is-new]="template.isNew">
+          <!-- Card Header -->
+          <div class="card-header">
+            <div class="card-fields">
+              <div class="field">
+                <label class="field-label">Rollnamn</label>
+                <input
+                  type="text"
+                  class="field-input"
+                  [ngModel]="template.label"
+                  (ngModelChange)="updateLabel(tplIdx, $event)"
+                  placeholder="t.ex. Student"
+                />
+              </div>
+              <div class="field">
+                <label class="field-label">Färg</label>
+                <select
+                  class="field-input"
+                  [ngModel]="template.cssClass"
+                  (ngModelChange)="updateCssClass(tplIdx, $event)"
+                >
+                  @for (color of colorOptions; track color.cssClass) {
+                    <option [value]="color.cssClass">{{ color.label }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+            <button
+              class="btn-remove"
+              (click)="removeTemplate(tplIdx)"
+              title="Ta bort roll"
+              aria-label="Ta bort roll"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Preview Badge -->
+          <div class="card-preview">
+            <span class="preview-label">Förhandsgranskning:</span>
+            <span class="user-role-badge" [ngClass]="template.cssClass || 'custom'">
+              {{ template.label || 'Namnlös' }}
+            </span>
+          </div>
+
+          <!-- Permission Toggles -->
+          <div class="permissions-grid">
+            @for (key of permissionKeys(); track key) {
+              <label class="permission-toggle" [class.active]="template.permissions[key]">
+                <input
+                  type="checkbox"
+                  [checked]="template.permissions[key]"
+                  (change)="togglePermission(tplIdx, key)"
+                />
+                <span class="toggle-track">
+                  <span class="toggle-thumb"></span>
+                </span>
+                <span class="toggle-label">{{ formatKey(key) }}</span>
+              </label>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Add Template Button -->
+      <button class="add-template-card" (click)="addTemplate()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        <span>Lägg till roll</span>
+      </button>
+    </div>
+  }
+</div>

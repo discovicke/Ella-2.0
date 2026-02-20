@@ -1,4 +1,5 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 
 export type ConfirmIcon = 'warning' | 'question' | 'info';
 
@@ -14,6 +15,8 @@ export interface ConfirmOptions {
   providedIn: 'root',
 })
 export class ConfirmService {
+  private readonly document = inject(DOCUMENT);
+
   // --- Signals exposed to the component ---
   readonly isOpen = signal(false);
   readonly message = signal('');
@@ -29,6 +32,11 @@ export class ConfirmService {
    * Show a confirm dialog and return a promise that resolves to true/false.
    */
   show(message: string, options: ConfirmOptions = {}): Promise<boolean> {
+    // If a dialog is already open, close it (resolving false) before opening a new one
+    if (this.isOpen() && this.resolveRef) {
+      this.resolveRef(false);
+    }
+
     this.message.set(message);
     this.title.set(options.title ?? 'Bekräfta');
     this.confirmText.set(options.confirmText ?? 'Ja');
@@ -36,7 +44,7 @@ export class ConfirmService {
     this.icon.set(options.icon ?? 'warning');
     this.dangerConfirm.set(options.dangerConfirm ?? true);
     this.isOpen.set(true);
-    document.body.style.overflow = 'hidden';
+    this.document.body.style.overflow = 'hidden';
 
     return new Promise((resolve) => {
       this.resolveRef = resolve;
@@ -58,7 +66,7 @@ export class ConfirmService {
   private _close(): void {
     this.isOpen.set(false);
     this.resolveRef = null;
-    document.body.style.overflow = '';
+    this.document.body.style.overflow = '';
   }
 
   // --- Convenience methods ---

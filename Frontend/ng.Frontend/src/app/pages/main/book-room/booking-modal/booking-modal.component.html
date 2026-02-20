@@ -2,8 +2,8 @@
   <div class="room-info">
     <p><strong>Rum:</strong> {{ room.name }}</p>
     <p><strong>Kapacitet:</strong> {{ room.capacity }} platser</p>
-    @if (room.address) {
-      <p><strong>Plats:</strong> {{ room.address }}</p>
+    @if (room.campusCity) {
+      <p><strong>Plats:</strong> {{ room.campusCity }}</p>
     }
   </div>
 
@@ -12,22 +12,12 @@
     <div class="form-row">
       <div class="form-group">
         <label for="startDate">Startdatum</label>
-        <input
-          type="date"
-          id="startDate"
-          formControlName="startDate"
-          required
-        />
+        <input type="date" id="startDate" formControlName="startDate" required />
       </div>
 
       <div class="form-group">
         <label for="startTime">Starttid</label>
-        <input
-          type="time"
-          id="startTime"
-          formControlName="startTime"
-          required
-        />
+        <input type="time" id="startTime" formControlName="startTime" required />
       </div>
     </div>
 
@@ -35,22 +25,12 @@
     <div class="form-row">
       <div class="form-group">
         <label for="endDate">Slutdatum</label>
-        <input
-          type="date"
-          id="endDate"
-          formControlName="endDate"
-          required
-        />
+        <input type="date" id="endDate" formControlName="endDate" required />
       </div>
 
       <div class="form-group">
         <label for="endTime">Sluttid</label>
-        <input
-          type="time"
-          id="endTime"
-          formControlName="endTime"
-          required
-        />
+        <input type="time" id="endTime" formControlName="endTime" required />
       </div>
     </div>
 
@@ -66,16 +46,14 @@
     </div>
 
     <div class="modal-actions">
-      <app-button 
-        type="button" 
-        variant="tertiary" 
-        (clicked)="modalService.close()">
+      <app-button type="button" variant="tertiary" (clicked)="modalService.close()">
         Avbryt
       </app-button>
-      <app-button 
-        type="submit" 
-        variant="success" 
-        [disabled]="bookingForm.invalid || isSubmitting()">
+      <app-button
+        type="submit"
+        variant="success"
+        [disabled]="bookingForm.invalid || isSubmitting()"
+      >
         {{ isSubmitting() ? 'Bokar...' : 'Bekräfta bokning' }}
       </app-button>
     </div>

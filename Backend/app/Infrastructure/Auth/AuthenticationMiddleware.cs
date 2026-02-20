@@ -5,13 +5,16 @@ namespace Backend.app.Infrastructure.Auth;
 /// <summary>
 /// Authentication middleware that validates JWT tokens from requests.
 /// Attaches the authenticated user to HttpContext.Items for downstream use.
-/// 
+///
 /// Equivalent to the JS authenticate middleware that:
 /// 1. Extracts token from cookie or Authorization header
 /// 2. Validates the token via AuthService
 /// 3. Attaches user to request context
 /// </summary>
-public class AuthenticationMiddleware(RequestDelegate next, ILogger<AuthenticationMiddleware> logger)
+public class AuthenticationMiddleware(
+    RequestDelegate next,
+    ILogger<AuthenticationMiddleware> logger
+)
 {
     public async Task InvokeAsync(HttpContext context, AuthService authService)
     {
@@ -25,25 +28,26 @@ public class AuthenticationMiddleware(RequestDelegate next, ILogger<Authenticati
             if (result.IsBanned)
             {
                 logger.LogWarning("Banned user {UserId} attempted access", result.User?.Id);
-                
+
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 context.Response.ContentType = "application/json";
-                await context.Response.WriteAsJsonAsync(new 
-                { 
-                    error = "Banned", 
-                    message = "Your account has been suspended.",
-                    code = "USER_BANNED",
-                    isBanned = true 
-                });
+                await context.Response.WriteAsJsonAsync(
+                    new
+                    {
+                        error = "Banned",
+                        message = "Your account has been suspended.",
+                        code = "USER_BANNED",
+                        isBanned = true,
+                    }
+                );
                 return; // Stop the pipeline
             }
 
             if (result.IsValid && result.User is not null)
             {
-                // Attach user to context for downstream middleware/endpoints
                 context.Items["User"] = result.User;
                 context.Items["UserId"] = result.User.Id;
-                context.Items["UserRole"] = result.User.Role.ToString();
+                context.Items["Permissions"] = result.Permissions;
 
                 logger.LogDebug("User {UserId} authenticated via JWT", result.User.Id);
             }
@@ -70,7 +74,10 @@ public class AuthenticationMiddleware(RequestDelegate next, ILogger<Authenticati
 
         // Try Authorization header (for API clients)
         var authHeader = context.Request.Headers.Authorization.FirstOrDefault();
-        if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        if (
+            !string.IsNullOrEmpty(authHeader)
+            && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+        )
         {
             return authHeader["Bearer ".Length..].Trim();
         }

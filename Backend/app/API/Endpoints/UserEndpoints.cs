@@ -1,7 +1,10 @@
-﻿using Backend.app.Core.Models.DTO;
+﻿using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using Backend.app.Core.Models.DTO;
+using Backend.app.Core.Models.Entities;
+using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
-using Backend.app.Core.Models.Enums;
 
 namespace Backend.app.API.Endpoints;
 
@@ -9,9 +12,7 @@ public static class UserEndpoints
 {
     public static RouteGroupBuilder MapUserEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/users")
-            .WithTags("Users")
-            .RequireAuth(); // Lock down entire group to authenticated users
+        var group = app.MapGroup("/users").WithTags("Users").RequireAuth(); // Lock down entire group to authenticated users
 
         // GET /api/users
         group
@@ -23,11 +24,15 @@ public static class UserEndpoints
                     return Results.Ok(users);
                 }
             )
+            .RequirePermission("ManageUsers")
             .WithName("GetUsers")
             .WithSummary("Get all users")
-            .WithDescription("Retrieves all users in the system.\n\n🔒 **Authentication Required**")
+            .WithDescription(
+                "Retrieves all users in the system.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
+            )
             .Produces<IEnumerable<UserResponseDto>>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status401Unauthorized);
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         // GET /api/users/{id}
         group
@@ -42,13 +47,17 @@ public static class UserEndpoints
                     return Results.Ok(user);
                 }
             )
+            .RequirePermission("ManageUsers")
             .WithName("GetUserById")
             .WithSummary("Get user by ID")
-            .WithDescription("Retrieves a specific user by their unique identifier.\n\n🔒 **Authentication Required**")
+            .WithDescription(
+                "Retrieves a specific user by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
+            )
             .Produces<UserResponseDto>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status401Unauthorized);
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         // POST /api/users
         group
@@ -64,10 +73,12 @@ public static class UserEndpoints
                     return Results.Created($"/api/users/{createdUser.Id}", createdUser);
                 }
             )
-            .RequireRoles(UserRole.Admin) // Only Admin can create users
+            .RequirePermission("ManageUsers")
             .WithName("CreateUser")
             .WithSummary("Create a new user")
-            .WithDescription("Creates a new user with the provided details.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin")
+            .WithDescription(
+                "Creates a new user with the provided details.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
+            )
             .Accepts<CreateUserDto>("application/json")
             .Produces<UserResponseDto>(StatusCodes.Status201Created)
             .Produces<string>(StatusCodes.Status400BadRequest)
@@ -95,10 +106,12 @@ public static class UserEndpoints
                     return Results.NoContent();
                 }
             )
-            .RequireRoles(UserRole.Admin) // Only Admin can update users
+            .RequirePermission("ManageUsers")
             .WithName("UpdateUser")
             .WithSummary("Update an existing user")
-            .WithDescription("Updates a user's details by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin")
+            .WithDescription(
+                "Updates a user's details by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
+            )
             .Accepts<UpdateUserDto>("application/json")
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
@@ -110,19 +123,25 @@ public static class UserEndpoints
         group
             .MapPost(
                 "/{id}/ban-status",
-                async (long id, BannedStatus status, UserService service) =>
+                async (long id, BannedStatus status, UserService service, ClaimsPrincipal user) =>
                 {
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
+
+                    var currentUserId = user.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                    if (currentUserId == id.ToString())
+                        return Results.BadRequest("You cannot change your own ban status.");
 
                     await service.SetBannedStatusAsync(id, status);
                     return Results.NoContent();
                 }
             )
-            .RequireRoles(UserRole.Admin) // Only Admin can ban/unban users
+            .RequirePermission("ManageUsers")
             .WithName("SetUserBanStatus")
             .WithSummary("Set user ban status")
-            .WithDescription("Bans or unbans a user. If banned, all active tokens are revoked.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin")
+            .WithDescription(
+                "Bans or unbans a user. If banned, all active tokens are revoked.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
+            )
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
@@ -142,11 +161,78 @@ public static class UserEndpoints
                     return Results.NoContent();
                 }
             )
-            .RequireRoles(UserRole.Admin) // Only Admin can force logout
+            .RequirePermission("ManageUsers")
             .WithName("RevokeTokens")
             .WithSummary("Force logout a user")
-            .WithDescription("Invalidates all existing tokens for a specific user.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin")
+            .WithDescription(
+                "Invalidates all existing tokens for a specific user.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
+            )
             .Produces(StatusCodes.Status204NoContent)
+            .Produces<string>(StatusCodes.Status400BadRequest)
+            .Produces<string>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
+        // PUT /api/users/{id}/permissions — update a user's permission flags directly
+        group
+            .MapPut(
+                "/{id}/permissions",
+                async (long id, UpdatePermissionDto dto, UserService service, ClaimsPrincipal user) =>
+                {
+                    if (id <= 0)
+                        return Results.BadRequest("ID must be a positive integer.");
+
+                    var currentUserId = user.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                    if (currentUserId == id.ToString())
+                        return Results.BadRequest("You cannot update your own permissions.");
+
+                    var updated = await service.UpdatePermissionsAsync(id, dto);
+                    return Results.Ok(updated);
+                }
+            )
+            .RequirePermission("ManageUsers")
+            .WithName("UpdateUserPermissions")
+            .WithSummary("Update a user's permissions")
+            .WithDescription(
+                "Directly updates permission flags for a specific user. "
+                    + "Sets template_id to the value in the DTO (null for custom overrides).\n\n"
+                    + "🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
+            )
+            .Accepts<UpdatePermissionDto>("application/json")
+            .Produces<Permission>(StatusCodes.Status200OK)
+            .Produces<string>(StatusCodes.Status400BadRequest)
+            .Produces<string>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
+        // POST /api/users/{id}/apply-template/{templateId} — apply a template to a user
+        group
+            .MapPost(
+                "/{id}/apply-template/{templateId}",
+                async (long id, long templateId, PermissionTemplateService templateService, ClaimsPrincipal user) =>
+                {
+                    if (id <= 0)
+                        return Results.BadRequest("User ID must be a positive integer.");
+                    if (templateId <= 0)
+                        return Results.BadRequest("Template ID must be a positive integer.");
+
+                    var currentUserId = user.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                    if (currentUserId == id.ToString())
+                        return Results.BadRequest("You cannot apply a template to yourself.");
+
+                    var updated = await templateService.ApplyTemplateAsync(id, templateId);
+                    return Results.Ok(updated);
+                }
+            )
+            .RequirePermission("ManageUsers")
+            .WithName("ApplyTemplateToUser")
+            .WithSummary("Apply a permission template to a user")
+            .WithDescription(
+                "Copies all permission flags from the specified template into the user's permissions row "
+                    + "and stores the template_id for future propagation.\n\n"
+                    + "🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
+            )
+            .Produces<Permission>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -156,19 +242,25 @@ public static class UserEndpoints
         group
             .MapDelete(
                 "/{id}",
-                async (long id, UserService service) =>
+                async (long id, UserService service, ClaimsPrincipal user) =>
                 {
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
+
+                    var currentUserId = user.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                    if (currentUserId == id.ToString())
+                        return Results.BadRequest("You cannot delete your own account.");
 
                     await service.DeleteUserAsync(id);
                     return Results.NoContent();
                 }
             )
-            .RequireRoles(UserRole.Admin) // Only Admin can delete users
+            .RequirePermission("ManageUsers")
             .WithName("DeleteUser")
             .WithSummary("Delete a user")
-            .WithDescription("Permanently deletes a user by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin")
+            .WithDescription(
+                "Permanently deletes a user by their unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
+            )
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
@@ -194,9 +286,6 @@ public static class UserEndpoints
     {
         if (string.IsNullOrWhiteSpace(dto.Email))
             return Results.BadRequest("Email is required.");
-
-        if (string.IsNullOrWhiteSpace(dto.Password))
-            return Results.BadRequest("Password is required.");
 
         return null;
     }

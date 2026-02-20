@@ -61,7 +61,7 @@
           <label class="filter-label">Roll</label>
           <select (change)="updateRole($event)" [value]="selectedRole()">
             <option value="All">Alla roller</option>
-            @for (role of userRoles; track role) {
+            @for (role of roleLabels(); track role) {
               <option [value]="role">{{ role }}</option>
             }
           </select>
@@ -74,22 +74,6 @@
             <option value="NotBanned">Aktiv</option>
             <option value="Banned">Bannlyst</option>
           </select>
-        </div>
-
-        <div class="filter-item">
-          <label class="filter-label">Kurs/Klass</label>
-          <div class="class-input">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Filtrera på klass..."
-              [value]="searchClass()"
-              (input)="updateClass($event)"
-            />
-          </div>
         </div>
       </div>
     </div>
@@ -134,7 +118,9 @@
 
     <!-- Role Template -->
     <ng-template #roleTpl let-user>
-      <span class="user-role-badge" [ngClass]="user.role.toLowerCase()">{{ user.role }}</span>
+      <span class="user-role-badge" [ngClass]="resolveRoleCssClass(user.permissions)">
+        {{ resolveRoleLabel(user.permissions) }}
+      </span>
     </ng-template>
 
     <!-- Status Template -->

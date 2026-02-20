@@ -95,7 +95,7 @@
               <h3>{{ room.name }}</h3>
               <span class="type-badge">{{ room.type }}</span>
             </div>
-            @if (room.address) {
+            @if (room.campusCity) {
               <div class="room-location">
                 <svg
                   class="location-icon"
@@ -108,7 +108,7 @@
                   <circle cx="12" cy="10" r="3" />
                 </svg>
                 <span
-                  >{{ room.address }}
+                  >{{ room.campusCity }}
                   @if (room.floor) {
                     • Vån {{ room.floor }}
                   }
@@ -176,10 +176,7 @@
               </svg>
               <h2>Inga rum hittades</h2>
               <p>Inga rum matchar dina sökkriterier. Prova att justera filtren.</p>
-              <button
-                class="btn-reset"
-                (click)="searchQuery.set(''); selectedType.set('All'); minCapacity.set(0)"
-              >
+              <button class="btn-reset" (click)="resetFilters()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="1 4 1 10 7 10" />
                   <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />

@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
+import { permissionGuard } from './core/auth/permission.guard';
+import { adminGuard } from './core/auth/admin.guard';
 
 export const routes: Routes = [
   // =========================================================
@@ -27,8 +29,7 @@ export const routes: Routes = [
   },
   {
     path: 'banned',
-    loadComponent: () =>
-      import('./pages/_public/banned/banned.page').then((m) => m.BannedPage),
+    loadComponent: () => import('./pages/_public/banned/banned.page').then((m) => m.BannedPage),
   },
   {
     path: 'bookingform',
@@ -48,6 +49,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'system-overview',
+        canActivate: [adminGuard],
         loadComponent: () =>
           import('./pages/main/system-overview/system-overview.page').then(
             (m) => m.SystemOverviewPage,
@@ -55,45 +57,54 @@ export const routes: Routes = [
       },
       {
         path: 'manage-users',
+        canActivate: [permissionGuard],
+        data: { permission: 'manageUsers' },
         loadComponent: () =>
-          import('./pages/main/manage-users/manage-users.page').then(
-            (m) => m.ManageUsersPage,
-          ),
+          import('./pages/main/manage-users/manage-users.page').then((m) => m.ManageUsersPage),
       },
       {
         path: 'manage-rooms',
+        canActivate: [permissionGuard],
+        data: { permission: 'manageRooms' },
         loadComponent: () =>
-          import('./pages/main/manage-rooms/manage-rooms.page').then(
-            (m) => m.ManageRoomsPage,
-          ),
+          import('./pages/main/manage-rooms/manage-rooms.page').then((m) => m.ManageRoomsPage),
       },
       {
         path: 'manage-bookings',
+        canActivate: [permissionGuard],
+        data: { permission: 'manageBookings' },
         loadComponent: () =>
           import('./pages/main/manage-bookings/manage-bookings.page').then(
             (m) => m.ManageBookingsPage,
           ),
       },
       {
-        path: 'see-bookings',
+        path: 'manage-roles',
+        canActivate: [permissionGuard],
+        data: { permission: 'manageRoles' },
         loadComponent: () =>
-          import('./pages/main/see-bookings/see-bookings.page').then(
-            (m) => m.SeeBookingsPage,
-          ),
+          import('./pages/main/manage-roles/manage-roles.page').then((m) => m.ManageRolesPage),
+      },
+      {
+        path: 'see-bookings',
+        canActivate: [permissionGuard],
+        data: { permission: 'myBookings' },
+        loadComponent: () =>
+          import('./pages/main/see-bookings/see-bookings.page').then((m) => m.SeeBookingsPage),
       },
       {
         path: 'book-room',
+        canActivate: [permissionGuard],
+        data: { permission: 'bookRoom' },
         loadComponent: () =>
-          import('./pages/main/book-room/book-room.page').then(
-            (m) => m.BookRoomPage,
-          ),
+          import('./pages/main/book-room/book-room.page').then((m) => m.BookRoomPage),
       },
       // Redirect root of authenticated area to see-bookings
       {
         path: '',
         redirectTo: 'see-bookings',
         pathMatch: 'full',
-      }
+      },
     ],
   },
 

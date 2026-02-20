@@ -45,8 +45,7 @@ export class BookRoomPage {
     const capacity = this.minCapacity();
 
     return all.filter((r) => {
-      const matchesSearch =
-        !query || r.name?.toLowerCase().includes(query) || r.address?.toLowerCase().includes(query);
+      const matchesSearch = !query || r.name?.toLowerCase().includes(query);
       const matchesType = type === 'All' || r.type === type;
       const matchesCapacity = (r.capacity ?? 0) >= capacity;
       return matchesSearch && matchesType && matchesCapacity;

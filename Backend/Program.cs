@@ -11,17 +11,7 @@ using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 
 // 1. LOAD SECRETS (.env)
-// Try explicit path inside the Backend project directory first (helps IDEs with different working directories)
-var envPathExplicit = Path.Combine(Directory.GetCurrentDirectory(), ".env");
-if (File.Exists(envPathExplicit))
-{
-    Env.Load(envPathExplicit);
-}
-else
-{
-    // Fallback to default behavior (searches upwards from current dir)
-    Env.Load();
-}
+LoadEnvironmentVariables();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,7 +29,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     );
 });
 
-// 3. SETUP (Using Local Methods)
+// 3. SETUP
 ConfigureDatabase(builder);
 ConfigureCoreServices(builder.Services);
 
@@ -91,6 +81,7 @@ api.MapRoomEndpoints();
 api.MapAssetEndpoints();
 api.MapBookingEndpoints();
 api.MapRegistrationEndpoints();
+api.MapPermissionTemplateEndpoints();
 
 // 5. THE CATCH-ALL (SPA Fallback)
 app.MapFallbackToFile("index.html");
@@ -102,6 +93,45 @@ app.Run(); // <--- Start the machine!
 // ---------------------------------------------------------
 // LOCAL CONFIGURATION METHODS
 // ---------------------------------------------------------
+
+static void LoadEnvironmentVariables()
+{
+    var rootPath = Directory.GetCurrentDirectory();
+    var envPath = Path.Combine(rootPath, ".env");
+    var envExamplePath = Path.Combine(rootPath, ".env-example");
+
+    if (File.Exists(envPath))
+    {
+        Env.Load(envPath);
+        Console.WriteLine("Configuration loaded from .env");
+    }
+    else
+    {
+        if (!File.Exists(envExamplePath))
+        {
+            var defaultEnvContent =
+                @"# --- Database Settings ---
+DatabaseSettings__Provider=sqlite
+DatabaseSettings__ConnectionString=Data Source=app/Infrastructure/Data/ellaDB.sqlite
+
+# --- JWT Settings ---
+# WARNING: Replace this with a secure key in your local @.env file
+JwtSettings__SecretKey=REPLACE_WITH_SECURE_KEY_MIN_32_CHARS
+JwtSettings__Issuer=EllaBookingAPI
+JwtSettings__Audience=EllaBookingClient
+JwtSettings__AccessTokenExpirationMinutes=60";
+
+            File.WriteAllText(envExamplePath, defaultEnvContent);
+            Console.WriteLine(".env file not found. Created .env-example with default settings.");
+        }
+
+        // Load from example if .env is missing
+        Env.Load(envExamplePath);
+        Console.WriteLine(
+            "Loaded configuration from .env-example. Please create a local .env file for production use."
+        );
+    }
+}
 
 static void ConfigureOpenApi(IServiceCollection services)
 {
@@ -193,6 +223,8 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
             services.AddScoped<IBookingRepository, SqliteBookingRepo>();
             services.AddScoped<IBookingReadModelRepository, SqliteBookingReadModelRepo>();
             services.AddScoped<IAssetRepository, SqliteAssetRepo>();
+            services.AddScoped<IPermissionRepository, SqlitePermissionRepo>();
+            services.AddScoped<IPermissionTemplateRepository, SqlitePermissionTemplateRepo>();
             services.AddScoped<IRegistrationRepository, SqliteRegistrationRepo>();
             services.AddScoped<IDbInitializer, SqliteDbInitializer>();
             break;
@@ -218,4 +250,5 @@ static void ConfigureCoreServices(IServiceCollection services)
     services.AddScoped<BookingService>();
     services.AddScoped<AssetService>();
     services.AddScoped<RegistrationService>();
+    services.AddScoped<PermissionTemplateService>();
 }

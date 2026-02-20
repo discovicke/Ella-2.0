@@ -407,6 +407,14 @@
   &.student {
     @include role-badge('student');
   }
+
+  &.purple {
+    @include badge(var(--color-primary-surface), var(--color-primary));
+  }
+
+  &.red {
+    @include badge(var(--color-danger-surface), var(--color-danger));
+  }
 }
 
 /* New Status Indicator Styles (Dot + Text) */
