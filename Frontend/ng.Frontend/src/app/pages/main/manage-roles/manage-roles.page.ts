@@ -232,8 +232,15 @@ export class ManageRolesPage implements OnInit {
     } catch (err: any) {
       console.error('Failed to save roles', err);
       // Backend returns 409 Conflict with ProblemDetails
-      const errorMsg =
+      let errorMsg =
         err?.error?.detail || err?.error?.title || 'Kunde inte spara roller.';
+
+      if (errorMsg.includes('Cannot delete roles because')) {
+        // Parse the number of users from the string: "...because 5 user(s)..."
+        const count = errorMsg.match(/because (\d+) user/)?.[1] || 'flera';
+        errorMsg = `Kan inte ta bort rollen eftersom ${count} användare fortfarande har den. Byt roll på dem först.`;
+      }
+
       this.toastService.show(errorMsg, 'error');
     } finally {
       this.saving.set(false);
