@@ -188,12 +188,19 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
             var sql = @"
             SELECT * FROM bookings
             WHERE room_id = @RoomId
+            AND status != @CancelledStatus
             AND (
                 (start_time < @EndDate AND end_time > @StartDate)
             );";
             var bookings = await conn.QueryAsync<Booking>(
                 sql,
-                new { RoomId = roomId, StartDate = startDate, EndDate = endDate }
+                new
+                {
+                    RoomId = roomId,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    CancelledStatus = (int)BookingStatus.Cancelled
+                }
             );
             return bookings;
         }
