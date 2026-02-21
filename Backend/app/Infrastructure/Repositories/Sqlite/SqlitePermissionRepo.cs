@@ -60,7 +60,7 @@ public class SqlitePermissionRepo(
         }
     }
 
-    public async Task SetUserTemplateAsync(long userId, long templateId)
+    public async Task SetUserTemplateAsync(long userId, long? templateId)
     {
         try
         {
@@ -70,19 +70,31 @@ public class SqlitePermissionRepo(
 
             try
             {
-                // 1. Clear overrides (so they start fresh with the new role)
+                // 1. Clear overrides (so they start fresh with the new role/no role)
                 await conn.ExecuteAsync(
                     "DELETE FROM user_permission_overrides WHERE user_id = @userId;",
                     new { userId },
                     transaction
                 );
 
-                // 2. Set the new template
-                await conn.ExecuteAsync(
-                    "INSERT OR REPLACE INTO user_permission_templates (user_id, template_id) VALUES (@userId, @templateId);",
-                    new { userId, templateId },
-                    transaction
-                );
+                if (templateId.HasValue)
+                {
+                    // 2. Set the new template
+                    await conn.ExecuteAsync(
+                        "INSERT OR REPLACE INTO user_permission_templates (user_id, template_id) VALUES (@userId, @templateId);",
+                        new { userId, templateId = templateId.Value },
+                        transaction
+                    );
+                }
+                else
+                {
+                    // 2. Remove template assignment (Custom role)
+                    await conn.ExecuteAsync(
+                        "DELETE FROM user_permission_templates WHERE user_id = @userId;",
+                        new { userId },
+                        transaction
+                    );
+                }
 
                 transaction.Commit();
             }

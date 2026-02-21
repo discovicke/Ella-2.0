@@ -12,8 +12,9 @@ public interface IPermissionRepository
     /// <summary>
     /// Assigns a base permission template to a user.
     /// Should also clear any existing overrides to prevent stale data.
+    /// If templateId is null, removes the user from any template.
     /// </summary>
-    Task SetUserTemplateAsync(long userId, long templateId);
+    Task SetUserTemplateAsync(long userId, long? templateId);
 
     /// <summary>
     /// Sets a granular permission override for a user.

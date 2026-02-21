@@ -8,6 +8,7 @@ Welcome to the core documentation for the project. This document serves as the "
 2. **[Data Modeling & Repo Ops](/_docs/details/MODELS_AND_QUERIES_GUIDE.md)** - Understanding Entities, DTOs, and Read Models. Contains an in depth chapter on how to use and implement Read Model Repositories
 3. **[Database Schema](/_docs/details/DATABASE_DOC.md)** - Storage rules and SQLite specifics.
 4. **[Validation Strategy](/_docs/details/VALIDATION_GUIDE.md)** - Our "Fail-Fast" approach.
+5. **[Permission System](/_docs/details/PERMISSION_SYSTEM_GUIDE.md)** - Templates, Overrides, and logic.
 
 
 

@@ -183,11 +183,8 @@ public class UserService(
         _ = await repo.GetUserByIdAsync(userId)
             ?? throw new KeyNotFoundException($"User with ID {userId} does not exist.");
 
-        // 1. Handle Template Change
-        if (dto.TemplateId.HasValue)
-        {
-            await permissionRepo.SetUserTemplateAsync(userId, dto.TemplateId.Value);
-        }
+        // 1. Handle Template Change (Always call to allow clearing template with null)
+        await permissionRepo.SetUserTemplateAsync(userId, dto.TemplateId);
 
         // 2. Handle Granular Overrides
         // We set each flag as an override. 
