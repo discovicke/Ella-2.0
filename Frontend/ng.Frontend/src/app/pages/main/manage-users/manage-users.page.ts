@@ -72,7 +72,7 @@ export class ManageUsersPage implements OnInit {
 
   // Pagination state
   pageIndex = signal(0);
-  pageSize = 10;
+  pageSize = signal(10);
 
   // Resource för användarlistan
   userResource = resource({
@@ -102,8 +102,8 @@ export class ManageUsersPage implements OnInit {
 
   paginatedUsers = computed(() => {
     const users = this.filteredUsers();
-    const start = this.pageIndex() * this.pageSize;
-    const end = start + this.pageSize;
+    const start = this.pageIndex() * this.pageSize();
+    const end = start + this.pageSize();
     return users.slice(start, end);
   });
 
@@ -134,6 +134,18 @@ export class ManageUsersPage implements OnInit {
 
   handlePageChange(page: number) {
     this.pageIndex.set(page);
+  }
+
+  onPageSizeChange(size: number) {
+    this.pageSize.set(size);
+    // Optionally reset to page 0 if current page is out of bounds, 
+    // but TableComponent usually handles the display logic or parent should check.
+    // If we are on page 5 and size doubles, page 5 might still be valid or not.
+    // Simpler to keep pageIndex unless it's invalid.
+    const maxPage = Math.ceil(this.totalUsers() / size) - 1;
+    if (this.pageIndex() > maxPage && maxPage >= 0) {
+      this.pageIndex.set(maxPage);
+    }
   }
 
   // --- FILTER ACTIONS ---

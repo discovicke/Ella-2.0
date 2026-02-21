@@ -99,9 +99,11 @@
       [columns]="columns"
       [isLoading]="userResource.isLoading()"
       [pageIndex]="pageIndex()"
-      [pageSize]="pageSize"
+      [pageSize]="pageSize()"
       [total]="totalUsers()"
+      [autoSize]="true"
       (pageChange)="handlePageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
       (rowClicked)="openEditUserModal($event)"
       emptyMessage="Inga användare hittades."
     >

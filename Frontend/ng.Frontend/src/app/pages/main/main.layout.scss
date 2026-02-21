@@ -331,8 +331,8 @@
 
 .content {
   flex: 1;
-  padding: 0; /* Removed global padding for edge-to-edge feel */
-  overflow: hidden; /* Pass scrolling to children if needed */
+  padding: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
