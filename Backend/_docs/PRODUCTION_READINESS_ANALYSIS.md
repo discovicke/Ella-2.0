@@ -80,6 +80,15 @@ The file contains a `TODO: Migrate all booking endpoints`.
 - SQLite locks the file during writes. In a high-traffic booking scenario, this might lead to `SQLITE_BUSY` errors.
 - **Fix Required:** Ensure retry logic (Polly) is added to `DbConnectionFactory` or repository calls.
 
+### 3.3. SQLite Primary Key Nullability
+**Severity:** 🟢 **RESOLVED**
+**Location:** `schema.sqlite`
+**Analysis:**
+- **Issue:** In SQLite, `PRIMARY KEY` columns (except `INTEGER PRIMARY KEY`) allow `NULL` values by default unless explicitly marked `NOT NULL`.
+- **Impact:** The `system_permissions` table's `key` column was technically nullable, which could lead to invalid permission states if a `NULL` key were inserted.
+- **Fix Applied:** Updated `schema.sqlite` to explicitly define `key TEXT PRIMARY KEY NOT NULL`.
+- **Breaking Change Warning:** If applying this schema to an existing database with `NULL` keys (unlikely but possible), the migration/creation will fail. Ensure existing data is clean.
+
 ---
 
 ## ⚙️ 4. Operational Readiness

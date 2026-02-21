@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS "rooms" (
 
 -- 1. System Permissions Registry
 CREATE TABLE IF NOT EXISTS system_permissions (
-    key TEXT PRIMARY KEY,
+    key TEXT PRIMARY KEY NOT NULL,
     description TEXT NOT NULL
 );
 
