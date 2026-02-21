@@ -26,15 +26,3 @@ public record BookingDetailedReadModel
     public int RegistrationCount { get; init; }
 }
 
-/// <summary>
-/// Read model for room assets with asset type descriptions.
-/// Maps to the v_room_assets_detailed view in the database.
-/// </summary>
-public record RoomAssetDetailedReadModel
-{
-    public long RoomAssetId { get; init; }
-    public long RoomId { get; init; }
-    public string? RoomName { get; init; }
-    public long AssetTypeId { get; init; }
-    public string? AssetDescription { get; init; }
-}

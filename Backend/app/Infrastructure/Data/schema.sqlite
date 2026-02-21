@@ -203,15 +203,21 @@ LEFT JOIN registrations reg ON b.id = reg.booking_id
 GROUP BY b.id, b.user_id, u.display_name, u.email, b.room_id, r.name, r.capacity, 
          r.type, r.floor, b.start_time, b.end_time, b.status, b.notes, b.created_at, b.updated_at;
 
--- View: Room assets with asset type descriptions
-DROP VIEW IF EXISTS "v_room_assets_detailed";
-CREATE VIEW "v_room_assets_detailed" AS
+-- View: Room Details with concatenated assets
+DROP VIEW IF EXISTS "v_room_details";
+CREATE VIEW "v_room_details" AS
 SELECT 
-    ra.id           AS room_asset_id,
-    ra.room_id,
-    r.name          AS room_name,
-    ra.asset_type_id,
-    at.description  AS asset_description
-FROM room_assets ra
-LEFT JOIN rooms r ON ra.room_id = r.id
-LEFT JOIN asset_types at ON ra.asset_type_id = at.id;
+    r.id AS RoomId, 
+    r.campus_id AS CampusId,
+    r.name AS Name,
+    c.city AS CampusCity,
+    r.capacity AS Capacity, 
+    r.type AS Type, 
+    r.floor AS Floor, 
+    r.notes AS Notes,
+    GROUP_CONCAT(at.description, '|||') AS AssetsString
+FROM rooms r
+LEFT JOIN campus c ON r.campus_id = c.id
+LEFT JOIN room_assets ra ON r.id = ra.room_id
+LEFT JOIN asset_types at ON ra.asset_type_id = at.id
+GROUP BY r.id, r.campus_id, r.name, c.city, r.capacity, r.type, r.floor, r.notes;
