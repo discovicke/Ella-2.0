@@ -36,23 +36,16 @@ export async function initPermissionTemplates(): Promise<void> {
 
 /**
  * Resolves a Permission object to a human-readable role label.
- * Uses template_id for fast lookup when available; falls back to flag matching.
- * Returns 'Custom' if the permissions don't match any template.
+ * Uses template_id for fast lookup when available.
+ * Returns 'Custom' if the permissions don't have a template ID.
  */
 export function resolveRoleLabel(permissions: UserPermissions | undefined | null): string {
   if (!permissions) return 'Student'; // sensible default
 
-  // Fast path: use stored template_id
+  // Use stored template_id
   if (permissions.templateId) {
     const match = permissionTemplates().find((t) => t.id === permissions.templateId);
     if (match) return match.label ?? 'Custom';
-  }
-
-  // Fallback: pattern-match flags
-  for (const tpl of permissionTemplates()) {
-    if (tpl.permissions && permissionsMatch(permissions, tpl.permissions)) {
-      return tpl.label ?? 'Custom';
-    }
   }
 
   return 'Custom';
@@ -60,22 +53,15 @@ export function resolveRoleLabel(permissions: UserPermissions | undefined | null
 
 /**
  * Resolves a Permission object to the CSS class for badge styling.
- * Uses template_id for fast lookup when available; falls back to flag matching.
+ * Uses template_id for fast lookup when available.
  */
 export function resolveRoleCssClass(permissions: UserPermissions | undefined | null): string {
   if (!permissions) return 'student';
 
-  // Fast path: use stored template_id
+  // Use stored template_id
   if (permissions.templateId) {
     const match = permissionTemplates().find((t) => t.id === permissions.templateId);
     if (match) return match.cssClass ?? 'custom';
-  }
-
-  // Fallback: pattern-match flags
-  for (const tpl of permissionTemplates()) {
-    if (tpl.permissions && permissionsMatch(permissions, tpl.permissions)) {
-      return tpl.cssClass ?? 'custom';
-    }
   }
 
   return 'custom';

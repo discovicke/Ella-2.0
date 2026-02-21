@@ -103,16 +103,16 @@ CREATE TABLE IF NOT EXISTS user_permission_overrides (
 -- 6. Effective Permissions View
 DROP VIEW IF EXISTS v_user_effective_permissions;
 CREATE VIEW v_user_effective_permissions AS
-SELECT 
-    upt.user_id,
+SELECT
+    u.id AS user_id,
     sp.key AS permission_key,
     COALESCE(upo.value, ptf.value, 0) AS is_granted
-FROM user_permission_templates upt
+FROM users u
 CROSS JOIN system_permissions sp
+LEFT JOIN user_permission_templates upt ON u.id = upt.user_id
 LEFT JOIN permission_templates pt ON upt.template_id = pt.id
 LEFT JOIN permission_template_flags ptf ON pt.id = ptf.template_id AND ptf.permission_key = sp.key
-LEFT JOIN user_permission_overrides upo ON upt.user_id = upo.user_id AND upo.permission_key = sp.key;
-
+LEFT JOIN user_permission_overrides upo ON u.id = upo.user_id AND upo.permission_key = sp.key;
 -- End of RBAC tables
 
 CREATE TABLE IF NOT EXISTS "user_class" (
