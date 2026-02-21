@@ -92,7 +92,7 @@ public class UserPermissions
 | **Editing a Role**             | **Global Update.** All users with that role see the change immediately.                                           | Users reference the Role ID; they do not copy the data.          |
 | **Switching Role to "Custom"** | **Disconnect.** The user is detached from the template. Their current permissions are snapshotted into overrides. | "Custom" implies manual management isolated from global updates. |
 | **Switching "Custom" to Role** | **Reset.** All manual overrides are wiped. The user resets to match the new Role exactly.                         | Ensures a clean state when re-joining a standardized group.      |
-| **Deleting a Role**            | **Cascade Delete.** Users assigned to that role lose the association (becoming "Role-less").                      | Maintains referential integrity.                                 |
+| **Deleting a Role** | **Safe Block.** The system prevents deletion if any users are assigned to the role. Admin must reassign users first. | Prevents accidental mass-revocation of access (referential integrity + UX safety). |
 | **Login/Auth**                 | **Live Check.** Permissions are checked against the database on every request/login.                              | Security; bans or revocations apply instantly.                   |
 
 ---
