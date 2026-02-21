@@ -9,14 +9,13 @@
 
 ## 🚨 1. Critical Security Vulnerabilities
 
-### 1.1. Missing Authorization on Administrative Endpoints
-**Severity:** 🔥 **CRITICAL**  
-**Location:** `UserEndpoints.cs`, `RoomEndpoints.cs`, `AssetEndpoints.cs`  
+### 1.1. Authorization Implementation
+**Severity:** 🟢 **RESOLVED**  
+**Location:** `UserEndpoints.cs`, `BookingEndpoints.cs`, `RoomEndpoints.cs`  
 **Analysis:**
-While the `AuthorizationMiddleware` exists, it is **not applied** to critical endpoints.
-- **Users:** `GET`, `POST`, `PUT`, `DELETE` on `/api/users` are publicly accessible. An anonymous user can delete the database administrator or download the entire user database.
-- **Rooms/Assets:** Creating and deleting rooms or assets is publicly accessible.
-- **Fix Required:** Apply `.RequireAuth()` and `.RequireRoles(UserRole.Admin)` to these route groups.
+- **Status:** The system now uses a robust **Permission-Based Access Control** (Template + Override) architecture.
+- **Implementation:** All critical endpoints are protected by `.RequirePermission("PermissionName")` middleware.
+- **Granularity:** Access is checked against a live database view (`v_user_effective_permissions`), ensuring revoked rights apply immediately.
 
 ### 1.2. Insecure Booking Logic (ID Spoofing)
 **Severity:** 🔴 **HIGH**  

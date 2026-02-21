@@ -4,11 +4,11 @@ Welcome to the core documentation for the project. This document serves as the "
 
 ## 📌 Table of Contents
 
-1. **[System Overview](/_docs/details/DATA_FLOW_GUIDE.md)** - High-level data flow and layering.
-2. **[Data Modeling & Repo Ops](/_docs/details/MODELS_AND_QUERIES_GUIDE.md)** - Understanding Entities, DTOs, and Read Models. Contains an in depth chapter on how to use and implement Read Model Repositories
-3. **[Database Schema](/_docs/details/DATABASE_DOC.md)** - Storage rules and SQLite specifics.
-4. **[Validation Strategy](/_docs/details/VALIDATION_GUIDE.md)** - Our "Fail-Fast" approach.
-5. **[Permission System](/_docs/details/PERMISSION_SYSTEM_GUIDE.md)** - Templates, Overrides, and logic.
+1. **[System Overview](/Backend/_docs/details/DATA_FLOW_GUIDE.md)** - High-level data flow and layering.
+2. **[Data Modeling & Repo Ops](/Backend/_docs/details/MODELS_AND_QUERIES_GUIDE.md)** - Understanding Entities, DTOs, and Read Models. Contains an in depth chapter on how to use and implement Read Model Repositories
+3. **[Database Schema](/Backend/_docs/details/DATABASE_DOC.md)** - Storage rules and SQLite specifics.
+4. **[Validation Strategy](/Backend/_docs/details/VALIDATION_GUIDE.md)** - Our "Fail-Fast" approach.
+5. **[Permission System](/Backend/_docs/details/PERMISSION_SYSTEM_GUIDE.md)** - Templates, Overrides, and logic.
 
 
 

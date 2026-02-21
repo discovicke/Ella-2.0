@@ -165,29 +165,20 @@ As of the latest architecture update, the application is divided into four disti
 
 ### 🔐 Protected Zones (Requires Login)
 
-These zones use **Layouts** to provide a persistent sidebar/header.
+All protected routes use **`MainLayout`** as the shell. Access to specific sub-pages is controlled by **Permission Guards**.
 
-**1. Administrator** (`/admin`)
+**Main Application** (`/`)
 
-* **Layout:** `AdministratorLayout`
-* **Default Redirect:** `/admin/overview`
-* **Sub-Pages:**
-* `/overview`: Dashboard stats (`OverviewPage`)
-* `/users`: User management (`ManageUsersPage`)
-* `/rooms`: Room inventory (`ManageRoomsPage`)
-* `/bookings`: Booking oversight (`ManageBookingsPage`)
-
-
-
-**2. Student** (`/student`)
-
-* **Layout:** `StudentLayout`
-* **Status:** *Under Construction* (Currently redirects to Not Found)
-
-**3. Educator** (`/educator`)
-
-* **Layout:** `EducatorLayout`
-* **Status:** *Under Construction* (Currently redirects to Not Found)
+* **Layout:** `MainLayout`
+* **Default Redirect:** `/see-bookings`
+* **Sub-Pages (Visibility controlled by Permissions):**
+    * `/system-overview`: Admin dashboard (Requires any admin permission)
+    * `/manage-users`: User management (`ManageUsers`)
+    * `/manage-rooms`: Room inventory (`ManageRooms`)
+    * `/manage-bookings`: Booking oversight (`ManageBookings`)
+    * `/manage-roles`: Role configuration (`ManageRoles`)
+    * `/see-bookings`: My bookings (`MyBookings`)
+    * `/book-room`: New booking (`BookRoom`)
 
 ### ⚠️ Fallback Strategy
 

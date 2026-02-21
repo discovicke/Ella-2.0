@@ -2,9 +2,10 @@
 
 ### **1. Auth & Identity**
 
-- **One User** has **One Role Level** (Student, Educator, or Admin).
-- **Security Strategy:** - **Passwords** are manually hashed using a unique `password_salt` for each user.
-- **Sessions** are stateless using JWTs. Global logout (revocation) is handled by the `tokens_valid_after` timestamp. Any JWT issued before this timestamp is considered invalid.
+- **One User** belongs to **One Permission Template** (Role) OR acts as a **Custom User** (No Template).
+- **Security Strategy:** 
+    - **Passwords** are hashed using **Argon2** (via `IPasswordHasher`).
+    - **Sessions** are stateless using JWTs. Global logout (revocation) is handled by the `tokens_valid_after` timestamp. Any JWT issued before this timestamp is considered invalid.
 
 ### **2. Rooms & Equipment**
 
@@ -31,5 +32,58 @@
 ## SQL Schema
 
 ```sql
+-- 1. System Permissions Registry
+CREATE TABLE IF NOT EXISTS system_permissions (
+    key TEXT PRIMARY KEY,
+    description TEXT NOT NULL
+);
 
+-- 2. Permission Templates (Roles)
+CREATE TABLE IF NOT EXISTS permission_templates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    label TEXT NOT NULL,
+    css_class TEXT,
+    sort_order INTEGER DEFAULT 0
+);
+
+-- 3. Template Flags (Definition of what a Role can do)
+CREATE TABLE IF NOT EXISTS permission_template_flags (
+    template_id INTEGER NOT NULL,
+    permission_key TEXT NOT NULL,
+    value INTEGER NOT NULL DEFAULT 0, -- Boolean: 0 or 1
+    PRIMARY KEY (template_id, permission_key),
+    FOREIGN KEY (template_id) REFERENCES permission_templates(id) ON DELETE CASCADE,
+    FOREIGN KEY (permission_key) REFERENCES system_permissions(key) ON DELETE CASCADE
+);
+
+-- 4. User -> Template Map (Users have a base role)
+CREATE TABLE IF NOT EXISTS user_permission_templates (
+    user_id INTEGER PRIMARY KEY,
+    template_id INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (template_id) REFERENCES permission_templates(id) ON DELETE CASCADE
+);
+
+-- 5. User Overrides (Granular exceptions)
+CREATE TABLE IF NOT EXISTS user_permission_overrides (
+    user_id INTEGER NOT NULL,
+    permission_key TEXT NOT NULL,
+    value INTEGER NOT NULL, -- Boolean: 0 or 1
+    PRIMARY KEY (user_id, permission_key),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (permission_key) REFERENCES system_permissions(key) ON DELETE CASCADE
+);
+
+-- 6. Effective Permissions View
+CREATE VIEW IF NOT EXISTS v_user_effective_permissions AS
+SELECT 
+    upt.user_id,
+    sp.key AS permission_key,
+    COALESCE(upo.value, ptf.value, 0) AS is_granted
+FROM user_permission_templates upt
+CROSS JOIN system_permissions sp
+LEFT JOIN permission_templates pt ON upt.template_id = pt.id
+LEFT JOIN permission_template_flags ptf ON pt.id = ptf.template_id AND ptf.permission_key = sp.key
+LEFT JOIN user_permission_overrides upo ON upt.user_id = upo.user_id AND upo.permission_key = sp.key;
 ```

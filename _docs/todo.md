@@ -113,13 +113,20 @@
     - Filtrering
 
 #### Manage Users
-- [ ] Implementera
-    - Sökning
-    - Filtrering
-        - Namn
-        - Roll
-        - Status
-        - Klass
+- [x] Implementera
+    - [x] Sökning
+    - [x] Filtrering
+        - [x] Namn
+        - [x] Roll
+        - [x] Status
+        - [x] Klass
+    - [x] Skapa/Redigera användare
+    - [x] Hantera behörigheter (RBAC/Custom)
+
+#### Manage Roles (New)
+- [x] Implementera rollhantering
+    - [x] Redigera mallar
+    - [x] Dynamiska rättigheter
 
 ### Banned / Access Control
 
