@@ -87,13 +87,6 @@ graph LR
 | **`Backend/Backend.csproj`**            | Configured with `<OpenApiGenerateDocuments>` to dump JSON on build.      |
 | **`Frontend/ng.Frontend/package.json`** | Contains the logic to generate `models.ts` via `swagger-typescript-api`. |
 
-### Enumerations (Enums)
-
-We have configured the Backend to serialize Enums as **Strings** (e.g., `"Admin"` instead of `0`) for better debugging and frontend readability.
-
-- **Backend:** `JsonStringEnumConverter` is enabled in `Program.cs`.
-- **Frontend:** TypeScript enums are generated with string values.
-
 ---
 
 ## 🚀 Deployment (Single Server Strategy)
@@ -102,7 +95,7 @@ This project uses a **Hosted** deployment model. We do not host the Frontend and
 
 1. **SPA Fallback:** The Backend is configured (`app.MapFallbackToFile("index.html")`) to serve the Angular app for any unknown URL.
 2. **Static Files:** The Backend serves the compiled JS/CSS files from `wwwroot`.
-3. **Database Initialization:** On startup, the backend automatically runs `schema.sql` and `seed.sql` if the database is empty.
+3. **Database Initialization:** On startup, the backend automatically runs `schema.sqlite` and `seed.sqlite` if the database is empty.
 
 ### How to Deploy
 
@@ -119,11 +112,6 @@ This project uses a **Hosted** deployment model. We do not host the Frontend and
 
 - Run `npm run refresh:models`.
 - Check the build output for "API documentation generation failed". If the Backend crashes during startup (e.g., DB connection error), the JSON file will not be generated.
-
-**"I see `UserRole = 0` instead of `UserRole = 'Admin'`"**
-
-- Ensure `Program.cs` has `JsonStringEnumConverter` configured.
-- Run `npm run refresh:models` to regenerate the TS file.
 
 **"The startup script hangs at 'Restore'"**
 
