@@ -229,8 +229,12 @@ export class ManageRolesPage implements OnInit {
 
       this.hasChanges.set(false);
       this.toastService.show('Roller sparade!', 'success');
-    } catch {
-      this.toastService.show('Kunde inte spara roller.', 'error');
+    } catch (err: any) {
+      console.error('Failed to save roles', err);
+      // Backend returns 409 Conflict with ProblemDetails
+      const errorMsg =
+        err?.error?.detail || err?.error?.title || 'Kunde inte spara roller.';
+      this.toastService.show(errorMsg, 'error');
     } finally {
       this.saving.set(false);
     }

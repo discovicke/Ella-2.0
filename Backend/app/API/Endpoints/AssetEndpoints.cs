@@ -43,7 +43,7 @@ public static class AssetEndpoints
             .WithSummary("Get asset type by ID")
             .WithDescription(
                 "Retrieves a specific asset type by its unique identifier.\n\n🔒 **Authentication Required**"
-            ) // Added description
+            )
             .Produces<AssetTypeResponseDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
@@ -68,7 +68,7 @@ public static class AssetEndpoints
             .WithSummary("Create a new asset type")
             .WithDescription(
                 "Creates a new asset type.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
-            ) // Added description
+            ) 
             .Accepts<CreateAssetTypeDto>("application/json")
             .Produces<AssetTypeResponseDto>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
@@ -95,7 +95,7 @@ public static class AssetEndpoints
             .WithSummary("Update an asset type")
             .WithDescription(
                 "Updates an existing asset type.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
-            ) // Added description
+            )
             .Accepts<UpdateAssetTypeDto>("application/json")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status400BadRequest)
@@ -118,7 +118,7 @@ public static class AssetEndpoints
             .WithSummary("Delete an asset type")
             .WithDescription(
                 "Permanently deletes an asset type.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
-            ) // Added description
+            )
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized)

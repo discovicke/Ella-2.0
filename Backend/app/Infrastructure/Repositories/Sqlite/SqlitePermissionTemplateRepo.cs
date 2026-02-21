@@ -103,9 +103,22 @@ public class SqlitePermissionTemplateRepo(
                 .Select(t => t.Id!.Value)
                 .ToList();
 
-            // 2. Delete templates NOT in the input list (this WILL cascade delete users assigned to deleted roles)
+            // 2. Delete templates NOT in the input list (Safe Delete Check)
             if (inputIds.Count > 0)
             {
+                // Check if any users are assigned to the templates we are about to delete
+                const string checkSql = @"
+                    SELECT COUNT(*) 
+                    FROM user_permission_templates 
+                    WHERE template_id NOT IN @Ids";
+                
+                var dependentUserCount = await conn.ExecuteScalarAsync<int>(checkSql, new { Ids = inputIds }, transaction: tx);
+
+                if (dependentUserCount > 0)
+                {
+                    throw new InvalidOperationException($"Cannot delete roles because {dependentUserCount} user(s) are still assigned to them. Please reassign these users before deleting the role.");
+                }
+
                 await conn.ExecuteAsync(
                     "DELETE FROM permission_templates WHERE id NOT IN @Ids;",
                     new { Ids = inputIds },
@@ -114,16 +127,16 @@ public class SqlitePermissionTemplateRepo(
             }
             else if (templates.Count == 0) // Edge case: wipe all templates
             {
+                // Check if any users are assigned to ANY template
+                var dependentUserCount = await conn.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM user_permission_templates;", transaction: tx);
+                if (dependentUserCount > 0)
+                {
+                    throw new InvalidOperationException($"Cannot delete all roles because {dependentUserCount} user(s) are assigned to roles. Please reassign them first.");
+                }
+
                 await conn.ExecuteAsync("DELETE FROM permission_templates;", transaction: tx);
             }
-            // Else: All new templates (no IDs), we don't delete existing ones blindly yet? 
-            // Wait, if inputIds is empty but we have templates, it means we are replacing everything with NEW templates.
-            // But if we have existing templates in DB, and we pass a list of NEW templates (no IDs),
-            // the intention of "ReplaceAll" is usually to wipe and replace.
-            // However, we MUST preserve IDs for existing roles to keep user assignments.
-            // If the frontend sends back IDs, we are good.
-            // If the frontend sends NO IDs for existing roles, we have a problem.
-            // Assumption: Frontend preserves IDs for existing templates.
+
 
             // 3. Upsert templates
             for (var i = 0; i < templates.Count; i++)
