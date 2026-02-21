@@ -1,11 +1,11 @@
-<img alt="image" src="../images/ELLA2-permissions-based-managment.png" />
+<img alt="image" src="../images/ELLA2-permissions-based-managment-v2.png" />
 
 ### **1. Auth & Identity**
 
 - **One User** belongs to **One Permission Template** (Role) OR acts as a **Custom User** (No Template).
-- **Security Strategy:** 
-    - **Passwords** are hashed using **Argon2** (via `IPasswordHasher`).
-    - **Sessions** are stateless using JWTs. Global logout (revocation) is handled by the `tokens_valid_after` timestamp. Any JWT issued before this timestamp is considered invalid.
+- **Security Strategy:**
+  - **Passwords** are hashed using **Argon2** (via `IPasswordHasher`).
+  - **Sessions** are stateless using JWTs. Global logout (revocation) is handled by the `tokens_valid_after` timestamp. Any JWT issued before this timestamp is considered invalid.
 
 ### **2. Rooms & Equipment**
 
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS user_permission_overrides (
 
 -- 6. Effective Permissions View
 CREATE VIEW IF NOT EXISTS v_user_effective_permissions AS
-SELECT 
+SELECT
     upt.user_id,
     sp.key AS permission_key,
     COALESCE(upo.value, ptf.value, 0) AS is_granted
