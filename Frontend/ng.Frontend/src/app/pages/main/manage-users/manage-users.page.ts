@@ -176,12 +176,19 @@ export class ManageUsersPage implements OnInit {
   }
 
   openAddUserModal() {
+    const studentTemplate = this.templateOptions().find(
+      (t) =>
+        (typeof t.name === 'string' && t.name.toLowerCase() === 'student') ||
+        (typeof t.label === 'string' && t.label.toLowerCase() === 'student'),
+    );
+    const initialTemplateId = studentTemplate?.id ?? null;
+
     this.modalService.open(UserFormModalComponent, {
       title: 'Skapa ny användare',
       data: {
         user: null,
         templateOptions: this.templateOptions(),
-        initialTemplateId: null,
+        initialTemplateId: initialTemplateId,
         initialPermissions: {
           bookRoom: true,
           myBookings: true,
@@ -209,7 +216,7 @@ export class ManageUsersPage implements OnInit {
       data: {
         user: user,
         templateOptions: this.templateOptions(),
-        initialTemplateId: user.permissions?.templateId ?? null,
+        initialTemplateId: user.permissions?.permissionTemplateId ?? null,
         initialPermissions: user.permissions,
         onSave: (payload: UserFormPayload) => this.handleSave(payload, user.id, user.permissions),
         onDelete: (id: number) => this.handleDelete(id),
@@ -304,7 +311,7 @@ export class ManageUsersPage implements OnInit {
     }
 
     if (selectedTemplateId === null) {
-      const previousTemplateId = existingPermissions?.templateId ?? null;
+      const previousTemplateId = existingPermissions?.permissionTemplateId ?? null;
       const shouldUpdateCustom =
         previousTemplateId !== null ||
         this.permissionsChanged(existingPermissions, customPermissions);

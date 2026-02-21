@@ -29,14 +29,14 @@ The database provides a real-time view:
 
 - **Definition:** Centralized collections of permission flags stored in `permission_templates` and `permission_template_flags`.
 - **Behavior:**
-  - Users are linked to a role via a Foreign Key (`template_id`).
+  - Users are linked to a role via a Foreign Key (`permission_template_id`) directly on the `users` table.
   - **Live Updates:** If an Admin updates the "Student" role to allow `BookRoom`, **every user** assigned to that role immediately inherits that permission without any data migration.
 
 ### 2.2. Custom Users (No Template)
 
 - **Definition:** Users who do not fit into a standard role.
 - **Behavior:**
-  - Their `template_id` is set to `NULL`.
+  - Their `permission_template_id` is set to `NULL`.
   - They derive **zero** permissions from the system defaults.
   - Their access rights are defined exclusively by entries in the `user_permission_overrides` table.
   - **Isolation:** Changes to standard roles (like "Student") have no effect on Custom users.
@@ -65,8 +65,7 @@ SELECT
     COALESCE(upo.value, ptf.value, 0) AS is_granted
 FROM users u
 CROSS JOIN system_permissions sp
-LEFT JOIN user_permission_templates upt ON u.id = upt.user_id
-LEFT JOIN permission_templates pt ON upt.template_id = pt.id
+LEFT JOIN permission_templates pt ON u.permission_template_id = pt.id
 LEFT JOIN permission_template_flags ptf ON pt.id = ptf.template_id AND ptf.permission_key = sp.key
 LEFT JOIN user_permission_overrides upo ON u.id = upo.user_id AND upo.permission_key = sp.key;
 ```
@@ -81,7 +80,7 @@ The backend projects this data into a flat `UserPermissions` object (replacing t
 public class UserPermissions
 {
     public long UserId { get; set; }
-    public long? TemplateId { get; set; }
+    public long? PermissionTemplateId { get; set; }
 
     // Permission Flags
     public bool BookRoom { get; set; }
@@ -135,5 +134,5 @@ public class UserPermissions
 
 - `system_permissions`: Registry of all valid permission keys (e.g., `ManageUsers`).
 - `permission_templates`: Definitions of roles (e.g., "Student").
-- `user_permission_templates`: Links `User` -> `Template`.
+- `users.permission_template_id`: Links `User` -> `Template` directly.
 - `user_permission_overrides`: Specific exceptions for a user.

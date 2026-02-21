@@ -43,8 +43,8 @@ export function resolveRoleLabel(permissions: UserPermissions | undefined | null
   if (!permissions) return 'Student'; // sensible default
 
   // Use stored template_id
-  if (permissions.templateId) {
-    const match = permissionTemplates().find((t) => t.id === permissions.templateId);
+  if (permissions.permissionTemplateId) {
+    const match = permissionTemplates().find((t) => t.id === permissions.permissionTemplateId);
     if (match) return match.label ?? 'Custom';
   }
 
@@ -59,8 +59,8 @@ export function resolveRoleCssClass(permissions: UserPermissions | undefined | n
   if (!permissions) return 'student';
 
   // Use stored template_id
-  if (permissions.templateId) {
-    const match = permissionTemplates().find((t) => t.id === permissions.templateId);
+  if (permissions.permissionTemplateId) {
+    const match = permissionTemplates().find((t) => t.id === permissions.permissionTemplateId);
     if (match) return match.cssClass ?? 'custom';
   }
 

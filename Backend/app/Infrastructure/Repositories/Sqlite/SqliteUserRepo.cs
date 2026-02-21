@@ -84,8 +84,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
 
             var sql =
                 @"
-            INSERT INTO users (email, password_hash, display_name, is_banned)
-            VALUES (@Email, @PasswordHash, @DisplayName, @IsBanned);";
+            INSERT INTO users (email, password_hash, display_name, is_banned, permission_template_id)
+            VALUES (@Email, @PasswordHash, @DisplayName, @IsBanned, @PermissionTemplateId);";
 
             var rowsAffected = await conn.ExecuteAsync(
                 sql,
@@ -95,6 +95,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
                     user.PasswordHash,
                     user.DisplayName,
                     user.IsBanned,
+                    user.PermissionTemplateId,
                 }
             );
 
@@ -121,7 +122,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
                 password_hash = @PasswordHash,
                 display_name = @DisplayName,
                 is_banned = @IsBanned,
-                tokens_valid_after = @TokensValidAfter
+                tokens_valid_after = @TokensValidAfter,
+                permission_template_id = @PermissionTemplateId
             WHERE id = @Id;";
 
             var rowsAffected = await conn.ExecuteAsync(
@@ -133,6 +135,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
                     user.DisplayName,
                     user.IsBanned,
                     user.TokensValidAfter,
+                    user.PermissionTemplateId,
                     Id = id,
                 }
             );

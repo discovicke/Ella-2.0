@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-08  
 **Scope:** `Backend/**`  
-**Framework:** .NET 10.0
+**Framework:** .NET 9.0
 **Architecture:** Layered (Endpoints → Services → Repositories → Dapper/SQLite)
 
 ---
@@ -84,39 +84,9 @@ The file contains a `TODO: Migrate all booking endpoints`.
 
 ## ⚙️ 4. Operational Readiness
 
-### 4.1. Logging Infrastructure
-**Severity:** 🟡 **MEDIUM**  
-**Analysis:**
-- The app uses standard `ILogger`.
-- **Missing:** No structured logging sink (e.g., Serilog, Application Insights) is configured. In production, console logs are often lost or hard to query.
 
 ### 4.2. Health Checks
 **Severity:** 🟢 **LOW**  
 **Analysis:**
 - No `/health` endpoint. Container orchestrators (Kubernetes/Docker Swarm) need this to know if the app is alive.
 
-### 4.3. Docker Support
-**Severity:** 🟡 **MEDIUM**  
-**Analysis:**
-- No `Dockerfile` or `.dockerignore` exists in the `Backend` directory.
-
----
-
-## 🧪 5. Testing & Quality Assurance
-
-### 5.1. Zero Automated Tests
-**Severity:** 🔴 **HIGH**  
-**Analysis:**
-- There is no `Backend.Tests` project visible.
-- **Risk:** Refactoring or bug fixing has a high chance of introducing regressions.
-- **Fix Required:** Create an xUnit/NUnit project and add unit tests for `Services` (mocking Repositories) and integration tests for `Endpoints`.
-
----
-
-## ✅ Action Plan (Prioritized)
-
-1.  **Secure Endpoints:** Add `RequireAuth()`/`RequireRoles()` to User, Room, and Asset endpoints immediately.
-2.  **Finish Booking API:** Expose Cancel/Update endpoints and implement "My Bookings" filters.
-3.  **Fix Booking Logic:** Secure the `CreateBooking` flow to prevent ID spoofing.
-4.  **Tests:** Initialize a test project and write core authentication/booking tests.
-5.  **Migrations:** Replace `SqliteDbInitializer` with a proper migration runner.

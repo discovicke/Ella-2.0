@@ -205,7 +205,7 @@ export type UserPermissions = {
   /** @format int64 */
   userId?: number;
   /** @format int64 */
-  templateId?: number | null;
+  permissionTemplateId?: number | null;
   bookRoom?: boolean;
   myBookings?: boolean;
   manageUsers?: boolean;
@@ -221,7 +221,7 @@ export interface UserPermissions2 {
   /** @format int64 */
   userId?: number;
   /** @format int64 */
-  templateId?: number | null;
+  permissionTemplateId?: number | null;
   bookRoom?: boolean;
   myBookings?: boolean;
   manageUsers?: boolean;

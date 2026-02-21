@@ -8,7 +8,7 @@ namespace Backend.app.Core.Models;
 public class UserPermissions
 {
     public long UserId { get; set; }
-    public long? TemplateId { get; set; }
+    public long? PermissionTemplateId { get; set; }
 
     // Permission Flags
     public bool BookRoom { get; set; }

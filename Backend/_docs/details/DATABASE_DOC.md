@@ -57,15 +57,7 @@ CREATE TABLE IF NOT EXISTS permission_template_flags (
     FOREIGN KEY (permission_key) REFERENCES system_permissions(key) ON DELETE CASCADE
 );
 
--- 4. User -> Template Map (Users have a base role)
-CREATE TABLE IF NOT EXISTS user_permission_templates (
-    user_id INTEGER PRIMARY KEY,
-    template_id INTEGER NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (template_id) REFERENCES permission_templates(id) ON DELETE CASCADE
-);
-
--- 5. User Overrides (Granular exceptions)
+-- 4. User Overrides (Granular exceptions)
 CREATE TABLE IF NOT EXISTS user_permission_overrides (
     user_id INTEGER NOT NULL,
     permission_key TEXT NOT NULL,
@@ -75,15 +67,15 @@ CREATE TABLE IF NOT EXISTS user_permission_overrides (
     FOREIGN KEY (permission_key) REFERENCES system_permissions(key) ON DELETE CASCADE
 );
 
--- 6. Effective Permissions View
+-- 5. Effective Permissions View
 CREATE VIEW IF NOT EXISTS v_user_effective_permissions AS
 SELECT
-    upt.user_id,
+    u.id AS user_id,
     sp.key AS permission_key,
     COALESCE(upo.value, ptf.value, 0) AS is_granted
-FROM user_permission_templates upt
+FROM users u
 CROSS JOIN system_permissions sp
-LEFT JOIN permission_templates pt ON upt.template_id = pt.id
+LEFT JOIN permission_templates pt ON u.permission_template_id = pt.id
 LEFT JOIN permission_template_flags ptf ON pt.id = ptf.template_id AND ptf.permission_key = sp.key
-LEFT JOIN user_permission_overrides upo ON upt.user_id = upo.user_id AND upo.permission_key = sp.key;
+LEFT JOIN user_permission_overrides upo ON u.id = upo.user_id AND upo.permission_key = sp.key;
 ```

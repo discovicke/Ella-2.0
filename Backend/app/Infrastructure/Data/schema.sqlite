@@ -33,7 +33,9 @@ CREATE TABLE IF NOT EXISTS "users" (
     "display_name" TEXT,
     "is_banned" INTEGER NOT NULL DEFAULT 0,
     "tokens_valid_after" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY("id")
+    "permission_template_id" INTEGER,
+    PRIMARY KEY("id"),
+    FOREIGN KEY ("permission_template_id") REFERENCES "permission_templates"("id") ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS "asset_types" (
@@ -82,15 +84,7 @@ CREATE TABLE IF NOT EXISTS permission_template_flags (
     FOREIGN KEY (permission_key) REFERENCES system_permissions(key) ON DELETE CASCADE
 );
 
--- 4. User -> Template Map (Users have a base role)
-CREATE TABLE IF NOT EXISTS user_permission_templates (
-    user_id INTEGER PRIMARY KEY,
-    template_id INTEGER NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (template_id) REFERENCES permission_templates(id) ON DELETE CASCADE
-);
-
--- 5. User Overrides (Granular exceptions)
+-- 4. User Overrides (Granular exceptions)
 CREATE TABLE IF NOT EXISTS user_permission_overrides (
     user_id INTEGER NOT NULL,
     permission_key TEXT NOT NULL,
@@ -100,7 +94,7 @@ CREATE TABLE IF NOT EXISTS user_permission_overrides (
     FOREIGN KEY (permission_key) REFERENCES system_permissions(key) ON DELETE CASCADE
 );
 
--- 6. Effective Permissions View
+-- 5. Effective Permissions View
 DROP VIEW IF EXISTS v_user_effective_permissions;
 CREATE VIEW v_user_effective_permissions AS
 SELECT
@@ -109,8 +103,7 @@ SELECT
     COALESCE(upo.value, ptf.value, 0) AS is_granted
 FROM users u
 CROSS JOIN system_permissions sp
-LEFT JOIN user_permission_templates upt ON u.id = upt.user_id
-LEFT JOIN permission_templates pt ON upt.template_id = pt.id
+LEFT JOIN permission_templates pt ON u.permission_template_id = pt.id
 LEFT JOIN permission_template_flags ptf ON pt.id = ptf.template_id AND ptf.permission_key = sp.key
 LEFT JOIN user_permission_overrides upo ON u.id = upo.user_id AND upo.permission_key = sp.key;
 -- End of RBAC tables

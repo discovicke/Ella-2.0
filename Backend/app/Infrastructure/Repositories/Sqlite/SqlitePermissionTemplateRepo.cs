@@ -109,8 +109,8 @@ public class SqlitePermissionTemplateRepo(
                 // Check if any users are assigned to the templates we are about to delete
                 const string checkSql = @"
                     SELECT COUNT(*) 
-                    FROM user_permission_templates 
-                    WHERE template_id NOT IN @Ids";
+                    FROM users 
+                    WHERE permission_template_id NOT IN @Ids AND permission_template_id IS NOT NULL";
                 
                 var dependentUserCount = await conn.ExecuteScalarAsync<int>(checkSql, new { Ids = inputIds }, transaction: tx);
 
@@ -128,7 +128,7 @@ public class SqlitePermissionTemplateRepo(
             else if (templates.Count == 0) // Edge case: wipe all templates
             {
                 // Check if any users are assigned to ANY template
-                var dependentUserCount = await conn.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM user_permission_templates;", transaction: tx);
+                var dependentUserCount = await conn.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM users WHERE permission_template_id IS NOT NULL;", transaction: tx);
                 if (dependentUserCount > 0)
                 {
                     throw new InvalidOperationException($"Cannot delete all roles because {dependentUserCount} user(s) are assigned to roles. Please reassign them first.");

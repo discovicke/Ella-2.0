@@ -171,17 +171,10 @@ public class AuthService(
             return new LoginResultDto();
         }
 
-        // Assign 'User' template by default
-        var templates = await templateRepo.GetAllAsync();
-        var userTemplate = templates.FirstOrDefault(t => t.Label == "User" || t.Label == "Member"); // "User" from seed.sql
-        if (userTemplate != null && userTemplate.Id.HasValue)
-        {
-             await permissionRepo.SetUserTemplateAsync(createdUser.Id, userTemplate.Id.Value);
-        }
-        else
-        {
-             logger.LogWarning("Default 'User' template not found during registration. User {UserId} has no permissions.", createdUser.Id);
-        }
+        // Note: We do not assign a default template here. 
+        // If a role is needed, it should be assigned explicitly via the User Management API or 
+        // passed in the registration request (if we decide to support that in the future).
+        // By default, a new user is a "Custom User" with 0 permissions.
 
         var token = tokenProvider.GenerateAccessToken(createdUser.Id, createdUser.Email);
 
@@ -211,7 +204,7 @@ public class AuthService(
             Id = user.Id,
             Email = user.Email,
             DisplayName = user.DisplayName,
-            Permissions = permissions,
+            Permissions = permissions ?? new UserPermissions { UserId = user.Id }, // Fallback to empty permissions
             IsBanned = user.IsBanned == BannedStatus.Banned,
         };
     }

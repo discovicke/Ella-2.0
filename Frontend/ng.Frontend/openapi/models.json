@@ -1960,7 +1960,7 @@
             "type": "integer",
             "format": "int64"
           },
-          "templateId": {
+          "permissionTemplateId": {
             "type": "integer",
             "format": "int64",
             "nullable": true
@@ -2002,7 +2002,7 @@
             "type": "integer",
             "format": "int64"
           },
-          "templateId": {
+          "permissionTemplateId": {
             "type": "integer",
             "format": "int64",
             "nullable": true

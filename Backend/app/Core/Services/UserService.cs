@@ -104,6 +104,7 @@ public class UserService(
             PasswordHash = passwordHash,
             IsBanned = dto.IsBanned,
             TokensValidAfter = existing.TokensValidAfter,
+            PermissionTemplateId = existing.PermissionTemplateId,
         };
 
         var success = await repo.UpdateUserAsync(id, updated);

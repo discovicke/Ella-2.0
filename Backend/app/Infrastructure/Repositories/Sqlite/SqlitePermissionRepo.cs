@@ -16,13 +16,21 @@ public class SqlitePermissionRepo(
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            // 1. Get the user's template ID (needed for the response object)
-            const string templateSql = "SELECT template_id FROM user_permission_templates WHERE user_id = @userId;";
+            // 1. Check if user exists first to distinguish "User Not Found" from "No Role"
+            var userExists = await conn.ExecuteScalarAsync<bool>("SELECT 1 FROM users WHERE id = @userId;", new { userId });
+            if (!userExists)
+            {
+                return null;
+            }
+
+            // 2. Get the user's template ID (needed for the response object)
+            const string templateSql = "SELECT permission_template_id FROM users WHERE id = @userId;";
             var templateId = await conn.ExecuteScalarAsync<long?>(templateSql, new { userId });
 
-            // 2. Get effective permissions from the view
+            // 3. Get effective permissions from the view
             const string permSql = "SELECT permission_key, is_granted FROM v_user_effective_permissions WHERE user_id = @userId;";
             var rows = await conn.QueryAsync<(string Key, int IsGranted)>(permSql, new { userId });
+
 
             // If no permissions found, return default (or null if user doesn't exist? 
             // The view does a LEFT JOIN on user_permission_templates, so if user has no template, it might return nothing or nulls.
@@ -31,7 +39,7 @@ public class SqlitePermissionRepo(
             var permissions = new UserPermissions
             {
                 UserId = userId,
-                TemplateId = templateId
+                PermissionTemplateId = templateId
             };
 
             foreach (var row in rows)
@@ -77,24 +85,12 @@ public class SqlitePermissionRepo(
                     transaction
                 );
 
-                if (templateId.HasValue)
-                {
-                    // 2. Set the new template
-                    await conn.ExecuteAsync(
-                        "INSERT OR REPLACE INTO user_permission_templates (user_id, template_id) VALUES (@userId, @templateId);",
-                        new { userId, templateId = templateId.Value },
-                        transaction
-                    );
-                }
-                else
-                {
-                    // 2. Remove template assignment (Custom role)
-                    await conn.ExecuteAsync(
-                        "DELETE FROM user_permission_templates WHERE user_id = @userId;",
-                        new { userId },
-                        transaction
-                    );
-                }
+                // 2. Update the user's template
+                await conn.ExecuteAsync(
+                    "UPDATE users SET permission_template_id = @templateId WHERE id = @userId;",
+                    new { userId, templateId },
+                    transaction
+                );
 
                 transaction.Commit();
             }
@@ -121,9 +117,9 @@ public class SqlitePermissionRepo(
             // 1. Get the base template value
             const string templateValueSql = @"
                 SELECT ptf.value 
-                FROM user_permission_templates upt
-                JOIN permission_template_flags ptf ON upt.template_id = ptf.template_id
-                WHERE upt.user_id = @userId AND ptf.permission_key = @permissionKey;";
+                FROM users u
+                JOIN permission_template_flags ptf ON u.permission_template_id = ptf.template_id
+                WHERE u.id = @userId AND ptf.permission_key = @permissionKey;";
             
             // Default to 0 (false) if not found (e.g. key missing from template or user has no template)
             var templateValueInt = await conn.ExecuteScalarAsync<int?>(templateValueSql, new { userId, permissionKey });

@@ -1,58 +1,13 @@
 -- Reference: db/seed.sql
--- Expanded for Live Production Simulation v2.4 (Role System Fixed)
+-- Expanded for Live Production Simulation v2.5 (Fixed FK Order)
 
 INSERT INTO database_versions
     (name)
 VALUES
     ('Production simulation data v2.5 - Normalized RBAC');
 
--- 1. Create Base Data (Campus)
-INSERT INTO campus
-    (id, street, zip, city, country, contact)
-VALUES
-    (1, 'Edugrade Hudiksvall', '824 30', 'Hudiksvall', 'Sweden', 'info.hudik@edugrade.com'),
-    (2, 'Edugrade Gävle', '802 67', 'Gävle', 'Sweden', 'info.gavle@edugrade.com'),
-    (3, 'Edugrade Sundsvall', '852 30', 'Sundsvall', 'Sweden', 'info.sund@edugrade.com');
-
--- 2. Classes
-INSERT INTO class
-    (id, class_name)
-VALUES
-    (1, 'demo26'),
-    (2, 'net25'),
-    (3, 'ux25'),
-    (4, 'dev24'),
-    (5, 'sys25');
-
--- 3. Users
--- Password for all is 'lösen123' (will be hashed by initializer)
-INSERT INTO users
-    (id, email, password_hash, display_name)
-VALUES
-    (1, 'admin@edugrade.com', '__HASH__', 'Admin Testberg'),
-    (2, 'campus.admin@edugrade.com', '__HASH__', 'Campus Manager'),
-    (3, 'sven.svensson@edugrade.com', '__HASH__', 'Sven Svensson'),
-    (4, 'karin.karlsson.gavle@edugrade.com', '__HASH__', 'Karin Karlsson'),
-    (5, 'anders.andersson@edugrade.com', '__HASH__', 'Anders Andersson'),
-    (50, 'elev@edugrade.com', '__HASH__', 'Elev Testlund'),
-    (10, 'andre.ponten.net25@edu.edugrade.com', '__HASH__', 'André Pontén'),
-    (11, 'christian.gennari.net25@edu.edugrade.com', '__HASH__', 'Christian Gennari'),
-    (12, 'marcus.loov.net25@edu.edugrade.com', '__HASH__', 'Marcus Lööv'),
-    (13, 'viktor.johansson.net25@edu.edugrade.com', '__HASH__', 'Viktor Johansson'),
-    (14, 'sofia.eriksson.net25@edu.edugrade.com', '__HASH__', 'Sofia Eriksson'),
-    (15, 'erik.nilsson.net25@edu.edugrade.com', '__HASH__', 'Erik Nilsson'),
-    (20, 'linda.berg.ux25@edu.edugrade.com', '__HASH__', 'Linda Berg'),
-    (21, 'mikael.holm.ux25@edu.edugrade.com', '__HASH__', 'Mikael Holm'),
-    (22, 'anna.sundstrom.ux25@edu.edugrade.com', '__HASH__', 'Anna Sundström'),
-    (23, 'per.ostlund.ux25@edu.edugrade.com', '__HASH__', 'Per Östlund'),
-    (30, 'johan.kvist.dev24@edu.edugrade.com', '__HASH__', 'Johan Kvist'),
-    (31, 'elena.popova.dev24@edu.edugrade.com', '__HASH__', 'Elena Popova'),
-    (32, 'oscar.lundin.dev24@edu.edugrade.com', '__HASH__', 'Oscar Lundin');
-
--- 4. NEW RBAC System Seeding
-
--- 4a. System Permissions
-INSERT INTO system_permissions (key, description) VALUES 
+-- 1. System Permissions Registry (Must be first for FKs)
+INSERT INTO system_permissions (key, description) VALUES
 ('BookRoom', 'Can book rooms'),
 ('MyBookings', 'Can view own bookings'),
 ('ManageUsers', 'Can manage users'),
@@ -63,14 +18,14 @@ INSERT INTO system_permissions (key, description) VALUES
 ('ManageCampuses', 'Can manage campuses'),
 ('ManageRoles', 'Can manage roles/permissions');
 
--- 4b. Permission Templates (Roles)
--- Keeping IDs consistent with old system: 1=Student, 2=Educator, 3=Admin
-INSERT INTO permission_templates (id, name, label, css_class, sort_order) VALUES 
+-- 2. Permission Templates (Roles)
+-- Keeping IDs consistent: 1=Student, 2=Educator, 3=Admin
+INSERT INTO permission_templates (id, name, label, css_class, sort_order) VALUES
 (1, 'student', 'Student', 'student', 0),
 (2, 'educator', 'Educator', 'educator', 1),
 (3, 'admin', 'Admin', 'admin', 2);
 
--- 4c. Permission Flags
+-- 3. Permission Flags
 -- Student (1): BookRoom, MyBookings
 INSERT INTO permission_template_flags (template_id, permission_key, value) VALUES
 (1, 'BookRoom', 1),
@@ -87,24 +42,52 @@ INSERT INTO permission_template_flags (template_id, permission_key, value) VALUE
 INSERT INTO permission_template_flags (template_id, permission_key, value)
 SELECT 3, key, 1 FROM system_permissions;
 
+-- 4. Base Data (Campus)
+INSERT INTO campus
+    (id, street, zip, city, country, contact)
+VALUES
+    (1, 'Edugrade Hudiksvall', '824 30', 'Hudiksvall', 'Sweden', 'info.hudik@edugrade.com'),
+    (2, 'Edugrade Gävle', '802 67', 'Gävle', 'Sweden', 'info.gavle@edugrade.com'),
+    (3, 'Edugrade Sundsvall', '852 30', 'Sundsvall', 'Sweden', 'info.sund@edugrade.com');
 
--- 5. Assign Users to Templates (Replacing old 'permissions' table inserts)
+-- 5. Classes
+INSERT INTO class
+    (id, class_name)
+VALUES
+    (1, 'demo26'),
+    (2, 'net25'),
+    (3, 'ux25'),
+    (4, 'dev24'),
+    (5, 'sys25');
 
--- Admins (1, 2)
-INSERT INTO user_permission_templates (user_id, template_id) VALUES (1, 3), (2, 3);
+-- 6. Users
+-- Password for all is 'lösen123' (will be hashed by initializer)
+-- Template IDs: 1=Student, 2=Educator, 3=Admin
+INSERT INTO users
+    (id, email, password_hash, display_name, permission_template_id)
+VALUES
+    (1, 'admin@edugrade.com', '__HASH__', 'Admin Testberg', 3),
+    (2, 'campus.admin@edugrade.com', '__HASH__', 'Campus Manager', 3),
+    (3, 'sven.svensson@edugrade.com', '__HASH__', 'Sven Svensson', 2),
+    (4, 'karin.karlsson.gavle@edugrade.com', '__HASH__', 'Karin Karlsson', 2),
+    (5, 'anders.andersson@edugrade.com', '__HASH__', 'Anders Andersson', 2),
+    (50, 'elev@edugrade.com', '__HASH__', 'Elev Testlund', 1),
+    (10, 'andre.ponten.net25@edu.edugrade.com', '__HASH__', 'André Pontén', 1),
+    (11, 'christian.gennari.net25@edu.edugrade.com', '__HASH__', 'Christian Gennari', 1),
+    (12, 'marcus.loov.net25@edu.edugrade.com', '__HASH__', 'Marcus Lööv', 1),
+    (13, 'viktor.johansson.net25@edu.edugrade.com', '__HASH__', 'Viktor Johansson', 1),
+    (14, 'sofia.eriksson.net25@edu.edugrade.com', '__HASH__', 'Sofia Eriksson', 1),
+    (15, 'erik.nilsson.net25@edu.edugrade.com', '__HASH__', 'Erik Nilsson', 1),
+    (20, 'linda.berg.ux25@edu.edugrade.com', '__HASH__', 'Linda Berg', 1),
+    (21, 'mikael.holm.ux25@edu.edugrade.com', '__HASH__', 'Mikael Holm', 1),
+    (22, 'anna.sundstrom.ux25@edu.edugrade.com', '__HASH__', 'Anna Sundström', 1),
+    (23, 'per.ostlund.ux25@edu.edugrade.com', '__HASH__', 'Per Östlund', 1),
+    (30, 'johan.kvist.dev24@edu.edugrade.com', '__HASH__', 'Johan Kvist', 1),
+    (31, 'elena.popova.dev24@edu.edugrade.com', '__HASH__', 'Elena Popova', 1),
+    (32, 'oscar.lundin.dev24@edu.edugrade.com', '__HASH__', 'Oscar Lundin', 1),
+    (33, 'oscar.lundin.dev222@edu.edugrade.com', '__HASH__', 'Custom Guy', NULL);
 
--- Educators (3, 4, 5)
-INSERT INTO user_permission_templates (user_id, template_id) VALUES (3, 2), (4, 2), (5, 2);
-
--- Students (50, 10-32)
-INSERT INTO user_permission_templates (user_id, template_id) VALUES 
-(50, 1),
-(10, 1), (11, 1), (12, 1), (13, 1), (14, 1), (15, 1),
-(20, 1), (21, 1), (22, 1), (23, 1),
-(30, 1), (31, 1), (32, 1);
-
-
--- 6. User-Class / Campus Assignments
+-- 7. User-Class / Campus Assignments
 INSERT INTO user_class
     (user_id, class_id)
 VALUES
@@ -145,7 +128,7 @@ VALUES
     (31, 3),
     (32, 3);
 
--- 7. Rooms
+-- 8. Rooms
 INSERT INTO rooms
     (id, campus_id, name, capacity, type, floor)
 VALUES
@@ -162,7 +145,7 @@ VALUES
     (21, 3, 'Draken', 15, 1, '2'),
     (22, 3, 'Sälsten', 8, 2, '2');
 
--- 8. Assets
+-- 9. Assets
 INSERT INTO asset_types
     (id, description)
 VALUES
@@ -202,7 +185,7 @@ VALUES
     (22, 2),
     (22, 6);
 
--- 9. Bookings (High Density)
+-- 10. Bookings (High Density)
 INSERT INTO bookings
     (id, room_id, user_id, start_time, end_time, status, notes)
 VALUES
@@ -238,7 +221,7 @@ VALUES
     (302, 10, 4, '2026-02-24 09:00:00', '2026-02-24 16:00:00', 0, 'UX Workshop: Design Systems'),
     (303, 20, 5, '2026-02-28 09:00:00', '2026-02-28 17:00:00', 0, 'Öppet hus: Sundsvall');
 
--- 10. Registrations
+-- 11. Registrations
 INSERT INTO registrations
     (booking_id, user_id)
 VALUES

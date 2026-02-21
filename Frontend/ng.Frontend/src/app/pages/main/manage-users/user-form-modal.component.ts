@@ -116,6 +116,9 @@ export const passwordMatchValidator: ValidatorFn = (
             formControlName="password"
             placeholder="Minst 6 tecken (krävs)"
           />
+          @if (initialData) {
+            <span class="field-hint">Lämna tomt om du inte vill ändra lösenordet.</span>
+          }
           @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
             <span class="error-msg">Lösenord krävs (minst 6 tecken)</span>
           }
@@ -194,6 +197,12 @@ export const passwordMatchValidator: ValidatorFn = (
       .error-msg {
         font-size: var(--font-sm);
         color: var(--color-danger);
+      }
+
+      .field-hint {
+        font-size: var(--font-xs);
+        color: var(--color-text-secondary);
+        margin-top: -0.25rem;
       }
 
       .form-actions {
