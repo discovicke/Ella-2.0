@@ -1,4 +1,4 @@
-﻿using Backend.app.Core.Models.Entities;
+using Backend.app.Core.Models;
 using Backend.app.Core.Models.Enums;
 
 namespace Backend.app.Core.Models.DTO;
@@ -10,7 +10,7 @@ public record UserResponseDto(
     string Email,
     string? DisplayName,
     BannedStatus IsBanned,
-    Permission? Permissions
+    UserPermissions? Permissions
 );
 
 public record CreateUserDto(string Email, string? DisplayName, string Password);

@@ -1,4 +1,5 @@
 using Backend.app.Core.Interfaces;
+using Backend.app.Core.Models;
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
@@ -11,6 +12,7 @@ namespace Backend.app.Core.Services;
 public class AuthService(
     IUserRepository userRepo,
     IPermissionRepository permissionRepo,
+    IPermissionTemplateRepository templateRepo,
     IPasswordHasher passwordHasher,
     ITokenProvider tokenProvider,
     ILogger<AuthService> logger
@@ -31,7 +33,7 @@ public class AuthService(
         if (user.IsBanned == BannedStatus.Banned)
         {
             logger.LogWarning("Login failed: user {UserId} is banned", user.Id);
-            var perms = await permissionRepo.GetByUserIdAsync(user.Id);
+            var perms = await permissionRepo.GetEffectivePermissionsAsync(user.Id);
             return new LoginResultDto
             {
                 IsBanned = true,
@@ -56,7 +58,7 @@ public class AuthService(
 
         logger.LogInformation("Login successful for user {UserId} ({Email})", user.Id, user.Email);
 
-        var permissions = await permissionRepo.GetByUserIdAsync(user.Id);
+        var permissions = await permissionRepo.GetEffectivePermissionsAsync(user.Id);
         return new LoginResultDto
         {
             Response = new AuthResponseDto
@@ -107,7 +109,7 @@ public class AuthService(
             return new TokenValidationResultDto();
         }
 
-        var permissions = await permissionRepo.GetByUserIdAsync(user.Id);
+        var permissions = await permissionRepo.GetEffectivePermissionsAsync(user.Id);
         return new TokenValidationResultDto { User = user, Permissions = permissions };
     }
 
@@ -169,14 +171,17 @@ public class AuthService(
             return new LoginResultDto();
         }
 
-        // Create default permissions (basic booking)
-        var defaultPerms = new Permission
+        // Assign 'User' template by default
+        var templates = await templateRepo.GetAllAsync();
+        var userTemplate = templates.FirstOrDefault(t => t.Label == "User" || t.Label == "Member"); // "User" from seed.sql
+        if (userTemplate != null && userTemplate.Id.HasValue)
         {
-            UserId = createdUser.Id,
-            BookRoom = true,
-            MyBookings = true,
-        };
-        await permissionRepo.CreateAsync(defaultPerms);
+             await permissionRepo.SetUserTemplateAsync(createdUser.Id, userTemplate.Id.Value);
+        }
+        else
+        {
+             logger.LogWarning("Default 'User' template not found during registration. User {UserId} has no permissions.", createdUser.Id);
+        }
 
         var token = tokenProvider.GenerateAccessToken(createdUser.Id, createdUser.Email);
 
@@ -186,18 +191,20 @@ public class AuthService(
             createdUser.Email
         );
 
+        var perms = await permissionRepo.GetEffectivePermissionsAsync(createdUser.Id);
+
         return new LoginResultDto
         {
             Response = new AuthResponseDto
             {
                 Message = "Registration successful",
                 Token = token,
-                User = MapToUserDto(createdUser, defaultPerms),
+                User = MapToUserDto(createdUser, perms),
             },
         };
     }
 
-    private static AuthedUserResponseDto MapToUserDto(User user, Permission? permissions)
+    private static AuthedUserResponseDto MapToUserDto(User user, UserPermissions? permissions)
     {
         return new AuthedUserResponseDto
         {

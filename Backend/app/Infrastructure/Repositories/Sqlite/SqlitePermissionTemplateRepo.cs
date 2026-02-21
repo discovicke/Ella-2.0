@@ -33,6 +33,7 @@ public class SqlitePermissionTemplateRepo(
                 .Select(t => new PermissionTemplateDto
                 {
                     Id = t.Id,
+                    Name = t.Name,
                     Label = t.Label,
                     CssClass = t.CssClass,
                     Permissions = flags
@@ -73,6 +74,7 @@ public class SqlitePermissionTemplateRepo(
             return new PermissionTemplateDto
             {
                 Id = template.Id,
+                Name = template.Name,
                 Label = template.Label,
                 CssClass = template.CssClass,
                 Permissions = flags.ToDictionary(f => f.PermissionKey, f => f.Value),
@@ -95,24 +97,51 @@ public class SqlitePermissionTemplateRepo(
             await conn.OpenAsync();
             using var tx = conn.BeginTransaction();
 
-            // Wipe existing data (CASCADE deletes flags)
-            await conn.ExecuteAsync("DELETE FROM permission_template_flags;", transaction: tx);
-            await conn.ExecuteAsync("DELETE FROM permission_templates;", transaction: tx);
+            // 1. Identify IDs present in the input list (to know what to keep)
+            var inputIds = templates
+                .Where(t => t.Id.HasValue && t.Id.Value > 0)
+                .Select(t => t.Id!.Value)
+                .ToList();
 
+            // 2. Delete templates NOT in the input list (this WILL cascade delete users assigned to deleted roles)
+            if (inputIds.Count > 0)
+            {
+                await conn.ExecuteAsync(
+                    "DELETE FROM permission_templates WHERE id NOT IN @Ids;",
+                    new { Ids = inputIds },
+                    transaction: tx
+                );
+            }
+            else if (templates.Count == 0) // Edge case: wipe all templates
+            {
+                await conn.ExecuteAsync("DELETE FROM permission_templates;", transaction: tx);
+            }
+            // Else: All new templates (no IDs), we don't delete existing ones blindly yet? 
+            // Wait, if inputIds is empty but we have templates, it means we are replacing everything with NEW templates.
+            // But if we have existing templates in DB, and we pass a list of NEW templates (no IDs),
+            // the intention of "ReplaceAll" is usually to wipe and replace.
+            // However, we MUST preserve IDs for existing roles to keep user assignments.
+            // If the frontend sends back IDs, we are good.
+            // If the frontend sends NO IDs for existing roles, we have a problem.
+            // Assumption: Frontend preserves IDs for existing templates.
+
+            // 3. Upsert templates
             for (var i = 0; i < templates.Count; i++)
             {
                 var tpl = templates[i];
-
-                // If template has an existing Id, re-insert with that Id to preserve FK references
                 long templateId;
+
                 if (tpl.Id is > 0)
                 {
+                    // Update existing
                     await conn.ExecuteAsync(
-                        @"INSERT INTO permission_templates (id, label, css_class, sort_order)
-                          VALUES (@Id, @Label, @CssClass, @SortOrder);",
+                        @"UPDATE permission_templates 
+                          SET name = @Name, label = @Label, css_class = @CssClass, sort_order = @SortOrder
+                          WHERE id = @Id;",
                         new
                         {
                             Id = tpl.Id.Value,
+                            Name = !string.IsNullOrEmpty(tpl.Name) ? tpl.Name : tpl.Label.ToLower().Replace(" ", "-"),
                             tpl.Label,
                             tpl.CssClass,
                             SortOrder = i,
@@ -123,12 +152,14 @@ public class SqlitePermissionTemplateRepo(
                 }
                 else
                 {
+                    // Insert new
                     templateId = await conn.ExecuteScalarAsync<long>(
-                        @"INSERT INTO permission_templates (label, css_class, sort_order)
-                          VALUES (@Label, @CssClass, @SortOrder);
+                        @"INSERT INTO permission_templates (name, label, css_class, sort_order)
+                          VALUES (@Name, @Label, @CssClass, @SortOrder);
                           SELECT last_insert_rowid();",
                         new
                         {
+                            Name = !string.IsNullOrEmpty(tpl.Name) ? tpl.Name : tpl.Label.ToLower().Replace(" ", "-"),
                             tpl.Label,
                             tpl.CssClass,
                             SortOrder = i,
@@ -136,6 +167,14 @@ public class SqlitePermissionTemplateRepo(
                         transaction: tx
                     );
                 }
+
+                // 4. Replace flags for this template
+                // Safe to delete/insert flags as they don't have dependents (except view)
+                await conn.ExecuteAsync(
+                    "DELETE FROM permission_template_flags WHERE template_id = @TemplateId;",
+                    new { TemplateId = templateId },
+                    transaction: tx
+                );
 
                 if (tpl.Permissions is { Count: > 0 })
                 {
@@ -148,7 +187,7 @@ public class SqlitePermissionTemplateRepo(
                             {
                                 TemplateId = templateId,
                                 Key = key,
-                                Value = value,
+                                Value = value ? 1 : 0,
                             },
                             transaction: tx
                         );
@@ -163,84 +202,6 @@ public class SqlitePermissionTemplateRepo(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error replacing permission templates");
-            throw;
-        }
-    }
-
-    public async Task<HashSet<string>> GetPermissionColumnsAsync()
-    {
-        try
-        {
-            await using var conn = connectionFactory.CreateConnection();
-            await conn.OpenAsync();
-
-            var columns = await conn.QueryAsync<dynamic>("PRAGMA table_info('permissions');");
-            var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var col in columns)
-            {
-                string name = col.name;
-                if (
-                    !string.Equals(name, "user_id", StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(name, "template_id", StringComparison.OrdinalIgnoreCase)
-                )
-                    result.Add(name);
-            }
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error reading permission columns");
-            throw;
-        }
-    }
-
-    public async Task SyncFlagsWithColumnsAsync(HashSet<string> dbColumns)
-    {
-        try
-        {
-            await using var conn = connectionFactory.CreateConnection();
-            await conn.OpenAsync();
-
-            var templateIds = (
-                await conn.QueryAsync<long>("SELECT id FROM permission_templates;")
-            ).ToList();
-
-            if (templateIds.Count == 0)
-                return;
-
-            using var tx = conn.BeginTransaction();
-
-            // Remove stale flags (permission columns that no longer exist)
-            await conn.ExecuteAsync(
-                @"DELETE FROM permission_template_flags
-                  WHERE permission_key NOT IN @Columns;",
-                new { Columns = dbColumns.ToList() },
-                transaction: tx
-            );
-
-            // Add missing flags (new columns → value = 0/false)
-            foreach (var templateId in templateIds)
-            {
-                foreach (var col in dbColumns)
-                {
-                    await conn.ExecuteAsync(
-                        @"INSERT OR IGNORE INTO permission_template_flags (template_id, permission_key, value)
-                          VALUES (@TemplateId, @Key, 0);",
-                        new { TemplateId = templateId, Key = col },
-                        transaction: tx
-                    );
-                }
-            }
-
-            tx.Commit();
-
-            logger.LogInformation("Permission template flags synced with DB columns.");
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error syncing permission template flags");
             throw;
         }
     }

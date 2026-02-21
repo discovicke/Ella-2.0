@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { SessionService } from '../session.service';
-import { Permission } from '../../models/models';
+import { UserPermissions } from '../../models/models';
 
 /**
  * Route guard that checks whether the current user has the permission
@@ -25,7 +25,7 @@ export const permissionGuard: CanActivateFn = (route) => {
   const router = inject(Router);
 
   const requiredPermission = route.data?.['permission'] as
-    | keyof NonNullable<Permission>
+    | keyof NonNullable<UserPermissions>
     | undefined;
 
   if (!requiredPermission) {
@@ -37,6 +37,6 @@ export const permissionGuard: CanActivateFn = (route) => {
     return true;
   }
 
-  console.warn(`permissionGuard: user lacks "${requiredPermission}" – redirecting to /forbidden`);
+  console.warn(`permissionGuard: user lacks "${String(requiredPermission)}" – redirecting to /forbidden`);
   return router.createUrlTree(['/forbidden']);
 };

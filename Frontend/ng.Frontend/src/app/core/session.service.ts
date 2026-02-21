@@ -1,11 +1,11 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { Permission } from '../models/models';
+import { UserPermissions } from '../models/models';
 
 export interface UserState {
   id: number;
   email: string;
   displayName: string;
-  permissions: Permission | null;
+  permissions: UserPermissions | null;
   isBanned: boolean;
   token?: string; // JWT token
 }
@@ -62,7 +62,7 @@ export class SessionService {
   /**
    * Check if current user has a specific permission
    */
-  hasPermission(permission: keyof NonNullable<Permission>): boolean {
+  hasPermission(permission: keyof NonNullable<UserPermissions>): boolean {
     const perms = this.permissions();
     return !!perms && !!perms[permission];
   }

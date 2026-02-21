@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
+using Backend.app.Core.Models;
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
@@ -199,7 +200,7 @@ public static class UserEndpoints
                     + "🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
             )
             .Accepts<UpdatePermissionDto>("application/json")
-            .Produces<Permission>(StatusCodes.Status200OK)
+            .Produces<UserPermissions>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -232,7 +233,7 @@ public static class UserEndpoints
                     + "and stores the template_id for future propagation.\n\n"
                     + "🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
             )
-            .Produces<Permission>(StatusCodes.Status200OK)
+            .Produces<UserPermissions>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized)

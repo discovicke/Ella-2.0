@@ -16,9 +16,7 @@ export class PermissionTemplateService {
 
   updateAll(
     templates: PermissionTemplateDto[],
-    propagate = false,
   ): Observable<PermissionTemplateDto[]> {
-    const url = propagate ? `${this.apiUrl}?propagate=true` : this.apiUrl;
-    return this.http.put<PermissionTemplateDto[]>(url, templates);
+    return this.http.put<PermissionTemplateDto[]>(this.apiUrl, templates);
   }
 }

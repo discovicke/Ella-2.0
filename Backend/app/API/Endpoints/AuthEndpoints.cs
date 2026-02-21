@@ -1,3 +1,4 @@
+using Backend.app.Core.Models;
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
@@ -173,7 +174,7 @@ public static class AuthEndpoints
                 (HttpContext httpContext) =>
                 {
                     var user = httpContext.Items["User"] as User;
-                    var permissions = httpContext.Items["Permissions"] as Permission;
+                    var permissions = httpContext.Items["Permissions"] as UserPermissions;
 
                     if (user is null)
                         return Results.Unauthorized();

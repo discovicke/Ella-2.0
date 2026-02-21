@@ -39,7 +39,7 @@ export interface AuthedUserResponseDto {
   id?: number;
   email: string;
   displayName?: string | null;
-  permissions?: Permission;
+  permissions?: UserPermissions;
   isBanned?: boolean;
 }
 
@@ -117,41 +117,10 @@ export interface LoginDto {
   password: string;
 }
 
-export type Permission = {
-  /** @format int64 */
-  userId?: number;
-  /** @format int64 */
-  templateId?: number | null;
-  bookRoom?: boolean;
-  myBookings?: boolean;
-  manageUsers?: boolean;
-  manageClasses?: boolean;
-  manageRooms?: boolean;
-  manageAssets?: boolean;
-  manageBookings?: boolean;
-  manageCampuses?: boolean;
-  manageRoles?: boolean;
-};
-
-export interface Permission2 {
-  /** @format int64 */
-  userId?: number;
-  /** @format int64 */
-  templateId?: number | null;
-  bookRoom?: boolean;
-  myBookings?: boolean;
-  manageUsers?: boolean;
-  manageClasses?: boolean;
-  manageRooms?: boolean;
-  manageAssets?: boolean;
-  manageBookings?: boolean;
-  manageCampuses?: boolean;
-  manageRoles?: boolean;
-}
-
 export interface PermissionTemplateDto {
   /** @format int64 */
   id?: number | null;
+  name?: string;
   label?: string;
   cssClass?: string;
   permissions?: Record<string, boolean>;
@@ -232,11 +201,43 @@ export interface UpdateUserDto {
   isBanned: BannedStatus;
 }
 
+export type UserPermissions = {
+  /** @format int64 */
+  userId?: number;
+  /** @format int64 */
+  templateId?: number | null;
+  bookRoom?: boolean;
+  myBookings?: boolean;
+  manageUsers?: boolean;
+  manageClasses?: boolean;
+  manageRooms?: boolean;
+  manageAssets?: boolean;
+  manageBookings?: boolean;
+  manageCampuses?: boolean;
+  manageRoles?: boolean;
+};
+
+export interface UserPermissions2 {
+  /** @format int64 */
+  userId?: number;
+  /** @format int64 */
+  templateId?: number | null;
+  bookRoom?: boolean;
+  myBookings?: boolean;
+  manageUsers?: boolean;
+  manageClasses?: boolean;
+  manageRooms?: boolean;
+  manageAssets?: boolean;
+  manageBookings?: boolean;
+  manageCampuses?: boolean;
+  manageRoles?: boolean;
+}
+
 export interface UserResponseDto {
   /** @format int64 */
   id: number;
   email: string;
   displayName: string | null;
   isBanned: BannedStatus;
-  permissions: Permission;
+  permissions: UserPermissions;
 }

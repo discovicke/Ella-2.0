@@ -1,4 +1,5 @@
-﻿using Backend.app.Core.Interfaces;
+using Backend.app.Core.Interfaces;
+using Backend.app.Core.Models;
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
@@ -11,6 +12,7 @@ namespace Backend.app.Core.Services;
 public class UserService(
     IUserRepository repo,
     IPermissionRepository permissionRepo,
+    IPermissionTemplateRepository templateRepo, // Added to find templates
     IPasswordHasher passwordHasher,
     ILogger<UserService> logger
 )
@@ -23,7 +25,7 @@ public class UserService(
         var result = new List<UserResponseDto>();
         foreach (var user in users)
         {
-            var perms = await permissionRepo.GetByUserIdAsync(user.Id);
+            var perms = await permissionRepo.GetEffectivePermissionsAsync(user.Id);
             result.Add(MapToDto(user, perms));
         }
         return result;
@@ -37,7 +39,7 @@ public class UserService(
             await repo.GetUserByIdAsync(id)
             ?? throw new KeyNotFoundException($"User with ID {id} does not exist.");
 
-        var perms = await permissionRepo.GetByUserIdAsync(user.Id);
+        var perms = await permissionRepo.GetEffectivePermissionsAsync(user.Id);
         return MapToDto(user, perms);
     }
 
@@ -67,16 +69,16 @@ public class UserService(
             await repo.GetUserByEmailAsync(dto.Email)
             ?? throw new Exception("User created but could not be retrieved.");
 
-        // Create default permissions (basic booking)
-        var defaultPerms = new Permission
+        // Create default permissions (User role)
+        var templates = await templateRepo.GetAllAsync();
+        var userTemplate = templates.FirstOrDefault(t => t.Label == "User");
+        if (userTemplate?.Id != null)
         {
-            UserId = created.Id,
-            BookRoom = true,
-            MyBookings = true,
-        };
-        await permissionRepo.CreateAsync(defaultPerms);
-
-        return MapToDto(created, defaultPerms);
+            await permissionRepo.SetUserTemplateAsync(created.Id, userTemplate.Id.Value);
+        }
+        
+        var perms = await permissionRepo.GetEffectivePermissionsAsync(created.Id);
+        return MapToDto(created, perms);
     }
 
     public async Task UpdateUserAsync(long id, UpdateUserDto dto)
@@ -162,8 +164,10 @@ public class UserService(
             await repo.GetUserByIdAsync(id)
             ?? throw new KeyNotFoundException($"User with ID {id} does not exist.");
 
-        // Delete permissions first
-        await permissionRepo.DeleteByUserIdAsync(id);
+        // Delete permissions (cleanup)
+        // With new schema, ON DELETE CASCADE handles most, but we can call ClearUserOverridesAsync explicitly if needed.
+        // For now, let the DB handle it via CASCADE.
+        // await permissionRepo.ClearUserOverridesAsync(id);
 
         var success = await repo.DeleteUserAsync(id);
         if (!success)
@@ -172,43 +176,41 @@ public class UserService(
         logger.LogInformation("User with ID {UserId} deleted", id);
     }
 
-    public async Task<Permission> UpdatePermissionsAsync(long userId, UpdatePermissionDto dto)
+    public async Task<UserPermissions> UpdatePermissionsAsync(long userId, UpdatePermissionDto dto)
     {
         logger.LogInformation("Updating permissions for user {UserId}", userId);
 
-        _ =
-            await repo.GetUserByIdAsync(userId)
+        _ = await repo.GetUserByIdAsync(userId)
             ?? throw new KeyNotFoundException($"User with ID {userId} does not exist.");
 
-        var existing =
-            await permissionRepo.GetByUserIdAsync(userId)
-            ?? throw new KeyNotFoundException($"No permissions row found for user {userId}.");
-
-        var updated = new Permission
+        // 1. Handle Template Change
+        if (dto.TemplateId.HasValue)
         {
-            UserId = userId,
-            TemplateId = dto.TemplateId,
-            BookRoom = dto.BookRoom,
-            MyBookings = dto.MyBookings,
-            ManageUsers = dto.ManageUsers,
-            ManageClasses = dto.ManageClasses,
-            ManageRooms = dto.ManageRooms,
-            ManageAssets = dto.ManageAssets,
-            ManageBookings = dto.ManageBookings,
-            ManageCampuses = dto.ManageCampuses,
-            ManageRoles = dto.ManageRoles,
-        };
+            await permissionRepo.SetUserTemplateAsync(userId, dto.TemplateId.Value);
+        }
 
-        var success = await permissionRepo.UpdateAsync(updated);
-        if (!success)
-            throw new Exception("Failed to update permissions.");
+        // 2. Handle Granular Overrides
+        // We set each flag as an override. 
+        // Logic in repo will cleanup if it matches template.
+        await permissionRepo.SetUserOverrideAsync(userId, "BookRoom", dto.BookRoom);
+        await permissionRepo.SetUserOverrideAsync(userId, "MyBookings", dto.MyBookings);
+        await permissionRepo.SetUserOverrideAsync(userId, "ManageUsers", dto.ManageUsers);
+        await permissionRepo.SetUserOverrideAsync(userId, "ManageClasses", dto.ManageClasses);
+        await permissionRepo.SetUserOverrideAsync(userId, "ManageRooms", dto.ManageRooms);
+        await permissionRepo.SetUserOverrideAsync(userId, "ManageAssets", dto.ManageAssets);
+        await permissionRepo.SetUserOverrideAsync(userId, "ManageBookings", dto.ManageBookings);
+        await permissionRepo.SetUserOverrideAsync(userId, "ManageCampuses", dto.ManageCampuses);
+        await permissionRepo.SetUserOverrideAsync(userId, "ManageRoles", dto.ManageRoles);
+
+        var updated = await permissionRepo.GetEffectivePermissionsAsync(userId);
+        if (updated is null) throw new Exception("Failed to retrieve updated permissions");
 
         logger.LogInformation("Permissions updated for user {UserId}", userId);
         return updated;
     }
 
     // Mapper: Entity → DTO
-    private static UserResponseDto MapToDto(User user, Permission? permissions)
+    private static UserResponseDto MapToDto(User user, UserPermissions? permissions)
     {
         return new UserResponseDto(
             user.Id,

@@ -35,18 +35,10 @@ public static class PermissionTemplateEndpoints
                 "/",
                 async (
                     List<PermissionTemplateDto> templates,
-                    PermissionTemplateService service,
-                    HttpContext ctx
+                    PermissionTemplateService service
                 ) =>
                 {
-                    var propagate =
-                        ctx.Request.Query.ContainsKey("propagate")
-                        && string.Equals(
-                            ctx.Request.Query["propagate"],
-                            "true",
-                            StringComparison.OrdinalIgnoreCase
-                        );
-                    var result = await service.UpdateAllAsync(templates, propagate);
+                    var result = await service.UpdateAllAsync(templates);
                     return Results.Ok(result);
                 }
             )
@@ -57,7 +49,6 @@ public static class PermissionTemplateEndpoints
             .WithDescription(
                 "Replaces the full set of named permission templates. "
                     + "The server will auto-sync with the DB columns before persisting.\n\n"
-                    + "Add `?propagate=true` to also update all users whose `template_id` matches a changed template.\n\n"
                     + "🔒 **Requires manageRoles permission**"
             )
             .Produces<List<PermissionTemplateDto>>(StatusCodes.Status200OK)

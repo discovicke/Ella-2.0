@@ -1,3 +1,4 @@
+using Backend.app.Core.Models;
 using Backend.app.Core.Models.Entities;
 
 namespace Backend.app.Core.Models.DTO;
@@ -27,14 +28,14 @@ public record AuthedUserResponseDto
     public long Id { get; set; }
     public required string Email { get; set; }
     public string? DisplayName { get; set; }
-    public Permission? Permissions { get; set; }
+    public UserPermissions? Permissions { get; set; }
     public bool IsBanned { get; set; }
 }
 
 public record TokenValidationResultDto
 {
     public User? User { get; init; }
-    public Permission? Permissions { get; init; }
+    public UserPermissions? Permissions { get; init; }
     public bool IsBanned { get; init; }
     public bool IsValid => User != null && !IsBanned;
 }

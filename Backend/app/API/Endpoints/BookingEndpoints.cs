@@ -1,4 +1,5 @@
-﻿using Backend.app.Core.Models.DTO;
+﻿using Backend.app.Core.Models;
+using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Models.ReadModels;
@@ -107,7 +108,7 @@ public static class BookingEndpoints
                 "/{id}",
                 async (long id, BookingStatus newStatus, HttpContext context, BookingService service) =>
                 {
-                    if (context.Items["UserId"] is not long userId || context.Items["Permissions"] is not Permission permissions)
+                    if (context.Items["UserId"] is not long userId || context.Items["Permissions"] is not UserPermissions permissions)
                     {
                         return Results.Unauthorized();
                     }

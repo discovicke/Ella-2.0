@@ -10,7 +10,7 @@ import {
 } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ConfirmService } from '../../../shared/services/confirm.service';
-import { BannedStatus, Permission, PermissionTemplateDto } from '../../../models/models';
+import { BannedStatus, UserPermissions, PermissionTemplateDto } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 export interface CustomPermissionsPayload {
@@ -319,7 +319,7 @@ export class UserFormModalComponent {
   protected initialData = this.config?.user;
   protected templateOptions: PermissionTemplateDto[] = this.config?.templateOptions ?? [];
   protected initialTemplateId: number | null = this.config?.initialTemplateId ?? null;
-  protected initialPermissions: Permission | undefined = this.config?.initialPermissions;
+  protected initialPermissions: UserPermissions | undefined = this.config?.initialPermissions;
 
   protected readonly permissionOptions: Array<{
     key: keyof CustomPermissionsPayload;

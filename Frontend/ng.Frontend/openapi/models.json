@@ -512,7 +512,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Permission2"
+                  "$ref": "#/components/schemas/UserPermissions2"
                 }
               }
             }
@@ -580,7 +580,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Permission2"
+                  "$ref": "#/components/schemas/UserPermissions2"
                 }
               }
             }
@@ -1361,7 +1361,7 @@
           "Permission Templates"
         ],
         "summary": "Replace all permission templates",
-        "description": "Replaces the full set of named permission templates. The server will auto-sync with the DB columns before persisting.\n\nAdd `?propagate=true` to also update all users whose `template_id` matches a changed template.\n\n🔒 **Requires manageRoles permission**",
+        "description": "Replaces the full set of named permission templates. The server will auto-sync with the DB columns before persisting.\n\n🔒 **Requires manageRoles permission**",
         "operationId": "UpdatePermissionTemplates",
         "requestBody": {
           "content": {
@@ -1436,7 +1436,7 @@
             "nullable": true
           },
           "permissions": {
-            "$ref": "#/components/schemas/Permission"
+            "$ref": "#/components/schemas/UserPermissions"
           },
           "isBanned": {
             "type": "boolean"
@@ -1671,89 +1671,6 @@
           }
         }
       },
-      "Permission": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "templateId": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          },
-          "bookRoom": {
-            "type": "boolean"
-          },
-          "myBookings": {
-            "type": "boolean"
-          },
-          "manageUsers": {
-            "type": "boolean"
-          },
-          "manageClasses": {
-            "type": "boolean"
-          },
-          "manageRooms": {
-            "type": "boolean"
-          },
-          "manageAssets": {
-            "type": "boolean"
-          },
-          "manageBookings": {
-            "type": "boolean"
-          },
-          "manageCampuses": {
-            "type": "boolean"
-          },
-          "manageRoles": {
-            "type": "boolean"
-          }
-        },
-        "nullable": true
-      },
-      "Permission2": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "templateId": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          },
-          "bookRoom": {
-            "type": "boolean"
-          },
-          "myBookings": {
-            "type": "boolean"
-          },
-          "manageUsers": {
-            "type": "boolean"
-          },
-          "manageClasses": {
-            "type": "boolean"
-          },
-          "manageRooms": {
-            "type": "boolean"
-          },
-          "manageAssets": {
-            "type": "boolean"
-          },
-          "manageBookings": {
-            "type": "boolean"
-          },
-          "manageCampuses": {
-            "type": "boolean"
-          },
-          "manageRoles": {
-            "type": "boolean"
-          }
-        }
-      },
       "PermissionTemplateDto": {
         "type": "object",
         "properties": {
@@ -1761,6 +1678,9 @@
             "type": "integer",
             "format": "int64",
             "nullable": true
+          },
+          "name": {
+            "type": "string"
           },
           "label": {
             "type": "string"
@@ -2033,6 +1953,89 @@
           }
         }
       },
+      "UserPermissions": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "templateId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "bookRoom": {
+            "type": "boolean"
+          },
+          "myBookings": {
+            "type": "boolean"
+          },
+          "manageUsers": {
+            "type": "boolean"
+          },
+          "manageClasses": {
+            "type": "boolean"
+          },
+          "manageRooms": {
+            "type": "boolean"
+          },
+          "manageAssets": {
+            "type": "boolean"
+          },
+          "manageBookings": {
+            "type": "boolean"
+          },
+          "manageCampuses": {
+            "type": "boolean"
+          },
+          "manageRoles": {
+            "type": "boolean"
+          }
+        },
+        "nullable": true
+      },
+      "UserPermissions2": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "templateId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "bookRoom": {
+            "type": "boolean"
+          },
+          "myBookings": {
+            "type": "boolean"
+          },
+          "manageUsers": {
+            "type": "boolean"
+          },
+          "manageClasses": {
+            "type": "boolean"
+          },
+          "manageRooms": {
+            "type": "boolean"
+          },
+          "manageAssets": {
+            "type": "boolean"
+          },
+          "manageBookings": {
+            "type": "boolean"
+          },
+          "manageCampuses": {
+            "type": "boolean"
+          },
+          "manageRoles": {
+            "type": "boolean"
+          }
+        }
+      },
       "UserResponseDto": {
         "required": [
           "id",
@@ -2058,7 +2061,7 @@
             "$ref": "#/components/schemas/BannedStatus"
           },
           "permissions": {
-            "$ref": "#/components/schemas/Permission"
+            "$ref": "#/components/schemas/UserPermissions"
           }
         }
       }

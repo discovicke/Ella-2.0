@@ -17,7 +17,7 @@ import { UserService } from '../../../shared/services/user.service';
 import {
   BannedStatus,
   CreateUserDto,
-  Permission,
+  UserPermissions,
   PermissionTemplateDto,
   UpdateUserDto,
   UserResponseDto,
@@ -231,7 +231,7 @@ export class ManageUsersPage implements OnInit {
   private async handleSave(
     payload: UserFormPayload,
     userId?: number,
-    existingPermissions?: Permission,
+    existingPermissions?: UserPermissions,
   ) {
     try {
       const selectedTemplateId = payload.selectedTemplateId ?? null;
@@ -284,7 +284,7 @@ export class ManageUsersPage implements OnInit {
     userId: number,
     selectedTemplateId: number | null,
     customPermissions: CustomPermissionsPayload,
-    existingPermissions?: Permission,
+    existingPermissions?: UserPermissions,
   ) {
     if (selectedTemplateId && selectedTemplateId > 0) {
       await firstValueFrom(this.userService.applyTemplate(userId, selectedTemplateId));
@@ -311,7 +311,7 @@ export class ManageUsersPage implements OnInit {
   }
 
   private permissionsChanged(
-    existingPermissions: Permission | undefined,
+    existingPermissions: UserPermissions | undefined,
     next: CustomPermissionsPayload,
   ): boolean {
     if (!existingPermissions) return true;

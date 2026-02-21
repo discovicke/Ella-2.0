@@ -4,7 +4,6 @@ namespace Backend.app.Core.Models.DTO;
 
 /// <summary>
 /// Represents a named permission template (e.g. "Student", "Admin").
-/// Stored in permission-templates.json and served via API.
 /// </summary>
 public class PermissionTemplateDto
 {
@@ -15,6 +14,15 @@ public class PermissionTemplateDto
     [JsonPropertyName("id")]
     public long? Id { get; set; }
 
+    /// <summary>
+    /// Unique internal name (slug). e.g. "admin", "student".
+    /// </summary>
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Display name. e.g. "Administrator".
+    /// </summary>
     [JsonPropertyName("label")]
     public string Label { get; set; } = string.Empty;
 
@@ -23,7 +31,7 @@ public class PermissionTemplateDto
 
     /// <summary>
     /// Dictionary of permission_name → true/false.
-    /// Keys use snake_case matching the DB column names (e.g. "book_room").
+    /// Keys should match system_permissions(key).
     /// </summary>
     [JsonPropertyName("permissions")]
     public Dictionary<string, bool> Permissions { get; set; } = new();

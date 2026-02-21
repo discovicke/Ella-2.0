@@ -63,38 +63,29 @@ export class ManageRolesPage implements OnInit {
   ];
 
   private readonly permissionLabelMap: Record<string, string> = {
-    book_room: 'Boka rum',
-    my_bookings: 'Mina bokningar',
-    manage_users: 'Hantera användare',
-    manage_classes: 'Hantera klasser',
-    manage_rooms: 'Hantera rum',
-    manage_assets: 'Hantera tillgångar',
-    manage_bookings: 'Hantera bokningar',
-    manage_campuses: 'Hantera campus',
-    manage_roles: 'Hantera roller',
+    BookRoom: 'Boka rum',
+    MyBookings: 'Mina bokningar',
+    ManageUsers: 'Hantera användare',
+    ManageClasses: 'Hantera klasser',
+    ManageRooms: 'Hantera rum',
+    ManageAssets: 'Hantera tillgångar',
+    ManageBookings: 'Hantera bokningar',
+    ManageCampuses: 'Hantera campus',
+    ManageRoles: 'Hantera roller',
   };
 
-  /** All unique permission keys across templates (sorted). */
+  /** All unique permission keys (static definition). */
   permissionKeys = computed(() => {
-    const keys = new Set<string>();
-    for (const tpl of this.templates()) {
-      if (tpl.permissions) {
-        Object.keys(tpl.permissions).forEach((k) => keys.add(k));
-      }
-    }
-    return [...keys].sort();
+    return Object.keys(this.permissionLabelMap);
   });
 
-  /** Formats snake_case keys to human-readable labels. */
+  /** Formats PascalCase keys to human-readable labels. */
   formatKey(key: string): string {
     if (this.permissionLabelMap[key]) {
       return this.permissionLabelMap[key];
     }
-
-    return key
-      .split('_')
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ');
+    // Fallback: split PascalCase
+    return key.replace(/([A-Z])/g, ' $1').trim();
   }
 
   hasChanges = signal(false);
@@ -108,13 +99,23 @@ export class ManageRolesPage implements OnInit {
     try {
       const data = await firstValueFrom(this.templateService.getAll());
       this.templates.set(
-        data.map((t) => ({
-          uid: nextUid++,
-          id: t.id,
-          label: t.label ?? '',
-          cssClass: this.normalizeCssClass(t.cssClass),
-          permissions: { ...(t.permissions ?? {}) },
-        })),
+        data.map((t) => {
+          const perms = { ...(t.permissions ?? {}) };
+          // Backfill missing keys as false
+          this.permissionKeys().forEach((key) => {
+            if (!(key in perms)) {
+              perms[key] = false;
+            }
+          });
+
+          return {
+            uid: nextUid++,
+            id: t.id,
+            label: t.label ?? '',
+            cssClass: this.normalizeCssClass(t.cssClass),
+            permissions: perms,
+          };
+        }),
       );
       this.hasChanges.set(false);
     } catch {
@@ -192,25 +193,24 @@ export class ManageRolesPage implements OnInit {
 
     this.saving.set(true);
     try {
-      const dtos: PermissionTemplateDto[] = templates.map((t) => ({
-        id: t.id,
-        label: t.label.trim(),
-        cssClass: t.cssClass.trim(),
-        permissions: { ...t.permissions },
-      }));
+      const dtos: PermissionTemplateDto[] = templates.map((t) => {
+        // Ensure payload has all keys
+        const permissions: Record<string, boolean> = {};
+        this.permissionKeys().forEach((key) => {
+          permissions[key] = t.permissions[key] ?? false;
+        });
 
-      const propagate = await this.confirmService.show(
-        'Ska uppdaterade rollbehörigheter även gälla för användare som redan har de här rollerna?',
-        {
-          title: 'Tillämpa på befintliga användare?',
-          confirmText: 'Ja, uppdatera användare',
-          cancelText: 'Nej, spara bara mallar',
-          icon: 'question',
-          dangerConfirm: false,
-        },
-      );
+        return {
+          id: t.id,
+          label: t.label.trim(),
+          cssClass: t.cssClass.trim(),
+          permissions: permissions,
+        };
+      });
 
-      const result = await firstValueFrom(this.templateService.updateAll(dtos, propagate));
+      // In the new architecture, updates are always global.
+      // Propagation is automatic via database view.
+      const result = await firstValueFrom(this.templateService.updateAll(dtos));
 
       // Update local state with server response
       this.templates.set(

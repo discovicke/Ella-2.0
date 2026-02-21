@@ -1,5 +1,5 @@
 import { signal } from '@angular/core';
-import { Permission, PermissionTemplateDto } from '../models/models';
+import { UserPermissions, PermissionTemplateDto } from '../models/models';
 
 // ---------------------------------------------------------------
 // Public types
@@ -39,7 +39,7 @@ export async function initPermissionTemplates(): Promise<void> {
  * Uses template_id for fast lookup when available; falls back to flag matching.
  * Returns 'Custom' if the permissions don't match any template.
  */
-export function resolveRoleLabel(permissions: Permission | undefined | null): string {
+export function resolveRoleLabel(permissions: UserPermissions | undefined | null): string {
   if (!permissions) return 'Student'; // sensible default
 
   // Fast path: use stored template_id
@@ -62,7 +62,7 @@ export function resolveRoleLabel(permissions: Permission | undefined | null): st
  * Resolves a Permission object to the CSS class for badge styling.
  * Uses template_id for fast lookup when available; falls back to flag matching.
  */
-export function resolveRoleCssClass(permissions: Permission | undefined | null): string {
+export function resolveRoleCssClass(permissions: UserPermissions | undefined | null): string {
   if (!permissions) return 'student';
 
   // Fast path: use stored template_id
@@ -100,20 +100,20 @@ export function getTemplateLabels(): string[] {
  * from the API by coercing to boolean before comparison.
  */
 function permissionsMatch(
-  actual: NonNullable<Permission>,
+  actual: NonNullable<UserPermissions>,
   expected: Record<string, boolean>,
 ): boolean {
-  // Build a camelCase → value map from the actual Permission object
+  // Build a PascalCase → value map from the actual Permission object (matching DB keys)
   const actualMap: Record<string, boolean> = {
-    book_room: !!actual.bookRoom,
-    my_bookings: !!actual.myBookings,
-    manage_users: !!actual.manageUsers,
-    manage_classes: !!actual.manageClasses,
-    manage_rooms: !!actual.manageRooms,
-    manage_assets: !!actual.manageAssets,
-    manage_bookings: !!actual.manageBookings,
-    manage_campuses: !!actual.manageCampuses,
-    manage_roles: !!actual.manageRoles,
+    BookRoom: !!actual.bookRoom,
+    MyBookings: !!actual.myBookings,
+    ManageUsers: !!actual.manageUsers,
+    ManageClasses: !!actual.manageClasses,
+    ManageRooms: !!actual.manageRooms,
+    ManageAssets: !!actual.manageAssets,
+    ManageBookings: !!actual.manageBookings,
+    ManageCampuses: !!actual.manageCampuses,
+    ManageRoles: !!actual.manageRoles,
   };
 
   // Check every key in the template

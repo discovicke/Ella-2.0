@@ -1,3 +1,4 @@
+using Backend.app.Core.Models;
 using Backend.app.Core.Models.Entities;
 
 namespace Backend.app.Infrastructure.Auth;
@@ -56,9 +57,9 @@ public static class AuthorizationMiddleware
                 );
             }
 
-            var permissions = httpContext.Items["Permissions"] as Permission;
+            var permissions = httpContext.Items["Permissions"] as UserPermissions;
 
-            if (permissions is null || !HasPermission(permissions, permissionName))
+            if (permissions is null || !permissions.HasPermission(permissionName))
             {
                 var logger = httpContext.RequestServices.GetRequiredService<ILogger<Program>>();
                 logger.LogWarning(
@@ -81,20 +82,6 @@ public static class AuthorizationMiddleware
         };
     }
 
-    private static bool HasPermission(Permission p, string permissionName) =>
-        permissionName switch
-        {
-            "BookRoom" => p.BookRoom,
-            "MyBookings" => p.MyBookings,
-            "ManageUsers" => p.ManageUsers,
-            "ManageClasses" => p.ManageClasses,
-            "ManageRooms" => p.ManageRooms,
-            "ManageAssets" => p.ManageAssets,
-            "ManageBookings" => p.ManageBookings,
-            "ManageCampuses" => p.ManageCampuses,
-            "ManageRoles" => p.ManageRoles,
-            _ => false,
-        };
 }
 
 /// <summary>
