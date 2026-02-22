@@ -16,6 +16,9 @@
 - [ ] Lägg till en manage campuses i adminpanelen
   - CRUD för campus
   - Koppla campus till rum
+- [ ] Lägg till Permission_level logik. Samt all logik kring "overwriting" om typ en admin vill boka över en students redan bokade tid etc.
+- [ ] Diskutera och planera hur vi ska få "implicit bookings" vs "personal bookings" att fungera. Dvs. typ bookings som en lärare bjuder in en student till, eller som en admin bjuder in en lärare till, eller som en student bjuder in andra studenter till etc vs bara vanliga personliga bokningar.
+
 
 ### Arkitektur & struktur
 

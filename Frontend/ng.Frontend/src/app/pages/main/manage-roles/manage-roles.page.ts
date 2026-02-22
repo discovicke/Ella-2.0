@@ -99,23 +99,25 @@ export class ManageRolesPage implements OnInit {
     try {
       const data = await firstValueFrom(this.templateService.getAll());
       this.templates.set(
-        data.map((t) => {
-          const perms = { ...(t.permissions ?? {}) };
-          // Backfill missing keys as false
-          this.permissionKeys().forEach((key) => {
-            if (!(key in perms)) {
-              perms[key] = false;
-            }
-          });
+        data
+          .map((t) => {
+            const perms = { ...(t.permissions ?? {}) };
+            // Backfill missing keys as false
+            this.permissionKeys().forEach((key) => {
+              if (!(key in perms)) {
+                perms[key] = false;
+              }
+            });
 
-          return {
-            uid: nextUid++,
-            id: t.id,
-            label: t.label ?? '',
-            cssClass: this.normalizeCssClass(t.cssClass),
-            permissions: perms,
-          };
-        }),
+            return {
+              uid: nextUid++,
+              id: t.id,
+              label: t.label ?? '',
+              cssClass: this.normalizeCssClass(t.cssClass),
+              permissions: perms,
+            };
+          })
+          .sort((a, b) => b.uid - a.uid),
       );
       this.hasChanges.set(false);
     } catch {
@@ -166,6 +168,26 @@ export class ManageRolesPage implements OnInit {
 
   removeTemplate(index: number) {
     this.templates.update((list) => list.filter((_, i) => i !== index));
+    this.hasChanges.set(true);
+  }
+
+  moveUp(index: number) {
+    if (index <= 0) return;
+    this.templates.update((list) => {
+      const copy = [...list];
+      [copy[index - 1], copy[index]] = [copy[index], copy[index - 1]];
+      return copy;
+    });
+    this.hasChanges.set(true);
+  }
+
+  moveDown(index: number) {
+    this.templates.update((list) => {
+      if (index >= list.length - 1) return list;
+      const copy = [...list];
+      [copy[index], copy[index + 1]] = [copy[index + 1], copy[index]];
+      return copy;
+    });
     this.hasChanges.set(true);
   }
 
@@ -232,8 +254,7 @@ export class ManageRolesPage implements OnInit {
     } catch (err: any) {
       console.error('Failed to save roles', err);
       // Backend returns 409 Conflict with ProblemDetails
-      let errorMsg =
-        err?.error?.detail || err?.error?.title || 'Kunde inte spara roller.';
+      let errorMsg = err?.error?.detail || err?.error?.title || 'Kunde inte spara roller.';
 
       if (errorMsg.includes('Cannot delete roles because')) {
         // Parse the number of users from the string: "...because 5 user(s)..."

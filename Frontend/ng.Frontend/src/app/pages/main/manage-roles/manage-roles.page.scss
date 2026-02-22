@@ -160,8 +160,14 @@
   }
 }
 
-.btn-remove {
+.card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   flex-shrink: 0;
+}
+
+.btn-icon {
   width: 36px;
   height: 36px;
   border: none;
@@ -181,7 +187,17 @@
     height: 18px;
   }
 
-  &:hover {
+  &:hover:not(:disabled) {
+    background: var(--color-bg-panel);
+    color: var(--color-primary);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  &.remove:hover {
     background: var(--color-danger-surface, #fde8e8);
     color: var(--color-danger, #e53e3e);
   }
