@@ -99,25 +99,23 @@ export class ManageRolesPage implements OnInit {
     try {
       const data = await firstValueFrom(this.templateService.getAll());
       this.templates.set(
-        data
-          .map((t) => {
-            const perms = { ...(t.permissions ?? {}) };
-            // Backfill missing keys as false
-            this.permissionKeys().forEach((key) => {
-              if (!(key in perms)) {
-                perms[key] = false;
-              }
-            });
+        data.map((t) => {
+          const perms = { ...(t.permissions ?? {}) };
+          // Backfill missing keys as false
+          this.permissionKeys().forEach((key) => {
+            if (!(key in perms)) {
+              perms[key] = false;
+            }
+          });
 
-            return {
-              uid: nextUid++,
-              id: t.id,
-              label: t.label ?? '',
-              cssClass: this.normalizeCssClass(t.cssClass),
-              permissions: perms,
-            };
-          })
-          .sort((a, b) => b.uid - a.uid),
+          return {
+            uid: nextUid++,
+            id: t.id,
+            label: t.label ?? '',
+            cssClass: this.normalizeCssClass(t.cssClass),
+            permissions: perms,
+          };
+        }),
       );
       this.hasChanges.set(false);
     } catch {
