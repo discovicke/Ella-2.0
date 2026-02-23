@@ -2,7 +2,7 @@
 using Backend.app.Core.Models.Entities;
 using Dapper;
 
-namespace Backend.app.Infrastructure.Repositories.Sqlite;
+namespace Backend.app.Infrastructure.Repositories.Postgres;
 
 public class PostgresAssetRepo(IDbConnectionFactory connectionFactory, ILogger<PostgresAssetRepo> logger)
     : IAssetRepository
@@ -43,7 +43,11 @@ public class PostgresAssetRepo(IDbConnectionFactory connectionFactory, ILogger<P
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            const string sql = "INSERT INTO asset_types (description) VALUES (@Description); SELECT last_insert_rowid();";
+            const string sql = """
+                INSERT INTO asset_types (description)
+                VALUES (@Description)
+                RETURNING id;
+                """;
             return await conn.ExecuteScalarAsync<long>(sql, assetType);
         }
         catch (Exception ex)
@@ -96,7 +100,10 @@ public class PostgresAssetRepo(IDbConnectionFactory connectionFactory, ILogger<P
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            return await conn.ExecuteScalarAsync<bool>("SELECT 1 FROM asset_types WHERE id = @id;", new { id });
+
+            const string sql = "SELECT EXISTS (SELECT 1 FROM asset_types WHERE id = @id);";
+            return await conn.ExecuteScalarAsync<bool>(sql, new { id });
+        
         }
         catch (Exception ex)
         {
