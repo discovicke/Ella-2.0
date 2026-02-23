@@ -1,4 +1,4 @@
-<img alt="image" src="../images/ELLA2-permissions-based-managment-v3.png" />
+<img alt="image" src="../images/ELLA2-permissions-based-managment-v5.png" />
 
 Link to diagram: [www.drawdb.app](https://www.drawdb.app/editor?shareId=72fdc3d4c7d38eea84083467078929c3)
 

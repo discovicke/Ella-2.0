@@ -44,20 +44,26 @@ CREATE TABLE IF NOT EXISTS "asset_types" (
     PRIMARY KEY("id")
 );
 
-CREATE TABLE IF NOT EXISTS "rooms" (
-    "id" INTEGER NOT NULL,
-    "campus_id" INTEGER NOT NULL,
-    "name" TEXT NOT NULL,
-    "capacity" INTEGER,
-    "type" INTEGER NOT NULL,
-    "floor" TEXT,
-    "notes" TEXT,
-    PRIMARY KEY("id"),
-    FOREIGN KEY ("campus_id") REFERENCES "campus"("id")
-    ON UPDATE NO ACTION ON DELETE NO ACTION
+CREATE TABLE IF NOT EXISTS "room_types" (
+	"id" INTEGER NOT NULL UNIQUE,
+	"value" TEXT NOT NULL,
+	PRIMARY KEY("id"),
+	FOREIGN KEY ("id") REFERENCES "rooms"("room_type_id")
+	ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
--- REPLACED: permissions table with new RBAC tables
+CREATE TABLE IF NOT EXISTS "rooms" (
+	"campus_id" INTEGER NOT NULL,
+	"id" INTEGER NOT NULL,
+	"name" TEXT NOT NULL,
+	"capacity" INTEGER,
+	"room_type_id" INTEGER NOT NULL,
+	"floor" TEXT,
+	"notes" TEXT,
+	PRIMARY KEY("id"),
+	FOREIGN KEY ("campus_id") REFERENCES "campus"("id")
+	ON UPDATE NO ACTION ON DELETE NO ACTION
+);
 
 -- 1. System Permissions Registry
 CREATE TABLE IF NOT EXISTS system_permissions (
