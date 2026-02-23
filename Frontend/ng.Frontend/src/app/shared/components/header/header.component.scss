@@ -1,0 +1,113 @@
+@use 'styles/mixins' as *;
+@use 'sass:map';
+@use 'styles/variables' as *;
+
+/* --- HEADER --- */
+.top-header {
+    --header-height: 64px;
+    height: var(--header-height);
+    display: flex;
+    flex: 0 0 auto;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--color-bg-panel);
+    border-bottom: 1px solid var(--color-border);
+    padding: 10px map.get($spacing, '4');
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: all var(--transition-base);
+
+    @include breakpoint-down('md') {
+        --header-height: 48px;
+        padding: 5px map.get($spacing, '4');
+    }
+}
+
+.logo-group {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, '2');
+}
+
+.menu-button {
+    display: none; // Hidden by default on desktop
+    background: none;
+    border: none;
+    padding: map.get($spacing, '2');
+    cursor: pointer;
+    color: var(--color-text-primary);
+    border-radius: var(--radius-md);
+
+    &:hover {
+        background-color: var(--color-bg-body);
+    }
+
+    .menu-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    @include breakpoint-down('md') {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+.top-logo {
+  height: 2.5rem;
+
+  @include breakpoint-down('md') {
+      display: none;
+  }
+}
+
+.user-actions {
+  display: flex;
+  gap: 12px;
+
+  @include breakpoint-down('md') {
+      display: none;
+  }
+}
+
+.user-box {
+    font-family: "Nunito Sans", sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--color-bg-card);
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.user-label {
+    font-weight: 700;
+    color: var(--color-text-primary);
+    font-size: var(--font-sm);
+}
+
+.user-role {
+  font-size: var(--font-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &.admin { color: var(--color-danger); }
+  &.educator { color: var(--color-primary); }
+  &.student { color: var(--color-success); }
+}
+
+.user-icon {
+  font-size: 1.25rem;
+}
+

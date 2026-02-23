@@ -1,0 +1,245 @@
+@use "sass:map";
+@use 'styles/mixins' as *;
+@use 'styles/variables' as *;
+
+/* LOGIN PAGE LAYOUT */
+:host {
+  @include flex-center;
+  @include gap('10');
+  padding: map.get($spacing, '4');
+  min-height: calc(100dvh - 120px); /* plats för header */
+  background: var(--color-bg-body);
+  font-family: var(--font-family);
+}
+
+/* Hidden H1 */
+.visually-hidden {
+  @include visually-hidden;
+}
+
+/* Vänster och höger sida */
+.form-side,
+.art-side {
+  flex: 1;
+  @include flex-center;
+}
+
+/* Inloggningsrutan */
+.form-content {
+  @include flex-column;
+  @include gap('5');
+  max-width: 380px;
+  width: 100%;
+  padding: map.get($spacing, '8');
+  border-radius: map.get($radii, 'xl');
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  @include shadow('sm');
+
+  opacity: 0;
+  animation: fadeUp 0.6s map.get($easings, 'smooth') forwards;
+
+  > *:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+
+  > *:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  form {
+    opacity: 0;
+    animation: fadeUp 0.6s map.get($easings, 'smooth') 0.3s forwards;
+  }
+
+  input::placeholder {
+    font-size: var(--font-sm);
+    color: var(--color-text-muted);
+  }
+
+  h2 {
+    @include heading(2);
+    margin: 0;
+  }
+
+  p {
+    font-family: var(--font-family);
+    font-size: var(--font-base);
+    line-height: var(--leading-normal);
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  form {
+    @include stack(map.get($spacing, '6'));
+    margin-top: map.get($spacing, '5');
+  }
+
+  form div {
+    @include flex-column;
+    @include gap('2');
+  }
+
+}
+
+label {
+  font-family: var(--font-family);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+input {
+  font-family: var(--font-family);
+  padding: map.get($spacing, '3') map.get($spacing, '3');
+  border: 1px solid var(--color-border);
+  border-radius: map.get($radii, 'md');
+  font-size: var(--font-base);
+  line-height: var(--leading-normal);
+  color: var(--color-text-primary);
+}
+
+.inputGroup {
+  position: relative;
+
+  input {
+    @include input-base;
+    padding: map.get($spacing, '3');
+    background: transparent;
+
+    &:focus {
+      border-color: var(--color-primary);
+      box-shadow: var(--focus-ring);
+    }
+  }
+}
+
+.labelline {
+  position: absolute;
+  left: map.get($spacing, '3');
+  top: map.get($spacing, '3');
+  transform-origin: left top;
+  transform: translateY(0) scale(1);
+  @include transition(all, 'slow', 'smooth');
+  pointer-events: none;
+  z-index: 2;
+  background-color: var(--color-bg-card);
+  padding: 0 map.get($spacing, '1');
+  color: var(--color-text-muted);
+  user-select: none;
+  font-size: var(--font-base);
+}
+
+.inputGroup input:focus + .labelline,
+.inputGroup input:not(:placeholder-shown) + .labelline {
+  transform: translateY(-26px) scale(.88);
+  color: var(--color-primary);
+}
+
+.inputGroup input:not(:placeholder-shown):not(:focus) + .labelline {
+  transform: translateY(-26px) scale(.88);
+  color: var(--color-text-muted);
+}
+
+.form-content button {
+  @include button-primary;
+  padding: map.get($spacing, '4');
+  margin-top: map.get($spacing, '3');
+  overflow: hidden;
+  user-select: none;
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 10px 15px -3px rgba(145, 54, 203, 0.3);
+    transform: translateY(-2px);
+  }
+
+  &:focus {
+    outline-color: var(--color-primary-active);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+}
+
+@keyframes shake-error {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-8px);
+  }
+  40% {
+    transform: translateX(8px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+.inputGroup.error {
+  animation: shake-error 0.4s map.get($easings, 'bounce') both;
+}
+
+.inputGroup.error input {
+  border-color: var(--color-danger) !important;
+  color: var(--color-danger);
+}
+
+.inputGroup.error .labelline {
+  color: var(--color-danger) !important;
+}
+
+.inputGroup.error .password-toggle {
+  color: var(--color-danger);
+}
+
+.error-text {
+  font-family: var(--font-family);
+  display: none;
+  color: var(--color-danger);
+  font-size: var(--font-xs);
+  line-height: var(--leading-normal);
+  margin-top: map.get($spacing, '1');
+  margin-left: map.get($spacing, '1');
+  font-weight: 500;
+}
+
+.inputGroup.error .error-text {
+  display: block;
+}
+
+/* Höger sida – stor logga */
+.art-side img {
+  max-width: 80%;
+  height: auto;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* MOBIL: Visa bara login-rutan */
+@include breakpoint-down('md') {
+  .art-side {
+    display: none;
+  }
+
+  .login-layout {
+    flex-direction: column;
+    gap: map.get($spacing, '5');
+    min-height: auto; /* undvik scroll */
+  }
+}
+
+

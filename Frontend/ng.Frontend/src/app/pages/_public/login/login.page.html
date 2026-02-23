@@ -1,0 +1,64 @@
+
+<!-- LOGIN-LAYOUT -->
+<h1 class="visually-hidden">Logga in till ELLA</h1>
+
+<!-- Vänster sida – formulär -->
+<section class="form-side">
+  <div class="form-content">
+    <h2>Välkommen till ELLA</h2>
+    <p>Logga in för att börja boka</p>
+
+    <form class="form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <!-- Email Input Group -->
+      <div
+        class="inputGroup"
+        [class.error]="hasLoginError() || (loginForm.controls.email.invalid && loginForm.controls.email.touched)">
+
+        <label for="username" class="visually-hidden">E-postadress</label>
+        <input
+          id="username"
+          type="email"
+          formControlName="email"
+          required
+          placeholder=" "
+          autocomplete="email"
+        />
+        <div class="labelline">E-postadress</div>
+
+        @if (loginForm.controls.email.invalid && loginForm.controls.email.touched) {
+          <!-- Optional validation msg text if needed -->
+        }
+      </div>
+
+      <!-- Password Input Group -->
+      <div
+        class="inputGroup"
+        [class.error]="hasLoginError() || (loginForm.controls.password.invalid && loginForm.controls.password.touched)">
+
+        <label for="password" class="visually-hidden">Lösenord</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          required
+          placeholder=" "
+          autocomplete="current-password"
+        />
+        <div class="labelline">Lösenord</div>
+      </div>
+
+      <app-button
+        type="submit"
+        variant="primary"
+        [disabled]="isSubmitting()"
+        style="width: 100%; margin-top: 1rem;">
+        {{ isSubmitting() ? 'Loggar in...' : 'Logga in' }}
+      </app-button>
+    </form>
+  </div>
+</section>
+
+<!-- Höger sida – dekorativ yta -->
+<aside class="art-side">
+  <img src="assets/ELLA-logo.png" alt="" aria-hidden="true" />
+</aside>

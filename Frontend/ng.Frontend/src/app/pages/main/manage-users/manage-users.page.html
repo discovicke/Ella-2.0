@@ -1,0 +1,161 @@
+<div class="manage-users-container">
+  <!-- Filter Panel -->
+  <div class="filter-panel" [class.collapsed]="!filtersOpen()">
+    <div class="filter-header" (click)="toggleFilters()">
+      <div class="header-left">
+        <svg
+          class="header-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+        </svg>
+        <h2>Sök &amp; Filtrera</h2>
+      </div>
+      <div class="header-right" (click)="$event.stopPropagation()">
+        @if (hasActiveFilters()) {
+          <span class="result-count"
+            >Visar {{ totalUsers() }} av {{ totalAllUsers() }} användare</span
+          >
+          <button class="btn-reset" (click)="resetFilters()" title="Rensa alla filter">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+            </svg>
+            Rensa
+          </button>
+        }
+        <app-button class="create-btn-desktop" variant="primary" (clicked)="openAddUserModal()">
+          + Skapa användare
+        </app-button>
+      </div>
+    </div>
+
+    <div class="filter-body">
+      <div class="search-field">
+        <label class="filter-label">Sök</label>
+        <div class="search-input">
+          <svg
+            class="field-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Sök på namn eller e-post..."
+            (input)="updateSearch($event)"
+            [value]="searchQuery()"
+          />
+        </div>
+      </div>
+
+      <div class="filters-group">
+        <div class="filter-item">
+          <label class="filter-label">Roll</label>
+          <select (change)="updateRole($event)" [value]="selectedRole()">
+            <option value="All">Alla roller</option>
+            @for (role of roleLabels(); track role) {
+              <option [value]="role">{{ role }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label class="filter-label">Status</label>
+          <select (change)="updateStatus($event)" [value]="selectedStatus()">
+            <option value="All">Alla</option>
+            <option value="NotBanned">Aktiv</option>
+            <option value="Banned">Bannlyst</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile FAB -->
+  <button class="fab-create" (click)="openAddUserModal()" title="Skapa användare">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+    >
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  </button>
+
+  <div class="users-content">
+    <app-table
+      [data]="paginatedUsers()"
+      [columns]="columns"
+      [isLoading]="userResource.isLoading()"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      [total]="totalUsers()"
+      [autoSize]="true"
+      (pageChange)="handlePageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+      (rowClicked)="openEditUserModal($event)"
+      emptyMessage="Inga användare hittades."
+    >
+    </app-table>
+
+    <!-- Templates for custom cells -->
+
+    <!-- Avatar Template -->
+    <ng-template #avatarTpl let-user>
+      <div class="avatar-circle">
+        {{ getInitials(user.displayName) }}
+      </div>
+    </ng-template>
+
+    <!-- Role Template -->
+    <ng-template #roleTpl let-user>
+      <span class="user-role-badge" [ngClass]="resolveRoleCssClass(user.permissions)">
+        {{ resolveRoleLabel(user.permissions) }}
+      </span>
+    </ng-template>
+
+    <!-- Status Template -->
+    <ng-template #statusTpl let-user>
+      <div
+        class="status-indicator"
+        [class.banned]="user.isBanned === 'Banned'"
+        [class.active]="user.isBanned !== 'Banned'"
+      >
+        <span class="status-dot"></span>
+        <span class="status-text">{{ user.isBanned === 'Banned' ? 'Bannlyst' : 'Aktiv' }}</span>
+      </div>
+    </ng-template>
+
+    <!-- Actions Template -->
+    <ng-template #actionsTpl let-user>
+      <button
+        class="row-action-btn"
+        (click)="openEditUserModal(user, $event)"
+        title="Redigera användare"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+        </svg>
+      </button>
+    </ng-template>
+  </div>
+</div>

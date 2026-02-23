@@ -1,0 +1,262 @@
+// =============================================
+// 🎨 DESIGN TOKENS & CSS CUSTOM PROPERTIES
+// =============================================
+// Centralized design system variables.
+// Use CSS custom properties for runtime theming.
+// Use SCSS variables for compile-time utilities.
+
+@use 'sass:map';
+
+// ---------------------------------------------
+// Typography Scale (Modular Scale 1.25)
+// ---------------------------------------------
+$font-sizes: (
+  'xs': 0.75rem,
+  // 12px
+  'sm': 0.875rem,
+  // 14px
+  'base': 1.125rem,
+  // 18px
+  'md': 1.25rem,
+  // 20px
+  'lg': 1.5rem,
+  // 24px
+  'xl': 1.875rem,
+  // 30px
+  '2xl': 2.25rem,
+  // 36px
+  '3xl': 3rem, // 48px
+);
+
+$line-heights: (
+  'tight': 1.2,
+  'snug': 1.375,
+  'normal': 1.6,
+  'relaxed': 1.75,
+);
+
+// ---------------------------------------------
+// Spacing Scale (8px base)
+// ---------------------------------------------
+$spacing: (
+  '0': 0,
+  '1': 0.25rem,
+  // 4px
+  '2': 0.5rem,
+  // 8px
+  '3': 0.75rem,
+  // 12px
+  '4': 1rem,
+  // 16px
+  '5': 1.25rem,
+  // 20px
+  '6': 1.5rem,
+  // 24px
+  '8': 2rem,
+  // 32px
+  '10': 2.5rem,
+  // 40px
+  '12': 3rem,
+  // 48px
+  '16': 4rem, // 64px
+);
+
+// ---------------------------------------------
+// Border Radius
+// ---------------------------------------------
+$radii: (
+  'none': 0,
+  'sm': 0.25rem,
+  'md': 0.5rem,
+  'lg': 0.75rem,
+  'xl': 1rem,
+  'full': 9999px,
+);
+
+// ---------------------------------------------
+// Shadows
+// ---------------------------------------------
+$shadows: (
+  'sm': 0 1px 2px 0 rgb(0 0 0 / 0.05),
+  'md': 0 4px 6px -1px rgb(0 0 0 / 0.1),
+  'lg': 0 10px 15px -3px rgb(0 0 0 / 0.1),
+  'xl': 0 20px 25px -5px rgb(0 0 0 / 0.1),
+);
+
+// ---------------------------------------------
+// Transitions
+// ---------------------------------------------
+$transitions: (
+  'fast': 150ms,
+  'base': 200ms,
+  'slow': 300ms,
+);
+
+$easings: (
+  'smooth': cubic-bezier(0.4, 0, 0.2, 1),
+  'elastic': cubic-bezier(0.34, 1.56, 0.64, 1),
+  'bounce': cubic-bezier(0.68, -0.55, 0.265, 1.55),
+);
+
+// ---------------------------------------------
+// Breakpoints (Mobile First)
+// ---------------------------------------------
+$breakpoints: (
+  'sm': 640px,
+  'md': 768px,
+  'lg': 1024px,
+  'xl': 1280px,
+  '2xl': 1536px,
+);
+
+// ---------------------------------------------
+// Z-Index Scale
+// ---------------------------------------------
+$z-layers: (
+  'dropdown': 100,
+  'sticky': 200,
+  'modal-backdrop': 300,
+  'modal': 400,
+  'popover': 500,
+  'tooltip': 600,
+  'toast': 700,
+);
+
+// ---------------------------------------------
+// Layout
+// ---------------------------------------------
+$header-height: 64px;
+$sidebar-width: 280px;
+$sidebar-collapsed: 80px;
+
+// ---------------------------------------------
+// CSS Custom Properties (for runtime theming)
+// ---------------------------------------------
+:root {
+  // Typography
+  --font-family: 'Nunito Sans', system-ui, -apple-system, sans-serif;
+  --font-xs: #{map.get($font-sizes, 'xs')};
+  --font-sm: #{map.get($font-sizes, 'sm')};
+  --font-base: #{map.get($font-sizes, 'base')};
+  --font-md: #{map.get($font-sizes, 'md')};
+  --font-lg: #{map.get($font-sizes, 'lg')};
+  --font-xl: #{map.get($font-sizes, 'xl')};
+  --font-2xl: #{map.get($font-sizes, '2xl')};
+  --font-3xl: #{map.get($font-sizes, '3xl')};
+
+  --leading-tight: #{map.get($line-heights, 'tight')};
+  --leading-snug: #{map.get($line-heights, 'snug')};
+  --leading-normal: #{map.get($line-heights, 'normal')};
+  --leading-relaxed: #{map.get($line-heights, 'relaxed')};
+
+  // Colors - Primary
+  --color-primary: #9136cb;
+  --color-primary-hover: #a34adc;
+  --color-primary-active: #7326a3;
+  --color-primary-surface: #f4eafb;
+
+  // Colors - Semantic
+  --color-success: #10b981;
+  --color-success-hover: #059669;
+  --color-success-active: #086042;
+  --color-success-surface: #d1fae5;
+
+  --color-warning: #f59e0b;
+  --color-warning-hover: #d97706;
+  --color-warning-surface: #fef3c7;
+
+  --color-danger: #ef4444;
+  --color-danger-hover: #dc2626;
+  --color-danger-active: #3a1212;
+  --color-danger-surface: #fee2e2;
+
+  // Colors - Background
+  --color-bg-body: #f3f4f6;
+  --color-bg-panel: #f8fafc;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-toast: #f4f5f4;
+
+  // Colors - Border & Divider
+  --color-border: #e5e7eb;
+  --color-divider: #d1d5db;
+
+  // Colors - Text
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #6b7280;
+  --color-text-inverse: #f5f5f5;
+  --color-text-on-primary: #ffffff;
+
+  // Colors - Asset badges
+  --color-asset-bg: #f1f5f9;
+  --color-asset-text: #475569;
+  --color-asset-border: #e2e8f0;
+
+  // Colors - Role badges
+  --role-student-bg: #dcfce7;
+  --role-student-text: #166534;
+  --role-teacher-bg: #e0f2fe;
+  --role-teacher-text: #0c4a6e;
+  --role-admin-bg: #ffedd5;
+  --role-admin-text: #9a3412;
+
+  // Layout
+  --header-height: #{$header-height};
+  --sidebar-width: #{$sidebar-width};
+  --sidebar-collapsed: #{$sidebar-collapsed};
+
+  // Shadows
+  --shadow-sm: #{map.get($shadows, 'sm')};
+  --shadow-md: #{map.get($shadows, 'md')};
+  --shadow-lg: #{map.get($shadows, 'lg')};
+  --shadow-xl: #{map.get($shadows, 'xl')};
+
+  // Transitions
+  --ease-smooth: #{map.get($easings, 'smooth')};
+  --ease-elastic: #{map.get($easings, 'elastic')};
+  --ease-bounce: #{map.get($easings, 'bounce')};
+  --transition-fast: #{map.get($transitions, 'fast')};
+  --transition-base: #{map.get($transitions, 'base')};
+  --transition-slow: #{map.get($transitions, 'slow')};
+
+  // Focus ring
+  --focus-ring: 0 0 0 3px rgba(145, 54, 203, 0.4);
+}
+
+// ---------------------------------------------
+// Dark Mode Theme
+// ---------------------------------------------
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary-surface: #432452;
+
+    --color-success-surface: #064e3b;
+    --color-warning-surface: #78350f;
+    --color-danger-surface: #7f1d1d;
+
+    --color-bg-body: #111827;
+    --color-bg-panel: #1d2531;
+    --color-bg-card: #1f2937;
+    --color-bg-elevated: #374151;
+    --color-bg-toast: #3d4659;
+
+    --color-border: #374151;
+    --color-divider: #4b5563;
+
+    --color-text-primary: #f3f4f6;
+    --color-text-secondary: #d1d5db;
+    --color-text-muted: #9ca3af;
+
+    --color-asset-bg: #1f2937;
+    --color-asset-text: #e5e7eb;
+    --color-asset-border: #4b5563;
+
+    --role-student-bg: #064e3b;
+    --role-student-text: #a7f3d0;
+    --role-teacher-bg: #0c4a6e;
+    --role-teacher-text: #bae6fd;
+    --role-admin-bg: #7c2d12;
+    --role-admin-text: #fed7aa;
+  }
+}

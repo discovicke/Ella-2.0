@@ -1,0 +1,46 @@
+@use 'sass:map';
+// =============================================
+// 🎨 MINIMAL SHARED COMPONENT STYLES
+// =============================================
+// Only truly shared component patterns used across multiple pages.
+// Most components use their own scoped SCSS files with mixin composition.
+
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// ---------------------------------------------
+// BUTTONS (Minimal - most use button.component)
+// ---------------------------------------------
+.btn-primary {
+  @include button-primary;
+}
+
+// ---------------------------------------------
+// FORM ELEMENTS
+// ---------------------------------------------
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+// ---------------------------------------------
+// PAGE LAYOUT
+// ---------------------------------------------
+.page-header {
+  @include flex-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+// ---------------------------------------------
+// LOADING SPINNER
+// ---------------------------------------------
+.spinner {
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}

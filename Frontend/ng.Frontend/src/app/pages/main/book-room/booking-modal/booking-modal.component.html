@@ -1,0 +1,61 @@
+<div class="booking-modal-content">
+  <div class="room-info">
+    <p><strong>Rum:</strong> {{ room.name }}</p>
+    <p><strong>Kapacitet:</strong> {{ room.capacity }} platser</p>
+    @if (room.campusCity) {
+      <p><strong>Plats:</strong> {{ room.campusCity }}</p>
+    }
+  </div>
+
+  <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()" class="booking-form">
+    <!-- Start datum och tid -->
+    <div class="form-row">
+      <div class="form-group">
+        <label for="startDate">Startdatum</label>
+        <input type="date" id="startDate" formControlName="startDate" required />
+      </div>
+
+      <div class="form-group">
+        <label for="startTime">Starttid</label>
+        <input type="time" id="startTime" formControlName="startTime" required />
+      </div>
+    </div>
+
+    <!-- Slut datum och tid -->
+    <div class="form-row">
+      <div class="form-group">
+        <label for="endDate">Slutdatum</label>
+        <input type="date" id="endDate" formControlName="endDate" required />
+      </div>
+
+      <div class="form-group">
+        <label for="endTime">Sluttid</label>
+        <input type="time" id="endTime" formControlName="endTime" required />
+      </div>
+    </div>
+
+    <!-- Anteckningar -->
+    <div class="form-group">
+      <label for="notes">Anteckningar</label>
+      <textarea
+        id="notes"
+        formControlName="notes"
+        placeholder="Frivilliga anteckningar..."
+        rows="3"
+      ></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <app-button type="button" variant="tertiary" (clicked)="modalService.close()">
+        Avbryt
+      </app-button>
+      <app-button
+        type="submit"
+        variant="success"
+        [disabled]="bookingForm.invalid || isSubmitting()"
+      >
+        {{ isSubmitting() ? 'Bokar...' : 'Bekräfta bokning' }}
+      </app-button>
+    </div>
+  </form>
+</div>

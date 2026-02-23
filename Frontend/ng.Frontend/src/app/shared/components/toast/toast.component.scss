@@ -1,0 +1,10 @@
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 2000; // Above modals
+  pointer-events: none; // Allow clicks to pass through container
+}
