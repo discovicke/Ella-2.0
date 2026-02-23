@@ -7,54 +7,66 @@ VALUES
     ('Production simulation data v2.5 - Normalized RBAC');
 
 -- 1. System Permissions Registry (Must be first for FKs)
-INSERT INTO system_permissions (key, description) VALUES
-('BookRoom', 'Can book rooms'),
-('MyBookings', 'Can view own bookings'),
-('ManageUsers', 'Can manage users'),
-('ManageClasses', 'Can manage classes'),
-('ManageRooms', 'Can manage rooms'),
-('ManageAssets', 'Can manage assets'),
-('ManageBookings', 'Can manage all bookings'),
-('ManageCampuses', 'Can manage campuses'),
-('ManageRoles', 'Can manage roles/permissions');
+INSERT INTO system_permissions
+    (key, description)
+VALUES
+    ('BookRoom', 'Can book rooms'),
+    ('MyBookings', 'Can view own bookings'),
+    ('ManageUsers', 'Can manage users'),
+    ('ManageClasses', 'Can manage classes'),
+    ('ManageRooms', 'Can manage rooms'),
+    ('ManageAssets', 'Can manage assets'),
+    ('ManageBookings', 'Can manage all bookings'),
+    ('ManageCampuses', 'Can manage campuses'),
+    ('ManageRoles', 'Can manage roles/permissions');
 
 -- 2. Permission Templates (Roles)
 -- Keeping IDs consistent: 1=Student, 2=Educator, 3=Admin
-INSERT INTO permission_templates (id, name, label, css_class, sort_order) VALUES
-(1, 'student', 'Student', 'student', 0),
-(2, 'educator', 'Educator', 'educator', 1),
-(3, 'admin', 'Admin', 'admin', 2);
+INSERT INTO permission_templates
+    (id, name, label, css_class, sort_order)
+VALUES
+    (1, 'student', 'Student', 'student', 0),
+    (2, 'educator', 'Educator', 'educator', 1),
+    (3, 'admin', 'Admin', 'admin', 2);
 
 -- 3. Permission Flags
 -- Student (1): BookRoom, MyBookings
-INSERT INTO permission_template_flags (template_id, permission_key, value) VALUES        
-(1, 'BookRoom', 1),
-(1, 'MyBookings', 1);
+INSERT INTO permission_template_flags
+    (template_id, permission_key, value)
+VALUES
+    (1, 'BookRoom', 1),
+    (1, 'MyBookings', 1);
 
 -- Educator (2): Basic + ManageClasses, ManageBookings
-INSERT INTO permission_template_flags (template_id, permission_key, value) VALUES        
-(2, 'BookRoom', 1),
-(2, 'MyBookings', 1),
-(2, 'ManageClasses', 1),
-(2, 'ManageBookings', 1);
+INSERT INTO permission_template_flags
+    (template_id, permission_key, value)
+VALUES
+    (2, 'BookRoom', 1),
+    (2, 'MyBookings', 1),
+    (2, 'ManageClasses', 1),
+    (2, 'ManageBookings', 1);
 
 -- Admin (3): All
-INSERT INTO permission_template_flags (template_id, permission_key, value)
-SELECT 3, key, 1 FROM system_permissions;
+INSERT INTO permission_template_flags
+    (template_id, permission_key, value)
+SELECT 3, key, 1
+FROM system_permissions;
 
 -- 4. Base Data (Room Types)
-INSERT INTO room_types (id, name) VALUES
-(1, 'Classroom'),
-(2, 'Laboratory'),
-(3, 'Group Room'),
-(4, 'Computer Lab');
+INSERT INTO room_types
+    (id, name)
+VALUES
+    (1, 'Klassrum'),
+    (2, 'Labb'),
+    (3, 'Grupprum'),
+    (4, 'Datorrum');
 
 -- 5. Base Data (Campus)
 INSERT INTO campus
     (id, street, zip, city, country, contact)
 VALUES
     (1, 'Edugrade Hudiksvall', '824 30', 'Hudiksvall', 'Sweden', 'info.hudik@edugrade.com'),
-    (2, 'Edugrade Gävle', '802 67', 'Gävle', 'Sweden', 'info.gavle@edugrade.com'),     
+    (2, 'Edugrade Gävle', '802 67', 'Gävle', 'Sweden', 'info.gavle@edugrade.com'),
     (3, 'Edugrade Sundsvall', '852 30', 'Sundsvall', 'Sweden', 'info.sund@edugrade.com');
 
 -- 5. Classes
@@ -79,20 +91,20 @@ VALUES
     (4, 'karin.karlsson.gavle@edugrade.com', '__HASH__', 'Karin Karlsson', 2),
     (5, 'anders.andersson@edugrade.com', '__HASH__', 'Anders Andersson', 2),
     (50, 'elev@edugrade.com', '__HASH__', 'Elev Testlund', 1),
-    (10, 'andre.ponten.net25@edu.edugrade.com', '__HASH__', 'André Pontén', 1),        
+    (10, 'andre.ponten.net25@edu.edugrade.com', '__HASH__', 'André Pontén', 1),
     (11, 'christian.gennari.net25@edu.edugrade.com', '__HASH__', 'Christian Gennari', 1),
     (12, 'marcus.loov.net25@edu.edugrade.com', '__HASH__', 'Marcus Lööv', 1),
-    (13, 'viktor.johansson.net25@edu.edugrade.com', '__HASH__', 'Viktor Johansson', 1),  
-    (14, 'sofia.eriksson.net25@edu.edugrade.com', '__HASH__', 'Sofia Eriksson', 1),      
+    (13, 'viktor.johansson.net25@edu.edugrade.com', '__HASH__', 'Viktor Johansson', 1),
+    (14, 'sofia.eriksson.net25@edu.edugrade.com', '__HASH__', 'Sofia Eriksson', 1),
     (15, 'erik.nilsson.net25@edu.edugrade.com', '__HASH__', 'Erik Nilsson', 1),
     (20, 'linda.berg.ux25@edu.edugrade.com', '__HASH__', 'Linda Berg', 1),
     (21, 'mikael.holm.ux25@edu.edugrade.com', '__HASH__', 'Mikael Holm', 1),
-    (22, 'anna.sundstrom.ux25@edu.edugrade.com', '__HASH__', 'Anna Sundström', 1),      
+    (22, 'anna.sundstrom.ux25@edu.edugrade.com', '__HASH__', 'Anna Sundström', 1),
     (23, 'per.ostlund.ux25@edu.edugrade.com', '__HASH__', 'Per Östlund', 1),
     (30, 'johan.kvist.dev24@edu.edugrade.com', '__HASH__', 'Johan Kvist', 1),
     (31, 'elena.popova.dev24@edu.edugrade.com', '__HASH__', 'Elena Popova', 1),
     (32, 'oscar.lundin.dev24@edu.edugrade.com', '__HASH__', 'Oscar Lundin', 1),
-    (33, 'oscar.lundin.dev222@edu.edugrade.com', '__HASH__', 'Custom Guy', NULL);        
+    (33, 'oscar.lundin.dev222@edu.edugrade.com', '__HASH__', 'Custom Guy', NULL);
 
 -- 7. User-Class / Campus Assignments
 INSERT INTO user_class
@@ -201,9 +213,9 @@ VALUES
     (102, 3, 1, '2026-02-10 08:30:00', '2026-02-10 09:30:00', 1, 'AVBOKAT: Ledningsgrupp'),
     (103, 1, 1, '2026-02-12 10:00:00', '2026-02-12 12:00:00', 0, 'Genomgång av säkerhetsprocedurer'),
     (104, 6, 1, '2026-02-15 13:00:00', '2026-02-15 15:00:00', 0, 'Inspektion av fiberlab'),
-    (105, 3, 1, '2026-02-18 09:00:00', '2026-02-18 10:00:00', 0, 'Kvartalsplanering'),   
+    (105, 3, 1, '2026-02-18 09:00:00', '2026-02-18 10:00:00', 0, 'Kvartalsplanering'),
     (106, 3, 1, '2026-02-21 10:00:00', '2026-02-21 11:00:00', 0, 'Systemunderhåll planering'),
-    (107, 22, 1, '2026-02-25 13:00:00', '2026-02-25 14:00:00', 0, 'Budgetmöte Q1'),     
+    (107, 22, 1, '2026-02-25 13:00:00', '2026-02-25 14:00:00', 0, 'Budgetmöte Q1'),
     (108, 12, 1, '2026-02-26 09:00:00', '2026-02-26 10:30:00', 0, 'Möte med fastighetsskötare'),
     (109, 3, 1, '2026-02-27 15:00:00', '2026-02-27 16:00:00', 1, 'AVBOKAT: Fredagsfika special'),
     (110, 4, 1, '2026-03-01 08:00:00', '2026-03-01 12:00:00', 0, 'Personalutbildning: HLR'),
