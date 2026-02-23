@@ -5,6 +5,7 @@ using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
 using Backend.app.Infrastructure.Data;
 using Backend.app.Infrastructure.Middleware;
+using Backend.app.Infrastructure.Repositories.Postgres;
 using Backend.app.Infrastructure.Repositories.Sqlite;
 using DotNetEnv;
 using Microsoft.OpenApi.Models;
@@ -217,6 +218,7 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
     switch (dbProvider)
     {
         case "sqlite":
+            services.AddScoped<IDbInitializer, SqliteDbInitializer>();
             services.AddScoped<IRoomRepository, SqliteRoomRepo>();
             services.AddScoped<IRoomTypeRepository, SqliteRoomTypeRepo>();
             services.AddScoped<IRoomReadModelRepository, SqliteRoomReadModelRepo>();
@@ -227,10 +229,10 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
             services.AddScoped<IPermissionRepository, SqlitePermissionRepo>();
             services.AddScoped<IPermissionTemplateRepository, SqlitePermissionTemplateRepo>();
             services.AddScoped<IRegistrationRepository, SqliteRegistrationRepo>();
-            services.AddScoped<IDbInitializer, SqliteDbInitializer>();
             break;
 
         case "postgres":
+            services.AddScoped<IDbInitializer, PostgresDbInitializer>();
             services.AddScoped<IAssetRepository, PostgresAssetRepo>();
             break;
         default:
