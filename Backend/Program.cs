@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using Backend.app.API.Endpoints;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Services;
@@ -231,8 +231,8 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
             break;
 
         case "postgres":
-            throw new NotImplementedException("Postgres is not supported yet.");
-
+            services.AddScoped<IAssetRepository, PostgresAssetRepo>();
+            break;
         default:
             throw new NotSupportedException($"Provider '{dbProvider}' is not supported.");
     }
