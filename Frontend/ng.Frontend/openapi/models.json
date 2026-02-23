@@ -620,20 +620,15 @@
           "Rooms"
         ],
         "summary": "Get all rooms",
-        "description": "Retrieves all rooms. Optionally filter by type or campus.\n\n🔒 **Authentication Required**",
+        "description": "Retrieves all rooms. Optionally filter by room type or campus.\n\n🔒 **Authentication Required**",
         "operationId": "GetRooms",
         "parameters": [
           {
-            "name": "type",
+            "name": "roomTypeId",
             "in": "query",
             "schema": {
-              "enum": [
-                "Classroom",
-                "Laboratory",
-                "GroupRoom",
-                "ComputerLab",
-                null
-              ]
+              "type": "integer",
+              "format": "int64"
             }
           },
           {
@@ -669,7 +664,7 @@
           "Rooms"
         ],
         "summary": "Create a new room",
-        "description": "Creates a new room. You can optionally provide a list of 'assetIds' to link existing assets (e.g., Projector) to the room immediately.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
+        "description": "Creates a new room. You can optionally provide a list of 'assetIds' to link existing assets.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
         "operationId": "CreateRoom",
         "requestBody": {
           "content": {
@@ -771,7 +766,7 @@
           "Rooms"
         ],
         "summary": "Update an existing room",
-        "description": "Updates a room's details. Providing 'assetIds' will REPLACE the room's entire asset inventory with the new list.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
+        "description": "Updates a room's details. Providing 'assetIds' will REPLACE the room's entire asset inventory.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin",
         "operationId": "UpdateRoom",
         "parameters": [
           {
@@ -873,6 +868,109 @@
           },
           "403": {
             "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/rooms/types": {
+      "get": {
+        "tags": [
+          "Rooms"
+        ],
+        "summary": "Get all room types",
+        "operationId": "GetRoomTypes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RoomTypeResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Rooms"
+        ],
+        "summary": "Create a new room type",
+        "operationId": "CreateRoomType",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomTypeResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/rooms/types/{id}": {
+      "get": {
+        "tags": [
+          "Rooms"
+        ],
+        "summary": "Get room type by ID",
+        "operationId": "GetRoomTypeById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomTypeResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -1501,7 +1599,8 @@
             "nullable": true
           },
           "roomType": {
-            "$ref": "#/components/schemas/RoomType"
+            "type": "string",
+            "nullable": true
           },
           "roomFloor": {
             "type": "string",
@@ -1596,7 +1695,7 @@
           "campusId",
           "name",
           "capacity",
-          "type",
+          "roomTypeId",
           "floor",
           "notes",
           "assetIds"
@@ -1615,8 +1714,9 @@
             "format": "int32",
             "nullable": true
           },
-          "type": {
-            "$ref": "#/components/schemas/RoomType"
+          "roomTypeId": {
+            "type": "integer",
+            "format": "int64"
           },
           "floor": {
             "type": "string",
@@ -1737,8 +1837,12 @@
             "format": "int32",
             "nullable": true
           },
-          "type": {
-            "$ref": "#/components/schemas/RoomType"
+          "roomTypeId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "roomTypeName": {
+            "type": "string"
           },
           "floor": {
             "type": "string",
@@ -1764,7 +1868,8 @@
           "name",
           "campusCity",
           "capacity",
-          "type",
+          "roomTypeId",
+          "roomTypeName",
           "floor",
           "notes",
           "assets"
@@ -1790,8 +1895,12 @@
             "format": "int32",
             "nullable": true
           },
-          "type": {
-            "$ref": "#/components/schemas/RoomType"
+          "roomTypeId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "roomTypeName": {
+            "type": "string"
           },
           "floor": {
             "type": "string",
@@ -1810,13 +1919,21 @@
           }
         }
       },
-      "RoomType": {
-        "enum": [
-          "Classroom",
-          "Laboratory",
-          "GroupRoom",
-          "ComputerLab"
-        ]
+      "RoomTypeResponseDto": {
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
       },
       "UpdateAssetTypeDto": {
         "required": [
@@ -1883,7 +2000,7 @@
           "campusId",
           "name",
           "capacity",
-          "type",
+          "roomTypeId",
           "floor",
           "notes",
           "assetIds"
@@ -1902,8 +2019,9 @@
             "format": "int32",
             "nullable": true
           },
-          "type": {
-            "$ref": "#/components/schemas/RoomType"
+          "roomTypeId": {
+            "type": "integer",
+            "format": "int64"
           },
           "floor": {
             "type": "string",

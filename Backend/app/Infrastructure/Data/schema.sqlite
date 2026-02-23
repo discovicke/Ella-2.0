@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS "asset_types" (
 
 CREATE TABLE IF NOT EXISTS "room_types" (
     "id" INTEGER NOT NULL UNIQUE,
-    "value" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     PRIMARY KEY("id")
 );
 
@@ -178,51 +178,51 @@ CREATE TABLE IF NOT EXISTS "registrations" (
 -- View: Bookings with enriched data (user and room names, registration count)
 DROP VIEW IF EXISTS "v_bookings_detailed";
 CREATE VIEW "v_bookings_detailed" AS
-SELECT 
+SELECT
     b.id AS booking_id,
-    b.user_id,
-    u.display_name  AS user_name,
-    u.email         AS user_email,
-    b.room_id,
-    r.name          AS room_name,
-    r.capacity      AS room_capacity,
-    rt.value        AS room_type, -- PULLING FROM THE NEW TABLE
-    r.floor         AS room_floor,
-    b.start_time,
-    b.end_time,
-    CASE 
+    b.user_id AS user_id,
+    u.display_name AS user_name,
+    u.email AS user_email,
+    b.room_id AS room_id,
+    r.name AS room_name,
+    r.capacity AS room_capacity,
+    rt.name AS room_type,
+    r.floor AS room_floor,
+    b.start_time AS start_time,
+    b.end_time AS end_time,
+    CASE
         WHEN b.status = 1 THEN 1
         WHEN datetime(b.end_time) < datetime('now') THEN 2
         ELSE b.status
     END AS status,
-    b.notes,
-    b.created_at,
-    b.updated_at,
+    b.notes AS notes,
+    b.created_at AS created_at,
+    b.updated_at AS updated_at,
     COALESCE(COUNT(reg.user_id), 0) AS registration_count
 FROM bookings b
 LEFT JOIN users u ON b.user_id = u.id
 LEFT JOIN rooms r ON b.room_id = r.id
-LEFT JOIN room_types rt ON r.room_type_id = rt.id -- NEW JOIN HERE
+LEFT JOIN room_types rt ON r.room_type_id = rt.id
 LEFT JOIN registrations reg ON b.id = reg.booking_id
-GROUP BY b.id, b.user_id, u.display_name, u.email, b.room_id, r.name, r.capacity, 
-         rt.value, r.floor, b.start_time, b.end_time, b.status, b.notes, b.created_at, b.updated_at;
+GROUP BY b.id, b.user_id, u.display_name, u.email, b.room_id, r.name, r.capacity, rt.name, r.floor, b.start_time, b.end_time, b.status, b.notes, b.created_at, b.updated_at;
 
 -- View: Room Details with concatenated assets
 DROP VIEW IF EXISTS "v_room_details";
 CREATE VIEW "v_room_details" AS
-SELECT 
-    r.id AS RoomId, 
+SELECT
+    r.id AS RoomId,
     r.campus_id AS CampusId,
     r.name AS Name,
     c.city AS CampusCity,
-    r.capacity AS Capacity, 
-    rt.value AS Type, -- PULLING FROM THE NEW TABLE
-    r.floor AS Floor, 
+    r.capacity AS Capacity,
+    r.room_type_id AS RoomTypeId,
+    rt.name AS RoomTypeName,
+    r.floor AS Floor,
     r.notes AS Notes,
     GROUP_CONCAT(at.description, '|||') AS AssetsString
 FROM rooms r
 LEFT JOIN campus c ON r.campus_id = c.id
-LEFT JOIN room_types rt ON r.room_type_id = rt.id -- NEW JOIN HERE
+LEFT JOIN room_types rt ON r.room_type_id = rt.id
 LEFT JOIN room_assets ra ON r.id = ra.room_id
 LEFT JOIN asset_types at ON ra.asset_type_id = at.id
-GROUP BY r.id, r.campus_id, r.name, c.city, r.capacity, rt.value, r.floor, r.notes;
+GROUP BY r.id, r.campus_id, r.name, c.city, r.capacity, r.room_type_id, rt.name, r.floor, r.notes;

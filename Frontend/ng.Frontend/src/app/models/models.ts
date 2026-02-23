@@ -10,13 +10,6 @@
  * ---------------------------------------------------------------
  */
 
-export enum RoomType {
-  Classroom = "Classroom",
-  Laboratory = "Laboratory",
-  GroupRoom = "GroupRoom",
-  ComputerLab = "ComputerLab",
-}
-
 export enum BookingStatus {
   Active = "Active",
   Cancelled = "Cancelled",
@@ -61,7 +54,7 @@ export interface BookingDetailedReadModel {
   roomName?: string | null;
   /** @format int32 */
   roomCapacity?: number | null;
-  roomType?: RoomType;
+  roomType?: string | null;
   roomFloor?: string | null;
   /** @format date-time */
   startTime?: string;
@@ -100,7 +93,8 @@ export interface CreateRoomDto {
   name: string;
   /** @format int32 */
   capacity: number | null;
-  type: RoomType;
+  /** @format int64 */
+  roomTypeId: number;
   floor: string | null;
   notes: string | null;
   assetIds: number[] | null;
@@ -141,7 +135,9 @@ export interface RoomDetailModel {
   campusCity?: string;
   /** @format int32 */
   capacity?: number | null;
-  type?: RoomType;
+  /** @format int64 */
+  roomTypeId?: number;
+  roomTypeName?: string;
   floor?: string | null;
   notes?: string | null;
   assets?: string[] | null;
@@ -156,10 +152,18 @@ export interface RoomResponseDto {
   campusCity: string;
   /** @format int32 */
   capacity: number | null;
-  type: RoomType;
+  /** @format int64 */
+  roomTypeId: number;
+  roomTypeName: string;
   floor: string | null;
   notes: string | null;
   assets: string[] | null;
+}
+
+export interface RoomTypeResponseDto {
+  /** @format int64 */
+  id: number;
+  name: string;
 }
 
 export interface UpdateAssetTypeDto {
@@ -186,7 +190,8 @@ export interface UpdateRoomDto {
   name: string;
   /** @format int32 */
   capacity: number | null;
-  type: RoomType;
+  /** @format int64 */
+  roomTypeId: number;
   floor: string | null;
   notes: string | null;
   assetIds: number[] | null;

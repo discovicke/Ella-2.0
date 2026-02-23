@@ -10,7 +10,8 @@ public record RoomDetailModel(
     string Name,
     string CampusCity,
     int? Capacity,
-    RoomType Type,
+    long RoomTypeId,
+    string RoomTypeName,
     string? Floor,
     string? Notes,
     // Dapper maps to this (matches SQL column 'AssetsString')
@@ -20,7 +21,7 @@ public record RoomDetailModel(
 {
     // Parameterless constructor for Dapper materialization
     public RoomDetailModel()
-        : this(0, 0, string.Empty, string.Empty, null, default, null, null, null) { }
+        : this(0, 0, string.Empty, string.Empty, null, 0, string.Empty, null, null, null) { }
 
     // Frontend sees this Clean List
     public List<string>? Assets =>

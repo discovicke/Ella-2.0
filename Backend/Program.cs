@@ -112,7 +112,7 @@ static void LoadEnvironmentVariables()
             var defaultEnvContent =
                 @"# --- Database Settings ---
 DatabaseSettings__Provider=sqlite
-DatabaseSettings__ConnectionString=Data Source=app/Infrastructure/Data/ellaDB.sqlite
+DatabaseSettings__ConnectionString=Data Source=app/Infrastructure/Data/ellaDB_v5.sqlite
 
 # --- JWT Settings ---
 # WARNING: Replace this with a secure key in your local @.env file
@@ -218,6 +218,7 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
     {
         case "sqlite":
             services.AddScoped<IRoomRepository, SqliteRoomRepo>();
+            services.AddScoped<IRoomTypeRepository, SqliteRoomTypeRepo>();
             services.AddScoped<IRoomReadModelRepository, SqliteRoomReadModelRepo>();
             services.AddScoped<IUserRepository, SqliteUserRepo>();
             services.AddScoped<IBookingRepository, SqliteBookingRepo>();
@@ -246,6 +247,7 @@ static void ConfigureCoreServices(IServiceCollection services)
     // Business Logic
     services.AddScoped<AuthService>();
     services.AddScoped<RoomService>();
+    services.AddScoped<RoomTypeService>();
     services.AddScoped<UserService>();
     services.AddScoped<BookingService>();
     services.AddScoped<AssetService>();

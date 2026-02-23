@@ -1,7 +1,6 @@
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
-using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Models.ReadModels;
 
 namespace Backend.app.Core.Services;
@@ -14,18 +13,18 @@ public class RoomService(
 )
 {
     // GET: Returns RoomDetailModel (Includes parsed Assets!)
-    public async Task<IEnumerable<RoomDetailModel>> GetRoomsAsync(RoomType? type, long? campusId)
+    public async Task<IEnumerable<RoomDetailModel>> GetRoomsAsync(long? roomTypeId, long? campusId)
     {
         logger.LogInformation(
-            "Fetching room details with filters: Type={Type}, CampusId={CampusId}",
-            type,
+            "Fetching room details with filters: RoomTypeId={RoomTypeId}, CampusId={CampusId}",
+            roomTypeId,
             campusId
         );
 
         var rooms = await readModelRepo.GetAllRoomDetailsAsync();
 
-        if (type.HasValue)
-            rooms = rooms.Where(r => r.Type == type.Value);
+        if (roomTypeId.HasValue)
+            rooms = rooms.Where(r => r.RoomTypeId == roomTypeId.Value);
 
         if (campusId.HasValue)
             rooms = rooms.Where(r => r.CampusId == campusId.Value);
@@ -58,7 +57,7 @@ public class RoomService(
             CampusId = dto.CampusId,
             Name = dto.Name,
             Capacity = dto.Capacity,
-            Type = dto.Type,
+            RoomTypeId = dto.RoomTypeId,
             Floor = dto.Floor,
             Notes = dto.Notes,
         };
@@ -114,7 +113,7 @@ public class RoomService(
             CampusId = dto.CampusId,
             Name = dto.Name,
             Capacity = dto.Capacity,
-            Type = dto.Type,
+            RoomTypeId = dto.RoomTypeId,
             Floor = dto.Floor,
             Notes = dto.Notes,
         };
@@ -150,7 +149,8 @@ public class RoomService(
             model.Name,
             model.CampusCity,
             model.Capacity,
-            model.Type,
+            model.RoomTypeId,
+            model.RoomTypeName,
             model.Floor,
             model.Notes,
             model.Assets

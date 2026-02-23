@@ -1,5 +1,4 @@
 using Backend.app.Core.Models.DTO;
-using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Models.ReadModels;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
@@ -13,26 +12,27 @@ public static class RoomEndpoints
     {
         var group = app.MapGroup("/rooms").WithTags("Rooms").RequireAuth();
 
-        // GET /api/rooms
+        // --- Room Management ---
+
+        // GET /api/rooms?roomTypeId=1&campusId=2
         group
             .MapGet(
                 "/",
                 async (
-                    [FromQuery] RoomType? type,
+                    [FromQuery] long? roomTypeId,
                     [FromQuery] long? campusId,
                     RoomService service
                 ) =>
                 {
-                    var rooms = await service.GetRoomsAsync(type, campusId);
+                    var rooms = await service.GetRoomsAsync(roomTypeId, campusId);
                     return Results.Ok(rooms);
                 }
             )
             .WithName("GetRooms")
             .WithSummary("Get all rooms")
             .WithDescription(
-                "Retrieves all rooms. Optionally filter by type or campus.\n\n🔒 **Authentication Required**"
+                "Retrieves all rooms. Optionally filter by room type or campus.\n\n🔒 **Authentication Required**"
             )
-            // UPDATED: Now produces RoomDetailModel (includes Assets list)
             .Produces<IEnumerable<RoomDetailModel>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
 
@@ -42,7 +42,6 @@ public static class RoomEndpoints
                 "/{id}",
                 async (long id, RoomService service) =>
                 {
-                    // Layer 2: Endpoint validation
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
 
@@ -55,7 +54,6 @@ public static class RoomEndpoints
             .WithDescription(
                 "Retrieves a specific room by its unique identifier.\n\n🔒 **Authentication Required**"
             )
-            // UPDATED: Now produces RoomDetailModel (includes Assets list)
             .Produces<RoomDetailModel>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
@@ -67,12 +65,10 @@ public static class RoomEndpoints
                 "/",
                 async (CreateRoomDto dto, RoomService service) =>
                 {
-                    // Layer 2: Endpoint validation
                     var validation = ValidateCreateRoom(dto);
                     if (validation is not null)
                         return validation;
 
-                    // Note: Create returns RoomResponseDto (no assets initially)
                     var createdRoom = await service.CreateRoomAsync(dto);
                     return Results.Created($"/api/rooms/{createdRoom.Id}", createdRoom);
                 }
@@ -81,7 +77,7 @@ public static class RoomEndpoints
             .WithName("CreateRoom")
             .WithSummary("Create a new room")
             .WithDescription(
-                "Creates a new room. You can optionally provide a list of 'assetIds' to link existing assets (e.g., Projector) to the room immediately.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
+                "Creates a new room. You can optionally provide a list of 'assetIds' to link existing assets.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
             )
             .Accepts<CreateRoomDto>("application/json")
             .Produces<RoomResponseDto>(StatusCodes.Status201Created)
@@ -93,9 +89,8 @@ public static class RoomEndpoints
         group
             .MapPut(
                 "/{id}",
-                async (long id, UpdateRoomDto dto, RoomService service) => // Changed int to long
+                async (long id, UpdateRoomDto dto, RoomService service) =>
                 {
-                    // Layer 2: Endpoint validation
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
 
@@ -111,7 +106,7 @@ public static class RoomEndpoints
             .WithName("UpdateRoom")
             .WithSummary("Update an existing room")
             .WithDescription(
-                "Updates a room's details. Providing 'assetIds' will REPLACE the room's entire asset inventory with the new list.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
+                "Updates a room's details. Providing 'assetIds' will REPLACE the room's entire asset inventory.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
             )
             .Accepts<UpdateRoomDto>("application/json")
             .Produces(StatusCodes.Status204NoContent)
@@ -126,7 +121,6 @@ public static class RoomEndpoints
                 "/{id}",
                 async (long id, RoomService service) =>
                 {
-                    // Layer 2: Endpoint validation
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
 
@@ -146,6 +140,60 @@ public static class RoomEndpoints
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
 
+        // --- Room Type Management ---
+
+        // GET /api/rooms/types
+        group
+            .MapGet(
+                "/types",
+                async (RoomTypeService service) =>
+                {
+                    var types = await service.GetAllAsync();
+                    return Results.Ok(types);
+                }
+            )
+            .WithName("GetRoomTypes")
+            .WithSummary("Get all room types")
+            .Produces<IEnumerable<RoomTypeResponseDto>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        // GET /api/rooms/types/{id}
+        group
+            .MapGet(
+                "/types/{id}",
+                async (long id, RoomTypeService service) =>
+                {
+                    var type = await service.GetByIdAsync(id);
+                    return Results.Ok(type);
+                }
+            )
+            .WithName("GetRoomTypeById")
+            .WithSummary("Get room type by ID")
+            .Produces<RoomTypeResponseDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        // POST /api/rooms/types
+        group
+            .MapPost(
+                "/types",
+                async ([FromBody] string name, RoomTypeService service) =>
+                {
+                    if (string.IsNullOrWhiteSpace(name))
+                        return Results.BadRequest("Name is required.");
+
+                    var created = await service.CreateAsync(name);
+                    return Results.Created($"/api/rooms/types/{created.Id}", created);
+                }
+            )
+            .RequirePermission("ManageRooms")
+            .WithName("CreateRoomType")
+            .WithSummary("Create a new room type")
+            .Produces<RoomTypeResponseDto>(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
         return group;
     }
 
@@ -157,6 +205,9 @@ public static class RoomEndpoints
 
         if (dto.Capacity.HasValue && dto.Capacity <= 0)
             return Results.BadRequest("Capacity must be a positive number.");
+        
+        if (dto.RoomTypeId <= 0)
+            return Results.BadRequest("Room type is required.");
 
         return null;
     }
@@ -168,6 +219,9 @@ public static class RoomEndpoints
 
         if (dto.Capacity.HasValue && dto.Capacity <= 0)
             return Results.BadRequest("Capacity must be a positive number.");
+
+        if (dto.RoomTypeId <= 0)
+            return Results.BadRequest("Room type is required.");
 
         return null;
     }

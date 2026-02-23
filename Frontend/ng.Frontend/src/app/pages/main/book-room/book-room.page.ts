@@ -9,7 +9,7 @@ import {
 import { firstValueFrom } from 'rxjs';
 import { RoomService } from '../../../shared/services/room.service';
 import { ModalService } from '../../../shared/services/modal.service';
-import { RoomDetailModel, RoomType } from '../../../models/models';
+import { RoomDetailModel, RoomTypeResponseDto } from '../../../models/models';
 import { BookingModalComponent } from './booking-modal/booking-modal.component';
 
 @Component({
@@ -26,7 +26,7 @@ export class BookRoomPage {
 
   // --- STATE ---
   searchQuery = signal('');
-  selectedType = signal<RoomType | 'All'>('All');
+  selectedTypeId = signal<number | 'All'>('All');
   minCapacity = signal<number>(0);
   filtersOpen = signal(typeof window !== 'undefined' ? window.innerWidth > 768 : true);
 
@@ -37,16 +37,21 @@ export class BookRoomPage {
     loader: () => firstValueFrom(this.roomService.getAllRooms()),
   });
 
+  // Room Types
+  typesResource = resource({
+    loader: () => firstValueFrom(this.roomService.getRoomTypes()),
+  });
+
   // --- COMPUTED ---
   filteredRooms = computed(() => {
     const all = this.roomsResource.value() ?? [];
     const query = this.searchQuery().toLowerCase();
-    const type = this.selectedType();
+    const typeId = this.selectedTypeId();
     const capacity = this.minCapacity();
 
     return all.filter((r) => {
       const matchesSearch = !query || r.name?.toLowerCase().includes(query);
-      const matchesType = type === 'All' || r.type === type;
+      const matchesType = typeId === 'All' || r.roomTypeId === typeId;
       const matchesCapacity = (r.capacity ?? 0) >= capacity;
       return matchesSearch && matchesType && matchesCapacity;
     });
@@ -55,10 +60,10 @@ export class BookRoomPage {
   totalRooms = computed(() => this.roomsResource.value()?.length ?? 0);
 
   hasActiveFilters = computed(
-    () => this.searchQuery() !== '' || this.selectedType() !== 'All' || this.minCapacity() > 0,
+    () => this.searchQuery() !== '' || this.selectedTypeId() !== 'All' || this.minCapacity() > 0,
   );
 
-  readonly roomTypes = Object.values(RoomType);
+  readonly roomTypes = computed(() => this.typesResource.value() ?? []);
 
   // --- ACTIONS ---
 
@@ -75,7 +80,8 @@ export class BookRoomPage {
   }
 
   updateType(event: Event) {
-    this.selectedType.set((event.target as HTMLSelectElement).value as RoomType | 'All');
+    const value = (event.target as HTMLSelectElement).value;
+    this.selectedTypeId.set(value === 'All' ? 'All' : Number(value));
   }
 
   updateCapacity(event: Event) {
@@ -84,7 +90,7 @@ export class BookRoomPage {
 
   resetFilters() {
     this.searchQuery.set('');
-    this.selectedType.set('All');
+    this.selectedTypeId.set('All');
     this.minCapacity.set(0);
   }
 

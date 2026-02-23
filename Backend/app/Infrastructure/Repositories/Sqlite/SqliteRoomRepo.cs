@@ -1,6 +1,5 @@
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.Entities;
-using Backend.app.Core.Models.Enums;
 using Dapper;
 
 namespace Backend.app.Infrastructure.Repositories.Sqlite;
@@ -40,18 +39,18 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         }
     }
 
-    public async Task<IEnumerable<Room>> GetRoomsByTypeAsync(RoomType type)
+    public async Task<IEnumerable<Room>> GetRoomsByTypeIdAsync(long roomTypeId)
     {
         try
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            const string sql = "SELECT * FROM rooms WHERE type = @type;";
-            return await conn.QueryAsync<Room>(sql, new { type });
+            const string sql = "SELECT * FROM rooms WHERE room_type_id = @roomTypeId;";
+            return await conn.QueryAsync<Room>(sql, new { roomTypeId });
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching rooms with type {RoomType}", type);
+            logger.LogError(ex, "Database error while fetching rooms with type ID {RoomTypeId}", roomTypeId);
             throw;
         }
     }
@@ -85,8 +84,8 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
 
             const string sql =
                 @"
-            INSERT INTO rooms (campus_id, name, capacity, type, floor, notes) 
-            VALUES (@CampusId, @Name, @Capacity, @Type, @Floor, @Notes);
+            INSERT INTO rooms (campus_id, name, capacity, room_type_id, floor, notes) 
+            VALUES (@CampusId, @Name, @Capacity, @RoomTypeId, @Floor, @Notes);
             SELECT last_insert_rowid();";
 
             return await conn.ExecuteScalarAsync<long>(sql, room);
@@ -106,7 +105,7 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
             await conn.OpenAsync();
 
             const string sql =
-                "UPDATE rooms SET campus_id = @CampusId, name = @Name, capacity = @Capacity, type = @Type, floor = @Floor, notes = @Notes WHERE id = @Id;";
+                "UPDATE rooms SET campus_id = @CampusId, name = @Name, capacity = @Capacity, room_type_id = @RoomTypeId, floor = @Floor, notes = @Notes WHERE id = @Id;";
             return await conn.ExecuteAsync(sql, room) > 0;
         }
         catch (Exception ex)

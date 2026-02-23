@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BookingService } from '../../../shared/services/booking.service';
-import { CreateBookingDto, RoomType, BookingStatus } from '../../../models/models';
+import { CreateBookingDto, BookingStatus } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { ToastService } from '../../../shared/services/toast.service';
 
@@ -16,7 +16,7 @@ interface Room {
   name: string;
   city: string;
   capacity: number;
-  type: RoomType;
+  roomTypeName: string;
   assets: Asset[];
 }
 
@@ -67,7 +67,7 @@ export class BookingformComponent {
       name: 'Lintjärn',
       city: 'Hudiksvall',
       capacity: 16,
-      type: RoomType.ComputerLab,
+      roomTypeName: 'Datasal',
       assets: [
         { id: 1, name: 'Whiteboard' },
         { id: 2, name: 'TV' },
@@ -80,7 +80,7 @@ export class BookingformComponent {
       name: 'Lillfjärden',
       city: 'Hudiksvall',
       capacity: 22,
-      type: RoomType.Classroom,
+      roomTypeName: 'Klassrum',
       assets: [{ id: 2, name: 'TV' }],
     },
     {
@@ -88,7 +88,7 @@ export class BookingformComponent {
       name: 'Personalrum',
       city: 'Uppsala',
       capacity: 10,
-      type: RoomType.GroupRoom,
+      roomTypeName: 'Grupprum',
       assets: [{ id: 2, name: 'TV' }],
     },
     {
@@ -96,7 +96,7 @@ export class BookingformComponent {
       name: 'Dellen',
       city: 'Hudiksvall',
       capacity: 24,
-      type: RoomType.Classroom,
+      roomTypeName: 'Klassrum',
       assets: [
         { id: 1, name: 'Whiteboard' },
         { id: 2, name: 'TV' },
@@ -108,7 +108,7 @@ export class BookingformComponent {
       name: 'Kopparlab',
       city: 'Hudiksvall',
       capacity: 26,
-      type: RoomType.Laboratory,
+      roomTypeName: 'Laboratorium',
       assets: [
         { id: 1, name: 'Whiteboard' },
         { id: 4, name: 'Projektor' },
@@ -120,7 +120,7 @@ export class BookingformComponent {
       name: 'Fiberlab',
       city: 'Hudiksvall',
       capacity: 20,
-      type: RoomType.Laboratory,
+      roomTypeName: 'Laboratorium',
       assets: [
         { id: 1, name: 'Whiteboard' },
         { id: 4, name: 'Projektor' },
@@ -161,19 +161,8 @@ export class BookingformComponent {
     return this.expandedRooms().has(roomId);
   }
 
-  getRoomTypeLabel(type: RoomType): string {
-    switch (type) {
-      case RoomType.Classroom:
-        return 'Klassrum';
-      case RoomType.Laboratory:
-        return 'Laboratorium';
-      case RoomType.GroupRoom:
-        return 'Grupprum';
-      case RoomType.ComputerLab:
-        return 'Datasal';
-      default:
-        return type;
-    }
+  getRoomTypeLabel(type: string): string {
+    return type; // Now just returns the string from the DB/mock
   }
 
   onCityChange(): void {

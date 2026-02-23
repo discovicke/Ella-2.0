@@ -57,10 +57,10 @@
         <div class="filters-group">
           <div class="filter-item">
             <label class="filter-label">Rumstyp</label>
-            <select (change)="updateType($event)" [value]="selectedType()">
+            <select (change)="updateType($event)" [value]="selectedTypeId()">
               <option value="All">Alla</option>
-              @for (type of roomTypes; track type) {
-                <option [value]="type">{{ type }}</option>
+              @for (type of roomTypes(); track type.id) {
+                <option [value]="type.id">{{ type.name }}</option>
               }
             </select>
           </div>
@@ -93,7 +93,7 @@
           <div class="card-header">
             <div class="room-title">
               <h3>{{ room.name }}</h3>
-              <span class="type-badge">{{ room.type }}</span>
+              <span class="type-badge">{{ room.roomTypeName }}</span>
             </div>
             @if (room.campusCity) {
               <div class="room-location">

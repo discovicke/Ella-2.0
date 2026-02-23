@@ -1,12 +1,10 @@
-using Backend.app.Core.Models.Enums;
-
 namespace Backend.app.Core.Models.DTO;
 
 public record CreateRoomDto(
     long CampusId,
     string Name,
     int? Capacity,
-    RoomType Type,
+    long RoomTypeId,
     string? Floor,
     string? Notes,
     List<long>? AssetIds
@@ -16,7 +14,7 @@ public record UpdateRoomDto(
     long CampusId,
     string Name,
     int? Capacity,
-    RoomType Type,
+    long RoomTypeId,
     string? Floor,
     string? Notes,
     List<long>? AssetIds
@@ -29,8 +27,11 @@ public record RoomResponseDto(
     string Name,
     string CampusCity,
     int? Capacity,
-    RoomType Type,
+    long RoomTypeId,
+    string RoomTypeName,
     string? Floor,
     string? Notes,
     List<string>? Assets
 );
+
+public record RoomTypeResponseDto(long Id, string Name);

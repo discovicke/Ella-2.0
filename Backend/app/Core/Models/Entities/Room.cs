@@ -11,7 +11,7 @@ public class Room
     public long CampusId { get; set; }
     public required string Name { get; set; }
     public int? Capacity { get; set; }
-    public RoomType Type { get; set; }
+    public long RoomTypeId { get; set; }
     public string? Floor { get; set; }
     public string? Notes { get; set; }
 }

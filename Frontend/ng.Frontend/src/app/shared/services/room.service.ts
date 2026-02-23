@@ -1,7 +1,7 @@
 import {inject, Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import { RoomDetailModel } from '../../models/models';
+import { RoomDetailModel, RoomTypeResponseDto } from '../../models/models';
 
 @Injectable({
   providedIn: 'root',
@@ -14,4 +14,7 @@ export class RoomService {
     return this.http.get<RoomDetailModel[]>(this.apiUrl);
   }
 
+  getRoomTypes(): Observable<RoomTypeResponseDto[]> {
+    return this.http.get<RoomTypeResponseDto[]>(`${this.apiUrl}/types`);
+  }
 }

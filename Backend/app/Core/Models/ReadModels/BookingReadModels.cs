@@ -15,7 +15,7 @@ public record BookingDetailedReadModel
     public long RoomId { get; init; }
     public string? RoomName { get; init; }
     public int? RoomCapacity { get; init; }
-    public RoomType RoomType { get; init; }
+    public string? RoomType { get; init; }
     public string? RoomFloor { get; init; }
     public DateTime StartTime { get; init; }
     public DateTime EndTime { get; init; }
