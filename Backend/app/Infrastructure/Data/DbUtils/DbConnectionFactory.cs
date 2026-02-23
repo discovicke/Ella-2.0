@@ -1,5 +1,6 @@
 using System.Data.Common;
 using Backend.app.Core.Interfaces;
+using Backend.app.Core.Models.Enums;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using Npgsql;
@@ -29,15 +30,20 @@ public class DbConnectionFactory(IConfiguration configurationFile) : IDbConnecti
             );
         }
 
-        return dbProvider.ToLower() switch
+        if (!Enum.TryParse<DbProvider>(dbProvider, ignoreCase: true, out var provider))
         {
-            "sqlite" => new SqliteConnection(connectionString),
-            "sqlserver" => new SqlConnection(connectionString),
-            "postgresql" => new NpgsqlConnection(connectionString),
+            throw new InvalidOperationException($"Database provider '{dbProvider}' is not valid.");
+        }
+
+        return provider switch
+        {
+            DbProvider.Sqlite => new SqliteConnection(connectionString),
+            DbProvider.Postgres => new NpgsqlConnection(connectionString),
+            DbProvider.SqlServer => new SqlConnection(connectionString),
+
             _ => throw new NotSupportedException(
                 $"Database provider '{dbProvider}' is not supported."
             ),
         };
     }
-
 }

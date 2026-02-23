@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using Backend.app.API.Endpoints;
 using Backend.app.Core.Interfaces;
+using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
 using Backend.app.Infrastructure.Data;
@@ -206,18 +207,25 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
     var services = builder.Services;
     var configuration = builder.Configuration;
 
-    var dbProvider = configuration["DatabaseSettings:Provider"]?.ToLower();
+    var dbProviderString = configuration["DatabaseSettings:Provider"];
 
-    if (string.IsNullOrEmpty(dbProvider))
+    if (string.IsNullOrEmpty(dbProviderString))
     {
         throw new InvalidOperationException("Database Provider is not configured.");
+    }
+
+    if (!Enum.TryParse<DbProvider>(dbProviderString, ignoreCase: true, out var dbProvider))
+    {
+        throw new InvalidOperationException(
+            $"Invalid database provider: '{dbProviderString}'. Supported values: {string.Join(", ", Enum.GetNames<DbProvider>())}"
+        );
     }
 
     services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
 
     switch (dbProvider)
     {
-        case "sqlite":
+        case DbProvider.Sqlite:
             services.AddScoped<IDbInitializer, SqliteDbInitializer>();
             services.AddScoped<IRoomRepository, SqliteRoomRepo>();
             services.AddScoped<IRoomTypeRepository, SqliteRoomTypeRepo>();
@@ -231,10 +239,13 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
             services.AddScoped<IRegistrationRepository, SqliteRegistrationRepo>();
             break;
 
-        case "postgres":
+        case DbProvider.Postgres:
             services.AddScoped<IDbInitializer, PostgresDbInitializer>();
             services.AddScoped<IAssetRepository, PostgresAssetRepo>();
             break;
+
+        case DbProvider.SqlServer:
+            throw new NotSupportedException("SQL Server provider is not yet implemented.");
         default:
             throw new NotSupportedException($"Provider '{dbProvider}' is not supported.");
     }
