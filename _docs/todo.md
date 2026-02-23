@@ -3,6 +3,9 @@
 ## Backend
 
 - [ ] Kanske lägga till en `IsDeleted`-flagga i alla tabeller för att möjliggöra "soft deletes" istället för att radera data permanent?
+- [ ] Lägg tillbaka Klasser CRUD och även i Frontend
+  - Klasser ska vara kopplade till städer
+- [ ] Lägg till klasser i tabellen i manage users
 - [ ] Lägg till Manage Assets i adminpanelen
   - CRUD för Asset Types
   - CRUD för Assets (kopplade till rum)
@@ -18,7 +21,6 @@
   - Koppla campus till rum
 - [ ] Lägg till Permission_level logik. Samt all logik kring "overwriting" om typ en admin vill boka över en students redan bokade tid etc.
 - [ ] Diskutera och planera hur vi ska få "implicit bookings" vs "personal bookings" att fungera. Dvs. typ bookings som en lärare bjuder in en student till, eller som en admin bjuder in en lärare till, eller som en student bjuder in andra studenter till etc vs bara vanliga personliga bokningar.
-
 
 ### Arkitektur & struktur
 
