@@ -10,10 +10,10 @@ using DotNetEnv;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 
+var builder = WebApplication.CreateBuilder(args);
+
 // 1. LOAD SECRETS (.env)
 LoadEnvironmentVariables();
-
-var builder = WebApplication.CreateBuilder(args);
 
 // 2. CONFIGURATION
 builder.Configuration.AddEnvironmentVariables();
@@ -112,7 +112,7 @@ static void LoadEnvironmentVariables()
             var defaultEnvContent =
                 @"# --- Database Settings ---
 DatabaseSettings__Provider=sqlite
-DatabaseSettings__ConnectionString=Data Source=app/Infrastructure/Data/ellaDB_v5.sqlite
+DatabaseSettings__ConnectionString=Data Source=app/Infrastructure/Data/ellaDB.sqlite
 
 # --- JWT Settings ---
 # WARNING: Replace this with a secure key in your local @.env file

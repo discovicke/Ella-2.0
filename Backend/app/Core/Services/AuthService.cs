@@ -12,7 +12,6 @@ namespace Backend.app.Core.Services;
 public class AuthService(
     IUserRepository userRepo,
     IPermissionRepository permissionRepo,
-    IPermissionTemplateRepository templateRepo,
     IPasswordHasher passwordHasher,
     ITokenProvider tokenProvider,
     ILogger<AuthService> logger
