@@ -1,6 +1,6 @@
 namespace Backend.app.Core.Models.Enums;
 
-public enum DbProvider
+public enum DbProviders
 {
     Sqlite,
     Postgres,

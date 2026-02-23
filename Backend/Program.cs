@@ -214,10 +214,10 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
         throw new InvalidOperationException("Database Provider is not configured.");
     }
 
-    if (!Enum.TryParse<DbProvider>(dbProviderString, ignoreCase: true, out var dbProvider))
+    if (!Enum.TryParse<DbProviders>(dbProviderString, ignoreCase: true, out var dbProvider))
     {
         throw new InvalidOperationException(
-            $"Invalid database provider: '{dbProviderString}'. Supported values: {string.Join(", ", Enum.GetNames<DbProvider>())}"
+            $"Invalid database provider: '{dbProviderString}'. Supported values: {string.Join(", ", Enum.GetNames<DbProviders>())}"
         );
     }
 
@@ -225,7 +225,7 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
 
     switch (dbProvider)
     {
-        case DbProvider.Sqlite:
+        case DbProviders.Sqlite:
             services.AddScoped<IDbInitializer, SqliteDbInitializer>();
             services.AddScoped<IRoomRepository, SqliteRoomRepo>();
             services.AddScoped<IRoomTypeRepository, SqliteRoomTypeRepo>();
@@ -239,12 +239,12 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
             services.AddScoped<IRegistrationRepository, SqliteRegistrationRepo>();
             break;
 
-        case DbProvider.Postgres:
+        case DbProviders.Postgres:
             services.AddScoped<IDbInitializer, PostgresDbInitializer>();
             services.AddScoped<IAssetRepository, PostgresAssetRepo>();
             break;
 
-        case DbProvider.SqlServer:
+        case DbProviders.SqlServer:
             throw new NotSupportedException("SQL Server provider is not yet implemented.");
         default:
             throw new NotSupportedException($"Provider '{dbProvider}' is not supported.");

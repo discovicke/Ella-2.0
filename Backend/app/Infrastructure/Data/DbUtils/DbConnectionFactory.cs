@@ -30,16 +30,16 @@ public class DbConnectionFactory(IConfiguration configurationFile) : IDbConnecti
             );
         }
 
-        if (!Enum.TryParse<DbProvider>(dbProvider, ignoreCase: true, out var provider))
+        if (!Enum.TryParse<DbProviders>(dbProvider, ignoreCase: true, out var provider))
         {
             throw new InvalidOperationException($"Database provider '{dbProvider}' is not valid.");
         }
 
         return provider switch
         {
-            DbProvider.Sqlite => new SqliteConnection(connectionString),
-            DbProvider.Postgres => new NpgsqlConnection(connectionString),
-            DbProvider.SqlServer => new SqlConnection(connectionString),
+            DbProviders.Sqlite => new SqliteConnection(connectionString),
+            DbProviders.Postgres => new NpgsqlConnection(connectionString),
+            DbProviders.SqlServer => new SqlConnection(connectionString),
 
             _ => throw new NotSupportedException(
                 $"Database provider '{dbProvider}' is not supported."
