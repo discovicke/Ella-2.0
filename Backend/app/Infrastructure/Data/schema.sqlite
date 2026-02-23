@@ -186,11 +186,10 @@ SELECT
     b.room_id,
     r.name          AS room_name,
     r.capacity      AS room_capacity,
-    r.type          AS room_type,
+    rt.value        AS room_type, -- PULLING FROM THE NEW TABLE
     r.floor         AS room_floor,
     b.start_time,
     b.end_time,
-    -- Automatically calculate status: Cancelled (1) stays, Active (0) becomes Expired (2) if end_time has passed
     CASE 
         WHEN b.status = 1 THEN 1
         WHEN datetime(b.end_time) < datetime('now') THEN 2
@@ -203,9 +202,10 @@ SELECT
 FROM bookings b
 LEFT JOIN users u ON b.user_id = u.id
 LEFT JOIN rooms r ON b.room_id = r.id
+LEFT JOIN room_types rt ON r.room_type_id = rt.id -- NEW JOIN HERE
 LEFT JOIN registrations reg ON b.id = reg.booking_id
 GROUP BY b.id, b.user_id, u.display_name, u.email, b.room_id, r.name, r.capacity, 
-         r.type, r.floor, b.start_time, b.end_time, b.status, b.notes, b.created_at, b.updated_at;
+         rt.value, r.floor, b.start_time, b.end_time, b.status, b.notes, b.created_at, b.updated_at;
 
 -- View: Room Details with concatenated assets
 DROP VIEW IF EXISTS "v_room_details";
@@ -216,12 +216,13 @@ SELECT
     r.name AS Name,
     c.city AS CampusCity,
     r.capacity AS Capacity, 
-    r.type AS Type, 
+    rt.value AS Type, -- PULLING FROM THE NEW TABLE
     r.floor AS Floor, 
     r.notes AS Notes,
     GROUP_CONCAT(at.description, '|||') AS AssetsString
 FROM rooms r
 LEFT JOIN campus c ON r.campus_id = c.id
+LEFT JOIN room_types rt ON r.room_type_id = rt.id -- NEW JOIN HERE
 LEFT JOIN room_assets ra ON r.id = ra.room_id
 LEFT JOIN asset_types at ON ra.asset_type_id = at.id
-GROUP BY r.id, r.campus_id, r.name, c.city, r.capacity, r.type, r.floor, r.notes;
+GROUP BY r.id, r.campus_id, r.name, c.city, r.capacity, rt.value, r.floor, r.notes;
