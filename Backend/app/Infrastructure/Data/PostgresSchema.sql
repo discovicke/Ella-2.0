@@ -295,23 +295,22 @@ GROUP BY b.id, b.user_id, u.display_name, u.email,
          b.created_at, b.updated_at;
 
 
--- Rumsdetaljer med assets som en array av beskrivningar.
--- ARRAY_AGG samlar ihop alla asset-typer per rum till en lista,
--- vilket undviker flera rader per rum i resultatet.
-CREATE
-OR REPLACE
-VIEW v_room_details AS
-SELECT r.id    AS room_id,
-       r.campus_id,
-       c.city  AS campus_city,
-       r.name,
-       r.capacity,
-       r.room_type_id,
-       rt.name AS room_type_name,
-       r.floor,
-       r.notes,
-       ARRAY_AGG(at.description) FILTER (WHERE at.description IS NOT NULL)
-               AS assets
+-- Rumsdetaljer med assets som en |||‑separerad sträng.
+-- STRING_AGG ger en text som matchar C#-modellens AssetsString
+-- (samma mönster som SQLite-vyns GROUP_CONCAT).
+DROP VIEW IF EXISTS v_room_details;
+CREATE VIEW v_room_details AS
+SELECT r.id    AS RoomId,
+       r.campus_id  AS CampusId,
+       c.city  AS CampusCity,
+       r.name  AS Name,
+       r.capacity AS Capacity,
+       r.room_type_id AS RoomTypeId,
+       rt.name AS RoomTypeName,
+       r.floor AS Floor,
+       r.notes AS Notes,
+       STRING_AGG(at.description, '|||') FILTER (WHERE at.description IS NOT NULL)
+               AS AssetsString
 FROM rooms r
          LEFT JOIN campus c ON r.campus_id = c.id
          LEFT JOIN room_types rt ON r.room_type_id = rt.id

@@ -85,7 +85,7 @@ public class PostgresRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Po
             const string sql =
                 @"
             INSERT INTO rooms (campus_id, name, capacity, room_type_id, floor, notes) 
-            VALUES (@CampusId, @Name, @Capacity, @RoomTypeId, @Floor, @Notes);
+            VALUES (@CampusId, @Name, @Capacity, @RoomTypeId, @Floor, @Notes)
             RETURNING id;";
 
             return await conn.ExecuteScalarAsync<long>(sql, room);
@@ -105,9 +105,9 @@ public class PostgresRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Po
             await conn.OpenAsync();
             const string sql = """
                 UPDATE rooms SET campus_id = @CampusId, name = @Name,
-                capacity = @Capacity, room_type_id = @RoomTypeId, 
-                floor = @Floor, notes = @Notes" 
-                 WHERE id = @Id;";
+                capacity = @Capacity, room_type_id = @RoomTypeId,
+                floor = @Floor, notes = @Notes
+                WHERE id = @Id;
                 """;
             room.Id = id; 
             return await conn.ExecuteAsync(sql, room) > 0;
