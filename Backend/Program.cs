@@ -111,19 +111,42 @@ static void LoadEnvironmentVariables()
     {
         if (!File.Exists(envExamplePath))
         {
-            var defaultEnvContent =
-                @"# --- Database Settings ---
-DatabaseSettings__Provider=postgres
-DatabaseSettings__ConnectionString=Host=localhost;Port=5432;Database=net25_db;Username=net25;Password=SecretNet25Password!;
-# --- JWT Settings ---
-# WARNING: Replace this with a secure key in your local @.env file
-JwtSettings__SecretKey=REPLACE_WITH_SECURE_KEY_MIN_32_CHARS
-JwtSettings__Issuer=EllaBookingAPI
-JwtSettings__Audience=EllaBookingClient
-JwtSettings__AccessTokenExpirationMinutes=60";
+            var providerNames = Enum.GetNames<DbProviders>();
+
+            Console.WriteLine();
+            Console.WriteLine("No .env file found. Select a database provider for .env-example:");
+            for (int i = 0; i < providerNames.Length; i++)
+                Console.WriteLine($"  [{i + 1}] {providerNames[i]}");
+            Console.Write($"Enter choice (1-{providerNames.Length}) [default: 1]: ");
+
+            var input = Console.ReadLine()?.Trim();
+            var choiceIndex = 0;
+            if (
+                !string.IsNullOrEmpty(input)
+                && int.TryParse(input, out var parsed)
+                && parsed >= 1
+                && parsed <= providerNames.Length
+            )
+                choiceIndex = parsed - 1;
+
+            var chosenProvider = providerNames[choiceIndex].ToLowerInvariant();
+
+            var defaultEnvContent = $"""
+                # --- Database Settings ---
+                # Available providers: {string.Join(" | ", providerNames)}
+                DatabaseSettings__Provider={chosenProvider}
+                DatabaseSettings__ConnectionString=Host=localhost;Port=5432;Database=ella_db;Username=ella;Password=YourPasswordHere!;
+                # --- JWT Settings ---
+                # WARNING: Replace this with a secure, random key of at least 32 characters
+                JwtSettings__SecretKey=REPLACE_WITH_SECURE_KEY_MIN_32_CHARS
+                JwtSettings__Issuer=EllaBookingAPI
+                JwtSettings__Audience=EllaBookingClient
+                JwtSettings__AccessTokenExpirationMinutes=60
+                """;
 
             File.WriteAllText(envExamplePath, defaultEnvContent);
-            Console.WriteLine(".env file not found. Created .env-example with default settings.");
+            Console.WriteLine($"Created .env-example with provider: {providerNames[choiceIndex]}");
+            Console.WriteLine();
         }
 
         // Load from example if .env is missing

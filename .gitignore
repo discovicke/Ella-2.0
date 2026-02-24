@@ -498,3 +498,7 @@ Frontend/ng.Frontend/openapi/models.json
 Frontend/ng.Frontend/src/app/models/models.ts
 Frontend/ng.Frontend/src/app/models/models.ts
 Frontend/ng.Frontend/openapi/models.json
+
+# Environment variable example files
+*.env-example
+.env-example
