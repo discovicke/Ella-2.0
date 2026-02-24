@@ -121,8 +121,8 @@ public class PostgresAssetRepo(IDbConnectionFactory connectionFactory, ILogger<P
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             
-            const string sql = "SELECT id FROM asset_types WHERE id IN @Ids;";
-            return await conn.QueryAsync<long>(sql, new { Ids = idsToCheck });
+            const string sql = "SELECT id FROM asset_types WHERE id = ANY(@Ids);";
+            return await conn.QueryAsync<long>(sql, new { Ids = idsToCheck.ToArray() });
         }
         catch (Exception ex)
         {
