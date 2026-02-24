@@ -242,6 +242,9 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
         case DbProviders.Postgres:
             services.AddScoped<IDbInitializer, PostgresDbInitializer>();
             services.AddScoped<IAssetRepository, PostgresAssetRepo>();
+            services.AddScoped<IRoomRepository, PostgresRoomRepo>();
+            services.AddScoped<IRoomTypeRepository, PostgresRoomTypeRepo>();
+
             break;
 
         case DbProviders.SqlServer:
