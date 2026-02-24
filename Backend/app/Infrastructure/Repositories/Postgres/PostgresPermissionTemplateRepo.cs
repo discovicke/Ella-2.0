@@ -210,7 +210,7 @@ public class PostgresPermissionTemplateRepo(
                     {
                         TemplateId = templateId,
                         Key = p.Key,
-                        Value = p.Value ? 1 : 0,
+                        p.Value,
                     });
 
                     await conn.ExecuteAsync(
