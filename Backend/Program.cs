@@ -246,6 +246,8 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
             services.AddScoped<IBookingRepository, PostgresBookingRepo>();
             services.AddScoped<IBookingReadModelRepository, PostgresBookingReadModelRepo>();
             services.AddScoped<IPermissionRepository, PostgresPermissionRepo>();
+            services.AddScoped<IRoomRepository, PostgresRoomRepo>();
+            services.AddScoped<IRoomTypeRepository, PostgresRoomTypeRepo>();
             break;
 
         case DbProviders.SqlServer:
