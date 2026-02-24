@@ -1,13 +1,12 @@
-
 # Project Architecture & Developer Guide
 
 ## Best Practices Cheat Sheet
 
-| Requirement | Rule |
-| --- | --- |
-| **New Route?** | Use `npm run g-page`. |
-| **New Widget?** | Use `ng g c shared/components/my-widget`. |
-| **Data Access?** | Always use a Service (`ng g s shared/services/user`). |
+| Requirement      | Rule                                                            |
+| ---------------- | --------------------------------------------------------------- |
+| **New Route?**   | Use `npm run g-page`.                                           |
+| **New Widget?**  | Use `ng g c shared/components/my-widget`.                       |
+| **Data Access?** | Always use a Service (`ng g s shared/services/user`).           |
 | **Performance?** | Never remove `changeDetection: ChangeDetectionStrategy.OnPush`. |
 
 ## 1. High-Level Philosophy
@@ -16,9 +15,9 @@ This project follows a **Standalone Component** architecture with a strict separ
 
 ### Core Rules
 
-* **Strict Typing:** We rely heavily on TypeScript interfaces.
-* **OnPush Strategy:** All components use `ChangeDetectionStrategy.OnPush` by default for performance.
-* **No "ng g c" when creating layouts/pages:** We do not use the standard Angular CLI component generator for pages/layouts because it doesn't follow our specific naming conventions (`.page.ts`, `.layout.ts`).
+- **Strict Typing:** We rely heavily on TypeScript interfaces.
+- **OnPush Strategy:** All components use `ChangeDetectionStrategy.OnPush` by default for performance.
+- **No "ng g c" when creating layouts/pages:** We do not use the standard Angular CLI component generator for pages/layouts because it doesn't follow our specific naming conventions (`.page.ts`, `.layout.ts`).
 
 ---
 
@@ -29,16 +28,21 @@ We organize code by **Domain/Feature**, not technical type.
 ```text
 src/app/
 ├── pages/                  # 📍 ROUTABLE DESTINATIONS
-│   ├── _public/            # Publicly accessible pages (Login, Register)
-│   ├── administrator/      # Admin-only section
-│   ├── student/            # Student-only section
-│   └── educator/           # Educator-only section
+│   ├── _public/            # Publicly accessible pages (Login, Register, Banned, etc.)
+│   └── main/              # Authenticated area (all permission-guarded pages)
 │
 ├── shared/                 # ♻️ REUSABLE CODE
-│   ├── components/         # Dumb widgets (Buttons, Cards, Modals)
+│   ├── components/         # Dumb widgets (Button, Card, Modal, Panel, Table, Toast)
 │   ├── services/           # Data fetching & State
-│   ├── guards/             # Route protection
 │   └── pipes/              # Data formatting
+│
+├── core/                   # 🔒 AUTH & SESSION
+│   ├── auth/               # Guards (auth, permission, admin) & interceptor
+│   ├── permission-templates.ts
+│   └── session.service.ts
+│
+├── models/                 # 📦 AUTO-GENERATED
+│   └── models.ts           # TypeScript interfaces from OpenAPI spec
 │
 └── app.routes.ts           # 🚦 The Central Traffic Controller
 
@@ -52,17 +56,17 @@ We distinguish clearly between a "Container" and its "Content".
 
 ### 🏛️ Layouts (`*.layout.ts`)
 
-* **Role:** The "Frame" or "Shell" of the application.
-* **Contains:** Persistent elements like Sidebars, Topbars, and the `<router-outlet>`.
-* **Lifespan:** Stays alive while the user navigates between child pages.
-* **Naming:** `admin.layout.ts`
+- **Role:** The "Frame" or "Shell" of the application.
+- **Contains:** Persistent elements like Sidebars, Topbars, and the `<router-outlet>`.
+- **Lifespan:** Stays alive while the user navigates between child pages.
+- **Naming:** `admin.layout.ts`
 
 ### 📄 Pages (`*.page.ts`)
 
-* **Role:** The "Content" that fills the screen.
-* **Contains:** Specific views like Dashboards, Forms, or Lists.
-* **Lifespan:** Destroyed and recreated when the URL changes.
-* **Naming:** `dashboard.page.ts`
+- **Role:** The "Content" that fills the screen.
+- **Contains:** Specific views like Dashboards, Forms, or Lists.
+- **Lifespan:** Destroyed and recreated when the URL changes.
+- **Naming:** `dashboard.page.ts`
 
 ---
 
@@ -75,7 +79,7 @@ We have custom scripts in `scripts/` that enforce our architecture (OnPush, Nami
 
 Creates a routable page component (TS, HTML, SCSS, Spec).
 
-**Command:**
+**Command (run from `Frontend/ng.Frontend/`):**
 
 ```bash
 npm run g-page <path/name>
@@ -100,7 +104,7 @@ npm run g-page my-grades
 
 Creates a layout component with a pre-configured `<router-outlet>`.
 
-**Command:**
+**Command (run from `Frontend/ng.Frontend/`):**
 
 ```bash
 npm run g-layout <path/name>
@@ -125,26 +129,47 @@ After generating a Page or Layout, you must manually connect it in `app.routes.t
 
 ```typescript
 export const routes: Routes = [
-  // 1. Define the Layout (The Shell)
+  // 1. Public pages (no auth required)
   {
-    path: 'admin',
-    loadComponent: () => import('./pages/administrator/administrator.layout').then(m => m.AdministratorLayout),
-    canActivate: [authGuard, roleGuard], // 🔒 Protect the shell
-    
-    // 2. Define the Children (The Pages)
+    path: 'login',
+    loadComponent: () => import('./pages/_public/login/login.page').then((m) => m.LoginPage),
+  },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./pages/_public/register/register.page').then((m) => m.RegisterPage),
+  },
+  // ...
+
+  // 2. Authenticated area (MainLayout shell)
+  {
+    path: '',
+    loadComponent: () => import('./pages/main/main.layout').then((m) => m.MainLayout),
+    canActivate: [authGuard],
     children: [
+      { path: '', redirectTo: 'see-bookings', pathMatch: 'full' },
       {
-        path: 'dashboard',
-        loadComponent: () => import('./pages/administrator/dashboard/dashboard.page').then(m => m.DashboardPage)
+        path: 'system-overview',
+        loadComponent: () =>
+          import('./pages/main/system-overview/system-overview.page').then(
+            (m) => m.SystemOverviewPage,
+          ),
+        canActivate: [adminGuard],
       },
       {
-        path: 'users',
-        loadComponent: () => import('./pages/administrator/users/users.page').then(m => m.UsersPage)
-      }
-    ]
-  }
-];
+        path: 'manage-users',
+        loadComponent: () =>
+          import('./pages/main/manage-users/manage-users.page').then((m) => m.ManageUsersPage),
+        canActivate: [permissionGuard],
+        data: { permission: 'manageUsers' },
+      },
+      // ... more permission-guarded pages
+    ],
+  },
 
+  // 3. Fallback
+  { path: '**', redirectTo: 'not-found' },
+];
 ```
 
 ---
@@ -155,42 +180,43 @@ As of the latest architecture update, the application is divided into four disti
 
 ### 🌍 Public Zone (No Login)
 
-| URL | Page Component | Description |
-| --- | --- | --- |
-| `/` | `HomePage` | Landing page. |
-| `/login` | `LoginPage` | User authentication. |
-| `/register` | `RegisterPage` | New user signup. |
-| `/not-found` | `NotFoundPage` | Generic 404 error. |
-| `/forbidden` | `ForbiddenPage` | 403 Access Denied. |
+| URL            | Page Component         | Description                                |
+| -------------- | ---------------------- | ------------------------------------------ |
+| `/login`       | `LoginPage`            | User authentication.                       |
+| `/register`    | `RegisterPage`         | New user signup.                           |
+| `/not-found`   | `NotFoundPage`         | Generic 404 error.                         |
+| `/forbidden`   | `ForbiddenPage`        | 403 Access Denied.                         |
+| `/banned`      | `BannedPage`           | Banned user notice.                        |
+| `/bookingform` | `BookingformComponent` | External booking form (no login required). |
 
-### 🔐 Protected Zones (Requires Login)
+### 🔐 Protected Zone (Requires Login)
 
-All protected routes use **`MainLayout`** as the shell. Access to specific sub-pages is controlled by **Permission Guards**.
+All protected routes use **`MainLayout`** as the shell. Access to specific sub-pages is controlled by **Permission Guards** (`permissionGuard` / `adminGuard`).
 
 **Main Application** (`/`)
 
-* **Layout:** `MainLayout`
-* **Default Redirect:** `/see-bookings`
-* **Sub-Pages (Visibility controlled by Permissions):**
-    * `/system-overview`: Admin dashboard (Requires any admin permission)
-    * `/manage-users`: User management (`ManageUsers`)
-    * `/manage-rooms`: Room inventory (`ManageRooms`)
-    * `/manage-bookings`: Booking oversight (`ManageBookings`)
-    * `/manage-roles`: Role configuration (`ManageRoles`)
-    * `/see-bookings`: My bookings (`MyBookings`)
-    * `/book-room`: New booking (`BookRoom`)
+- **Layout:** `MainLayout`
+- **Default Redirect:** `/see-bookings`
+- **Sub-Pages (Visibility controlled by Permissions):**
+  - `/system-overview`: Admin dashboard (Requires `adminGuard`)
+  - `/manage-users`: User management (`ManageUsers`)
+  - `/manage-rooms`: Room inventory (`ManageRooms`)
+  - `/manage-bookings`: Booking oversight (`ManageBookings`)
+  - `/manage-roles`: Role configuration (`ManageRoles`)
+  - `/see-bookings`: My bookings (`MyBookings`)
+  - `/book-room`: New booking (`BookRoom`)
 
 ### ⚠️ Fallback Strategy
 
-* Any unknown URL (`**`) redirects immediately to `/not-found`.
+- Any unknown URL (`**`) redirects immediately to `/not-found`.
 
 ---
 
 ## 7. CSS & Assets
 
-* **Global Styles:** `src/styles.scss` (Use sparingly).
-* **Assets:** Place images/fonts in `src/assets/`.
-* Usage in HTML: `<img src="assets/logo.png">` (No `src/` prefix in the tag).
-* **Component Styles:** Use the `*.scss` file next to your component.
+- **Global Styles:** `src/styles.scss` (Use sparingly).
+- **Assets:** Place images/fonts in `src/assets/`.
+- Usage in HTML: `<img src="assets/logo.png">` (No `src/` prefix in the tag).
+- **Component Styles:** Use the `*.scss` file next to your component.
 
 ---

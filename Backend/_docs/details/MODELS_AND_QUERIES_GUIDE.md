@@ -8,23 +8,23 @@ All data-holding objects reside in `Backend/app/Core/Models/`.
 
 ```text
 Backend/app/Core/Models/
-├── Entities/       (Database tables: User.cs, Room.cs)
-├── DTOs/           (API JSON: LoginDto.cs, RegisterDto.cs)
-├── Enums/          (Options: UserRole.cs, RoomType.cs)
-└── ReadModels/     (Complex SQL query results: BookingSummary.cs)
+├── Entities/       (Database tables: User.cs, Room.cs, Campus.cs, RoomType.cs)
+├── DTO/            (API JSON: CreateRoomDto, RoomResponseDto, AuthDto)
+├── Enums/          (Options: BookingStatus.cs, BannedStatus.cs, DbProviders.cs)
+├── ReadModels/     (Complex SQL query results: RoomDetailModel, BookingSummary)
+└── Projections/    (Flat auth representations: UserPermissions.cs)
 
 ```
 
 ### "Which Model do I use?"
 
-| Model Type    | Simple Rule                                                                     | Example           |
-| ------------- | ------------------------------------------------------------------------------- | ----------------- |
-| **Entity**    | **Writing to DB.** Use for saving, updating, or deleting data.                  | `User`, `Room`    |
-| **ReadModel** | **Reading from DB.** Use for custom SQL queries (JOINs, aggregation).           | `RoomDetailModel` |
-| **DTO**       | **Talking to Frontend.** Use for API inputs (Requests) and outputs (Responses). | `CreateRoomDto`   |
-| **Enum**      | **Fixed Choices.** Use for statuses, types, or roles.                           | `RoomType`        |
-
-
+| Model Type     | Simple Rule                                                                     | Example           |
+| -------------- | ------------------------------------------------------------------------------- | ----------------- |
+| **Entity**     | **Writing to DB.** Use for saving, updating, or deleting data.                  | `User`, `Room`    |
+| **ReadModel**  | **Reading from DB.** Use for custom SQL queries (JOINs, aggregation).           | `RoomDetailModel` |
+| **DTO**        | **Talking to Frontend.** Use for API inputs (Requests) and outputs (Responses). | `CreateRoomDto`   |
+| **Enum**       | **Fixed Choices.** Use for statuses, types, or providers.                       | `BookingStatus`   |
+| **Projection** | **Flat auth/middleware data.** Used by middleware to check access.              | `UserPermissions` |
 
 ## 2. Advanced Reads: The Read Model Pattern
 
@@ -55,7 +55,8 @@ Create a Read Model Repository when:
 ### File Naming Convention
 
 - **Interface:** `I{Entity}ReadModelRepository.cs` (e.g., `IRoomReadModelRepository`)
-- **Implementation:** `Sqlite{Entity}ReadModelRepo.cs` (e.g., `SqliteRoomReadModelRepo`)
+- **SQLite Implementation:** `Sqlite{Entity}ReadModelRepo.cs` (e.g., `SqliteRoomReadModelRepo`)
+- **Postgres Implementation:** `Postgres{Entity}ReadModelRepo.cs` (e.g., `PostgresRoomReadModelRepo`)
 - **Model:** `Core/Models/ReadModels/{Entity}ReadModels.cs`
 
 ### Full Request Lifecycle
@@ -65,7 +66,6 @@ Here is how models pass data to each other during a **Read** request:
 1. **Repository:** Runs complex SQL Returns `List<ReadModel>`.
 2. **Service:** Receives `ReadModel` Maps it to a `DTO`.
 3. **API Endpoint:** Sends the `DTO` as JSON to the frontend.
-
 
 ## How It Works
 
@@ -114,5 +114,9 @@ Register the new repository in `Program.cs` under the appropriate database provi
 case "sqlite":
     builder.Services.AddScoped<IRoomRepository, SqliteRoomRepo>();           // Write/Standard
     builder.Services.AddScoped<IRoomReadModelRepository, SqliteRoomReadModelRepo>(); // Read/Query
+    break;
+case "postgres":
+    builder.Services.AddScoped<IRoomRepository, PostgresRoomRepo>();
+    builder.Services.AddScoped<IRoomReadModelRepository, PostgresRoomReadModelRepo>();
     break;
 ```

@@ -11,6 +11,8 @@ Link to diagram: [www.drawdb.app](https://www.drawdb.app/editor?shareId=72fdc3d4
 
 ### **2. Rooms & Equipment**
 
+- **One Campus** contains **Many Rooms**. Rooms are linked to a campus via `campus_id` (rooms no longer have a direct `address` field).
+- **One Room Type** categorizes **Many Rooms** via `room_type_id` (room types are a separate table, not an enum).
 - **One Room** contains **Many Assets** (physical items inside).
 - **One Asset Type** (e.g., "Projektor") defines **Many Assets** (many copies exist in different rooms).
 - _Note: An "Asset" connects a specific Room to a specific Asset Type._
@@ -24,12 +26,20 @@ Link to diagram: [www.drawdb.app](https://www.drawdb.app/editor?shareId=72fdc3d4
 
 ## **Technical Note on Dates**
 
-**SQLite does not have a native `DATETIME` type.**
+The project supports both **SQLite** and **PostgreSQL**. Date handling differs by provider:
 
-- **Storage:** Even though our schema uses `DATETIME`, SQLite actually stores these values as **TEXT** strings.
-- **Format:** We strictly use the **ISO-8601** format: `"YYYY-MM-DD HH:MM:SS"`.
-- **Why:** This specific string format is "lexicographically sortable" (meaning "2026..." correctly sorts after "2025...").
-- **Developer Rule:** Always save dates as `DateTime.UtcNow` in C# to ensure the format remains consistent and sortable.
+### SQLite
+
+- SQLite does not have a native `DATETIME` type. Values are stored as **TEXT** strings in **ISO-8601** format: `"YYYY-MM-DD HH:MM:SS"`.
+- This format is "lexicographically sortable" (meaning "2026..." correctly sorts after "2025...").
+
+### PostgreSQL
+
+- PostgreSQL uses native `TIMESTAMPTZ` columns. Dates are stored with timezone awareness.
+
+### Developer Rule
+
+Always save dates as `DateTime.UtcNow` in C# to ensure consistency across both providers.
 
 ## SQL Schema
 

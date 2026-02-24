@@ -7,33 +7,20 @@
 - [npm](https://www.npmjs.com/)
 - [.NET 9](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
 
-### 2. Starta databasen
+### 2. Installera och bygg projektet
 
-Kör följande kommandon i terminalen från projektets rotkatalog:
+**Se till att du befinner dig i projektets rotmappen innan du börjar. Följ sedan stegen nedan.**
 
-```bash
-docker compose up -d
-```
-
-Det är allt. Docker Compose startar en PostgreSQL 16-instans med följande inställningar:
-
-| Inställning | Värde               |
-|-------------|---------------------|
-| Host        | `localhost`         |
-| Port        | `5432`              |
-| Databas     | `net25_db`          |
-| Användare   | `net25`             |
-| Lösenord    | `SecretNet25Password!` |
-
-### 3. Installera och bygg projektet
-
-Kör detta **första gången** (installerar npm-beroenden och bygger C#-backend):
+Kör detta **första gången** (installerar npm-beroenden, väljer databasleverantör och startar Docker-containern om det behövs):
 
 ```bash
 npm run setup
 ```
 
-### 4. Starta applikationen
+Setup-scriptet låter dig välja mellan **SQLite**, **PostgreSQL** eller **SQL Server** (SQLite kräver ingen Docker).
+Anslutningsinformation genereras automatiskt från respektive Docker Compose-fil.
+
+### 3. Starta applikationen
 
 ```bash
 npm start

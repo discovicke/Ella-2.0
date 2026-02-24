@@ -95,7 +95,7 @@ This project uses a **Hosted** deployment model. We do not host the Frontend and
 
 1. **SPA Fallback:** The Backend is configured (`app.MapFallbackToFile("index.html")`) to serve the Angular app for any unknown URL.
 2. **Static Files:** The Backend serves the compiled JS/CSS files from `wwwroot`.
-3. **Database Initialization:** On startup, the backend automatically runs `schema.sqlite` and `seed.sqlite` if the database is empty.
+3. **Database Initialization:** On startup, the backend automatically runs the schema and seed files for the configured provider (e.g., `SqliteSchema.sqlite` / `SqliteSeed.sqlite` or `PostgresSchema.sql` / `PostgresSeed.sql`) if the database is empty.
 
 ### How to Deploy
 

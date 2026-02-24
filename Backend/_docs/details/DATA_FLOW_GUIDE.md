@@ -2,8 +2,6 @@
 
 This guide explains how data moves through the application layers and which model types are used at each step.
 
-
-
 ## Overview Diagram
 
 ```
@@ -68,8 +66,6 @@ This guide explains how data moves through the application layers and which mode
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-
-
 ## Model Types
 
 ### 1. DTOs (Data Transfer Objects)
@@ -78,13 +74,14 @@ This guide explains how data moves through the application layers and which mode
 
 **Location:** `Backend/app/Core/Models/DTO/`
 
-| DTO Type | Direction | Contains ID? | Example |
-|----------|-----------|--------------|---------|
-| `Create___Dto` | Frontend → API | ❌ No | `CreateRoomDto` |
-| `Update___Dto` | Frontend → API | ❌ No | `UpdateRoomDto` |
-| `___ResponseDto` | API → Frontend | ✅ Yes | `RoomResponseDto` |
+| DTO Type         | Direction      | Contains ID? | Example           |
+| ---------------- | -------------- | ------------ | ----------------- |
+| `Create___Dto`   | Frontend → API | ❌ No        | `CreateRoomDto`   |
+| `Update___Dto`   | Frontend → API | ❌ No        | `UpdateRoomDto`   |
+| `___ResponseDto` | API → Frontend | ✅ Yes       | `RoomResponseDto` |
 
 **Why separate Create/Update from Response?**
+
 - **Create:** No ID (database generates it)
 - **Response:** Has ID (frontend needs it to reference the resource)
 
@@ -111,8 +108,6 @@ public record RoomResponseDto(
 );
 ```
 
-
-
 ### 2. Entities
 
 **Purpose:** Mirror database tables exactly.
@@ -124,22 +119,22 @@ public record RoomResponseDto(
 ```csharp
 public class Room
 {
-    public int Id { get; set; }
-    public string Name { get; set; }
+    public long Id { get; set; }
+    public long CampusId { get; set; }
+    public required string Name { get; set; }
     public int? Capacity { get; set; }
-    public RoomType Type { get; set; }
+    public long RoomTypeId { get; set; }
     public string? Floor { get; set; }
-    public string? Address { get; set; }
     public string? Notes { get; set; }
 }
 ```
 
 **Why not just use DTOs everywhere?**
+
 - Entities may contain sensitive fields (e.g., `PasswordHash` in User)
 - Entities match database column names exactly
 - DTOs control what the API exposes
-
-
+- Response DTOs include resolved names (e.g., `CampusCity`, `RoomTypeName`) that aren’t stored on the entity
 
 ### 3. Enums
 
@@ -150,16 +145,13 @@ public class Room
 **Used by:** All layers.
 
 ```csharp
-public enum RoomType
+public enum BookingStatus
 {
-    Classroom,
-    Lab,
-    Auditorium,
-    MeetingRoom
+    Active,
+    Cancelled,
+    Expired
 }
 ```
-
-
 
 ### 4. ReadModels (Optional)
 
@@ -186,8 +178,6 @@ LEFT JOIN bookings b ON r.id = b.room_id
 GROUP BY r.id
 ```
 
-
-
 ## Complete Example: Creating a Room
 
 ### Step 1: Frontend Sends Request
@@ -195,12 +185,13 @@ GROUP BY r.id
 ```json
 POST /api/rooms
 {
+    "campusId": 1,
     "name": "Conference Room A",
     "capacity": 20,
-    "type": "MeetingRoom",
+    "roomTypeId": 3,
     "floor": "2nd",
-    "address": "Building A",
-    "notes": "Has projector"
+    "notes": "Has projector",
+    "assetIds": [1, 4]
 }
 ```
 
@@ -225,36 +216,31 @@ group.MapPost("/", async (CreateRoomDto dto, RoomService service) =>
 // RoomService.cs
 public async Task<RoomResponseDto> CreateRoomAsync(CreateRoomDto dto)
 {
+    // Validate asset IDs exist
+    if (dto.AssetIds != null && dto.AssetIds.Count != 0)
+        await assetService.ValidateAssetIdsAsync(dto.AssetIds);
+
     // Convert DTO to Entity
     var room = new Room
     {
+        CampusId = dto.CampusId,
         Name = dto.Name,
         Capacity = dto.Capacity,
-        Type = dto.Type,
+        RoomTypeId = dto.RoomTypeId,
         Floor = dto.Floor,
-        Address = dto.Address,
         Notes = dto.Notes,
     };
 
     // Send Entity to repository
     var newId = await repo.CreateRoomAsync(room);
 
-    // Convert Entity to Response DTO
-    room.Id = newId;
-    return MapToDto(room);
-}
+    // Add assets to the room via link table
+    if (dto.AssetIds != null && dto.AssetIds.Count != 0)
+        await repo.AddAssetsToRoomAsync(newId, dto.AssetIds);
 
-private static RoomResponseDto MapToDto(Room room)
-{
-    return new RoomResponseDto(
-        room.Id,
-        room.Name,
-        room.Capacity,
-        room.Type,
-        room.Floor,
-        room.Address,
-        room.Notes
-    );
+    // Fetch the full detail (with resolved names) via ReadModel repo
+    var createdRoomDetail = await readModelRepo.GetRoomDetailByIdAsync(newId);
+    return MapDetailToResponse(createdRoomDetail);
 }
 ```
 
@@ -262,14 +248,15 @@ private static RoomResponseDto MapToDto(Room room)
 
 ```csharp
 // SqliteRoomRepo.cs
-public async Task<int> CreateRoomAsync(Room room)
+public async Task<long> CreateRoomAsync(Room room)
 {
     const string sql = @"
-        INSERT INTO rooms (name, capacity, type, floor, address, notes) 
-        VALUES (@Name, @Capacity, @Type, @Floor, @Address, @Notes);
+        INSERT INTO rooms (campus_id, name, capacity, room_type_id, floor, notes)
+        VALUES (@CampusId, @Name, @Capacity, @RoomTypeId, @Floor, @Notes);
         SELECT last_insert_rowid();";
 
-    return await conn.ExecuteScalarAsync<int>(sql, room);
+    using var conn = await db.CreateConnectionAsync();
+    return await conn.ExecuteScalarAsync<long>(sql, room);
 }
 ```
 
@@ -281,27 +268,26 @@ Location: /api/rooms/42
 
 {
     "id": 42,
+    "campusId": 1,
     "name": "Conference Room A",
+    "campusCity": "Stockholm",
     "capacity": 20,
-    "type": "MeetingRoom",
+    "roomTypeId": 3,
+    "roomTypeName": "MeetingRoom",
     "floor": "2nd",
-    "address": "Building A",
-    "notes": "Has projector"
+    "notes": "Has projector",
+    "assets": ["Projector", "Whiteboard"]
 }
 ```
 
-
-
 ## Quick Reference Table
 
-| Layer | Receives | Returns | Model Type |
-|-------|----------|---------|------------|
-| **Endpoint** | `CreateDto` / `UpdateDto` | `ResponseDto` | DTO |
-| **Service** | DTO | DTO | Converts DTO ↔ Entity |
-| **Repository** | Entity | Entity or ID | Entity |
-| **Database** | SQL | Rows | — |
-
-
+| Layer          | Receives                  | Returns       | Model Type            |
+| -------------- | ------------------------- | ------------- | --------------------- |
+| **Endpoint**   | `CreateDto` / `UpdateDto` | `ResponseDto` | DTO                   |
+| **Service**    | DTO                       | DTO           | Converts DTO ↔ Entity |
+| **Repository** | Entity                    | Entity or ID  | Entity                |
+| **Database**   | SQL                       | Rows          | —                     |
 
 ## Common Mistakes to Avoid
 
@@ -341,13 +327,12 @@ return Results.Ok(user);
 return Results.Ok(new UserResponseDto(user.Id, user.Email, user.Name));
 ```
 
-
-
 ## Summary
 
-| Model Type | Purpose | Location | Used By |
-|------------|---------|----------|---------|
-| **DTO** | Talk to frontend | `Models/DTO/` | Endpoint, Service |
-| **Entity** | Talk to database | `Models/Entities/` | Service, Repository |
-| **Enum** | Fixed choices | `Models/Enums/` | All layers |
-| **ReadModel** | Complex queries | `Models/ReadModels/` | Repository, Service |
+| Model Type     | Purpose                   | Location              | Used By             |
+| -------------- | ------------------------- | --------------------- | ------------------- |
+| **DTO**        | Talk to frontend          | `Models/DTO/`         | Endpoint, Service   |
+| **Entity**     | Talk to database          | `Models/Entities/`    | Service, Repository |
+| **Enum**       | Fixed choices             | `Models/Enums/`       | All layers          |
+| **ReadModel**  | Complex queries           | `Models/ReadModels/`  | Repository, Service |
+| **Projection** | Flat auth/middleware data | `Models/Projections/` | Middleware, Service |
