@@ -2,7 +2,7 @@
   <table class="data-table">
     <thead>
       <tr>
-        @for (col of columns(); track col.header) {
+        @for (col of columns(); track $index) {
           <th [style.width]="col.width" [class]="'align-' + (col.align || 'left')">
             {{ col.header }}
           </th>
@@ -13,7 +13,7 @@
       @if (isLoading()) {
         @for (i of [1, 2, 3, 4, 5]; track i) {
           <tr class="skeleton-row">
-            @for (col of columns(); track col.header) {
+            @for (col of columns(); track $index) {
               <td [attr.data-label]="col.header"><div class="skeleton-cell"></div></td>
             }
           </tr>
@@ -27,7 +27,7 @@
       } @else {
         @for (row of data(); track $index) {
           <tr (click)="onRowClick(row)" class="clickable-row">
-            @for (col of columns(); track col.header) {
+            @for (col of columns(); track $index) {
               <td [class]="'align-' + (col.align || 'left')" [attr.data-label]="col.header">
                 @if (col.template) {
                   <ng-container
