@@ -1,19 +1,21 @@
-using System.IO;
+﻿using System.IO;
 using Backend.app.API.Endpoints;
 using Backend.app.Core.Interfaces;
+using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
 using Backend.app.Infrastructure.Data;
 using Backend.app.Infrastructure.Middleware;
+using Backend.app.Infrastructure.Repositories.Postgres;
 using Backend.app.Infrastructure.Repositories.Sqlite;
 using DotNetEnv;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 
+var builder = WebApplication.CreateBuilder(args);
+
 // 1. LOAD SECRETS (.env)
 LoadEnvironmentVariables();
-
-var builder = WebApplication.CreateBuilder(args);
 
 // 2. CONFIGURATION
 builder.Configuration.AddEnvironmentVariables();
@@ -111,9 +113,8 @@ static void LoadEnvironmentVariables()
         {
             var defaultEnvContent =
                 @"# --- Database Settings ---
-DatabaseSettings__Provider=sqlite
-DatabaseSettings__ConnectionString=Data Source=app/Infrastructure/Data/ellaDB_v5.sqlite
-
+DatabaseSettings__Provider=postgres
+DatabaseSettings__ConnectionString=Host=localhost;Port=5432;Database=net25_db;Username=net25;Password=SecretNet25Password!;
 # --- JWT Settings ---
 # WARNING: Replace this with a secure key in your local @.env file
 JwtSettings__SecretKey=REPLACE_WITH_SECURE_KEY_MIN_32_CHARS
@@ -205,18 +206,26 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
     var services = builder.Services;
     var configuration = builder.Configuration;
 
-    var dbProvider = configuration["DatabaseSettings:Provider"]?.ToLower();
+    var dbProviderString = configuration["DatabaseSettings:Provider"];
 
-    if (string.IsNullOrEmpty(dbProvider))
+    if (string.IsNullOrEmpty(dbProviderString))
     {
         throw new InvalidOperationException("Database Provider is not configured.");
+    }
+
+    if (!Enum.TryParse<DbProviders>(dbProviderString, ignoreCase: true, out var dbProvider))
+    {
+        throw new InvalidOperationException(
+            $"Invalid database provider: '{dbProviderString}'. Supported values: {string.Join(", ", Enum.GetNames<DbProviders>())}"
+        );
     }
 
     services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
 
     switch (dbProvider)
     {
-        case "sqlite":
+        case DbProviders.Sqlite:
+            services.AddScoped<IDbInitializer, SqliteDbInitializer>();
             services.AddScoped<IRoomRepository, SqliteRoomRepo>();
             services.AddScoped<IRoomTypeRepository, SqliteRoomTypeRepo>();
             services.AddScoped<IRoomReadModelRepository, SqliteRoomReadModelRepo>();
@@ -227,12 +236,24 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
             services.AddScoped<IPermissionRepository, SqlitePermissionRepo>();
             services.AddScoped<IPermissionTemplateRepository, SqlitePermissionTemplateRepo>();
             services.AddScoped<IRegistrationRepository, SqliteRegistrationRepo>();
-            services.AddScoped<IDbInitializer, SqliteDbInitializer>();
             break;
 
-        case "postgres":
-            throw new NotImplementedException("Postgres is not supported yet.");
+        case DbProviders.Postgres:
+            services.AddScoped<IDbInitializer, PostgresDbInitializer>();
+            services.AddScoped<IAssetRepository, PostgresAssetRepo>();
+            services.AddScoped<IUserRepository, PostgresUserRepo>();
+            services.AddScoped<IBookingRepository, PostgresBookingRepo>();
+            services.AddScoped<IBookingReadModelRepository, PostgresBookingReadModelRepo>();
+            services.AddScoped<IPermissionRepository, PostgresPermissionRepo>();
+            services.AddScoped<IPermissionTemplateRepository, PostgresPermissionTemplateRepo>();
+            services.AddScoped<IRegistrationRepository, PostgresRegistrationRepo>();
+            services.AddScoped<IRoomRepository, PostgresRoomRepo>();
+            services.AddScoped<IRoomTypeRepository, PostgresRoomTypeRepo>();
+            services.AddScoped<IRoomReadModelRepository, PostgresRoomReadModelRepo>();
+            break;
 
+        case DbProviders.SqlServer:
+            throw new NotSupportedException("SQL Server provider is not yet implemented.");
         default:
             throw new NotSupportedException($"Provider '{dbProvider}' is not supported.");
     }

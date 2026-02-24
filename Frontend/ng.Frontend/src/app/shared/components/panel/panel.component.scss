@@ -80,17 +80,6 @@
   overflow-y: auto;
   min-height: 0;
   padding: 16px;
-
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: var(--color-border);
-    border-radius: 4px;
-  }
 }
 
 @media (max-width: 768px) {

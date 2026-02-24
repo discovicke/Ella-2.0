@@ -2,9 +2,9 @@
 using Backend.app.Core.Models.Entities;
 using Dapper;
 
-namespace Backend.app.Infrastructure.Repositories.Sqlite;
+namespace Backend.app.Infrastructure.Repositories.Postgres;
 
-public class SqliteAssetRepo(IDbConnectionFactory connectionFactory, ILogger<SqliteAssetRepo> logger)
+public class PostgresAssetRepo(IDbConnectionFactory connectionFactory, ILogger<PostgresAssetRepo> logger)
     : IAssetRepository
 {
     public async Task<IEnumerable<AssetType>> GetAllAsync()
@@ -43,7 +43,11 @@ public class SqliteAssetRepo(IDbConnectionFactory connectionFactory, ILogger<Sql
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            const string sql = "INSERT INTO asset_types (description) VALUES (@Description); SELECT last_insert_rowid();";
+            const string sql = """
+                INSERT INTO asset_types (description)
+                VALUES (@Description)
+                RETURNING id;
+                """;
             return await conn.ExecuteScalarAsync<long>(sql, assetType);
         }
         catch (Exception ex)
@@ -96,7 +100,10 @@ public class SqliteAssetRepo(IDbConnectionFactory connectionFactory, ILogger<Sql
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            return await conn.ExecuteScalarAsync<bool>("SELECT 1 FROM asset_types WHERE id = @id;", new { id });
+
+            const string sql = "SELECT EXISTS (SELECT 1 FROM asset_types WHERE id = @id);";
+            return await conn.ExecuteScalarAsync<bool>(sql, new { id });
+        
         }
         catch (Exception ex)
         {
@@ -114,8 +121,8 @@ public class SqliteAssetRepo(IDbConnectionFactory connectionFactory, ILogger<Sql
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             
-            const string sql = "SELECT id FROM asset_types WHERE id IN @Ids;";
-            return await conn.QueryAsync<long>(sql, new { Ids = idsToCheck });
+            const string sql = "SELECT id FROM asset_types WHERE id = ANY(@Ids);";
+            return await conn.QueryAsync<long>(sql, new { Ids = idsToCheck.ToArray() });
         }
         catch (Exception ex)
         {

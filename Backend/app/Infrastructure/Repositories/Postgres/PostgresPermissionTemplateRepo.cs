@@ -3,11 +3,11 @@ using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
 using Dapper;
 
-namespace Backend.app.Infrastructure.Repositories.Sqlite;
+namespace Backend.app.Infrastructure.Repositories.Postgres;
 
-public class SqlitePermissionTemplateRepo(
+public class PostgresPermissionTemplateRepo(
     IDbConnectionFactory connectionFactory,
-    ILogger<SqlitePermissionTemplateRepo> logger
+    ILogger<PostgresPermissionTemplateRepo> logger
 ) : IPermissionTemplateRepository
 {
     public async Task<List<PermissionTemplateDto>> GetAllAsync()
@@ -101,17 +101,18 @@ public class SqlitePermissionTemplateRepo(
             var inputIds = templates
                 .Where(t => t.Id.HasValue && t.Id.Value > 0)
                 .Select(t => t.Id!.Value)
-                .ToList();
+                .ToArray();
 
             // 2. Delete templates NOT in the input list (Safe Delete Check)
-            if (inputIds.Count > 0)
+            if (inputIds.Length > 0)
             {
                 // Check if any users are assigned to the templates we are about to delete
                 const string checkSql =
                     @"
                     SELECT COUNT(*) 
                     FROM users 
-                    WHERE permission_template_id NOT IN @Ids AND permission_template_id IS NOT NULL";
+                    WHERE permission_template_id IS NOT NULL
+                      AND NOT (permission_template_id = ANY(@Ids))";
 
                 var dependentUserCount = await conn.ExecuteScalarAsync<int>(
                     checkSql,
@@ -127,7 +128,7 @@ public class SqlitePermissionTemplateRepo(
                 }
 
                 await conn.ExecuteAsync(
-                    "DELETE FROM permission_templates WHERE id NOT IN @Ids;",
+                    "DELETE FROM permission_templates WHERE NOT (id = ANY(@Ids));",
                     new { Ids = inputIds },
                     transaction: tx
                 );
@@ -181,8 +182,8 @@ public class SqlitePermissionTemplateRepo(
                     // Insert new
                     templateId = await conn.ExecuteScalarAsync<long>(
                         @"INSERT INTO permission_templates (name, label, css_class, sort_order)
-                          VALUES (@Name, @Label, @CssClass, @SortOrder);
-                          SELECT last_insert_rowid();",
+                          VALUES (@Name, @Label, @CssClass, @SortOrder)
+                          RETURNING id;",
                         new
                         {
                             Name = !string.IsNullOrEmpty(tpl.Name)
@@ -197,7 +198,6 @@ public class SqlitePermissionTemplateRepo(
                 }
 
                 // 4. Replace flags for this template
-                // Safe to delete/insert flags as they don't have dependents (except view)
                 await conn.ExecuteAsync(
                     "DELETE FROM permission_template_flags WHERE template_id = @TemplateId;",
                     new { TemplateId = templateId },
@@ -210,7 +210,7 @@ public class SqlitePermissionTemplateRepo(
                     {
                         TemplateId = templateId,
                         Key = p.Key,
-                        Value = p.Value ? 1 : 0,
+                        p.Value,
                     });
 
                     await conn.ExecuteAsync(

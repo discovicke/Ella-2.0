@@ -2,11 +2,11 @@ using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models;
 using Dapper;
 
-namespace Backend.app.Infrastructure.Repositories.Sqlite;
+namespace Backend.app.Infrastructure.Repositories.Postgres;
 
-public class SqlitePermissionRepo(
+public class PostgresPermissionRepo(
     IDbConnectionFactory connectionFactory,
-    ILogger<SqlitePermissionRepo> logger
+    ILogger<PostgresPermissionRepo> logger
 ) : IPermissionRepository
 {
     public async Task<UserPermissions?> GetEffectivePermissionsAsync(long userId)
@@ -18,7 +18,6 @@ public class SqlitePermissionRepo(
 
             // Single query: join user row with effective permissions view.
             // If the user doesn't exist, zero rows are returned → we return null.
-            // The user's template ID comes along for free from the users table.
             const string sql = """
                 SELECT u.permission_template_id AS TemplateId,
                        vp.permission_key        AS Key,
@@ -31,7 +30,6 @@ public class SqlitePermissionRepo(
 
             var rows = (await conn.QueryAsync<PermissionRow>(sql, new { userId })).AsList();
 
-            // No rows → user does not exist
             if (rows.Count == 0)
                 return null;
 
@@ -44,36 +42,36 @@ public class SqlitePermissionRepo(
             foreach (var row in rows)
             {
                 if (row.Key is null)
-                    continue; // user exists but has no permissions at all
-                var val = row.IsGranted == 1;
+                    continue;
+                var granted = row.IsGranted;
                 switch (row.Key)
                 {
                     case "BookRoom":
-                        permissions.BookRoom = val;
+                        permissions.BookRoom = granted;
                         break;
                     case "MyBookings":
-                        permissions.MyBookings = val;
+                        permissions.MyBookings = granted;
                         break;
                     case "ManageUsers":
-                        permissions.ManageUsers = val;
+                        permissions.ManageUsers = granted;
                         break;
                     case "ManageClasses":
-                        permissions.ManageClasses = val;
+                        permissions.ManageClasses = granted;
                         break;
                     case "ManageRooms":
-                        permissions.ManageRooms = val;
+                        permissions.ManageRooms = granted;
                         break;
                     case "ManageAssets":
-                        permissions.ManageAssets = val;
+                        permissions.ManageAssets = granted;
                         break;
                     case "ManageBookings":
-                        permissions.ManageBookings = val;
+                        permissions.ManageBookings = granted;
                         break;
                     case "ManageCampuses":
-                        permissions.ManageCampuses = val;
+                        permissions.ManageCampuses = granted;
                         break;
                     case "ManageRoles":
-                        permissions.ManageRoles = val;
+                        permissions.ManageRoles = granted;
                         break;
                 }
             }
@@ -94,7 +92,6 @@ public class SqlitePermissionRepo(
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            // Single query: all users joined with the effective permissions view.
             const string sql = """
                 SELECT u.id                        AS UserId,
                        u.permission_template_id    AS TemplateId,
@@ -124,35 +121,35 @@ public class SqlitePermissionRepo(
 
                 if (row.Key is null)
                     continue;
-                var val = row.IsGranted == 1;
+                var granted = row.IsGranted;
                 switch (row.Key)
                 {
                     case "BookRoom":
-                        perms.BookRoom = val;
+                        perms.BookRoom = granted;
                         break;
                     case "MyBookings":
-                        perms.MyBookings = val;
+                        perms.MyBookings = granted;
                         break;
                     case "ManageUsers":
-                        perms.ManageUsers = val;
+                        perms.ManageUsers = granted;
                         break;
                     case "ManageClasses":
-                        perms.ManageClasses = val;
+                        perms.ManageClasses = granted;
                         break;
                     case "ManageRooms":
-                        perms.ManageRooms = val;
+                        perms.ManageRooms = granted;
                         break;
                     case "ManageAssets":
-                        perms.ManageAssets = val;
+                        perms.ManageAssets = granted;
                         break;
                     case "ManageBookings":
-                        perms.ManageBookings = val;
+                        perms.ManageBookings = granted;
                         break;
                     case "ManageCampuses":
-                        perms.ManageCampuses = val;
+                        perms.ManageCampuses = granted;
                         break;
                     case "ManageRoles":
-                        perms.ManageRoles = val;
+                        perms.ManageRoles = granted;
                         break;
                 }
             }
@@ -172,29 +169,27 @@ public class SqlitePermissionRepo(
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            using var transaction = conn.BeginTransaction();
+            using var transaction = await conn.BeginTransactionAsync();
 
             try
             {
-                // 1. Clear overrides (so they start fresh with the new role/no role)
                 await conn.ExecuteAsync(
                     "DELETE FROM user_permission_overrides WHERE user_id = @userId;",
                     new { userId },
                     transaction
                 );
 
-                // 2. Update the user's template
                 await conn.ExecuteAsync(
                     "UPDATE users SET permission_template_id = @templateId WHERE id = @userId;",
                     new { userId, templateId },
                     transaction
                 );
 
-                transaction.Commit();
+                await transaction.CommitAsync();
             }
             catch
             {
-                transaction.Rollback();
+                await transaction.RollbackAsync();
                 throw;
             }
         }
@@ -217,25 +212,20 @@ public class SqlitePermissionRepo(
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            // 1. Get the base template value
-            const string templateValueSql =
-                @"
-                SELECT ptf.value 
+            const string templateValueSql = """
+                SELECT ptf.value
                 FROM users u
                 JOIN permission_template_flags ptf ON u.permission_template_id = ptf.template_id
-                WHERE u.id = @userId AND ptf.permission_key = @permissionKey;";
+                WHERE u.id = @userId AND ptf.permission_key = @permissionKey;
+                """;
 
-            // Default to 0 (false) if not found (e.g. key missing from template or user has no template)
-            var templateValueInt = await conn.ExecuteScalarAsync<int?>(
+            var templateValue = await conn.ExecuteScalarAsync<bool?>(
                 templateValueSql,
                 new { userId, permissionKey }
             );
-            var templateValue = templateValueInt.GetValueOrDefault(0) == 1;
 
-            // 2. Compare new value with template value
-            if (value == templateValue)
+            if (value == (templateValue ?? false))
             {
-                // Redundant override -> Delete it
                 await conn.ExecuteAsync(
                     "DELETE FROM user_permission_overrides WHERE user_id = @userId AND permission_key = @permissionKey;",
                     new { userId, permissionKey }
@@ -243,16 +233,17 @@ public class SqlitePermissionRepo(
             }
             else
             {
-                // Different -> Upsert override
-                // SQLite has UPSERT syntax or INSERT OR REPLACE
-                // Since PK is (user_id, permission_key), INSERT OR REPLACE works fine.
                 await conn.ExecuteAsync(
-                    "INSERT OR REPLACE INTO user_permission_overrides (user_id, permission_key, value) VALUES (@userId, @permissionKey, @value);",
+                    """
+                    INSERT INTO user_permission_overrides (user_id, permission_key, value)
+                    VALUES (@userId, @permissionKey, @value)
+                    ON CONFLICT (user_id, permission_key) DO UPDATE SET value = @value;
+                    """,
                     new
                     {
                         userId,
                         permissionKey,
-                        value = value ? 1 : 0,
+                        value,
                     }
                 );
             }
@@ -276,7 +267,7 @@ public class SqlitePermissionRepo(
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            using var transaction = conn.BeginTransaction();
+            using var transaction = await conn.BeginTransactionAsync();
 
             try
             {
@@ -288,12 +279,12 @@ public class SqlitePermissionRepo(
                     WHERE u.id = @userId;
                     """;
                 var templateFlags = (
-                    await conn.QueryAsync<(string Key, int Value)>(
+                    await conn.QueryAsync<(string Key, bool Value)>(
                         templateValuesSql,
                         new { userId },
                         transaction
                     )
-                ).ToDictionary(r => r.Key, r => r.Value == 1);
+                ).ToDictionary(r => r.Key, r => r.Value);
 
                 // 2. Batch: delete redundant overrides, upsert differing ones
                 var toDelete = new List<object>();
@@ -313,7 +304,7 @@ public class SqlitePermissionRepo(
                             {
                                 userId,
                                 permissionKey = key,
-                                value = value ? 1 : 0,
+                                value,
                             }
                         );
                     }
@@ -331,17 +322,21 @@ public class SqlitePermissionRepo(
                 if (toUpsert.Count > 0)
                 {
                     await conn.ExecuteAsync(
-                        "INSERT OR REPLACE INTO user_permission_overrides (user_id, permission_key, value) VALUES (@userId, @permissionKey, @value);",
+                        """
+                        INSERT INTO user_permission_overrides (user_id, permission_key, value)
+                        VALUES (@userId, @permissionKey, @value)
+                        ON CONFLICT (user_id, permission_key) DO UPDATE SET value = EXCLUDED.value;
+                        """,
                         toUpsert,
                         transaction
                     );
                 }
 
-                transaction.Commit();
+                await transaction.CommitAsync();
             }
             catch
             {
-                transaction.Rollback();
+                await transaction.RollbackAsync();
                 throw;
             }
         }
@@ -370,24 +365,19 @@ public class SqlitePermissionRepo(
         }
     }
 
-    /// <summary>
-    /// Internal DTO for Dapper mapping of the collapsed permission query.
-    /// </summary>
+    // Postgres uses native BOOLEAN — Dapper maps it directly (no int conversion needed)
     private class PermissionRow
     {
         public long? TemplateId { get; set; }
         public string? Key { get; set; }
-        public int IsGranted { get; set; }
+        public bool IsGranted { get; set; }
     }
 
-    /// <summary>
-    /// Internal DTO for Dapper mapping of the bulk permissions query.
-    /// </summary>
     private class BulkPermissionRow
     {
         public long UserId { get; set; }
         public long? TemplateId { get; set; }
         public string? Key { get; set; }
-        public int IsGranted { get; set; }
+        public bool IsGranted { get; set; }
     }
 }
