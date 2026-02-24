@@ -134,7 +134,7 @@ public class PostgresUserRepo(IDbConnectionFactory connectionFactory, ILogger<Po
                     user.PasswordHash,
                     user.DisplayName,
                     user.IsBanned,
-                    user.TokensValidAfter,
+                    TokensValidAfter = user.TokensValidAfter.ToUniversalTime(),
                     user.PermissionTemplateId,
                     Id = id,
                 }
