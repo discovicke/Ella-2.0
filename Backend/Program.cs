@@ -113,9 +113,8 @@ static void LoadEnvironmentVariables()
         {
             var defaultEnvContent =
                 @"# --- Database Settings ---
-DatabaseSettings__Provider=sqlite
-DatabaseSettings__ConnectionString=Data Source=app/Infrastructure/Data/ellaDB.sqlite
-
+DatabaseSettings__Provider=postgres
+DatabaseSettings__ConnectionString=Host=localhost;Port=5432;Database=net25_db;Username=net25;Password=SecretNet25Password!;
 # --- JWT Settings ---
 # WARNING: Replace this with a secure key in your local @.env file
 JwtSettings__SecretKey=REPLACE_WITH_SECURE_KEY_MIN_32_CHARS
