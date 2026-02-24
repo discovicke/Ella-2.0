@@ -16,19 +16,19 @@ const { execSync } = require("child_process");
 
 // --- Output helpers ---
 const c = {
-  reset:  "\x1b[0m",
-  bold:   "\x1b[1m",
-  dim:    "\x1b[2m",
-  red:    "\x1b[31m",
-  green:  "\x1b[32m",
+  reset: "\x1b[0m",
+  bold: "\x1b[1m",
+  dim: "\x1b[2m",
+  red: "\x1b[31m",
+  green: "\x1b[32m",
   yellow: "\x1b[33m",
-  cyan:   "\x1b[36m",
+  cyan: "\x1b[36m",
 };
-const DIV = `  ${c.dim}${'─'.repeat(42)}${c.reset}`;
-const ok      = (msg) => console.log(`  ${c.green}✔${c.reset}  ${msg}`);
-const info    = (msg) => console.log(`  ${c.cyan}◆${c.reset}  ${msg}`);
-const hint    = (msg) => console.log(`     ${c.dim}${msg}${c.reset}`);
-const fail    = (msg) => console.error(`  ${c.red}✖${c.reset}  ${msg}`);
+const DIV = `  ${c.dim}${"─".repeat(42)}${c.reset}`;
+const ok = (msg) => console.log(`  ${c.green}✔${c.reset}  ${msg}`);
+const info = (msg) => console.log(`  ${c.cyan}◆${c.reset}  ${msg}`);
+const hint = (msg) => console.log(`     ${c.dim}${msg}${c.reset}`);
+const fail = (msg) => console.error(`  ${c.red}✖${c.reset}  ${msg}`);
 const section = (msg) => console.log(`\n  ${c.bold}${msg}${c.reset}\n${DIV}`);
 
 const ROOT = path.resolve(__dirname, "..");
@@ -50,7 +50,9 @@ const DOCKER_PROVIDERS = ["postgres", "sqlserver"];
 if (fs.existsSync(ENV_PATH) || fs.existsSync(ENV_EXAMPLE_PATH)) {
   console.log(`\n${DIV}`);
   ok("Environment already configured — skipping setup.");
-  hint("To reconfigure, delete Backend/.env and Backend/.env-example, then run this again.");
+  hint(
+    "To reconfigure, delete Backend/.env and Backend/.env-example, then run this again.",
+  );
   console.log(`${DIV}\n`);
   process.exit(0);
 }
@@ -113,7 +115,9 @@ console.log(`\n${DIV}`);
 console.log(`  ${c.yellow}${c.bold}  ELLA — First-time Setup${c.reset}`);
 console.log(DIV);
 section("Select a database provider");
-providers.forEach((p, i) => console.log(`     ${c.bold}${i + 1}${c.reset}  ${p}`));
+providers.forEach((p, i) =>
+  console.log(`     ${c.bold}${i + 1}${c.reset}  ${p}`),
+);
 console.log();
 
 rl.question(`Enter choice (1-${providers.length}) [default: 1]: `, (answer) => {
@@ -165,7 +169,9 @@ rl.question(`Enter choice (1-${providers.length}) [default: 1]: `, (answer) => {
     try {
       execSync("docker info", { stdio: "ignore" });
     } catch {
-      fail(`Docker is not running. Start Docker Desktop and run 'npm run setup' again.`);
+      fail(
+        `Docker is not running. Start Docker Desktop and run 'npm run setup' again.`,
+      );
       process.exit(1);
     }
     info(`Starting ${chosen} container...`);
@@ -176,6 +182,8 @@ rl.question(`Enter choice (1-${providers.length}) [default: 1]: `, (answer) => {
   }
 
   console.log(`\n${DIV}`);
-  console.log(`  ${c.green}${c.bold}Setup complete!${c.reset}  Run ${c.cyan}npm start${c.reset} to launch the project.`);
+  console.log(
+    `  ${c.green}${c.bold}Setup complete!${c.reset}  Run ${c.cyan}npm start${c.reset} to launch the project.`,
+  );
   console.log(`${DIV}\n`);
 });

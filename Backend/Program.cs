@@ -111,7 +111,9 @@ static void LoadEnvironmentVariables()
     {
         Env.Load(envExamplePath);
         Console.WriteLine("  \u001b[33m\u25b8\u001b[0m  Configuration loaded from .env-example");
-        Console.WriteLine("     \u001b[2mCopy to .env and fill in real credentials for production use.\u001b[0m");
+        Console.WriteLine(
+            "     \u001b[2mCopy to .env and fill in real credentials for production use.\u001b[0m"
+        );
     }
     else
     {

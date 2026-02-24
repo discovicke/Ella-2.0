@@ -2,11 +2,11 @@
 
 ## Prerequisites
 
-| Tool      | Version | Check              |
-| --------- | ------- | ------------------ |
-| Node.js   | 18+     | `node -v`          |
-| .NET SDK  | 9.0+    | `dotnet --version` |
-| Docker    | 20+     | `docker --version` |
+| Tool     | Version | Check              |
+| -------- | ------- | ------------------ |
+| Node.js  | 18+     | `node -v`          |
+| .NET SDK | 9.0+    | `dotnet --version` |
+| Docker   | 20+     | `docker --version` |
 
 > Docker is only required for **Postgres** or **SqlServer**. Sqlite works without it.
 
@@ -74,13 +74,13 @@ npm run setup
 
 ## Quick Reference
 
-| Command                  | Purpose                                              |
-| ------------------------ | ---------------------------------------------------- |
+| Command                  | Purpose                                                |
+| ------------------------ | ------------------------------------------------------ |
 | `npm run setup`          | One-time: install deps, pick DB provider, start Docker |
-| `npm start`              | Daily: pre-checks, build, serve both servers         |
-| `npm run refresh:models` | Regenerate TypeScript models from backend DTOs       |
-| `npm run build:prod`     | Production build → `dist/final_app`                  |
-| `npm run help`           | Show all available commands                          |
+| `npm start`              | Daily: pre-checks, build, serve both servers           |
+| `npm run refresh:models` | Regenerate TypeScript models from backend DTOs         |
+| `npm run build:prod`     | Production build → `dist/final_app`                    |
+| `npm run help`           | Show all available commands                            |
 
 ---
 

@@ -14,12 +14,12 @@ const { execSync } = require("child_process");
 // --- Output helpers ---
 const c = {
   reset: "\x1b[0m",
-  red:   "\x1b[31m",
-  cyan:  "\x1b[36m",
-  bold:  "\x1b[1m",
-  dim:   "\x1b[2m",
+  red: "\x1b[31m",
+  cyan: "\x1b[36m",
+  bold: "\x1b[1m",
+  dim: "\x1b[2m",
 };
-const DIV  = `  ${c.dim}${'─'.repeat(42)}${c.reset}`;
+const DIV = `  ${c.dim}${"─".repeat(42)}${c.reset}`;
 const info = (msg) => console.log(`  ${c.cyan}◆${c.reset}  ${msg}`);
 const fail = (msg) => console.error(`  ${c.red}✖${c.reset}  ${msg}`);
 const hint = (msg) => console.log(`     ${c.dim}${msg}${c.reset}`);
@@ -34,7 +34,9 @@ const DOCKER_PROVIDERS = ["postgres", "sqlserver"];
 if (!fs.existsSync(ENV_PATH) && !fs.existsSync(ENV_EXAMPLE_PATH)) {
   console.log(`\n${DIV}`);
   fail("No .env or .env-example found.");
-  hint(`Run ${c.cyan}npm run setup${c.reset}${c.dim} to complete initial configuration.`);
+  hint(
+    `Run ${c.cyan}npm run setup${c.reset}${c.dim} to complete initial configuration.`,
+  );
   console.log(`${DIV}\n`);
   process.exit(1);
 }
@@ -63,7 +65,10 @@ if (provider && DOCKER_PROVIDERS.includes(provider)) {
   console.log(`\n${DIV}`);
   info(`Ensuring ${provider} container is up...`);
   try {
-    execSync(`docker-compose -f "${composeFile}" up -d`, { cwd: ROOT, stdio: "inherit" });
+    execSync(`docker-compose -f "${composeFile}" up -d`, {
+      cwd: ROOT,
+      stdio: "inherit",
+    });
   } catch {
     fail(`docker-compose up failed for docker-compose.${provider}.yml`);
     process.exit(1);
