@@ -45,7 +45,7 @@ Detta startar både backend (C#) och frontend (Angular) samtidigt. Applikationen
 
 ## Hur programmet fungerar
 
-Se [USAGE.md](./USAGE.md) för en detaljerad genomgång av systemets funktioner.
+Se [USAGE.md](./_docs/usage.md) för en detaljerad genomgång av systemets funktioner.
 
 ---
 
