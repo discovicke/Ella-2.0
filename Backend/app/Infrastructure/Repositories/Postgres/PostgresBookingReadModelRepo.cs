@@ -1,8 +1,8 @@
+using System.Text;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Models.ReadModels;
 using Dapper;
-using System.Text;
 
 namespace Backend.app.Infrastructure.Repositories.Postgres;
 
@@ -12,7 +12,8 @@ namespace Backend.app.Infrastructure.Repositories.Postgres;
 /// </summary>
 public class PostgresBookingReadModelRepo(
     IDbConnectionFactory connectionFactory,
-    ILogger<PostgresBookingReadModelRepo> logger) : IBookingReadModelRepository
+    ILogger<PostgresBookingReadModelRepo> logger
+) : IBookingReadModelRepository
 {
     public async Task<IEnumerable<BookingDetailedReadModel>> GetAllDetailedBookingsAsync()
     {
@@ -43,91 +44,119 @@ public class PostgresBookingReadModelRepo(
             var sql = "SELECT * FROM v_bookings_detailed WHERE booking_id = @BookingId;";
             var booking = await conn.QuerySingleOrDefaultAsync<BookingDetailedReadModel>(
                 sql,
-                new { BookingId = bookingId });
+                new { BookingId = bookingId }
+            );
 
             return booking;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching detailed booking with ID {BookingId}", bookingId);
+            logger.LogError(
+                ex,
+                "Database error while fetching detailed booking with ID {BookingId}",
+                bookingId
+            );
             throw;
         }
     }
 
-    public async Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByUserIdAsync(long userId)
+    public async Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByUserIdAsync(
+        long userId
+    )
     {
         try
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            var sql = @"
+            var sql =
+                @"
                 SELECT * FROM v_bookings_detailed 
                 WHERE user_id = @UserId 
                 ORDER BY start_time DESC;";
 
             var bookings = await conn.QueryAsync<BookingDetailedReadModel>(
                 sql,
-                new { UserId = userId });
+                new { UserId = userId }
+            );
 
             return bookings;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching detailed bookings for user {UserId}", userId);
+            logger.LogError(
+                ex,
+                "Database error while fetching detailed bookings for user {UserId}",
+                userId
+            );
             throw;
         }
     }
 
-    public async Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByRoomIdAsync(long roomId)
+    public async Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByRoomIdAsync(
+        long roomId
+    )
     {
         try
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            var sql = @"
+            var sql =
+                @"
                 SELECT * FROM v_bookings_detailed 
                 WHERE room_id = @RoomId 
                 ORDER BY start_time DESC;";
 
             var bookings = await conn.QueryAsync<BookingDetailedReadModel>(
                 sql,
-                new { RoomId = roomId });
+                new { RoomId = roomId }
+            );
 
             return bookings;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching detailed bookings for room {RoomId}", roomId);
+            logger.LogError(
+                ex,
+                "Database error while fetching detailed bookings for room {RoomId}",
+                roomId
+            );
             throw;
         }
     }
 
     public async Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByDateRangeAsync(
         DateTime startDate,
-        DateTime endDate)
+        DateTime endDate
+    )
     {
         try
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            var sql = @"
+            var sql =
+                @"
                 SELECT * FROM v_bookings_detailed 
                 WHERE start_time >= @StartDate AND end_time <= @EndDate 
                 ORDER BY start_time ASC;";
 
             var bookings = await conn.QueryAsync<BookingDetailedReadModel>(
                 sql,
-                new { StartDate = startDate.ToUniversalTime(), EndDate = endDate.ToUniversalTime() });
+                new { StartDate = startDate.ToUniversalTime(), EndDate = endDate.ToUniversalTime() }
+            );
 
             return bookings;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching detailed bookings between {StartDate} and {EndDate}",
-                startDate, endDate);
+            logger.LogError(
+                ex,
+                "Database error while fetching detailed bookings between {StartDate} and {EndDate}",
+                startDate,
+                endDate
+            );
             throw;
         }
     }
@@ -137,7 +166,8 @@ public class PostgresBookingReadModelRepo(
         long? roomId = null,
         DateTime? startDate = null,
         DateTime? endDate = null,
-        BookingStatus? status = null)
+        BookingStatus? status = null
+    )
     {
         try
         {
@@ -173,19 +203,25 @@ public class PostgresBookingReadModelRepo(
 
             if (status.HasValue)
             {
-                sqlBuilder.Append(" AND status = @Status");
+                sqlBuilder.Append(" AND status = @Status::booking_status");
                 parameters.Add("Status", status.Value.ToString().ToLower());
             }
 
             sqlBuilder.Append(" ORDER BY start_time DESC;");
 
-            var bookings = (await conn.QueryAsync<BookingDetailedReadModel>(
-                sqlBuilder.ToString(),
-                parameters)).ToList();
+            var bookings = (
+                await conn.QueryAsync<BookingDetailedReadModel>(sqlBuilder.ToString(), parameters)
+            ).ToList();
 
             logger.LogInformation(
                 "Fetched {Count} detailed bookings with filters: UserId={UserId}, RoomId={RoomId}, StartDate={StartDate}, EndDate={EndDate}, Status={Status}",
-                bookings.Count, userId, roomId, startDate, endDate, status);
+                bookings.Count,
+                userId,
+                roomId,
+                startDate,
+                endDate,
+                status
+            );
 
             return bookings;
         }
@@ -196,14 +232,17 @@ public class PostgresBookingReadModelRepo(
         }
     }
 
-    public async Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByRegisteredUserIdAsync(long userId)
+    public async Task<
+        IEnumerable<BookingDetailedReadModel>
+    > GetDetailedBookingsByRegisteredUserIdAsync(long userId)
     {
         try
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            var sql = @"
+            var sql =
+                @"
                 SELECT v.* 
                 FROM v_bookings_detailed v
                 INNER JOIN registrations r ON v.booking_id = r.booking_id
@@ -212,13 +251,18 @@ public class PostgresBookingReadModelRepo(
 
             var bookings = await conn.QueryAsync<BookingDetailedReadModel>(
                 sql,
-                new { UserId = userId });
+                new { UserId = userId }
+            );
 
             return bookings;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching bookings registered for user {UserId}", userId);
+            logger.LogError(
+                ex,
+                "Database error while fetching bookings registered for user {UserId}",
+                userId
+            );
             throw;
         }
     }
