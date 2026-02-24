@@ -271,7 +271,7 @@ VALUES (1, 1),
 -- -------------------------------------------------------------
 --  BOOKINGS
 --  SQLite använde INTEGER (0/1/2) för status.
---  Postgres använder booking_status ENUM: 'active'/'cancelled'/'passed'.
+--  Postgres använder booking_status ENUM: 'active'/'cancelled'/'expired'.
 --  start_time/end_time är TIMESTAMPTZ — anges med tidszon.
 -- -------------------------------------------------------------
 

@@ -17,7 +17,7 @@
 DO $$
 BEGIN
 CREATE
-TYPE booking_status AS ENUM ('active', 'cancelled', 'passed');
+TYPE booking_status AS ENUM ('active', 'cancelled', 'expired');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -260,7 +260,7 @@ FROM users u
 
 
 -- Berikad bokningsvy med användar- och rumsdata samt antal registrerade.
--- status beräknas dynamiskt: om end_time har passerat sätts 'passed'
+-- status beräknas dynamiskt: om end_time har passerat sätts 'expired'
 -- automatiskt, utan att man behöver uppdatera raden i bookings.
 CREATE
 OR REPLACE
@@ -278,7 +278,7 @@ SELECT b.id               AS booking_id,
        b.end_time,
        CASE
            WHEN b.status = 'cancelled' THEN 'cancelled'
-           WHEN b.end_time < NOW() THEN 'passed'
+           WHEN b.end_time < NOW() THEN 'expired'
            ELSE 'active'
            END::booking_status                         AS status, b.notes,
        b.created_at,

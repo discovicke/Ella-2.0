@@ -1,9 +1,12 @@
 using Backend.app.Core.Interfaces;
 using Dapper;
 
-namespace DefaultNamespace;
+namespace Backend.app.Infrastructure.Repositories.Postgres;
 
-public class PostgresRegistrationRepo(IDbConnectionFactory connectionFactory, ILogger<PostgresRegistrationRepo> logger) : IRegistrationRepository
+public class PostgresRegistrationRepo(
+    IDbConnectionFactory connectionFactory,
+    ILogger<PostgresRegistrationRepo> logger
+) : IRegistrationRepository
 {
     public async Task<bool> AddRegistrationAsync(long userId, long bookingId)
     {
@@ -11,7 +14,8 @@ public class PostgresRegistrationRepo(IDbConnectionFactory connectionFactory, IL
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            var sql = @"INSERT INTO registrations (user_id, booking_id) VALUES (@UserId, @BookingId);";
+            var sql =
+                @"INSERT INTO registrations (user_id, booking_id) VALUES (@UserId, @BookingId);";
             var rows = await conn.ExecuteAsync(sql, new { UserId = userId, BookingId = bookingId });
             return rows > 0;
         }
@@ -28,7 +32,8 @@ public class PostgresRegistrationRepo(IDbConnectionFactory connectionFactory, IL
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            var sql = @"DELETE FROM registrations WHERE user_id = @UserId AND booking_id = @BookingId;";
+            var sql =
+                @"DELETE FROM registrations WHERE user_id = @UserId AND booking_id = @BookingId;";
             var rows = await conn.ExecuteAsync(sql, new { UserId = userId, BookingId = bookingId });
             return rows > 0;
         }
@@ -45,13 +50,22 @@ public class PostgresRegistrationRepo(IDbConnectionFactory connectionFactory, IL
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            var sql = @"SELECT COUNT(1) FROM registrations WHERE user_id = @UserId AND booking_id = @BookingId;";
-            var count = await conn.ExecuteScalarAsync<int>(sql, new { UserId = userId, BookingId = bookingId });
+            var sql =
+                @"SELECT COUNT(1) FROM registrations WHERE user_id = @UserId AND booking_id = @BookingId;";
+            var count = await conn.ExecuteScalarAsync<int>(
+                sql,
+                new { UserId = userId, BookingId = bookingId }
+            );
             return count > 0;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error checking registration status for user {UserId} on booking {BookingId}", userId, bookingId);
+            logger.LogError(
+                ex,
+                "Error checking registration status for user {UserId} on booking {BookingId}",
+                userId,
+                bookingId
+            );
             throw;
         }
     }
