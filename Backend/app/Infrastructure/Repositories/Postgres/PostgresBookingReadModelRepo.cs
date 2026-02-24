@@ -120,7 +120,7 @@ public class PostgresBookingReadModelRepo(
 
             var bookings = await conn.QueryAsync<BookingDetailedReadModel>(
                 sql,
-                new { StartDate = startDate, EndDate = endDate });
+                new { StartDate = startDate.ToUniversalTime(), EndDate = endDate.ToUniversalTime() });
 
             return bookings;
         }
@@ -162,19 +162,19 @@ public class PostgresBookingReadModelRepo(
             if (startDate.HasValue)
             {
                 sqlBuilder.Append(" AND start_time >= @StartDate");
-                parameters.Add("StartDate", startDate.Value);
+                parameters.Add("StartDate", startDate.Value.ToUniversalTime());
             }
 
             if (endDate.HasValue)
             {
                 sqlBuilder.Append(" AND end_time <= @EndDate");
-                parameters.Add("EndDate", endDate.Value);
+                parameters.Add("EndDate", endDate.Value.ToUniversalTime());
             }
 
             if (status.HasValue)
             {
                 sqlBuilder.Append(" AND status = @Status");
-                parameters.Add("Status", status.Value);
+                parameters.Add("Status", status.Value.ToString().ToLower());
             }
 
             sqlBuilder.Append(" ORDER BY start_time DESC;");
