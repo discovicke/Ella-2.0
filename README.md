@@ -42,3 +42,15 @@ npm start
 Detta startar både backend (C#) och frontend (Angular) samtidigt. Applikationen är sedan tillgänglig i webbläsaren på `http://localhost:4200`.
 
 ---
+
+## Hur programmet fungerar
+
+Se [USAGE.md](./USAGE.md) för en detaljerad genomgång av systemets funktioner.
+
+---
+
+## Databasmigrering
+
+Applikationen skapar automatiskt alla tabeller, enum-typer, vyer, triggers och index vid uppstart om de inte redan finns. Ingen manuell SQL-körning krävs.
+
+Migreringshistoriken spåras i tabellen `database_versions`.
