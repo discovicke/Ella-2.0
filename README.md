@@ -5,6 +5,7 @@
 - [Docker](https://www.docker.com/) installerat och igång
 - [Node.js](https://nodejs.org/) (v18 eller senare)
 - [npm](https://www.npmjs.com/)
+- [.NET 9](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
 
 ### 2. Starta databasen
 
