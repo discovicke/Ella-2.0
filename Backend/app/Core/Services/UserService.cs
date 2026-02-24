@@ -22,13 +22,16 @@ public class UserService(
         logger.LogInformation("Fetching all users");
         var users = await repo.GetAllUsersAsync();
 
-        var result = new List<UserResponseDto>();
-        foreach (var user in users)
-        {
-            var perms = await permissionRepo.GetEffectivePermissionsAsync(user.Id);
-            result.Add(MapToDto(user, perms));
-        }
-        return result;
+        // Single bulk query for all permissions instead of N+1
+        var allPerms = await permissionRepo.GetAllEffectivePermissionsAsync();
+
+        return users
+            .Select(user =>
+            {
+                allPerms.TryGetValue(user.Id, out var perms);
+                return MapToDto(user, perms);
+            })
+            .ToList();
     }
 
     public async Task<UserResponseDto> GetByIdAsync(long id)
@@ -76,7 +79,7 @@ public class UserService(
         {
             await permissionRepo.SetUserTemplateAsync(created.Id, userTemplate.Id.Value);
         }
-        
+
         var perms = await permissionRepo.GetEffectivePermissionsAsync(created.Id);
         return MapToDto(created, perms);
     }
@@ -181,27 +184,33 @@ public class UserService(
     {
         logger.LogInformation("Updating permissions for user {UserId}", userId);
 
-        _ = await repo.GetUserByIdAsync(userId)
+        _ =
+            await repo.GetUserByIdAsync(userId)
             ?? throw new KeyNotFoundException($"User with ID {userId} does not exist.");
 
         // 1. Handle Template Change (Always call to allow clearing template with null)
         await permissionRepo.SetUserTemplateAsync(userId, dto.TemplateId);
 
-        // 2. Handle Granular Overrides
-        // We set each flag as an override. 
-        // Logic in repo will cleanup if it matches template.
-        await permissionRepo.SetUserOverrideAsync(userId, "BookRoom", dto.BookRoom);
-        await permissionRepo.SetUserOverrideAsync(userId, "MyBookings", dto.MyBookings);
-        await permissionRepo.SetUserOverrideAsync(userId, "ManageUsers", dto.ManageUsers);
-        await permissionRepo.SetUserOverrideAsync(userId, "ManageClasses", dto.ManageClasses);
-        await permissionRepo.SetUserOverrideAsync(userId, "ManageRooms", dto.ManageRooms);
-        await permissionRepo.SetUserOverrideAsync(userId, "ManageAssets", dto.ManageAssets);
-        await permissionRepo.SetUserOverrideAsync(userId, "ManageBookings", dto.ManageBookings);
-        await permissionRepo.SetUserOverrideAsync(userId, "ManageCampuses", dto.ManageCampuses);
-        await permissionRepo.SetUserOverrideAsync(userId, "ManageRoles", dto.ManageRoles);
+        // 2. Handle Granular Overrides (batch: 1 connection, 1 transaction)
+        await permissionRepo.SetUserOverridesBatchAsync(
+            userId,
+            new Dictionary<string, bool>
+            {
+                ["BookRoom"] = dto.BookRoom,
+                ["MyBookings"] = dto.MyBookings,
+                ["ManageUsers"] = dto.ManageUsers,
+                ["ManageClasses"] = dto.ManageClasses,
+                ["ManageRooms"] = dto.ManageRooms,
+                ["ManageAssets"] = dto.ManageAssets,
+                ["ManageBookings"] = dto.ManageBookings,
+                ["ManageCampuses"] = dto.ManageCampuses,
+                ["ManageRoles"] = dto.ManageRoles,
+            }
+        );
 
         var updated = await permissionRepo.GetEffectivePermissionsAsync(userId);
-        if (updated is null) throw new Exception("Failed to retrieve updated permissions");
+        if (updated is null)
+            throw new Exception("Failed to retrieve updated permissions");
 
         logger.LogInformation("Permissions updated for user {UserId}", userId);
         return updated;
