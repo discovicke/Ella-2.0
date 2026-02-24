@@ -2,7 +2,7 @@
 using Backend.app.Core.Models.Entities;
 using Dapper;
 
-namespace Backend.app.Infrastructure.Repositories.Sqlite;
+namespace Backend.app.Infrastructure.Repositories.Postgres;
 
 public class PostgresRoomTypeRepo(IDbConnectionFactory connectionFactory, ILogger<PostgresRoomTypeRepo> logger)
     : IRoomTypeRepository
@@ -43,7 +43,11 @@ public class PostgresRoomTypeRepo(IDbConnectionFactory connectionFactory, ILogge
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            const string sql = "INSERT INTO room_types (name) VALUES (@Name); SELECT last_insert_rowid();";
+            const string sql = """
+            INSERT INTO room_types (name)
+            VALUES (@Name)
+            RETURNING id;
+            """;
             return await conn.ExecuteScalarAsync<long>(sql, roomType);
         }
         catch (Exception ex)
