@@ -143,7 +143,11 @@ public class RoomService(
             throw new InvalidOperationException(bookings.Count.ToString());
 
         await repo.DeleteRoomAsync(id, force);
-        logger.LogInformation("Room with ID {RoomId} deleted (removed {BookingCount} bookings)", id, bookings.Count);
+        logger.LogInformation(
+            "Room with ID {RoomId} deleted (removed {BookingCount} bookings)",
+            id,
+            bookings.Count
+        );
         return bookings.Count;
     }
 

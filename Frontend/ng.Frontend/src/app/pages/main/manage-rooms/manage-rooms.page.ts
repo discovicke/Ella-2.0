@@ -129,7 +129,7 @@ export class ManageRoomsPage implements OnInit {
       { header: 'Campus', template: this.campusTpl },
       { header: 'Typ', template: this.typeTpl, width: '110px' },
       { header: 'Kapacitet', template: this.capacityTpl, width: '90px', align: 'center' },
-      { header: 'Assets', template: this.assetsTpl, width: '80px', align: 'center' },
+      { header: 'Utrustning', template: this.assetsTpl, width: '80px', align: 'center' },
       { header: '', template: this.actionsTpl, width: '80px', align: 'right' },
     ];
   }

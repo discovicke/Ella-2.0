@@ -50,7 +50,11 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching rooms with type ID {RoomTypeId}", roomTypeId);
+            logger.LogError(
+                ex,
+                "Database error while fetching rooms with type ID {RoomTypeId}",
+                roomTypeId
+            );
             throw;
         }
     }

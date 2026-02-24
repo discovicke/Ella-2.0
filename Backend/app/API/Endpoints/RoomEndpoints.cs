@@ -141,8 +141,8 @@ public static class RoomEndpoints
             .WithSummary("Delete a room")
             .WithDescription(
                 "Permanently deletes a room and optionally its bookings.\n\n"
-                + "Pass `?force=true` to cascade-delete all bookings.\n\n"
-                + "🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
+                    + "Pass `?force=true` to cascade-delete all bookings.\n\n"
+                    + "🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
             )
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
@@ -216,7 +216,7 @@ public static class RoomEndpoints
 
         if (dto.Capacity.HasValue && dto.Capacity <= 0)
             return Results.BadRequest("Capacity must be a positive number.");
-        
+
         if (dto.RoomTypeId <= 0)
             return Results.BadRequest("Room type is required.");
 
