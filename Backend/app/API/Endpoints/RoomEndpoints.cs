@@ -115,28 +115,39 @@ public static class RoomEndpoints
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
 
-        // DELETE /api/rooms/{id}
+        // DELETE /api/rooms/{id}?force=true
         group
             .MapDelete(
                 "/{id}",
-                async (long id, RoomService service) =>
+                async (long id, bool? force, RoomService service) =>
                 {
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
 
-                    await service.DeleteRoomAsync(id);
-                    return Results.NoContent();
+                    try
+                    {
+                        await service.DeleteRoomAsync(id, force == true);
+                        return Results.NoContent();
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        // ex.Message contains the booking count
+                        return Results.Conflict(new { bookingCount = int.Parse(ex.Message) });
+                    }
                 }
             )
             .RequirePermission("ManageRooms")
             .WithName("DeleteRoom")
             .WithSummary("Delete a room")
             .WithDescription(
-                "Permanently deletes a room by its unique identifier.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
+                "Permanently deletes a room and optionally its bookings.\n\n"
+                + "Pass `?force=true` to cascade-delete all bookings.\n\n"
+                + "🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
             )
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
+            .Produces<string>(StatusCodes.Status409Conflict)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
 

@@ -2,11 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@a
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ConfirmService } from '../../../shared/services/confirm.service';
-import {
-  AssetTypeResponseDto,
-  RoomDetailModel,
-  RoomTypeResponseDto,
-} from '../../../models/models';
+import { AssetTypeResponseDto, RoomDetailModel, RoomTypeResponseDto } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 export interface RoomFormPayload {
@@ -35,7 +31,6 @@ export interface RoomFormModalConfig {
   imports: [ReactiveFormsModule, ButtonComponent],
   template: `
     <form [formGroup]="roomForm" (ngSubmit)="onSubmit()" class="room-form">
-
       <div class="form-group">
         <label for="room-name">Namn</label>
         <input id="room-name" type="text" formControlName="name" placeholder="t.ex. Sal A3" />
@@ -86,13 +81,18 @@ export interface RoomFormModalConfig {
 
       <div class="form-group">
         <label for="room-notes">Anteckningar</label>
-        <input id="room-notes" type="text" formControlName="notes" placeholder="Valfri notering..." />
+        <input
+          id="room-notes"
+          type="text"
+          formControlName="notes"
+          placeholder="Valfri notering..."
+        />
       </div>
 
       <div class="assets-section">
         <p class="assets-title">Assets i rummet</p>
         @if (!assetTypes.length) {
-          <p class="assets-hint">Inga asset-typer är definierade ännu.</p>
+          <p class="assets-hint">Inga utrustningstyper är definierade ännu.</p>
         } @else {
           <div class="asset-pill-grid">
             @for (assetType of assetTypes; track assetType.id) {
@@ -103,7 +103,13 @@ export interface RoomFormModalConfig {
                 (click)="toggleAsset(assetType.id)"
               >
                 @if (isAssetSelected(assetType.id)) {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                  >
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 }
@@ -122,118 +128,123 @@ export interface RoomFormModalConfig {
           </app-button>
         }
         <app-button type="submit" variant="primary" [disabled]="roomForm.invalid || isSubmitting()">
-          {{ isSubmitting() ? 'Sparar...' : (initialData ? 'Spara ändringar' : 'Skapa rum') }}
+          {{ isSubmitting() ? 'Sparar...' : initialData ? 'Spara ändringar' : 'Skapa rum' }}
         </app-button>
       </div>
     </form>
   `,
-  styles: [`
-    @use 'styles/mixins' as *;
+  styles: [
+    `
+      @use 'styles/mixins' as *;
 
-    .room-form {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .form-row {
-      display: flex;
-      gap: 1rem;
-      & > * { flex: 1; }
-
-      @media (max-width: 480px) {
+      .room-form {
+        display: flex;
         flex-direction: column;
+        gap: 1rem;
       }
-    }
 
-    .form-group {
-      @include stack(0.5rem);
-      margin-bottom: 0;
+      .form-row {
+        display: flex;
+        gap: 1rem;
+        & > * {
+          flex: 1;
+        }
 
-      label {
+        @media (max-width: 480px) {
+          flex-direction: column;
+        }
+      }
+
+      .form-group {
+        @include stack(0.5rem);
+        margin-bottom: 0;
+
+        label {
+          font-weight: 600;
+          color: var(--color-text-primary);
+        }
+
+        input,
+        select {
+          @include input-base;
+        }
+      }
+
+      .error-msg {
+        font-size: var(--font-sm);
+        color: var(--color-danger);
+      }
+
+      .assets-section {
+        @include stack(0.5rem);
+        padding: 0.75rem;
+        border: 1px solid var(--color-border);
+        border-radius: 0.5rem;
+        background: var(--color-bg-panel);
+      }
+
+      .assets-title {
+        margin: 0;
+        font-size: var(--font-sm);
         font-weight: 600;
         color: var(--color-text-primary);
       }
 
-      input, select {
-        @include input-base;
-      }
-    }
-
-    .error-msg {
-      font-size: var(--font-sm);
-      color: var(--color-danger);
-    }
-
-    .assets-section {
-      @include stack(0.5rem);
-      padding: 0.75rem;
-      border: 1px solid var(--color-border);
-      border-radius: 0.5rem;
-      background: var(--color-bg-panel);
-    }
-
-    .assets-title {
-      margin: 0;
-      font-size: var(--font-sm);
-      font-weight: 600;
-      color: var(--color-text-primary);
-    }
-
-    .assets-hint {
-      margin: 0;
-      font-size: var(--font-xs);
-      color: var(--color-text-secondary);
-    }
-
-    .asset-pill-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .asset-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.4rem 0.75rem;
-      border: 1px solid var(--color-border);
-      border-radius: 999px;
-      background: var(--color-bg-card);
-      color: var(--color-text-secondary);
-      font-size: var(--font-sm);
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      user-select: none;
-
-      svg {
-        width: 0.9rem;
-        height: 0.9rem;
-        stroke: currentColor;
-        flex-shrink: 0;
+      .assets-hint {
+        margin: 0;
+        font-size: var(--font-xs);
+        color: var(--color-text-secondary);
       }
 
-      &:hover {
-        border-color: var(--color-primary);
-        color: var(--color-primary);
+      .asset-pill-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
       }
 
-      &.on {
-        background: var(--color-primary-surface);
-        border-color: var(--color-primary);
-        color: var(--color-primary);
-        font-weight: 600;
-      }
-    }
+      .asset-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.4rem 0.75rem;
+        border: 1px solid var(--color-border);
+        border-radius: 999px;
+        background: var(--color-bg-card);
+        color: var(--color-text-secondary);
+        font-size: var(--font-sm);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        user-select: none;
 
-    .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      margin-top: 0.5rem;
-    }
-  `],
+        svg {
+          width: 0.9rem;
+          height: 0.9rem;
+          stroke: currentColor;
+          flex-shrink: 0;
+        }
+
+        &:hover {
+          border-color: var(--color-primary);
+          color: var(--color-primary);
+        }
+
+        &.on {
+          background: var(--color-primary-surface);
+          border-color: var(--color-primary);
+          color: var(--color-primary);
+          font-weight: 600;
+        }
+      }
+
+      .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 0.5rem;
+      }
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RoomFormModalComponent {
@@ -272,7 +283,7 @@ export class RoomFormModalComponent {
   toggleAsset(id: number): void {
     const current = this.selectedAssetIds();
     if (current.includes(id)) {
-      this.selectedAssetIds.set(current.filter(a => a !== id));
+      this.selectedAssetIds.set(current.filter((a) => a !== id));
     } else {
       this.selectedAssetIds.set([...current, id]);
     }

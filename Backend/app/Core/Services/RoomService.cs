@@ -8,6 +8,7 @@ namespace Backend.app.Core.Services;
 public class RoomService(
     IRoomRepository repo,
     IRoomReadModelRepository readModelRepo,
+    IBookingRepository bookingRepo,
     AssetService assetService,
     ILogger<RoomService> logger
 )
@@ -128,16 +129,22 @@ public class RoomService(
     }
 
     // DELETE
-    public async Task DeleteRoomAsync(long id)
+    public async Task<int> DeleteRoomAsync(long id, bool force = false)
     {
-        logger.LogInformation("Deleting room with ID {RoomId}", id);
+        logger.LogInformation("Deleting room with ID {RoomId} (force={Force})", id, force);
 
         var existingRoom =
             await repo.GetRoomByIdAsync(id)
             ?? throw new KeyNotFoundException($"Room with ID {id} does not exist.");
 
-        await repo.DeleteRoomAsync(id);
-        logger.LogInformation("Room with ID {RoomId} deleted", id);
+        var bookings = (await bookingRepo.GetBookingsByRoomIdAsync(id)).ToList();
+
+        if (bookings.Count > 0 && !force)
+            throw new InvalidOperationException(bookings.Count.ToString());
+
+        await repo.DeleteRoomAsync(id, force);
+        logger.LogInformation("Room with ID {RoomId} deleted (removed {BookingCount} bookings)", id, bookings.Count);
+        return bookings.Count;
     }
 
     // Mapper: RoomDetailModel -> RoomResponseDto

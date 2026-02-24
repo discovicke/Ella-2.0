@@ -4,8 +4,10 @@ using Dapper;
 
 namespace Backend.app.Infrastructure.Repositories.Postgres;
 
-public class PostgresRoomRepo(IDbConnectionFactory connectionFactory, ILogger<PostgresRoomRepo> logger)
-    : IRoomRepository
+public class PostgresRoomRepo(
+    IDbConnectionFactory connectionFactory,
+    ILogger<PostgresRoomRepo> logger
+) : IRoomRepository
 {
     public async Task<IEnumerable<Room>> GetAllRoomsAsync()
     {
@@ -50,7 +52,11 @@ public class PostgresRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Po
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching rooms with type ID {RoomTypeId}", roomTypeId);
+            logger.LogError(
+                ex,
+                "Database error while fetching rooms with type ID {RoomTypeId}",
+                roomTypeId
+            );
             throw;
         }
     }
@@ -109,7 +115,7 @@ public class PostgresRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Po
                 floor = @Floor, notes = @Notes
                 WHERE id = @Id;
                 """;
-            room.Id = id; 
+            room.Id = id;
             return await conn.ExecuteAsync(sql, room) > 0;
         }
         catch (Exception ex)
@@ -119,7 +125,7 @@ public class PostgresRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Po
         }
     }
 
-    public async Task<bool> DeleteRoomAsync(long id)
+    public async Task<bool> DeleteRoomAsync(long id, bool cascade = false)
     {
         try
         {
@@ -130,6 +136,12 @@ public class PostgresRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Po
 
             try
             {
+                if (cascade)
+                {
+                    const string deleteBookingsSql = "DELETE FROM bookings WHERE room_id = @id;";
+                    await conn.ExecuteAsync(deleteBookingsSql, new { id }, transaction);
+                }
+
                 const string deleteAssetsSql = "DELETE FROM room_assets WHERE room_id = @id;";
                 await conn.ExecuteAsync(deleteAssetsSql, new { id }, transaction);
 

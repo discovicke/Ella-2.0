@@ -117,6 +117,10 @@
   display: inline-flex;
 }
 
+.mobile-actions {
+  display: none;
+}
+
 .fab-create {
   display: none;
 }
@@ -124,6 +128,12 @@
 @media (max-width: 768px) {
   .action-btn-desktop {
     display: none !important;
+  }
+
+  .mobile-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 0.25rem;
   }
 
   .fab-create {

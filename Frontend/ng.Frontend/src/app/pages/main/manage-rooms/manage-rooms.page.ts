@@ -18,6 +18,7 @@ import {
   RoomTypeResponseDto,
 } from '../../../models/models';
 import { ModalService } from '../../../shared/services/modal.service';
+import { ConfirmService } from '../../../shared/services/confirm.service';
 import { RoomService } from '../../../shared/services/room.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
@@ -37,6 +38,7 @@ export class ManageRoomsPage implements OnInit {
   private readonly roomService = inject(RoomService);
   private readonly toastService = inject(ToastService);
   private readonly modalService = inject(ModalService);
+  private readonly confirmService = inject(ConfirmService);
 
   @ViewChild('roomIconTpl', { static: true }) roomIconTpl!: TemplateRef<any>;
   @ViewChild('campusTpl', { static: true }) campusTpl!: TemplateRef<any>;
@@ -218,28 +220,28 @@ export class ManageRoomsPage implements OnInit {
   // --- Asset types modal ---
   openAssetTypesModal(): void {
     this.modalService.open(AssetTypesModalComponent, {
-      title: 'Hantera asset-typer',
+      title: 'Hantera utrustning',
       data: {
         assetTypes: this.assetTypes(),
         refreshAssetTypes: () => firstValueFrom(this.roomService.getAssetTypes()),
         onCreate: async (description: string) => {
           await firstValueFrom(this.roomService.createAssetType({ description }));
-          this.toastService.showSuccess('Asset-typ skapades.');
+          this.toastService.showSuccess('Utrustningstyp skapades.');
           this.roomResource.reload();
         },
         onUpdate: async (id: number, description: string) => {
           await firstValueFrom(this.roomService.updateAssetType(id, { description }));
-          this.toastService.showSuccess('Asset-typ uppdaterades.');
+          this.toastService.showSuccess('Utrustningstyp uppdaterades.');
           this.roomResource.reload();
         },
         onDelete: async (assetType: AssetTypeResponseDto) => {
           try {
             await firstValueFrom(this.roomService.deleteAssetType(assetType.id));
-            this.toastService.showSuccess('Asset-typen togs bort.');
+            this.toastService.showSuccess('Utrustningstypen togs bort.');
             this.roomResource.reload();
           } catch {
             this.toastService.showError(
-              'Kunde inte ta bort asset-typen. Den kan vara kopplad till rum.',
+              'Kunde inte ta bort utrustningstypen. Den kan vara kopplad till rum.',
             );
             throw new Error('Delete failed');
           }
@@ -278,10 +280,37 @@ export class ManageRoomsPage implements OnInit {
       if (this.paginatedRooms().length === 0 && this.pageIndex() > 0) {
         this.pageIndex.update((p) => p - 1);
       }
-    } catch (err) {
-      console.error('Failed deleting room', err);
-      this.toastService.showError('Kunde inte ta bort rummet.');
-      throw err;
+    } catch (err: any) {
+      if (err?.status === 409) {
+        const bookingCount = err?.error?.bookingCount ?? 0;
+        const confirmed = await this.confirmService.show(
+          `Rummet har ${bookingCount} bokning(ar). Alla bokningar kommer att tas bort permanent.\n\nDenna åtgärd går inte att ångra.`,
+          {
+            title: 'Ta bort rum och bokningar?',
+            icon: 'warning',
+            confirmText: 'Ta bort allt',
+            cancelText: 'Avbryt',
+            dangerConfirm: true,
+          },
+        );
+        if (confirmed) {
+          try {
+            await firstValueFrom(this.roomService.deleteRoom(id, true));
+            this.toastService.showSuccess('Rummet och alla bokningar togs bort.');
+            this.modalService.close();
+            this.roomResource.reload();
+            if (this.paginatedRooms().length === 0 && this.pageIndex() > 0) {
+              this.pageIndex.update((p) => p - 1);
+            }
+          } catch (forceErr) {
+            console.error('Failed force-deleting room', forceErr);
+            this.toastService.showError('Kunde inte ta bort rummet.');
+          }
+        }
+      } else {
+        console.error('Failed deleting room', err);
+        this.toastService.showError('Kunde inte ta bort rummet.');
+      }
     }
   }
 

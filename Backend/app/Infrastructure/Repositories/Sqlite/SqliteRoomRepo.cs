@@ -115,7 +115,7 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         }
     }
 
-    public async Task<bool> DeleteRoomAsync(long id)
+    public async Task<bool> DeleteRoomAsync(long id, bool cascade = false)
     {
         try
         {
@@ -126,6 +126,12 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
 
             try
             {
+                if (cascade)
+                {
+                    const string deleteBookingsSql = "DELETE FROM bookings WHERE room_id = @id;";
+                    await conn.ExecuteAsync(deleteBookingsSql, new { id }, transaction);
+                }
+
                 const string deleteAssetsSql = "DELETE FROM room_assets WHERE room_id = @id;";
                 await conn.ExecuteAsync(deleteAssetsSql, new { id }, transaction);
 

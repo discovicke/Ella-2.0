@@ -1,6 +1,6 @@
-import {inject, Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import {
   AssetTypeResponseDto,
   CreateAssetTypeDto,
@@ -32,8 +32,9 @@ export class RoomService {
     return this.http.put<void>(`${this.apiUrl}/${id}`, dto);
   }
 
-  deleteRoom(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  deleteRoom(id: number, force = false): Observable<void> {
+    const url = force ? `${this.apiUrl}/${id}?force=true` : `${this.apiUrl}/${id}`;
+    return this.http.delete<void>(url);
   }
 
   getRoomTypes(): Observable<RoomTypeResponseDto[]> {

@@ -3,7 +3,13 @@
   <div class="filter-panel" [class.collapsed]="!filtersOpen()">
     <div class="filter-header" (click)="toggleFilters()">
       <div class="header-left">
-        <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg
+          class="header-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
         </svg>
         <h2>Sök &amp; Filtrera</h2>
@@ -19,8 +25,12 @@
             Rensa
           </button>
         }
-        <app-button class="action-btn-desktop" variant="tertiary" (clicked)="openAssetTypesModal()">
-          Asset-typer
+        <app-button
+          class="action-btn-desktop"
+          variant="secondary"
+          (clicked)="openAssetTypesModal()"
+        >
+          Hantera utrustning
         </app-button>
         <app-button class="action-btn-desktop" variant="primary" (clicked)="openAddRoomModal()">
           + Skapa rum
@@ -32,11 +42,22 @@
       <div class="search-field">
         <label class="filter-label">Sök</label>
         <div class="search-input">
-          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            class="field-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.35-4.35" />
           </svg>
-          <input type="text" placeholder="Sök på namn, stad eller typ..." (input)="updateSearch($event)" [value]="searchQuery()" />
+          <input
+            type="text"
+            placeholder="Sök på namn, stad eller typ..."
+            (input)="updateSearch($event)"
+            [value]="searchQuery()"
+          />
         </div>
       </div>
 
@@ -61,12 +82,22 @@
           </select>
         </div>
       </div>
+
+      <div class="mobile-actions">
+        <app-button variant="secondary" (clicked)="openAssetTypesModal()">
+          Hantera utrustning
+        </app-button>
+      </div>
     </div>
   </div>
-
-  <!-- Mobile FAB -->
   <button class="fab-create" (click)="openAddRoomModal()" title="Skapa rum">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+    >
       <line x1="12" y1="5" x2="12" y2="19" />
       <line x1="5" y1="12" x2="19" y2="12" />
     </svg>
@@ -91,7 +122,11 @@
     <ng-template #roomIconTpl let-room>
       <div class="room-icon-circle">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"
+          />
         </svg>
       </div>
     </ng-template>
@@ -122,7 +157,14 @@
 
     <ng-template #actionsTpl let-room>
       <button class="row-action-btn" (click)="openEditRoomModal(room, $event)" title="Redigera rum">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
         </svg>
