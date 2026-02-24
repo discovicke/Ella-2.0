@@ -2,11 +2,11 @@
 
 ## Prerequisites
 
-| Tool     | Version | Check              |
-| -------- | ------- | ------------------ |
-| Node.js  | 18+     | `node -v`          |
-| .NET SDK | 9.0+    | `dotnet --version` |
-| Docker   | 20+     | `docker --version` |
+| Tool      | Version | Check              |
+| --------- | ------- | ------------------ |
+| Node.js   | 18+     | `node -v`          |
+| .NET SDK  | 9.0+    | `dotnet --version` |
+| Docker    | 20+     | `docker --version` |
 
 > Docker is only required for **Postgres** or **SqlServer**. Sqlite works without it.
 
@@ -20,20 +20,28 @@ cd ELLA_v2
 npm run setup
 ```
 
-This installs all dependencies and runs the interactive bootstrap:
+This installs all dependencies (root, frontend, backend restore) and runs the interactive bootstrap:
 
 ```
-[ELLA Setup] No .env file found — first-time setup.
-Select a database provider:
+  ──────────────────────────────────────────
+    ELLA — First-time Setup
+  ──────────────────────────────────────────
 
-  [1] Sqlite     — no Docker, file-based DB
-  [2] Postgres   — Docker (docker-compose.postgres.yml)
-  [3] SqlServer  — Docker (docker-compose.sqlserver.yml)
+  Select a database provider
+  ──────────────────────────────────────────
+     1  Sqlite
+     2  Postgres
+     3  SqlServer
 
 Enter choice (1-3) [default: 1]:
 ```
 
-After picking, setup creates `Backend/.env-example` with the correct connection string (credentials pulled directly from the compose file) and starts the Docker container if needed.
+After picking, setup:
+1. Writes `Backend/.env-example` with the correct connection string (credentials pulled directly from the provider's compose file).
+2. Starts the Docker container if the chosen provider requires one.
+3. Prints **"Setup complete! Run `npm start` to launch the project."**
+
+If env files already exist, setup exits immediately without re-prompting.
 
 ---
 
@@ -43,16 +51,22 @@ After picking, setup creates `Backend/.env-example` with the correct connection 
 npm start
 ```
 
-Automatically: verifies env files exist → starts Docker if needed → rebuilds backend & syncs OpenAPI models → launches both servers:
+Automatically:
+1. Verifies env files exist (exits with instructions if missing).
+2. Starts the Docker container if the configured provider needs one.
+3. Rebuilds the backend and syncs OpenAPI TypeScript models.
+4. Launches both servers in parallel:
 
-- Backend (watch mode) → `http://localhost:5269`
-- Frontend (dev server) → `http://localhost:4200`
+| Server   | URL                       |
+| -------- | ------------------------- |
+| Backend  | http://localhost:5269     |
+| Frontend | http://localhost:4200     |
 
 ---
 
-## Real Credentials
+## Using Real Credentials
 
-Setup writes `Backend/.env-example` with working defaults. To use your own credentials:
+Setup writes `Backend/.env-example` with working defaults derived from the compose file. To use your own credentials:
 
 ```bash
 cp Backend/.env-example Backend/.env
@@ -74,22 +88,27 @@ npm run setup
 
 ## Quick Reference
 
-| Command                  | Purpose                                                |
-| ------------------------ | ------------------------------------------------------ |
-| `npm run setup`          | One-time: install deps, pick DB provider, start Docker |
-| `npm start`              | Daily: pre-checks, build, serve both servers           |
-| `npm run refresh:models` | Regenerate TypeScript models from backend DTOs         |
-| `npm run build:prod`     | Production build → `dist/final_app`                    |
-| `npm run help`           | Show all available commands                            |
+| Command                  | Purpose                                                        |
+| ------------------------ | -------------------------------------------------------------- |
+| `npm run setup`          | One-time: install deps, pick DB provider, start Docker         |
+| `npm start`              | Daily: pre-checks, rebuild models, serve both servers          |
+| `npm run refresh:models` | Regenerate TypeScript models from backend DTOs (no restart)    |
+| `npm run build:prod`     | Full production build → `dist/final_app`                       |
+| `npm run help`           | Show all available commands                                    |
 
 ---
 
 ## Troubleshooting
 
-**`[ELLA] No .env or .env-example found`** — Run `npm run setup` first.
+**`✖  No .env or .env-example found`** — Run `npm run setup` first.
 
 **`password authentication failed`** — Delete both env files and re-run `npm run setup` to regenerate credentials from the compose file.
 
 **`Docker is not running`** — Start Docker Desktop, then retry.
 
-**`Failed to connect to 127.0.0.1:5432`** — Container didn't start. Run `docker-compose -f docker-compose.postgres.yml up -d` manually.
+**Container fails to start** — Run the compose command manually to see the full error output:
+```bash
+docker-compose -f docker-compose.postgres.yml up -d
+# or
+docker-compose -f docker-compose.sqlserver.yml up -d
+```
