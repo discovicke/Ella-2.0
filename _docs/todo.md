@@ -6,9 +6,9 @@
 - [ ] Lägg tillbaka Klasser CRUD och även i Frontend
   - Klasser ska vara kopplade till städer
 - [ ] Lägg till klasser i tabellen i manage users
-- [ ] Lägg till Manage Assets i adminpanelen
-  - CRUD för Asset Types
-  - CRUD för Assets (kopplade till rum)
+- [x] Lägg till Manage Assets i adminpanelen
+  - [x] CRUD för Asset Types
+  - CRUD för Assets (kopplade till rum) — _hanteras i Manage Rooms via "Utrustning"-modalen_
 - [ ] Lägg till en manage classes i adminpanelen
   - CRUD för klasser
   - Koppla klasser till städer
@@ -146,9 +146,9 @@
 
 #### Manage Rooms
 
-- [ ] Implementera
-  - Sökning
-  - Filtrering
+- [x] Implementera
+  - [x] Sökning
+  - [x] Filtrering
 
 #### Manage Users
 
