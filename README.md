@@ -11,7 +11,6 @@
 Kör följande kommandon i terminalen från projektets rotkatalog:
 
 ```bash
-docker pull postgres:16
 docker compose up -d
 ```
 
