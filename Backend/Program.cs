@@ -105,54 +105,18 @@ static void LoadEnvironmentVariables()
     if (File.Exists(envPath))
     {
         Env.Load(envPath);
-        Console.WriteLine("Configuration loaded from .env");
+        Console.WriteLine("  \u001b[32m\u2714\u001b[0m  Configuration loaded from .env");
+    }
+    else if (File.Exists(envExamplePath))
+    {
+        Env.Load(envExamplePath);
+        Console.WriteLine("  \u001b[33m\u25b8\u001b[0m  Configuration loaded from .env-example");
+        Console.WriteLine("     \u001b[2mCopy to .env and fill in real credentials for production use.\u001b[0m");
     }
     else
     {
-        if (!File.Exists(envExamplePath))
-        {
-            var providerNames = Enum.GetNames<DbProviders>();
-
-            Console.WriteLine();
-            Console.WriteLine("No .env file found. Select a database provider for .env-example:");
-            for (int i = 0; i < providerNames.Length; i++)
-                Console.WriteLine($"  [{i + 1}] {providerNames[i]}");
-            Console.Write($"Enter choice (1-{providerNames.Length}) [default: 1]: ");
-
-            var input = Console.ReadLine()?.Trim();
-            var choiceIndex = 0;
-            if (
-                !string.IsNullOrEmpty(input)
-                && int.TryParse(input, out var parsed)
-                && parsed >= 1
-                && parsed <= providerNames.Length
-            )
-                choiceIndex = parsed - 1;
-
-            var chosenProvider = providerNames[choiceIndex].ToLowerInvariant();
-
-            var defaultEnvContent = $"""
-                # --- Database Settings ---
-                # Available providers: {string.Join(" | ", providerNames)}
-                DatabaseSettings__Provider={chosenProvider}
-                DatabaseSettings__ConnectionString=Host=localhost;Port=5432;Database=ella_db;Username=ella;Password=YourPasswordHere!;
-                # --- JWT Settings ---
-                # WARNING: Replace this with a secure, random key of at least 32 characters
-                JwtSettings__SecretKey=REPLACE_WITH_SECURE_KEY_MIN_32_CHARS
-                JwtSettings__Issuer=EllaBookingAPI
-                JwtSettings__Audience=EllaBookingClient
-                JwtSettings__AccessTokenExpirationMinutes=60
-                """;
-
-            File.WriteAllText(envExamplePath, defaultEnvContent);
-            Console.WriteLine($"Created .env-example with provider: {providerNames[choiceIndex]}");
-            Console.WriteLine();
-        }
-
-        // Load from example if .env is missing
-        Env.Load(envExamplePath);
-        Console.WriteLine(
-            "Loaded configuration from .env-example. Please create a local .env file for production use."
+        throw new InvalidOperationException(
+            "No .env or .env-example file found. Run 'npm run setup' from the project root."
         );
     }
 }
