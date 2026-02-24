@@ -244,6 +244,9 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
             services.AddScoped<IAssetRepository, PostgresAssetRepo>();
             services.AddScoped<IRoomRepository, PostgresRoomRepo>();
             services.AddScoped<IRoomTypeRepository, PostgresRoomTypeRepo>();
+            services.AddScoped<IBookingReadModelRepository, PostgresBookingReadModelRepo>();
+            services.AddScoped<IBookingRepository, PostgresBookingRepo>();
+            services.AddScoped<IUserRepository, PostgresUserRepo>();
 
             break;
 
