@@ -1,11 +1,14 @@
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.Entities;
+using Backend.app.Core.Models.Enums;
 using Dapper;
 
 namespace Backend.app.Infrastructure.Repositories.Postgres;
 
-public class PostgresUserRepo(IDbConnectionFactory connectionFactory, ILogger<PostgresUserRepo> logger)
-    : IUserRepository
+public class PostgresUserRepo(
+    IDbConnectionFactory connectionFactory,
+    ILogger<PostgresUserRepo> logger
+) : IUserRepository
 {
     public async Task<IEnumerable<User>> GetAllUsersAsync()
     {
@@ -94,7 +97,7 @@ public class PostgresUserRepo(IDbConnectionFactory connectionFactory, ILogger<Po
                     user.Email,
                     user.PasswordHash,
                     user.DisplayName,
-                    user.IsBanned,
+                    IsBanned = user.IsBanned == BannedStatus.Banned,
                     user.PermissionTemplateId,
                 }
             );
@@ -133,7 +136,7 @@ public class PostgresUserRepo(IDbConnectionFactory connectionFactory, ILogger<Po
                     user.Email,
                     user.PasswordHash,
                     user.DisplayName,
-                    user.IsBanned,
+                    IsBanned = user.IsBanned == BannedStatus.Banned,
                     TokensValidAfter = user.TokensValidAfter.ToUniversalTime(),
                     user.PermissionTemplateId,
                     Id = id,
