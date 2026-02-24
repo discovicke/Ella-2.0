@@ -2,7 +2,7 @@
 using Backend.app.Core.Models.Entities;
 using Dapper;
 
-namespace Backend.app.Infrastructure.Repositories.Sqlite;
+namespace Backend.app.Infrastructure.Repositories.Postgres;
 
 public class PostgresRoomRepo(IDbConnectionFactory connectionFactory, ILogger<PostgresRoomRepo> logger)
     : IRoomRepository
@@ -86,7 +86,7 @@ public class PostgresRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Po
                 @"
             INSERT INTO rooms (campus_id, name, capacity, room_type_id, floor, notes) 
             VALUES (@CampusId, @Name, @Capacity, @RoomTypeId, @Floor, @Notes);
-            SELECT last_insert_rowid();";
+            RETURNING id;";
 
             return await conn.ExecuteScalarAsync<long>(sql, room);
         }
@@ -103,9 +103,13 @@ public class PostgresRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Po
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-
-            const string sql =
-                "UPDATE rooms SET campus_id = @CampusId, name = @Name, capacity = @Capacity, room_type_id = @RoomTypeId, floor = @Floor, notes = @Notes WHERE id = @Id;";
+            const string sql = """
+                UPDATE rooms SET campus_id = @CampusId, name = @Name,
+                capacity = @Capacity, room_type_id = @RoomTypeId, 
+                floor = @Floor, notes = @Notes" 
+                 WHERE id = @Id;";
+                """;
+            room.Id = id; 
             return await conn.ExecuteAsync(sql, room) > 0;
         }
         catch (Exception ex)
