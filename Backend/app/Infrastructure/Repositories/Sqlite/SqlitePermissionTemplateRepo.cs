@@ -107,16 +107,23 @@ public class SqlitePermissionTemplateRepo(
             if (inputIds.Count > 0)
             {
                 // Check if any users are assigned to the templates we are about to delete
-                const string checkSql = @"
+                const string checkSql =
+                    @"
                     SELECT COUNT(*) 
                     FROM users 
                     WHERE permission_template_id NOT IN @Ids AND permission_template_id IS NOT NULL";
-                
-                var dependentUserCount = await conn.ExecuteScalarAsync<int>(checkSql, new { Ids = inputIds }, transaction: tx);
+
+                var dependentUserCount = await conn.ExecuteScalarAsync<int>(
+                    checkSql,
+                    new { Ids = inputIds },
+                    transaction: tx
+                );
 
                 if (dependentUserCount > 0)
                 {
-                    throw new InvalidOperationException($"Cannot delete roles because {dependentUserCount} user(s) are still assigned to them. Please reassign these users before deleting the role.");
+                    throw new InvalidOperationException(
+                        $"Cannot delete roles because {dependentUserCount} user(s) are still assigned to them. Please reassign these users before deleting the role."
+                    );
                 }
 
                 await conn.ExecuteAsync(
@@ -128,15 +135,19 @@ public class SqlitePermissionTemplateRepo(
             else if (templates.Count == 0) // Edge case: wipe all templates
             {
                 // Check if any users are assigned to ANY template
-                var dependentUserCount = await conn.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM users WHERE permission_template_id IS NOT NULL;", transaction: tx);
+                var dependentUserCount = await conn.ExecuteScalarAsync<int>(
+                    "SELECT COUNT(*) FROM users WHERE permission_template_id IS NOT NULL;",
+                    transaction: tx
+                );
                 if (dependentUserCount > 0)
                 {
-                    throw new InvalidOperationException($"Cannot delete all roles because {dependentUserCount} user(s) are assigned to roles. Please reassign them first.");
+                    throw new InvalidOperationException(
+                        $"Cannot delete all roles because {dependentUserCount} user(s) are assigned to roles. Please reassign them first."
+                    );
                 }
 
                 await conn.ExecuteAsync("DELETE FROM permission_templates;", transaction: tx);
             }
-
 
             // 3. Upsert templates
             for (var i = 0; i < templates.Count; i++)
@@ -154,7 +165,9 @@ public class SqlitePermissionTemplateRepo(
                         new
                         {
                             Id = tpl.Id.Value,
-                            Name = !string.IsNullOrEmpty(tpl.Name) ? tpl.Name : tpl.Label.ToLower().Replace(" ", "-"),
+                            Name = !string.IsNullOrEmpty(tpl.Name)
+                                ? tpl.Name
+                                : tpl.Label.ToLower().Replace(" ", "-"),
                             tpl.Label,
                             tpl.CssClass,
                             SortOrder = i,
@@ -172,7 +185,9 @@ public class SqlitePermissionTemplateRepo(
                           SELECT last_insert_rowid();",
                         new
                         {
-                            Name = !string.IsNullOrEmpty(tpl.Name) ? tpl.Name : tpl.Label.ToLower().Replace(" ", "-"),
+                            Name = !string.IsNullOrEmpty(tpl.Name)
+                                ? tpl.Name
+                                : tpl.Label.ToLower().Replace(" ", "-"),
                             tpl.Label,
                             tpl.CssClass,
                             SortOrder = i,
@@ -191,20 +206,19 @@ public class SqlitePermissionTemplateRepo(
 
                 if (tpl.Permissions is { Count: > 0 })
                 {
-                    foreach (var (key, value) in tpl.Permissions)
+                    var flagParams = tpl.Permissions.Select(p => new
                     {
-                        await conn.ExecuteAsync(
-                            @"INSERT INTO permission_template_flags (template_id, permission_key, value)
-                              VALUES (@TemplateId, @Key, @Value);",
-                            new
-                            {
-                                TemplateId = templateId,
-                                Key = key,
-                                Value = value ? 1 : 0,
-                            },
-                            transaction: tx
-                        );
-                    }
+                        TemplateId = templateId,
+                        Key = p.Key,
+                        Value = p.Value ? 1 : 0,
+                    });
+
+                    await conn.ExecuteAsync(
+                        @"INSERT INTO permission_template_flags (template_id, permission_key, value)
+                          VALUES (@TemplateId, @Key, @Value);",
+                        flagParams,
+                        transaction: tx
+                    );
                 }
             }
 
