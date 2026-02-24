@@ -2,11 +2,11 @@
 
 ## Prerequisites
 
-| Tool      | Version | Check              |
-| --------- | ------- | ------------------ |
-| Node.js   | 18+     | `node -v`          |
-| .NET SDK  | 9.0+    | `dotnet --version` |
-| Docker    | 20+     | `docker --version` |
+| Tool     | Version | Check              |
+| -------- | ------- | ------------------ |
+| Node.js  | 18+     | `node -v`          |
+| .NET SDK | 9.0+    | `dotnet --version` |
+| Docker   | 20+     | `docker --version` |
 
 > Docker is only required for **Postgres** or **SqlServer**. Sqlite works without it.
 
@@ -37,6 +37,7 @@ Enter choice (1-3) [default: 1]:
 ```
 
 After picking, setup:
+
 1. Writes `Backend/.env-example` with the correct connection string (credentials pulled directly from the provider's compose file).
 2. Starts the Docker container if the chosen provider requires one.
 3. Prints **"Setup complete! Run `npm start` to launch the project."**
@@ -52,15 +53,16 @@ npm start
 ```
 
 Automatically:
+
 1. Verifies env files exist (exits with instructions if missing).
 2. Starts the Docker container if the configured provider needs one.
 3. Rebuilds the backend and syncs OpenAPI TypeScript models.
 4. Launches both servers in parallel:
 
-| Server   | URL                       |
-| -------- | ------------------------- |
-| Backend  | http://localhost:5269     |
-| Frontend | http://localhost:4200     |
+| Server   | URL                   |
+| -------- | --------------------- |
+| Backend  | http://localhost:5269 |
+| Frontend | http://localhost:4200 |
 
 ---
 
@@ -88,13 +90,13 @@ npm run setup
 
 ## Quick Reference
 
-| Command                  | Purpose                                                        |
-| ------------------------ | -------------------------------------------------------------- |
-| `npm run setup`          | One-time: install deps, pick DB provider, start Docker         |
-| `npm start`              | Daily: pre-checks, rebuild models, serve both servers          |
-| `npm run refresh:models` | Regenerate TypeScript models from backend DTOs (no restart)    |
-| `npm run build:prod`     | Full production build → `dist/final_app`                       |
-| `npm run help`           | Show all available commands                                    |
+| Command                  | Purpose                                                     |
+| ------------------------ | ----------------------------------------------------------- |
+| `npm run setup`          | One-time: install deps, pick DB provider, start Docker      |
+| `npm start`              | Daily: pre-checks, rebuild models, serve both servers       |
+| `npm run refresh:models` | Regenerate TypeScript models from backend DTOs (no restart) |
+| `npm run build:prod`     | Full production build → `dist/final_app`                    |
+| `npm run help`           | Show all available commands                                 |
 
 ---
 
@@ -107,6 +109,7 @@ npm run setup
 **`Docker is not running`** — Start Docker Desktop, then retry.
 
 **Container fails to start** — Run the compose command manually to see the full error output:
+
 ```bash
 docker-compose -f docker-compose.postgres.yml up -d
 # or
