@@ -24,8 +24,8 @@ public class PostgresBookingRepo(IDbConnectionFactory connectionFactory, ILogger
             var id = await conn.ExecuteScalarAsync<long>(sql, new {
                 booking.UserId,
                 booking.RoomId,
-                booking.StartTime,
-                booking.EndTime,
+                StartTime = booking.StartTime.ToUniversalTime(),
+                EndTime = booking.EndTime.ToUniversalTime(),
                 booking.Notes
             });
 
@@ -47,7 +47,7 @@ public class PostgresBookingRepo(IDbConnectionFactory connectionFactory, ILogger
 
             var sql = "UPDATE bookings SET status = @Status WHERE id = @BookingId;";
             var rows = await conn.ExecuteAsync(sql, new {
-                Status = (int)BookingStatus.Cancelled,
+                Status = BookingStatus.Cancelled.ToString().ToLower(),
                 BookingId = bookingId
             });
 
@@ -90,8 +90,8 @@ public class PostgresBookingRepo(IDbConnectionFactory connectionFactory, ILogger
             ";
 
             return await conn.QueryAsync<Booking>(sql, new {
-                StartDate = startDate,
-                EndDate = endDate
+                StartDate = startDate.ToUniversalTime(),
+                EndDate = endDate.ToUniversalTime()
             });
         }
         catch (Exception ex)
@@ -168,9 +168,9 @@ public class PostgresBookingRepo(IDbConnectionFactory connectionFactory, ILogger
 
             return await conn.QueryAsync<Booking>(sql, new {
                 RoomId = roomId,
-                StartDate = startDate,
-                EndDate = endDate,
-                CancelledStatus = (int)BookingStatus.Cancelled
+                StartDate = startDate.ToUniversalTime(),
+                EndDate = endDate.ToUniversalTime(),
+                CancelledStatus = BookingStatus.Cancelled.ToString().ToLower()
             });
         }
         catch (Exception ex)
@@ -201,9 +201,9 @@ public class PostgresBookingRepo(IDbConnectionFactory connectionFactory, ILogger
             var rows = await conn.ExecuteAsync(sql, new {
                 booking.UserId,
                 booking.RoomId,
-                booking.StartTime,
-                booking.EndTime,
-                Status = (int)booking.Status,
+                StartTime = booking.StartTime.ToUniversalTime(),
+                EndTime = booking.EndTime.ToUniversalTime(),
+                Status = booking.Status.ToString().ToLower(),
                 booking.Notes,
                 BookingId = bookingId
             });
