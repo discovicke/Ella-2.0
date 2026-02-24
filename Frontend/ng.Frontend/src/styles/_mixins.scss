@@ -345,6 +345,11 @@
 // SCROLLBAR
 // ---------------------------------------------
 @mixin custom-scrollbar($width: 8px) {
+  // Firefox
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) transparent;
+
+  // Chromium & Safari
   &::-webkit-scrollbar {
     width: $width;
     height: $width;

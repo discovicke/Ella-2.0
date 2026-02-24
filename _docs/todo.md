@@ -161,6 +161,13 @@
     - [x] Klass
   - [x] Skapa/Redigera användare
   - [x] Hantera behörigheter (RBAC/Custom)
+- [ ] Server-side paginering för användarlistan
+  - Backend: `PagedResult<T>` DTO, `UserQueryParams` (page, pageSize, search, templateId, bannedStatus)
+  - Backend: `GetUsersPagedAsync` i `IUserRepository` + båda providers (Postgres/SQLite med LIMIT/OFFSET)
+  - Backend: `GetEffectivePermissionsForUsersAsync(IEnumerable<long>)` i `IPermissionRepository` (batch för en sida)
+  - Backend: `GetPagedAsync` i `UserService`, nytt GET endpoint med query params
+  - Frontend: Uppdatera `UserService.getAllUsers()` → `getUsers(params)` som returnerar `PagedResult`
+  - Frontend: Skriv om `manage-users.page.ts` från client-side slice till server-driven (fetch vid page/filter-ändring)
 
 #### Manage Roles (New)
 

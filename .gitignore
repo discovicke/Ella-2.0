@@ -487,14 +487,13 @@ $RECYCLE.BIN/
 .vscode
 
 # SQLite database files
+*EllaDB.sqlite
 *.db
 *.db-shm
 *.db-wal
-*.sqlite
 *.sqlite3
 *.sqlite-shm
 *.sqlite-wal
-*.sqlite
 Frontend/ng.Frontend/openapi/models.json
 Frontend/ng.Frontend/src/app/models/models.ts
 Frontend/ng.Frontend/src/app/models/models.ts

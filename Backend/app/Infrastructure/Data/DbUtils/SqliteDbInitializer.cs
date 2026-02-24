@@ -48,7 +48,7 @@ public class SqliteDbInitializer(
             "app",
             "Infrastructure",
             "Data",
-            "schema.sqlite"
+            "SqliteSchema.sqlite"
         );
 
         // Fallback: try relative path from project root (for development)
@@ -59,7 +59,7 @@ public class SqliteDbInitializer(
                 "app",
                 "Infrastructure",
                 "Data",
-                "schema.sqlite"
+                "SqliteSchema.sqlite"
             );
         }
 
@@ -95,7 +95,7 @@ public class SqliteDbInitializer(
             "app",
             "Infrastructure",
             "Data",
-            "seed.sqlite"
+            "SqliteSeed.sqlite"
         );
 
         // Fallback: try relative path from project root (for development)
@@ -106,7 +106,7 @@ public class SqliteDbInitializer(
                 "app",
                 "Infrastructure",
                 "Data",
-                "seed.sqlite"
+                "SqliteSeed.sqlite"
             );
         }
 
