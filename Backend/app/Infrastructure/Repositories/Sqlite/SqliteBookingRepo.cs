@@ -6,14 +6,16 @@ using Microsoft.Data.Sqlite;
 
 namespace Backend.app.Infrastructure.Repositories.Sqlite;
 
-public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<SqliteBookingRepo> logger) : IBookingRepository
+public class SqliteBookingRepo(
+    IDbConnectionFactory connectionFactory,
+    ILogger<SqliteBookingRepo> logger
+) : IBookingRepository
 {
-
-/// <summary>
-/// Creates a new booking and returns the generated ID.
-/// </summary>
-/// <param name="booking"></param>
-/// <returns></returns>
+    /// <summary>
+    /// Creates a new booking and returns the generated ID.
+    /// </summary>
+    /// <param name="booking"></param>
+    /// <returns></returns>
     public async Task<long> CreateBookingAsync(Booking booking)
     {
         try
@@ -42,7 +44,12 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while creating booking for user {UserId}, room {RoomId}", booking.UserId, booking.RoomId);
+            logger.LogError(
+                ex,
+                "Database error while creating booking for user {UserId}, room {RoomId}",
+                booking.UserId,
+                booking.RoomId
+            );
             throw;
         }
     }
@@ -64,7 +71,11 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while cancelling booking with ID {BookingId}", bookingId);
+            logger.LogError(
+                ex,
+                "Database error while cancelling booking with ID {BookingId}",
+                bookingId
+            );
             throw;
         }
     }
@@ -84,7 +95,11 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching booking with ID {BookingId}", bookingId);
+            logger.LogError(
+                ex,
+                "Database error while fetching booking with ID {BookingId}",
+                bookingId
+            );
             throw;
         }
     }
@@ -96,10 +111,7 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
             using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var sql = "SELECT * FROM bookings WHERE room_id = @RoomId;";
-            var bookings = await conn.QueryAsync<Booking>(
-                sql,
-                new { RoomId = roomId }
-            );
+            var bookings = await conn.QueryAsync<Booking>(sql, new { RoomId = roomId });
             return bookings;
         }
         catch (Exception ex)
@@ -119,7 +131,8 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
         {
             using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            var sql = @"
+            var sql =
+                @"
             SELECT * FROM bookings
             WHERE room_id = @RoomId
             AND status != @CancelledStatus
@@ -133,14 +146,18 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
                     RoomId = roomId,
                     StartDate = startDate,
                     EndDate = endDate,
-                    CancelledStatus = (int)BookingStatus.Cancelled
+                    CancelledStatus = (int)BookingStatus.Cancelled,
                 }
             );
             return bookings;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching overlapping bookings for room {RoomId}", roomId);
+            logger.LogError(
+                ex,
+                "Database error while fetching overlapping bookings for room {RoomId}",
+                roomId
+            );
             throw;
         }
     }
@@ -151,7 +168,8 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
         {
             using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            var sql = @"
+            var sql =
+                @"
             UPDATE bookings
             SET user_id =@UserId,
             room_id = @RoomId,
@@ -178,7 +196,11 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while updating booking with ID {BookingId}", bookingId);
+            logger.LogError(
+                ex,
+                "Database error while updating booking with ID {BookingId}",
+                bookingId
+            );
             throw;
         }
     }

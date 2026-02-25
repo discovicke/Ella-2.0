@@ -22,5 +22,3 @@ public record UpdateUserDto(
     string? Password,
     BannedStatus IsBanned
 );
-
-

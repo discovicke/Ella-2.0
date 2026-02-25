@@ -74,5 +74,3 @@ export function resolveRoleCssClass(permissions: UserPermissions | undefined | n
 export function getTemplateLabels(): string[] {
   return permissionTemplates().map((t) => t.label ?? 'Custom');
 }
-
-

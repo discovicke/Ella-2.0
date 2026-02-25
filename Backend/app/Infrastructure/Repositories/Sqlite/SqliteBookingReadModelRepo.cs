@@ -1,8 +1,8 @@
+using System.Text;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Models.ReadModels;
 using Dapper;
-using System.Text;
 
 namespace Backend.app.Infrastructure.Repositories.Sqlite;
 
@@ -12,7 +12,8 @@ namespace Backend.app.Infrastructure.Repositories.Sqlite;
 /// </summary>
 public class SqliteBookingReadModelRepo(
     IDbConnectionFactory connectionFactory,
-    ILogger<SqliteBookingReadModelRepo> logger) : IBookingReadModelRepository
+    ILogger<SqliteBookingReadModelRepo> logger
+) : IBookingReadModelRepository
 {
     public async Task<IEnumerable<BookingDetailedReadModel>> GetAllDetailedBookingsAsync()
     {
@@ -43,38 +44,51 @@ public class SqliteBookingReadModelRepo(
             var sql = "SELECT * FROM v_bookings_detailed WHERE booking_id = @BookingId;";
             var booking = await conn.QuerySingleOrDefaultAsync<BookingDetailedReadModel>(
                 sql,
-                new { BookingId = bookingId });
+                new { BookingId = bookingId }
+            );
 
             return booking;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching detailed booking with ID {BookingId}", bookingId);
+            logger.LogError(
+                ex,
+                "Database error while fetching detailed booking with ID {BookingId}",
+                bookingId
+            );
             throw;
         }
     }
 
-    public async Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByUserIdAsync(long userId)
+    public async Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByUserIdAsync(
+        long userId
+    )
     {
         try
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            var sql = @"
+            var sql =
+                @"
                 SELECT * FROM v_bookings_detailed 
                 WHERE user_id = @UserId 
                 ORDER BY start_time DESC;";
 
             var bookings = await conn.QueryAsync<BookingDetailedReadModel>(
                 sql,
-                new { UserId = userId });
+                new { UserId = userId }
+            );
 
             return bookings;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching detailed bookings for user {UserId}", userId);
+            logger.LogError(
+                ex,
+                "Database error while fetching detailed bookings for user {UserId}",
+                userId
+            );
             throw;
         }
     }
@@ -84,7 +98,8 @@ public class SqliteBookingReadModelRepo(
         long? roomId = null,
         DateTime? startDate = null,
         DateTime? endDate = null,
-        BookingStatus? status = null)
+        BookingStatus? status = null
+    )
     {
         try
         {
@@ -126,13 +141,19 @@ public class SqliteBookingReadModelRepo(
 
             sqlBuilder.Append(" ORDER BY start_time DESC;");
 
-            var bookings = (await conn.QueryAsync<BookingDetailedReadModel>(
-                sqlBuilder.ToString(),
-                parameters)).ToList();
+            var bookings = (
+                await conn.QueryAsync<BookingDetailedReadModel>(sqlBuilder.ToString(), parameters)
+            ).ToList();
 
             logger.LogInformation(
                 "Fetched {Count} detailed bookings with filters: UserId={UserId}, RoomId={RoomId}, StartDate={StartDate}, EndDate={EndDate}, Status={Status}",
-                bookings.Count, userId, roomId, startDate, endDate, status);
+                bookings.Count,
+                userId,
+                roomId,
+                startDate,
+                endDate,
+                status
+            );
 
             return bookings;
         }
@@ -143,14 +164,17 @@ public class SqliteBookingReadModelRepo(
         }
     }
 
-    public async Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByRegisteredUserIdAsync(long userId)
+    public async Task<
+        IEnumerable<BookingDetailedReadModel>
+    > GetDetailedBookingsByRegisteredUserIdAsync(long userId)
     {
         try
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            var sql = @"
+            var sql =
+                @"
                 SELECT v.* 
                 FROM v_bookings_detailed v
                 INNER JOIN registrations r ON v.booking_id = r.booking_id
@@ -159,13 +183,18 @@ public class SqliteBookingReadModelRepo(
 
             var bookings = await conn.QueryAsync<BookingDetailedReadModel>(
                 sql,
-                new { UserId = userId });
+                new { UserId = userId }
+            );
 
             return bookings;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching bookings registered for user {UserId}", userId);
+            logger.LogError(
+                ex,
+                "Database error while fetching bookings registered for user {UserId}",
+                userId
+            );
             throw;
         }
     }

@@ -38,5 +38,7 @@ public interface IBookingReadModelRepository
     /// <summary>
     /// Get all bookings a specific user is registered to attend.
     /// </summary>
-    Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByRegisteredUserIdAsync(long userId);
+    Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByRegisteredUserIdAsync(
+        long userId
+    );
 }
