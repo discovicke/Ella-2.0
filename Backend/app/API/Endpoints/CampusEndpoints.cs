@@ -23,9 +23,7 @@ public static class CampusEndpoints
             )
             .WithName("GetCampuses")
             .WithSummary("Get all campuses")
-            .WithDescription(
-                "Retrieves a list of all campuses.\n\n🔒 **Authentication Required**"
-            )
+            .WithDescription("Retrieves a list of all campuses.\n\n🔒 **Authentication Required**")
             .Produces<IEnumerable<CampusResponseDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
 
@@ -54,7 +52,11 @@ public static class CampusEndpoints
                 "/",
                 async (CreateCampusDto dto, CampusService service) =>
                 {
-                    if (string.IsNullOrWhiteSpace(dto.City) || string.IsNullOrWhiteSpace(dto.Street) || string.IsNullOrWhiteSpace(dto.Country))
+                    if (
+                        string.IsNullOrWhiteSpace(dto.City)
+                        || string.IsNullOrWhiteSpace(dto.Street)
+                        || string.IsNullOrWhiteSpace(dto.Country)
+                    )
                     {
                         return Results.BadRequest("Street, City, and Country are required.");
                     }
@@ -81,7 +83,11 @@ public static class CampusEndpoints
                 "/{id}",
                 async (long id, UpdateCampusDto dto, CampusService service) =>
                 {
-                    if (string.IsNullOrWhiteSpace(dto.City) || string.IsNullOrWhiteSpace(dto.Street) || string.IsNullOrWhiteSpace(dto.Country))
+                    if (
+                        string.IsNullOrWhiteSpace(dto.City)
+                        || string.IsNullOrWhiteSpace(dto.Street)
+                        || string.IsNullOrWhiteSpace(dto.Country)
+                    )
                     {
                         return Results.BadRequest("Street, City, and Country are required.");
                     }

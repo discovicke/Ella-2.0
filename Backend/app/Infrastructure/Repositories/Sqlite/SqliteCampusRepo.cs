@@ -4,8 +4,10 @@ using Dapper;
 
 namespace Backend.app.Infrastructure.Repositories.Sqlite;
 
-public class SqliteCampusRepo(IDbConnectionFactory connectionFactory, ILogger<SqliteCampusRepo> logger)
-    : ICampusRepository
+public class SqliteCampusRepo(
+    IDbConnectionFactory connectionFactory,
+    ILogger<SqliteCampusRepo> logger
+) : ICampusRepository
 {
     public async Task<IEnumerable<Campus>> GetAllAsync()
     {
@@ -28,7 +30,10 @@ public class SqliteCampusRepo(IDbConnectionFactory connectionFactory, ILogger<Sq
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            return await conn.QuerySingleOrDefaultAsync<Campus>("SELECT * FROM campus WHERE id = @id;", new { id });
+            return await conn.QuerySingleOrDefaultAsync<Campus>(
+                "SELECT * FROM campus WHERE id = @id;",
+                new { id }
+            );
         }
         catch (Exception ex)
         {
@@ -44,10 +49,10 @@ public class SqliteCampusRepo(IDbConnectionFactory connectionFactory, ILogger<Sq
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             const string sql = """
-            INSERT INTO campus (street, zip, city, country, contact)
-            VALUES (@Street, @Zip, @City, @Country, @Contact);
-            SELECT last_insert_rowid();
-            """;
+                INSERT INTO campus (street, zip, city, country, contact)
+                VALUES (@Street, @Zip, @City, @Country, @Contact);
+                SELECT last_insert_rowid();
+                """;
             return await conn.ExecuteScalarAsync<long>(sql, campus);
         }
         catch (Exception ex)
@@ -65,10 +70,10 @@ public class SqliteCampusRepo(IDbConnectionFactory connectionFactory, ILogger<Sq
             await conn.OpenAsync();
             campus.Id = id;
             const string sql = """
-            UPDATE campus
-            SET street = @Street, zip = @Zip, city = @City, country = @Country, contact = @Contact
-            WHERE id = @Id;
-            """;
+                UPDATE campus
+                SET street = @Street, zip = @Zip, city = @City, country = @Country, contact = @Contact
+                WHERE id = @Id;
+                """;
             return await conn.ExecuteAsync(sql, campus) > 0;
         }
         catch (Exception ex)

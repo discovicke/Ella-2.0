@@ -221,7 +221,12 @@ public class UserService(
     }
 
     // Mapper: Entity → DTO
-    private static UserResponseDto MapToDto(User user, UserPermissions? permissions, List<string>? campusNames = null, List<string>? classNames = null)
+    private static UserResponseDto MapToDto(
+        User user,
+        UserPermissions? permissions,
+        List<string>? campusNames = null,
+        List<string>? classNames = null
+    )
     {
         return new UserResponseDto(
             user.Id,

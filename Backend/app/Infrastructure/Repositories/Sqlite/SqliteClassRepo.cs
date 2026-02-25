@@ -4,8 +4,10 @@ using Dapper;
 
 namespace Backend.app.Infrastructure.Repositories.Sqlite;
 
-public class SqliteClassRepo(IDbConnectionFactory connectionFactory, ILogger<SqliteClassRepo> logger)
-    : IClassRepository
+public class SqliteClassRepo(
+    IDbConnectionFactory connectionFactory,
+    ILogger<SqliteClassRepo> logger
+) : IClassRepository
 {
     public async Task<IEnumerable<SchoolClass>> GetAllAsync()
     {
@@ -28,7 +30,10 @@ public class SqliteClassRepo(IDbConnectionFactory connectionFactory, ILogger<Sql
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            return await conn.QuerySingleOrDefaultAsync<SchoolClass>("SELECT * FROM class WHERE id = @id;", new { id });
+            return await conn.QuerySingleOrDefaultAsync<SchoolClass>(
+                "SELECT * FROM class WHERE id = @id;",
+                new { id }
+            );
         }
         catch (Exception ex)
         {
@@ -43,12 +48,17 @@ public class SqliteClassRepo(IDbConnectionFactory connectionFactory, ILogger<Sql
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            const string sql = "INSERT INTO class (class_name) VALUES (@ClassName); SELECT last_insert_rowid();";
+            const string sql =
+                "INSERT INTO class (class_name) VALUES (@ClassName); SELECT last_insert_rowid();";
             return await conn.ExecuteScalarAsync<long>(sql, schoolClass);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while creating class {ClassName}", schoolClass.ClassName);
+            logger.LogError(
+                ex,
+                "Database error while creating class {ClassName}",
+                schoolClass.ClassName
+            );
             throw;
         }
     }
@@ -93,11 +103,18 @@ public class SqliteClassRepo(IDbConnectionFactory connectionFactory, ILogger<Sql
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            return await conn.QueryAsync<long>("SELECT campus_id FROM class_campus WHERE class_id = @classId;", new { classId });
+            return await conn.QueryAsync<long>(
+                "SELECT campus_id FROM class_campus WHERE class_id = @classId;",
+                new { classId }
+            );
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching campus IDs for class {ClassId}", classId);
+            logger.LogError(
+                ex,
+                "Database error while fetching campus IDs for class {ClassId}",
+                classId
+            );
             throw;
         }
     }
@@ -110,20 +127,30 @@ public class SqliteClassRepo(IDbConnectionFactory connectionFactory, ILogger<Sql
             await conn.OpenAsync();
             using var tx = await conn.BeginTransactionAsync();
 
-            await conn.ExecuteAsync("DELETE FROM class_campus WHERE class_id = @classId;", new { classId }, tx);
+            await conn.ExecuteAsync(
+                "DELETE FROM class_campus WHERE class_id = @classId;",
+                new { classId },
+                tx
+            );
 
             foreach (var campusId in campusIds)
             {
                 await conn.ExecuteAsync(
                     "INSERT INTO class_campus (class_id, campus_id) VALUES (@classId, @campusId);",
-                    new { classId, campusId }, tx);
+                    new { classId, campusId },
+                    tx
+                );
             }
 
             await tx.CommitAsync();
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while setting campuses for class {ClassId}", classId);
+            logger.LogError(
+                ex,
+                "Database error while setting campuses for class {ClassId}",
+                classId
+            );
             throw;
         }
     }
@@ -134,7 +161,8 @@ public class SqliteClassRepo(IDbConnectionFactory connectionFactory, ILogger<Sql
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            var sql = @"SELECT cc.class_id AS ClassId, c.city AS Name
+            var sql =
+                @"SELECT cc.class_id AS ClassId, c.city AS Name
                         FROM class_campus cc
                         JOIN campus c ON c.id = cc.campus_id
                         ORDER BY c.city;";

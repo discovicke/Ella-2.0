@@ -168,7 +168,15 @@ export const passwordMatchValidator: ValidatorFn = (
                 (click)="toggleCampus(campus.id)"
               >
                 @if (isCampusSelected(campus.id)) {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
                 }
                 {{ campus.city }}
               </button>
@@ -190,7 +198,15 @@ export const passwordMatchValidator: ValidatorFn = (
                 (click)="toggleClass(cls.id)"
               >
                 @if (isClassSelected(cls.id)) {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
                 }
                 {{ cls.className }}
               </button>

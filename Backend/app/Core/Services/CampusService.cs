@@ -10,7 +10,14 @@ public class CampusService(ICampusRepository repo, ILogger<CampusService> logger
     {
         logger.LogInformation("Fetching all campuses");
         var entities = await repo.GetAllAsync();
-        return entities.Select(e => new CampusResponseDto(e.Id, e.Street, e.Zip, e.City, e.Country, e.Contact));
+        return entities.Select(e => new CampusResponseDto(
+            e.Id,
+            e.Street,
+            e.Zip,
+            e.City,
+            e.Country,
+            e.Contact
+        ));
     }
 
     public async Task<CampusResponseDto> GetByIdAsync(long id)
@@ -19,7 +26,14 @@ public class CampusService(ICampusRepository repo, ILogger<CampusService> logger
         var entity =
             await repo.GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"Campus with ID {id} not found.");
-        return new CampusResponseDto(entity.Id, entity.Street, entity.Zip, entity.City, entity.Country, entity.Contact);
+        return new CampusResponseDto(
+            entity.Id,
+            entity.Street,
+            entity.Zip,
+            entity.City,
+            entity.Country,
+            entity.Contact
+        );
     }
 
     public async Task<CampusResponseDto> CreateAsync(CreateCampusDto dto)
@@ -31,7 +45,7 @@ public class CampusService(ICampusRepository repo, ILogger<CampusService> logger
             Zip = dto.Zip,
             City = dto.City,
             Country = dto.Country,
-            Contact = dto.Contact
+            Contact = dto.Contact,
         };
         var id = await repo.CreateAsync(entity);
         logger.LogInformation("Campus created with ID {CampusId}", id);
@@ -41,7 +55,8 @@ public class CampusService(ICampusRepository repo, ILogger<CampusService> logger
     public async Task UpdateAsync(long id, UpdateCampusDto dto)
     {
         logger.LogInformation("Updating campus with ID {CampusId}", id);
-        _ = await repo.GetByIdAsync(id)
+        _ =
+            await repo.GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"Campus with ID {id} not found.");
 
         var entity = new Campus
@@ -51,7 +66,7 @@ public class CampusService(ICampusRepository repo, ILogger<CampusService> logger
             Zip = dto.Zip,
             City = dto.City,
             Country = dto.Country,
-            Contact = dto.Contact
+            Contact = dto.Contact,
         };
         await repo.UpdateAsync(id, entity);
         logger.LogInformation("Campus with ID {CampusId} updated", id);
@@ -60,7 +75,8 @@ public class CampusService(ICampusRepository repo, ILogger<CampusService> logger
     public async Task DeleteAsync(long id)
     {
         logger.LogInformation("Deleting campus with ID {CampusId}", id);
-        _ = await repo.GetByIdAsync(id)
+        _ =
+            await repo.GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"Campus with ID {id} not found.");
 
         await repo.DeleteAsync(id);

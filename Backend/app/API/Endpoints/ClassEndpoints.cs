@@ -23,9 +23,7 @@ public static class ClassEndpoints
             )
             .WithName("GetClasses")
             .WithSummary("Get all classes")
-            .WithDescription(
-                "Retrieves a list of all classes.\n\n🔒 **Authentication Required**"
-            )
+            .WithDescription("Retrieves a list of all classes.\n\n🔒 **Authentication Required**")
             .Produces<IEnumerable<ClassResponseDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
 

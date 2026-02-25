@@ -25,12 +25,7 @@ export interface ClassFormModalConfig {
     <form [formGroup]="classForm" (ngSubmit)="onSubmit()" class="class-form">
       <div class="form-group">
         <label for="class-name">Klassnamn</label>
-        <input
-          id="class-name"
-          type="text"
-          formControlName="className"
-          placeholder="t.ex. net25"
-        />
+        <input id="class-name" type="text" formControlName="className" placeholder="t.ex. net25" />
         @if (classForm.get('className')?.invalid && classForm.get('className')?.touched) {
           <span class="error-msg">Klassnamn krävs</span>
         }
@@ -49,7 +44,15 @@ export interface ClassFormModalConfig {
                 (click)="toggleCampus(campus.id)"
               >
                 @if (isCampusSelected(campus.id)) {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
                 }
                 {{ campus.city }}
               </button>

@@ -40,7 +40,8 @@ public class ClassService(IClassRepository repo, ILogger<ClassService> logger)
     public async Task UpdateAsync(long id, UpdateClassDto dto)
     {
         logger.LogInformation("Updating class with ID {ClassId}", id);
-        _ = await repo.GetByIdAsync(id)
+        _ =
+            await repo.GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"Class with ID {id} not found.");
 
         var entity = new SchoolClass { Id = id, ClassName = dto.ClassName };
@@ -51,7 +52,8 @@ public class ClassService(IClassRepository repo, ILogger<ClassService> logger)
     public async Task DeleteAsync(long id)
     {
         logger.LogInformation("Deleting class with ID {ClassId}", id);
-        _ = await repo.GetByIdAsync(id)
+        _ =
+            await repo.GetByIdAsync(id)
             ?? throw new KeyNotFoundException($"Class with ID {id} not found.");
 
         await repo.DeleteAsync(id);
@@ -62,14 +64,16 @@ public class ClassService(IClassRepository repo, ILogger<ClassService> logger)
 
     public async Task<IEnumerable<long>> GetCampusIdsAsync(long classId)
     {
-        _ = await repo.GetByIdAsync(classId)
+        _ =
+            await repo.GetByIdAsync(classId)
             ?? throw new KeyNotFoundException($"Class with ID {classId} not found.");
         return await repo.GetCampusIdsForClassAsync(classId);
     }
 
     public async Task SetCampusesAsync(long classId, IEnumerable<long> campusIds)
     {
-        _ = await repo.GetByIdAsync(classId)
+        _ =
+            await repo.GetByIdAsync(classId)
             ?? throw new KeyNotFoundException($"Class with ID {classId} not found.");
         await repo.SetCampusesForClassAsync(classId, campusIds);
         logger.LogInformation("Updated campus associations for class {ClassId}", classId);

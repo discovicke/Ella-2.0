@@ -1,5 +1,5 @@
-﻿using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models;
 using Backend.app.Core.Models.DTO;
@@ -130,7 +130,9 @@ public static class UserEndpoints
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
 
-                    var currentUserId = user.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                    var currentUserId = user.FindFirst(
+                        System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub
+                    )?.Value;
                     if (currentUserId == id.ToString())
                         return Results.BadRequest("You cannot change your own ban status.");
 
@@ -179,12 +181,19 @@ public static class UserEndpoints
         group
             .MapPut(
                 "/{id}/permissions",
-                async (long id, UpdatePermissionDto dto, UserService service, ClaimsPrincipal user) =>
+                async (
+                    long id,
+                    UpdatePermissionDto dto,
+                    UserService service,
+                    ClaimsPrincipal user
+                ) =>
                 {
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
 
-                    var currentUserId = user.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                    var currentUserId = user.FindFirst(
+                        System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub
+                    )?.Value;
                     if (currentUserId == id.ToString())
                         return Results.BadRequest("You cannot update your own permissions.");
 
@@ -211,14 +220,21 @@ public static class UserEndpoints
         group
             .MapPost(
                 "/{id}/apply-template/{templateId}",
-                async (long id, long templateId, PermissionTemplateService templateService, ClaimsPrincipal user) =>
+                async (
+                    long id,
+                    long templateId,
+                    PermissionTemplateService templateService,
+                    ClaimsPrincipal user
+                ) =>
                 {
                     if (id <= 0)
                         return Results.BadRequest("User ID must be a positive integer.");
                     if (templateId <= 0)
                         return Results.BadRequest("Template ID must be a positive integer.");
 
-                    var currentUserId = user.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                    var currentUserId = user.FindFirst(
+                        System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub
+                    )?.Value;
                     if (currentUserId == id.ToString())
                         return Results.BadRequest("You cannot apply a template to yourself.");
 
@@ -249,7 +265,9 @@ public static class UserEndpoints
                     if (id <= 0)
                         return Results.BadRequest("ID must be a positive integer.");
 
-                    var currentUserId = user.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                    var currentUserId = user.FindFirst(
+                        System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub
+                    )?.Value;
                     if (currentUserId == id.ToString())
                         return Results.BadRequest("You cannot delete your own account.");
 

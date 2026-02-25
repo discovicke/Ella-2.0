@@ -1,7 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-import { CreateUserDto, UserPermissions, UpdateUserDto, UserResponseDto } from '../../models/models';
+import {
+  CreateUserDto,
+  UserPermissions,
+  UpdateUserDto,
+  UserResponseDto,
+} from '../../models/models';
 
 export interface UpdatePermissionsRequest {
   templateId: number | null;
@@ -53,7 +58,10 @@ export class UserService {
       .pipe(tap(() => this.refresh()));
   }
 
-  updatePermissions(userId: number, permissions: UpdatePermissionsRequest): Observable<UserPermissions> {
+  updatePermissions(
+    userId: number,
+    permissions: UpdatePermissionsRequest,
+  ): Observable<UserPermissions> {
     return this.http
       .put<UserPermissions>(`${this.apiUrl}/${userId}/permissions`, permissions, {
         withCredentials: true,

@@ -1,11 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import {
-  CampusResponseDto,
-  CreateCampusDto,
-  UpdateCampusDto,
-} from '../../models/models';
+import { CampusResponseDto, CreateCampusDto, UpdateCampusDto } from '../../models/models';
 
 @Injectable({
   providedIn: 'root',

@@ -157,11 +157,18 @@ public class PostgresUserRepo(
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            return await conn.QueryAsync<long>("SELECT campus_id FROM user_campus WHERE user_id = @userId;", new { userId });
+            return await conn.QueryAsync<long>(
+                "SELECT campus_id FROM user_campus WHERE user_id = @userId;",
+                new { userId }
+            );
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching campus IDs for user {UserId}", userId);
+            logger.LogError(
+                ex,
+                "Database error while fetching campus IDs for user {UserId}",
+                userId
+            );
             throw;
         }
     }
@@ -174,13 +181,19 @@ public class PostgresUserRepo(
             await conn.OpenAsync();
             using var tx = await conn.BeginTransactionAsync();
 
-            await conn.ExecuteAsync("DELETE FROM user_campus WHERE user_id = @userId;", new { userId }, tx);
+            await conn.ExecuteAsync(
+                "DELETE FROM user_campus WHERE user_id = @userId;",
+                new { userId },
+                tx
+            );
 
             foreach (var campusId in campusIds)
             {
                 await conn.ExecuteAsync(
                     "INSERT INTO user_campus (user_id, campus_id) VALUES (@userId, @campusId);",
-                    new { userId, campusId }, tx);
+                    new { userId, campusId },
+                    tx
+                );
             }
 
             await tx.CommitAsync();
@@ -198,7 +211,8 @@ public class PostgresUserRepo(
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            var sql = @"SELECT uc.user_id AS UserId, c.city AS Name
+            var sql =
+                @"SELECT uc.user_id AS UserId, c.city AS Name
                         FROM user_campus uc
                         JOIN campus c ON c.id = uc.campus_id
                         ORDER BY c.city;";
@@ -227,11 +241,18 @@ public class PostgresUserRepo(
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            return await conn.QueryAsync<long>("SELECT class_id FROM user_class WHERE user_id = @userId;", new { userId });
+            return await conn.QueryAsync<long>(
+                "SELECT class_id FROM user_class WHERE user_id = @userId;",
+                new { userId }
+            );
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching class IDs for user {UserId}", userId);
+            logger.LogError(
+                ex,
+                "Database error while fetching class IDs for user {UserId}",
+                userId
+            );
             throw;
         }
     }
@@ -244,13 +265,19 @@ public class PostgresUserRepo(
             await conn.OpenAsync();
             using var tx = await conn.BeginTransactionAsync();
 
-            await conn.ExecuteAsync("DELETE FROM user_class WHERE user_id = @userId;", new { userId }, tx);
+            await conn.ExecuteAsync(
+                "DELETE FROM user_class WHERE user_id = @userId;",
+                new { userId },
+                tx
+            );
 
             foreach (var classId in classIds)
             {
                 await conn.ExecuteAsync(
                     "INSERT INTO user_class (user_id, class_id) VALUES (@userId, @classId);",
-                    new { userId, classId }, tx);
+                    new { userId, classId },
+                    tx
+                );
             }
 
             await tx.CommitAsync();
@@ -268,7 +295,8 @@ public class PostgresUserRepo(
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            var sql = @"SELECT uc.user_id AS UserId, c.class_name AS Name
+            var sql =
+                @"SELECT uc.user_id AS UserId, c.class_name AS Name
                         FROM user_class uc
                         JOIN class c ON c.id = uc.class_id
                         ORDER BY c.class_name;";
