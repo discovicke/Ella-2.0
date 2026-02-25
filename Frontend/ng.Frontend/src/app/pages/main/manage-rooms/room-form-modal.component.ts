@@ -96,7 +96,7 @@ export interface RoomFormModalConfig {
       </div>
 
       <div class="assets-section">
-        <p class="assets-title">Assets i rummet</p>
+        <p class="assets-title">Utrustning i rummet</p>
         @if (!assetTypes.length) {
           <p class="assets-hint">Inga utrustningstyper är definierade ännu.</p>
         } @else {
