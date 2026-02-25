@@ -54,12 +54,12 @@ export class ManageRolesPage implements OnInit {
   loading = signal(true);
 
   readonly colorOptions: RoleColorOption[] = [
-    { label: 'Grön', cssClass: 'student' },
-    { label: 'Blå', cssClass: 'educator' },
-    { label: 'Orange', cssClass: 'admin' },
+    { label: 'Grön', cssClass: 'green' },
+    { label: 'Blå', cssClass: 'blue' },
+    { label: 'Orange', cssClass: 'orange' },
     { label: 'Lila', cssClass: 'purple' },
     { label: 'Röd', cssClass: 'red' },
-    { label: 'Grå', cssClass: 'custom' },
+    { label: 'Grå', cssClass: 'gray' },
   ];
 
   private readonly permissionLabelMap: Record<string, string> = {
@@ -273,6 +273,6 @@ export class ManageRolesPage implements OnInit {
   private normalizeCssClass(value: string | undefined | null): string {
     const cssClass = (value ?? '').trim().toLowerCase();
     const isKnown = this.colorOptions.some((option) => option.cssClass === cssClass);
-    return isKnown ? cssClass : 'custom';
+    return isKnown ? cssClass : 'gray';
   }
 }

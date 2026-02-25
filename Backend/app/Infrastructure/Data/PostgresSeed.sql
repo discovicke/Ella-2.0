@@ -40,9 +40,9 @@ VALUES ('BookRoom', 'Can book rooms'),
 
 INSERT INTO permission_templates (id, name, label, css_class, sort_order)
     OVERRIDING SYSTEM VALUE
-VALUES (1, 'student', 'Student', 'student', 0),
-       (2, 'educator', 'Educator', 'educator', 1),
-       (3, 'admin', 'Admin', 'admin', 2);
+VALUES (1, 'student', 'Student', 'green', 0),
+       (2, 'educator', 'Educator', 'blue', 1),
+       (3, 'admin', 'Admin', 'orange', 2);
 
 SELECT setval(pg_get_serial_sequence('permission_templates', 'id'), (SELECT MAX(id) FROM permission_templates));
 

@@ -193,13 +193,15 @@ $sidebar-collapsed: 80px;
   --color-asset-text: #475569;
   --color-asset-border: #e2e8f0;
 
-  // Colors - Role badges
-  --role-student-bg: #dcfce7;
-  --role-student-text: #166534;
-  --role-teacher-bg: #e0f2fe;
-  --role-teacher-text: #0c4a6e;
-  --role-admin-bg: #ffedd5;
-  --role-admin-text: #9a3412;
+  // Colors - Badge colors
+  --badge-green-bg: #dcfce7;
+  --badge-green-text: #166534;
+  --badge-blue-bg: #e0f2fe;
+  --badge-blue-text: #0c4a6e;
+  --badge-orange-bg: #ffedd5;
+  --badge-orange-text: #9a3412;
+  --badge-gray-bg: #f1f5f9;
+  --badge-gray-text: #475569;
 
   // Layout
   --header-height: #{$header-height};
@@ -252,11 +254,13 @@ $sidebar-collapsed: 80px;
     --color-asset-text: #e5e7eb;
     --color-asset-border: #4b5563;
 
-    --role-student-bg: #064e3b;
-    --role-student-text: #a7f3d0;
-    --role-teacher-bg: #0c4a6e;
-    --role-teacher-text: #bae6fd;
-    --role-admin-bg: #7c2d12;
-    --role-admin-text: #fed7aa;
+    --badge-green-bg: #064e3b;
+    --badge-green-text: #a7f3d0;
+    --badge-blue-bg: #0c4a6e;
+    --badge-blue-text: #bae6fd;
+    --badge-orange-bg: #7c2d12;
+    --badge-orange-text: #fed7aa;
+    --badge-gray-bg: #374151;
+    --badge-gray-text: #d1d5db;
   }
 }

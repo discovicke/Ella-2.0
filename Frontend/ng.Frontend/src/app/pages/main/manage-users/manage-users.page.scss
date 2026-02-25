@@ -398,14 +398,16 @@
   @include badge;
   width: fit-content;
 
-  &.admin {
-    @include role-badge('admin');
+  &.green {
+    @include badge(var(--badge-green-bg), var(--badge-green-text));
   }
-  &.educator {
-    @include role-badge('teacher');
+
+  &.blue {
+    @include badge(var(--badge-blue-bg), var(--badge-blue-text));
   }
-  &.student {
-    @include role-badge('student');
+
+  &.orange {
+    @include badge(var(--badge-orange-bg), var(--badge-orange-text));
   }
 
   &.purple {
@@ -414,6 +416,10 @@
 
   &.red {
     @include badge(var(--color-danger-surface), var(--color-danger));
+  }
+
+  &.gray {
+    @include badge(var(--badge-gray-bg), var(--badge-gray-text));
   }
 }
 

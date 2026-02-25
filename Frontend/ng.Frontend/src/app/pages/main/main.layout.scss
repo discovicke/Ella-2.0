@@ -282,14 +282,17 @@
           color: var(--color-text-secondary);
           font-weight: 500;
 
-          &.admin {
+          &.orange {
             color: var(--color-danger);
           }
-          &.educator {
+          &.blue {
             color: var(--color-primary);
           }
-          &.student {
+          &.green {
             color: var(--color-success);
+          }
+          &.gray {
+            color: var(--color-text-muted);
           }
         }
       }

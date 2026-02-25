@@ -331,13 +331,15 @@
   border-radius: map.get($radii, 'full');
 }
 
-@mixin role-badge($role) {
-  @if $role == 'student' {
-    @include badge(var(--role-student-bg), var(--role-student-text));
-  } @else if $role == 'teacher' {
-    @include badge(var(--role-teacher-bg), var(--role-teacher-text));
-  } @else if $role == 'admin' {
-    @include badge(var(--role-admin-bg), var(--role-admin-text));
+@mixin color-badge($color) {
+  @if $color == 'green' {
+    @include badge(var(--badge-green-bg), var(--badge-green-text));
+  } @else if $color == 'blue' {
+    @include badge(var(--badge-blue-bg), var(--badge-blue-text));
+  } @else if $color == 'orange' {
+    @include badge(var(--badge-orange-bg), var(--badge-orange-text));
+  } @else if $color == 'gray' {
+    @include badge(var(--badge-gray-bg), var(--badge-gray-text));
   }
 }
 

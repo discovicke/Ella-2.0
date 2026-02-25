@@ -1,71 +1,69 @@
 <div class="table-container">
-  <table class="data-table">
-    <thead>
-      <tr>
-        @for (col of columns(); track $index) {
-          <th [style.width]="col.width" [class]="'align-' + (col.align || 'left')">
-            {{ col.header }}
-          </th>
-        }
-      </tr>
-    </thead>
-    <tbody>
-      @if (isLoading()) {
-        @for (i of [1, 2, 3, 4, 5]; track i) {
-          <tr class="skeleton-row">
-            @for (col of columns(); track $index) {
-              <td [attr.data-label]="col.header"><div class="skeleton-cell"></div></td>
-            }
-          </tr>
-        }
-      } @else if (!data() || data().length === 0) {
-        <tr>
-          <td [attr.colspan]="columns().length" class="empty-state" [attr.data-label]="'Info'">
-            {{ emptyMessage() }}
-          </td>
-        </tr>
-      } @else {
-        @for (row of data(); track $index) {
-          <tr (click)="onRowClick(row)" class="clickable-row">
-            @for (col of columns(); track $index) {
-              <td [class]="'align-' + (col.align || 'left')" [attr.data-label]="col.header">
-                @if (col.template) {
-                  <ng-container
-                    *ngTemplateOutlet="col.template; context: { $implicit: row }"
-                  ></ng-container>
-                } @else if (col.field) {
-                  {{ row[col.field] }}
-                }
-              </td>
-            }
-          </tr>
-        }
-      }
-    </tbody>
-  </table>
-
-  @if (total() > 0 && !isLoading()) {
-    <div class="table-footer">
-      <div class="pagination-info">
-        Visar <strong>{{ startItem() }}-{{ endItem() }}</strong> av <strong>{{ total() }}</strong>
-      </div>
-      <div class="pagination-controls">
-        <button
-          class="btn-icon"
-          [disabled]="pageIndex() === 0"
-          (click)="onPageChange(pageIndex() - 1)"
-        >
-          &lt;
-        </button>
-        <span class="current-page">Sida {{ pageIndex() + 1 }}</span>
-        <button
-          class="btn-icon"
-          [disabled]="pageIndex() >= totalPages() - 1"
-          (click)="onPageChange(pageIndex() + 1)"
-        >
-          &gt;
-        </button>
-      </div>
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
     </div>
+  } @else {
+    <table class="data-table">
+      <thead>
+        <tr>
+          @for (col of columns(); track $index) {
+            <th [style.width]="col.width" [class]="'align-' + (col.align || 'left')">
+              {{ col.header }}
+            </th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @if (!data() || data().length === 0) {
+          <tr>
+            <td [attr.colspan]="columns().length" class="empty-state" [attr.data-label]="'Info'">
+              {{ emptyMessage() }}
+            </td>
+          </tr>
+        } @else {
+          @for (row of data(); track $index) {
+            <tr (click)="onRowClick(row)" class="clickable-row">
+              @for (col of columns(); track $index) {
+                <td [class]="'align-' + (col.align || 'left')" [attr.data-label]="col.header">
+                  @if (col.template) {
+                    <ng-container
+                      *ngTemplateOutlet="col.template; context: { $implicit: row }"
+                    ></ng-container>
+                  } @else if (col.field) {
+                    {{ row[col.field] }}
+                  }
+                </td>
+              }
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    @if (total() > 0) {
+      <div class="table-footer">
+        <div class="pagination-info">
+          Visar <strong>{{ startItem() }}-{{ endItem() }}</strong> av <strong>{{ total() }}</strong>
+        </div>
+        <div class="pagination-controls">
+          <button
+            class="btn-icon"
+            [disabled]="pageIndex() === 0"
+            (click)="onPageChange(pageIndex() - 1)"
+          >
+            &lt;
+          </button>
+          <span class="current-page">Sida {{ pageIndex() + 1 }}</span>
+          <button
+            class="btn-icon"
+            [disabled]="pageIndex() >= totalPages() - 1"
+            (click)="onPageChange(pageIndex() + 1)"
+          >
+            &gt;
+          </button>
+        </div>
+      </div>
+    }
   }
 </div>

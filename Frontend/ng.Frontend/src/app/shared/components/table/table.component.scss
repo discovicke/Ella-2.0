@@ -76,20 +76,21 @@
   color: var(--color-text-muted);
 }
 
-/* Skeleton Loading */
-.skeleton-row {
-  td {
-    padding: 1rem;
-    border-bottom: 1px solid var(--color-border);
-  }
-}
+/* Loading Spinner */
+.loading-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-.skeleton-cell {
-  height: 1rem;
-  width: 100%;
-  background: var(--color-bg-body);
-  border-radius: var(--radii-sm);
-  animation: pulse 1.5s infinite ease-in-out;
+  .spinner {
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 2.5px solid var(--color-border);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
 }
 
 /* Pagination Footer */

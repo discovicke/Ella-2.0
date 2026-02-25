@@ -56,15 +56,15 @@ export function resolveRoleLabel(permissions: UserPermissions | undefined | null
  * Uses template_id for fast lookup when available.
  */
 export function resolveRoleCssClass(permissions: UserPermissions | undefined | null): string {
-  if (!permissions) return 'student';
+  if (!permissions) return 'green';
 
   // Use stored template_id
   if (permissions.permissionTemplateId) {
     const match = permissionTemplates().find((t) => t.id === permissions.permissionTemplateId);
-    if (match) return match.cssClass ?? 'custom';
+    if (match) return match.cssClass ?? 'gray';
   }
 
-  return 'custom';
+  return 'gray';
 }
 
 /**
