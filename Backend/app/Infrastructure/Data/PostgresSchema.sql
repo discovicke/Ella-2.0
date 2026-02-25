@@ -199,6 +199,16 @@ CREATE TABLE IF NOT EXISTS user_class
 );
 
 
+-- Kopplingstabell klass ↔ campus (many-to-many)
+CREATE TABLE IF NOT EXISTS class_campus
+(
+    id        INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    class_id  INTEGER NOT NULL REFERENCES class (id) ON DELETE CASCADE,
+    campus_id INTEGER NOT NULL REFERENCES campus (id) ON DELETE CASCADE,
+    UNIQUE (class_id, campus_id)
+);
+
+
 -- =============================================================
 --  BOOKINGS
 -- =============================================================

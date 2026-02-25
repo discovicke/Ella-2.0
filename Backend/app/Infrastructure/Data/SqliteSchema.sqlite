@@ -134,6 +134,18 @@ CREATE TABLE IF NOT EXISTS "user_campus" (
     ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+CREATE TABLE IF NOT EXISTS "class_campus" (
+    "id" INTEGER NOT NULL UNIQUE,
+    "class_id" INTEGER NOT NULL,
+    "campus_id" INTEGER NOT NULL,
+    PRIMARY KEY("id"),
+    UNIQUE("class_id", "campus_id"),
+    FOREIGN KEY ("class_id") REFERENCES "class"("id")
+    ON UPDATE NO ACTION ON DELETE CASCADE,
+    FOREIGN KEY ("campus_id") REFERENCES "campus"("id")
+    ON UPDATE NO ACTION ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS "room_assets" (
     "id" INTEGER NOT NULL,
     "asset_type_id" INTEGER NOT NULL,
