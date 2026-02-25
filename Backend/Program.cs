@@ -84,6 +84,8 @@ api.MapAssetEndpoints();
 api.MapBookingEndpoints();
 api.MapRegistrationEndpoints();
 api.MapPermissionTemplateEndpoints();
+api.MapCampusEndpoints();
+api.MapClassEndpoints();
 
 // 5. THE CATCH-ALL (SPA Fallback)
 app.MapFallbackToFile("index.html");
@@ -225,6 +227,8 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
             services.AddScoped<IPermissionRepository, SqlitePermissionRepo>();
             services.AddScoped<IPermissionTemplateRepository, SqlitePermissionTemplateRepo>();
             services.AddScoped<IRegistrationRepository, SqliteRegistrationRepo>();
+            services.AddScoped<ICampusRepository, SqliteCampusRepo>();
+            services.AddScoped<IClassRepository, SqliteClassRepo>();
             break;
 
         case DbProviders.Postgres:
@@ -239,6 +243,8 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
             services.AddScoped<IRoomRepository, PostgresRoomRepo>();
             services.AddScoped<IRoomTypeRepository, PostgresRoomTypeRepo>();
             services.AddScoped<IRoomReadModelRepository, PostgresRoomReadModelRepo>();
+            services.AddScoped<ICampusRepository, PostgresCampusRepo>();
+            services.AddScoped<IClassRepository, PostgresClassRepo>();
             break;
 
         case DbProviders.SqlServer:
@@ -263,4 +269,6 @@ static void ConfigureCoreServices(IServiceCollection services)
     services.AddScoped<AssetService>();
     services.AddScoped<RegistrationService>();
     services.AddScoped<PermissionTemplateService>();
+    services.AddScoped<CampusService>();
+    services.AddScoped<ClassService>();
 }
