@@ -19,6 +19,7 @@ import {
 import { ModalService } from '../../../shared/services/modal.service';
 import { ConfirmService } from '../../../shared/services/confirm.service';
 import { RoomService } from '../../../shared/services/room.service';
+import { CampusService } from '../../../shared/services/campus.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { TableComponent, TableColumn } from '../../../shared/components/table/table.component';
@@ -34,6 +35,7 @@ import { AssetTypesModalComponent } from './asset-types-modal.component';
 })
 export class ManageRoomsPage implements OnInit {
   private readonly roomService = inject(RoomService);
+  private readonly campusService = inject(CampusService);
   private readonly toastService = inject(ToastService);
   private readonly modalService = inject(ModalService);
   private readonly confirmService = inject(ConfirmService);
@@ -60,12 +62,13 @@ export class ManageRoomsPage implements OnInit {
   // Data resource
   roomResource = resource({
     loader: async () => {
-      const [rooms, roomTypes, assetTypes] = await Promise.all([
+      const [rooms, roomTypes, assetTypes, campuses] = await Promise.all([
         firstValueFrom(this.roomService.getAllRooms()),
         firstValueFrom(this.roomService.getRoomTypes()),
         firstValueFrom(this.roomService.getAssetTypes()),
+        firstValueFrom(this.campusService.getAll()),
       ]);
-      return { rooms, roomTypes, assetTypes };
+      return { rooms, roomTypes, assetTypes, campuses };
     },
   });
 
@@ -75,15 +78,8 @@ export class ManageRoomsPage implements OnInit {
   readonly assetTypes = computed(() => this.roomResource.value()?.assetTypes ?? []);
 
   readonly campusOptions = computed(() => {
-    const lookup = new Map<number, string>();
-    for (const room of this.rooms()) {
-      if (room.campusId && room.campusCity) {
-        lookup.set(room.campusId, room.campusCity);
-      }
-    }
-    return Array.from(lookup.entries())
-      .map(([id, city]) => ({ id, city }))
-      .sort((a, b) => a.city.localeCompare(b.city));
+    const campuses = this.roomResource.value()?.campuses ?? [];
+    return campuses.map((c) => ({ id: c.id, city: c.city }));
   });
 
   // Filtered data

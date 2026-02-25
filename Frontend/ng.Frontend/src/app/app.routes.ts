@@ -70,6 +70,24 @@ export const routes: Routes = [
           import('./pages/main/manage-rooms/manage-rooms.page').then((m) => m.ManageRoomsPage),
       },
       {
+        path: 'manage-campuses',
+        canActivate: [permissionGuard],
+        data: { permission: 'manageCampuses' },
+        loadComponent: () =>
+          import('./pages/main/manage-campuses/manage-campuses.page').then(
+            (m) => m.ManageCampusesPage,
+          ),
+      },
+      {
+        path: 'manage-classes',
+        canActivate: [permissionGuard],
+        data: { permission: 'manageClasses' },
+        loadComponent: () =>
+          import('./pages/main/manage-classes/manage-classes.page').then(
+            (m) => m.ManageClassesPage,
+          ),
+      },
+      {
         path: 'manage-bookings',
         canActivate: [permissionGuard],
         data: { permission: 'manageBookings' },
