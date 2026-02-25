@@ -9,7 +9,6 @@ import {
   signal,
   computed,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { firstValueFrom } from 'rxjs';
@@ -39,8 +38,7 @@ import {
 
 @Component({
   selector: 'app-manage-users-page',
-  standalone: true,
-  imports: [CommonModule, ButtonComponent, TableComponent],
+  imports: [ButtonComponent, TableComponent],
   templateUrl: './manage-users.page.html',
   styleUrl: './manage-users.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -138,7 +136,7 @@ export class ManageUsersPage implements OnInit {
 
   onPageSizeChange(size: number) {
     this.pageSize.set(size);
-    // Optionally reset to page 0 if current page is out of bounds, 
+    // Optionally reset to page 0 if current page is out of bounds,
     // but TableComponent usually handles the display logic or parent should check.
     // If we are on page 5 and size doubles, page 5 might still be valid or not.
     // Simpler to keep pageIndex unless it's invalid.

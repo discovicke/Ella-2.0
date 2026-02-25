@@ -9,7 +9,6 @@ import { CreateBookingDto, BookingStatus, RoomDetailModel } from '../../../../mo
 
 @Component({
   selector: 'app-booking-modal',
-  standalone: true,
   imports: [ReactiveFormsModule, ButtonComponent],
   templateUrl: './booking-modal.component.html',
   styleUrl: './booking-modal.component.scss',
@@ -34,7 +33,10 @@ export class BookingModalComponent {
   })();
 
   readonly bookingForm = new FormGroup({
-    startDate: new FormControl(this.today, { nonNullable: true, validators: [Validators.required] }),
+    startDate: new FormControl(this.today, {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
     startTime: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     endDate: new FormControl(this.today, { nonNullable: true, validators: [Validators.required] }),
     endTime: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -54,8 +56,12 @@ export class BookingModalComponent {
 
     this.isSubmitting.set(true);
 
-    const startDateTime = new Date(`${this.bookingForm.value.startDate}T${this.bookingForm.value.startTime}`);
-    const endDateTime = new Date(`${this.bookingForm.value.endDate}T${this.bookingForm.value.endTime}`);
+    const startDateTime = new Date(
+      `${this.bookingForm.value.startDate}T${this.bookingForm.value.startTime}`,
+    );
+    const endDateTime = new Date(
+      `${this.bookingForm.value.endDate}T${this.bookingForm.value.endTime}`,
+    );
 
     if (endDateTime <= startDateTime) {
       this.toastService.showError('Sluttid måste vara efter starttid.');

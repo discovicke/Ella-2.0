@@ -9,7 +9,6 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import {
   AssetTypeResponseDto,
@@ -28,8 +27,7 @@ import { AssetTypesModalComponent } from './asset-types-modal.component';
 
 @Component({
   selector: 'app-manage-rooms-page',
-  standalone: true,
-  imports: [CommonModule, ButtonComponent, TableComponent],
+  imports: [ButtonComponent, TableComponent],
   templateUrl: './manage-rooms.page.html',
   styleUrl: './manage-rooms.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

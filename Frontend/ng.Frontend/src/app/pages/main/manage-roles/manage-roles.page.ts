@@ -6,7 +6,6 @@ import {
   computed,
   OnInit,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/auth/auth.service';
 import { PermissionTemplateService } from '../../../shared/services/permission-template.service';
@@ -36,8 +35,7 @@ let nextUid = 0;
 
 @Component({
   selector: 'app-manage-roles-page',
-  standalone: true,
-  imports: [CommonModule, FormsModule, ButtonComponent],
+  imports: [FormsModule, ButtonComponent],
   templateUrl: './manage-roles.page.html',
   styleUrl: './manage-roles.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

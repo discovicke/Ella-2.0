@@ -22,7 +22,6 @@ interface BookingGroup {
 
 @Component({
   selector: 'app-see-bookings-page',
-  standalone: true,
   imports: [DatePipe, TitleCasePipe, RouterLink],
   templateUrl: './see-bookings.page.html',
   styleUrl: './see-bookings.page.scss',

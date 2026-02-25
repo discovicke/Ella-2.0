@@ -14,7 +14,6 @@ export interface AssetTypesModalConfig {
 
 @Component({
   selector: 'app-asset-types-modal',
-  standalone: true,
   imports: [ButtonComponent],
   template: `
     <div class="asset-types-form">

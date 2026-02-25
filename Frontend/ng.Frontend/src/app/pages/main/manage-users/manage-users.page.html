@@ -120,7 +120,7 @@
 
     <!-- Role Template -->
     <ng-template #roleTpl let-user>
-      <span class="user-role-badge" [ngClass]="resolveRoleCssClass(user.permissions)">
+      <span class="user-role-badge" [class]="resolveRoleCssClass(user.permissions)">
         {{ resolveRoleLabel(user.permissions) }}
       </span>
     </ng-template>

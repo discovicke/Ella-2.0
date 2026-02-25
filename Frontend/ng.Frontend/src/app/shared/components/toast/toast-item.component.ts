@@ -1,25 +1,40 @@
-import { Component, computed, effect, ElementRef, inject, input, output, signal, viewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { Toast } from '../../services/toast.service';
 
 @Component({
   selector: 'app-toast-item',
-  standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
-    <div 
-      class="toast" 
+    <div
+      class="toast"
       [class]="'toast-' + toast().type"
       (mouseenter)="pause()"
       (mouseleave)="resume()"
       (click)="dismissToast($event)"
-      role="alert">
-      
+      role="alert"
+    >
       <div class="toast-icon">
         @switch (toast().type) {
-          @case ('success') { 🎉 }
-          @case ('error') { ⚠️ }
-          @default { 🔔 }
+          @case ('success') {
+            🎉
+          }
+          @case ('error') {
+            ⚠️
+          }
+          @default {
+            🔔
+          }
         }
       </div>
 
@@ -30,19 +45,18 @@ import { Toast } from '../../services/toast.service';
         <div class="toast-desc">{{ toast().message }}</div>
       </div>
 
-      <button class="toast-close" (click)="onCloseClick($event)" aria-label="Close">
-        &times;
-      </button>
+      <button class="toast-close" (click)="onCloseClick($event)" aria-label="Close">&times;</button>
 
       <!-- Progress bar -->
-      <div 
-        class="toast-progress" 
+      <div
+        class="toast-progress"
         [style.animation-duration]="toast().duration + 'ms'"
-        [style.animation-play-state]="isPaused() ? 'paused' : 'running'">
-      </div>
+        [style.animation-play-state]="isPaused() ? 'paused' : 'running'"
+      ></div>
     </div>
   `,
-  styleUrls: ['./toast-item.component.scss']
+  styleUrls: ['./toast-item.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToastItemComponent {
   toast = input.required<Toast>();
@@ -71,10 +85,10 @@ export class ToastItemComponent {
   resume() {
     this.isPaused.set(false);
     this.startTime = Date.now();
-    
+
     // Clear any existing timer to be safe
     clearTimeout(this.timer);
-    
+
     this.timer = setTimeout(() => {
       this.dismiss.emit(this.toast().id);
     }, this.remainingTime);

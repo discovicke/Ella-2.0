@@ -52,7 +52,6 @@ export const passwordMatchValidator: ValidatorFn = (
 
 @Component({
   selector: 'app-user-form-modal',
-  standalone: true,
   imports: [ReactiveFormsModule, ButtonComponent],
   template: `
     <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">

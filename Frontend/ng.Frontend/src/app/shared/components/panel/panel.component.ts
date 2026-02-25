@@ -1,10 +1,8 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-panel',
-  standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './panel.component.html',
   styleUrl: './panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

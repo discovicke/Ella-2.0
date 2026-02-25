@@ -14,7 +14,6 @@ import { BookingModalComponent } from './booking-modal/booking-modal.component';
 
 @Component({
   selector: 'app-book-room-page',
-  standalone: true,
   imports: [],
   templateUrl: './book-room.page.html',
   styleUrl: './book-room.page.scss',

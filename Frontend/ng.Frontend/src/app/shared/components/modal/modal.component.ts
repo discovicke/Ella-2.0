@@ -1,14 +1,16 @@
-import { ChangeDetectionStrategy, Component, inject, HostListener, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { NgComponentOutlet } from '@angular/common';
 import { ModalService } from '../../services/modal.service';
 
 @Component({
   selector: 'app-modal',
-  standalone: true,
-  imports: [CommonModule],
+  imports: [NgComponentOutlet],
   templateUrl: './modal.component.html',
   styleUrl: './modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '(document:keydown.escape)': 'onEscapeKey()',
+  },
 })
 export class ModalComponent {
   // Vi injicerar servicen "protected" så vi kommer åt den i HTML-templaten
@@ -18,7 +20,6 @@ export class ModalComponent {
   protected shakeCounter = signal(0);
 
   // Lyssna på escape-tangenten
-  @HostListener('document:keydown.escape')
   onEscapeKey() {
     if (this.modalService.isOpen()) {
       this.modalService.close();
@@ -36,6 +37,6 @@ export class ModalComponent {
 
   private triggerShake() {
     // Incrementera counter för att alltid trigga ny animation
-    this.shakeCounter.update(n => n + 1);
+    this.shakeCounter.update((n) => n + 1);
   }
 }

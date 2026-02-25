@@ -27,7 +27,6 @@ export interface RoomFormModalConfig {
 
 @Component({
   selector: 'app-room-form-modal',
-  standalone: true,
   imports: [ReactiveFormsModule, ButtonComponent],
   template: `
     <form [formGroup]="roomForm" (ngSubmit)="onSubmit()" class="room-form">

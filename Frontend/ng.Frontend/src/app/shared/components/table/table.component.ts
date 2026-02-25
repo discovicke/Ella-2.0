@@ -12,7 +12,7 @@ import {
   OnDestroy,
   effect,
 } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 
 export interface TableColumn<T = any> {
   header: string;
@@ -24,8 +24,7 @@ export interface TableColumn<T = any> {
 
 @Component({
   selector: 'app-table',
-  standalone: true,
-  imports: [CommonModule],
+  imports: [NgTemplateOutlet],
   templateUrl: './table.component.html',
   styleUrl: './table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,7 +34,7 @@ export class TableComponent<T> implements AfterViewInit, OnDestroy {
   columns = input.required<TableColumn<T>[]>();
   isLoading = input(false);
   emptyMessage = input('Inga data hittades.');
-  
+
   // Pagination Inputs
   pageIndex = input(0);
   pageSize = input(10);
@@ -43,7 +42,7 @@ export class TableComponent<T> implements AfterViewInit, OnDestroy {
 
   // Layout Inputs
   autoSize = input(false);
-  
+
   // Outputs
   pageChange = output<number>();
   pageSizeChange = output<number>();
@@ -62,20 +61,20 @@ export class TableComponent<T> implements AfterViewInit, OnDestroy {
 
   constructor() {
     this.isBrowser = isPlatformBrowser(this.platformId);
-    
+
     // React to autoSize changes or data changes that might affect layout (like footer appearing)
     effect(() => {
       if (this.autoSize() && this.isBrowser) {
         // Dependencies to track
         this.total();
         this.isLoading();
-        
+
         // Wait for DOM update
         setTimeout(() => {
-            if (this.elementRef?.nativeElement) {
-                const rect = this.elementRef.nativeElement.getBoundingClientRect();
-                this.calculatePageSize(rect.height);
-            }
+          if (this.elementRef?.nativeElement) {
+            const rect = this.elementRef.nativeElement.getBoundingClientRect();
+            this.calculatePageSize(rect.height);
+          }
         });
       }
     });
@@ -121,7 +120,7 @@ export class TableComponent<T> implements AfterViewInit, OnDestroy {
 
     // Available space for rows
     const availableHeight = containerHeight - headerHeight - footerHeight;
-    
+
     // Calculate fit
     // We want at least 1 row
     const fitRows = Math.max(1, Math.floor(availableHeight / rowHeight));
