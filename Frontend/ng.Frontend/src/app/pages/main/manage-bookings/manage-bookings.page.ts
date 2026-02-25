@@ -110,9 +110,7 @@ export class ManageBookingsPage implements OnInit {
   }
 
   updateStatus(event: Event): void {
-    this.selectedStatus.set(
-      (event.target as HTMLSelectElement).value as BookingStatus | 'All',
-    );
+    this.selectedStatus.set((event.target as HTMLSelectElement).value as BookingStatus | 'All');
     this.pageIndex.set(0);
   }
 
@@ -177,5 +175,3 @@ export class ManageBookingsPage implements OnInit {
     }
   }
 }
-
-
