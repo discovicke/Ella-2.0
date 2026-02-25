@@ -317,7 +317,13 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-width: 140px;
+  width: 160px;
+  flex-shrink: 0;
+
+  @media (max-width: 1024px) {
+    width: auto;
+    flex-shrink: 1;
+  }
 
   .filter-label {
     font-size: 0.75rem;
