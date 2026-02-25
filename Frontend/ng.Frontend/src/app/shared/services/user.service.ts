@@ -66,4 +66,24 @@ export class UserService {
       .delete(`${this.apiUrl}/${userId}`, { withCredentials: true })
       .pipe(tap(() => this.refresh()));
   }
+
+  // ── User ↔ Campus ──────────────────────────────────
+
+  getUserCampuses(userId: number): Observable<number[]> {
+    return this.http.get<number[]>(`${this.apiUrl}/${userId}/campuses`);
+  }
+
+  setUserCampuses(userId: number, campusIds: number[]): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${userId}/campuses`, campusIds);
+  }
+
+  // ── User ↔ Class ───────────────────────────────────
+
+  getUserClasses(userId: number): Observable<number[]> {
+    return this.http.get<number[]>(`${this.apiUrl}/${userId}/classes`);
+  }
+
+  setUserClasses(userId: number, classIds: number[]): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${userId}/classes`, classIds);
+  }
 }

@@ -10,7 +10,13 @@ import {
 } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ConfirmService } from '../../../shared/services/confirm.service';
-import { BannedStatus, UserPermissions, PermissionTemplateDto } from '../../../models/models';
+import {
+  BannedStatus,
+  UserPermissions,
+  PermissionTemplateDto,
+  CampusResponseDto,
+  ClassResponseDto,
+} from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 export interface CustomPermissionsPayload {
@@ -33,6 +39,8 @@ export interface UserFormPayload {
   isBanned?: BannedStatus;
   selectedTemplateId: number | null;
   customPermissions: CustomPermissionsPayload;
+  campusIds: number[];
+  classIds: number[];
 }
 
 /**
@@ -144,6 +152,50 @@ export const passwordMatchValidator: ValidatorFn = (
             <option [value]="BannedStatus.NotBanned">Aktiv</option>
             <option [value]="BannedStatus.Banned">Bannlyst</option>
           </select>
+        </div>
+      }
+
+      @if (campusOptions.length) {
+        <div class="associations-section">
+          <p class="associations-title">Campus</p>
+          <p class="associations-hint">Välj vilka campus användaren tillhör.</p>
+          <div class="pill-grid">
+            @for (campus of campusOptions; track campus.id) {
+              <button
+                type="button"
+                class="pill"
+                [class.on]="isCampusSelected(campus.id)"
+                (click)="toggleCampus(campus.id)"
+              >
+                @if (isCampusSelected(campus.id)) {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                }
+                {{ campus.city }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      @if (classOptions.length) {
+        <div class="associations-section">
+          <p class="associations-title">Klasser</p>
+          <p class="associations-hint">Välj vilka klasser användaren tillhör.</p>
+          <div class="pill-grid">
+            @for (cls of classOptions; track cls.id) {
+              <button
+                type="button"
+                class="pill"
+                [class.on]="isClassSelected(cls.id)"
+                (click)="toggleClass(cls.id)"
+              >
+                @if (isClassSelected(cls.id)) {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                }
+                {{ cls.className }}
+              </button>
+            }
+          </div>
         </div>
       }
 
@@ -314,6 +366,68 @@ export const passwordMatchValidator: ValidatorFn = (
       .permission-item.active .switch-thumb {
         transform: translateX(0.95rem);
       }
+
+      .associations-section {
+        @include stack(0.5rem);
+        padding: 0.75rem;
+        border: 1px solid var(--color-border);
+        border-radius: 0.5rem;
+        background: var(--color-bg-panel);
+      }
+
+      .associations-title {
+        margin: 0;
+        font-size: var(--font-sm);
+        font-weight: 600;
+        color: var(--color-text-primary);
+      }
+
+      .associations-hint {
+        margin: 0;
+        font-size: var(--font-xs);
+        color: var(--color-text-secondary);
+      }
+
+      .pill-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.4rem 0.75rem;
+        border: 1px solid var(--color-border);
+        border-radius: 999px;
+        background: var(--color-bg-card);
+        color: var(--color-text-secondary);
+        font-size: var(--font-sm);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        user-select: none;
+
+        svg {
+          width: 0.9rem;
+          height: 0.9rem;
+          stroke: currentColor;
+          flex-shrink: 0;
+        }
+
+        &:hover {
+          border-color: var(--color-primary);
+          color: var(--color-primary);
+        }
+
+        &.on {
+          background: var(--color-primary-surface);
+          border-color: var(--color-primary);
+          color: var(--color-primary);
+          font-weight: 600;
+        }
+      }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -328,6 +442,11 @@ export class UserFormModalComponent {
   protected templateOptions: PermissionTemplateDto[] = this.config?.templateOptions ?? [];
   protected initialTemplateId: number | null = this.config?.initialTemplateId ?? null;
   protected initialPermissions: UserPermissions | undefined = this.config?.initialPermissions;
+  protected campusOptions: CampusResponseDto[] = this.config?.campusOptions ?? [];
+  protected classOptions: ClassResponseDto[] = this.config?.classOptions ?? [];
+
+  private selectedCampusIds = signal<number[]>(this.config?.initialCampusIds ?? []);
+  private selectedClassIds = signal<number[]>(this.config?.initialClassIds ?? []);
 
   protected readonly permissionOptions: Array<{
     key: keyof CustomPermissionsPayload;
@@ -423,6 +542,32 @@ export class UserFormModalComponent {
     return !!this.userForm.controls[key].value;
   }
 
+  isCampusSelected(id: number): boolean {
+    return this.selectedCampusIds().includes(id);
+  }
+
+  toggleCampus(id: number): void {
+    const current = this.selectedCampusIds();
+    if (current.includes(id)) {
+      this.selectedCampusIds.set(current.filter((c) => c !== id));
+    } else {
+      this.selectedCampusIds.set([...current, id]);
+    }
+  }
+
+  isClassSelected(id: number): boolean {
+    return this.selectedClassIds().includes(id);
+  }
+
+  toggleClass(id: number): void {
+    const current = this.selectedClassIds();
+    if (current.includes(id)) {
+      this.selectedClassIds.set(current.filter((c) => c !== id));
+    } else {
+      this.selectedClassIds.set([...current, id]);
+    }
+  }
+
   async onSubmit() {
     if (this.userForm.invalid) return;
 
@@ -456,6 +601,8 @@ export class UserFormModalComponent {
         manageCampuses,
         manageRoles,
       },
+      campusIds: this.selectedCampusIds(),
+      classIds: this.selectedClassIds(),
     };
 
     // Om vi redigerar och lösenordet är tomt -> Ta bort det helt från payloaden
