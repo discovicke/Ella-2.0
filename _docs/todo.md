@@ -3,22 +3,23 @@
 ## Backend
 
 - [ ] Kanske lägga till en `IsDeleted`-flagga i alla tabeller för att möjliggöra "soft deletes" istället för att radera data permanent?
-- [ ] Lägg tillbaka Klasser CRUD och även i Frontend
-  - Klasser ska vara kopplade till städer
+- [x] Lägg tillbaka Klasser CRUD och även i Frontend
+  - [x] Klasser är kopplade till campus (tidigare formulerat som städer)
 - [ ] Lägg till klasser i tabellen i manage users
 - [x] Lägg till Manage Assets i adminpanelen
   - [x] CRUD för Asset Types
   - CRUD för Assets (kopplade till rum) — _hanteras i Manage Rooms via "Utrustning"-modalen_
-- [ ] Lägg till en manage classes i adminpanelen
-  - CRUD för klasser
-  - Koppla klasser till städer
+- [x] Lägg till en manage classes i adminpanelen
+  - [x] CRUD för klasser
+  - [x] Koppla klasser till campus
 - [ ] Lägg till en manage bookings i adminpanelen
-  - CRUD för bokningar
-  - Filtrering/sökning
-  - Möjlighet att se vilka elever som är anmälda
-- [ ] Lägg till en manage campuses i adminpanelen
-  - CRUD för campus
-  - Koppla campus till rum
+  - [x] Manage-sida
+  - [x] Filtrering/sökning
+  - [ ] Full CRUD för bokningar
+  - [ ] Möjlighet att se vilka elever som är anmälda
+- [x] Lägg till en manage campuses i adminpanelen
+  - [x] CRUD för campus
+  - [x] Koppla campus till rum
 - [ ] Lägg till Permission_level logik. Samt all logik kring "overwriting" om typ en admin vill boka över en students redan bokade tid etc.
 - [ ] Diskutera och planera hur vi ska få "implicit bookings" vs "personal bookings" att fungera. Dvs. typ bookings som en lärare bjuder in en student till, eller som en admin bjuder in en lärare till, eller som en student bjuder in andra studenter till etc vs bara vanliga personliga bokningar.
 
@@ -92,7 +93,7 @@
 
 - [ ] `app.routes.ts`
   - [ ] Överväg att återinföra HomePage?
-  - [ ] Redirect till login om ej autentiserad användare
+  - [x] Redirect/guard till login om ej autentiserad användare
   - [ ] Implementera hela teacher-routen med undersidor
 - [ ] Global modal-placering
   - [ ] `student.layout.ts`: Implementera bokningsmodal-öppning
@@ -139,9 +140,10 @@
 #### Manage Bookings
 
 - [ ] Implementera en manage-sida
-  - Översikt
-  - Sök/filter
-  - Hantera
+  - [x] Översikt
+  - [x] Sök/filter
+  - [x] Hantera (status via modal)
+  - [ ] Skapa/ta bort bokning från adminsidan
   - Kalender?
 
 #### Manage Rooms
