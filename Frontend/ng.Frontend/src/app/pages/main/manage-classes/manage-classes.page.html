@@ -1,0 +1,124 @@
+<div class="manage-classes-container">
+  <div class="filter-panel">
+    <div class="filter-header">
+      <div class="header-left">
+        <svg
+          class="header-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5"
+          />
+        </svg>
+        <h2>Klasser</h2>
+      </div>
+      <div class="header-right">
+        @if (hasActiveFilters()) {
+          <span class="result-count"
+            >Visar {{ totalClasses() }} av {{ totalAllClasses() }} klasser</span
+          >
+          <button class="btn-reset" (click)="resetFilters()" title="Rensa filter">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+            </svg>
+            Rensa
+          </button>
+        }
+        <app-button class="action-btn-desktop" variant="primary" (clicked)="openAddClassModal()">
+          + Skapa klass
+        </app-button>
+      </div>
+    </div>
+
+    <div class="filter-body">
+      <div class="search-field">
+        <label class="filter-label">Sök</label>
+        <div class="search-input">
+          <svg
+            class="field-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Sök på klassnamn..."
+            (input)="updateSearch($event)"
+            [value]="searchQuery()"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="fab-create" (click)="openAddClassModal()" title="Skapa klass">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+    >
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  </button>
+
+  <div class="classes-content">
+    <app-table
+      [data]="paginatedClasses()"
+      [columns]="columns"
+      [isLoading]="classResource.isLoading()"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      [total]="totalClasses()"
+      [autoSize]="true"
+      (pageChange)="handlePageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+      (rowClicked)="openEditClassModal($event)"
+      emptyMessage="Inga klasser hittades."
+    ></app-table>
+
+    <ng-template #classNameTpl let-schoolClass>
+      <strong>{{ schoolClass.className }}</strong>
+    </ng-template>
+
+    <ng-template #campusTpl let-schoolClass>
+      @if (schoolClass.campusNames?.length) {
+        <span class="cell-tags">{{ schoolClass.campusNames.join(', ') }}</span>
+      } @else {
+        <span class="cell-empty">—</span>
+      }
+    </ng-template>
+
+    <ng-template #actionsTpl let-schoolClass>
+      <button
+        class="row-action-btn"
+        (click)="openEditClassModal(schoolClass, $event)"
+        title="Redigera klass"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+        </svg>
+      </button>
+    </ng-template>
+  </div>
+</div>
