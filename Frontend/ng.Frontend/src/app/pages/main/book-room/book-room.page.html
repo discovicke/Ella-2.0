@@ -118,12 +118,28 @@
           </div>
 
           @if (room.notes) {
-            <button class="room-notes" [class.expanded]="isNoteExpanded(room.roomId!)" (click)="toggleNote(room.roomId!)">
-              <svg class="note-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button
+              class="room-notes"
+              [class.expanded]="isNoteExpanded(room.roomId!)"
+              (click)="toggleNote(room.roomId!)"
+            >
+              <svg
+                class="note-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
               <span class="note-text">{{ room.notes }}</span>
-              <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg
+                class="chevron"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </button>

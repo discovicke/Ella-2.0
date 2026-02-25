@@ -87,7 +87,10 @@ export interface RoomFormModalConfig {
           placeholder="Valfri notering..."
           maxlength="200"
         />
-        <span class="char-count" [class.at-limit]="(roomForm.controls.notes.value?.length ?? 0) >= 200">
+        <span
+          class="char-count"
+          [class.at-limit]="(roomForm.controls.notes.value?.length ?? 0) >= 200"
+        >
           {{ roomForm.controls.notes.value?.length ?? 0 }}/200
         </span>
       </div>
