@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS database_versions
 -- contact är fritext — kan vara namn, telefon eller e-post.
 CREATE TABLE IF NOT EXISTS campus
 (
-    id      INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id      BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     street  TEXT NOT NULL,
     zip     TEXT,
     city    TEXT NOT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS campus
 -- vilket gör det enkelt att lägga till nya typer utan migration.
 CREATE TABLE IF NOT EXISTS room_types
 (
-    id   INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id   BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name TEXT NOT NULL UNIQUE
 );
 
@@ -68,11 +68,11 @@ CREATE TABLE IF NOT EXISTS room_types
 -- raderas om det finns rum kopplade till det.
 CREATE TABLE IF NOT EXISTS rooms
 (
-    id           INTEGER NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    campus_id    INTEGER NOT NULL REFERENCES campus (id) ON DELETE RESTRICT,
+    id           BIGINT  NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    campus_id    BIGINT  NOT NULL REFERENCES campus (id) ON DELETE RESTRICT,
     name         TEXT    NOT NULL,
     capacity     INTEGER, -- NULL = okänd/ej relevant
-    room_type_id INTEGER NOT NULL REFERENCES room_types (id) ON DELETE RESTRICT,
+    room_type_id BIGINT  NOT NULL REFERENCES room_types (id) ON DELETE RESTRICT,
     floor        TEXT,
     notes        TEXT
 );
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS rooms
 -- Typer av assets (projektor, whiteboard, TV, etc.)
 CREATE TABLE IF NOT EXISTS asset_types
 (
-    id          INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id          BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     description TEXT NOT NULL UNIQUE
 );
 
@@ -91,9 +91,9 @@ CREATE TABLE IF NOT EXISTS asset_types
 -- antal rader, vilket gör det enkelt att ta bort enskilda enheter.
 CREATE TABLE IF NOT EXISTS room_assets
 (
-    id            INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    room_id       INTEGER NOT NULL REFERENCES rooms (id) ON DELETE CASCADE,
-    asset_type_id INTEGER NOT NULL REFERENCES asset_types (id) ON DELETE RESTRICT,
+    id            BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    room_id       BIGINT NOT NULL REFERENCES rooms (id) ON DELETE CASCADE,
+    asset_type_id BIGINT NOT NULL REFERENCES asset_types (id) ON DELETE RESTRICT,
     notes         TEXT
 );
 
@@ -116,9 +116,9 @@ CREATE TABLE IF NOT EXISTS system_permissions
 -- En mall tilldelas en användare och definierar grundbehörigheterna.
 CREATE TABLE IF NOT EXISTS permission_templates
 (
-    id         INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    name       TEXT NOT NULL UNIQUE,
-    label      TEXT NOT NULL,
+    id         BIGINT  PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name       TEXT    NOT NULL UNIQUE,
+    label      TEXT    NOT NULL,
     css_class  TEXT,
     sort_order INTEGER DEFAULT 0
 );
@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS permission_templates
 -- value: TRUE = tillåten, FALSE = nekad.
 CREATE TABLE IF NOT EXISTS permission_template_flags
 (
-    template_id    INTEGER NOT NULL REFERENCES permission_templates (id) ON DELETE CASCADE,
+    template_id    BIGINT NOT NULL REFERENCES permission_templates (id) ON DELETE CASCADE,
     permission_key TEXT    NOT NULL REFERENCES system_permissions (key) ON DELETE CASCADE,
     value          BOOLEAN NOT NULL,
     PRIMARY KEY (template_id, permission_key)
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS permission_template_flags
 -- Klasser/grupper som användare tillhör.
 CREATE TABLE IF NOT EXISTS class
 (
-    id         INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id         BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     class_name TEXT NOT NULL
 );
 
@@ -155,13 +155,13 @@ CREATE TABLE IF NOT EXISTS class
 -- behandlas som en användare utan behörigheter.
 CREATE TABLE IF NOT EXISTS users
 (
-    id                     INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id                     BIGINT      PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     email                  TEXT        NOT NULL,
     password_hash          TEXT        NOT NULL,
     display_name           TEXT,
     is_banned              BOOLEAN     NOT NULL DEFAULT FALSE,
     tokens_valid_after     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    permission_template_id INTEGER     REFERENCES permission_templates (id) ON DELETE SET NULL
+    permission_template_id BIGINT      REFERENCES permission_templates (id) ON DELETE SET NULL
 );
 
 
@@ -172,7 +172,7 @@ CREATE TABLE IF NOT EXISTS users
 -- Applikationslogik: COALESCE(override.value, template_flag.value, FALSE)
 CREATE TABLE IF NOT EXISTS user_permission_overrides
 (
-    user_id        INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    user_id        BIGINT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     permission_key TEXT    NOT NULL REFERENCES system_permissions (key) ON DELETE CASCADE,
     value          BOOLEAN, -- NULL = ärv från template
     PRIMARY KEY (user_id, permission_key)
@@ -182,9 +182,9 @@ CREATE TABLE IF NOT EXISTS user_permission_overrides
 -- Kopplingstabell användare ↔ campus
 CREATE TABLE IF NOT EXISTS user_campus
 (
-    id        INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    user_id   INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    campus_id INTEGER NOT NULL REFERENCES campus (id) ON DELETE CASCADE,
+    id        BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    user_id   BIGINT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    campus_id BIGINT NOT NULL REFERENCES campus (id) ON DELETE CASCADE,
     UNIQUE (user_id, campus_id)
 );
 
@@ -192,9 +192,9 @@ CREATE TABLE IF NOT EXISTS user_campus
 -- Kopplingstabell användare ↔ klass
 CREATE TABLE IF NOT EXISTS user_class
 (
-    id       INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    user_id  INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    class_id INTEGER NOT NULL REFERENCES class (id) ON DELETE CASCADE,
+    id       BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    user_id  BIGINT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    class_id BIGINT NOT NULL REFERENCES class (id) ON DELETE CASCADE,
     UNIQUE (user_id, class_id)
 );
 
@@ -202,9 +202,9 @@ CREATE TABLE IF NOT EXISTS user_class
 -- Kopplingstabell klass ↔ campus (many-to-many)
 CREATE TABLE IF NOT EXISTS class_campus
 (
-    id        INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    class_id  INTEGER NOT NULL REFERENCES class (id) ON DELETE CASCADE,
-    campus_id INTEGER NOT NULL REFERENCES campus (id) ON DELETE CASCADE,
+    id        BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    class_id  BIGINT NOT NULL REFERENCES class (id) ON DELETE CASCADE,
+    campus_id BIGINT NOT NULL REFERENCES campus (id) ON DELETE CASCADE,
     UNIQUE (class_id, campus_id)
 );
 
@@ -220,9 +220,9 @@ CREATE TABLE IF NOT EXISTS class_campus
 -- created_at sätts av trigger; updated_at uppdateras av trigger vid UPDATE.
 CREATE TABLE IF NOT EXISTS bookings
 (
-    id         INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    user_id    INTEGER        NOT NULL REFERENCES users (id) ON DELETE RESTRICT,
-    room_id    INTEGER        NOT NULL REFERENCES rooms (id) ON DELETE RESTRICT,
+    id         BIGINT         PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    user_id    BIGINT         NOT NULL REFERENCES users (id) ON DELETE RESTRICT,
+    room_id    BIGINT         NOT NULL REFERENCES rooms (id) ON DELETE RESTRICT,
     start_time TIMESTAMPTZ    NOT NULL,
     end_time   TIMESTAMPTZ    NOT NULL,
     status     booking_status NOT NULL DEFAULT 'active',
@@ -239,8 +239,8 @@ CREATE TABLE IF NOT EXISTS bookings
 -- Används för bokningar med flera deltagare utöver bokaren själv.
 CREATE TABLE IF NOT EXISTS registrations
 (
-    user_id    INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    booking_id INTEGER NOT NULL REFERENCES bookings (id) ON DELETE CASCADE,
+    user_id    BIGINT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    booking_id BIGINT NOT NULL REFERENCES bookings (id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, booking_id)
 );
 
