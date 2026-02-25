@@ -1,1 +1,140 @@
-<p>manage-bookings-page works!</p>
+<div class="manage-bookings-container">
+  <!-- Filter Panel -->
+  <div class="filter-panel">
+    <div class="filter-header">
+      <div class="header-left">
+        <svg
+          class="header-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <rect x="3" y="4" width="18" height="18" rx="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+        <h2>Bokningar</h2>
+      </div>
+      <div class="header-right">
+        @if (hasActiveFilters()) {
+          <span class="result-count"
+            >Visar {{ totalBookings() }} av {{ totalAllBookings() }} bokningar</span
+          >
+          <button class="btn-reset" (click)="resetFilters()" title="Rensa filter">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+            </svg>
+            Rensa
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="filter-body">
+      <div class="search-field">
+        <label class="filter-label">Sök</label>
+        <div class="search-input">
+          <svg
+            class="field-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Sök på användare, rum eller anteckning..."
+            (input)="updateSearch($event)"
+            [value]="searchQuery()"
+          />
+        </div>
+      </div>
+
+      <div class="filters-group">
+        <div class="filter-item">
+          <label class="filter-label">Status</label>
+          <select (change)="updateStatus($event)" [value]="selectedStatus()">
+            <option value="All">Alla</option>
+            <option value="Active">Aktiv ({{ activeCount() }})</option>
+            <option value="Cancelled">Avbokad ({{ cancelledCount() }})</option>
+            <option value="Expired">Utgången ({{ expiredCount() }})</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="bookings-content">
+    <app-table
+      [data]="paginatedBookings()"
+      [columns]="columns"
+      [isLoading]="bookingsResource.isLoading()"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      [total]="totalBookings()"
+      [autoSize]="true"
+      (pageChange)="handlePageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+      (rowClicked)="openBookingModal($event)"
+      emptyMessage="Inga bokningar hittades."
+    ></app-table>
+
+    <!-- User Template -->
+    <ng-template #userTpl let-booking>
+      <div class="user-cell">
+        <span class="user-name">{{ booking.userName ?? '—' }}</span>
+        <span class="user-email">{{ booking.userEmail ?? '' }}</span>
+      </div>
+    </ng-template>
+
+    <!-- Room Template -->
+    <ng-template #roomTpl let-booking>
+      <span>{{ booking.roomName ?? '—' }}</span>
+    </ng-template>
+
+    <!-- Date Template -->
+    <ng-template #dateTpl let-booking>
+      <span>{{ booking.startTime | date: 'yyyy-MM-dd' }}</span>
+    </ng-template>
+
+    <!-- Time Template -->
+    <ng-template #timeTpl let-booking>
+      <span>{{ booking.startTime | date: 'HH:mm' }} – {{ booking.endTime | date: 'HH:mm' }}</span>
+    </ng-template>
+
+    <!-- Status Template -->
+    <ng-template #statusTpl let-booking>
+      <span class="status-badge" [attr.data-status]="booking.status">
+        {{ statusLabel(booking.status) }}
+      </span>
+    </ng-template>
+
+    <!-- Actions Template -->
+    <ng-template #actionsTpl let-booking>
+      <button
+        class="row-action-btn"
+        (click)="openBookingModal(booking, $event)"
+        title="Visa bokningsdetaljer"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+        </svg>
+      </button>
+    </ng-template>
+  </div>
+</div>
