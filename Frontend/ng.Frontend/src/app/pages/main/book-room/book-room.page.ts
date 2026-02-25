@@ -28,6 +28,7 @@ export class BookRoomPage {
   selectedTypeId = signal<number | 'All'>('All');
   minCapacity = signal<number>(0);
   filtersOpen = signal(typeof window !== 'undefined' ? window.innerWidth > 768 : true);
+  expandedNotes = signal<Set<number>>(new Set());
 
   // --- RESOURCES ---
 
@@ -95,5 +96,21 @@ export class BookRoomPage {
 
   toggleFilters() {
     this.filtersOpen.update((v) => !v);
+  }
+
+  toggleNote(roomId: number) {
+    this.expandedNotes.update((set) => {
+      const next = new Set(set);
+      if (next.has(roomId)) {
+        next.delete(roomId);
+      } else {
+        next.add(roomId);
+      }
+      return next;
+    });
+  }
+
+  isNoteExpanded(roomId: number): boolean {
+    return this.expandedNotes().has(roomId);
   }
 }

@@ -85,7 +85,11 @@ export interface RoomFormModalConfig {
           type="text"
           formControlName="notes"
           placeholder="Valfri notering..."
+          maxlength="200"
         />
+        <span class="char-count" [class.at-limit]="(roomForm.controls.notes.value?.length ?? 0) >= 200">
+          {{ roomForm.controls.notes.value?.length ?? 0 }}/200
+        </span>
       </div>
 
       <div class="assets-section">
@@ -172,6 +176,17 @@ export interface RoomFormModalConfig {
       .error-msg {
         font-size: var(--font-sm);
         color: var(--color-danger);
+      }
+
+      .char-count {
+        text-align: right;
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+
+        &.at-limit {
+          color: var(--color-danger, #ef4444);
+          font-weight: 600;
+        }
       }
 
       .assets-section {
@@ -272,7 +287,9 @@ export class RoomFormModalComponent {
     }),
     capacity: new FormControl<number | null>(this.initialData?.capacity ?? null),
     floor: new FormControl<string | null>(this.initialData?.floor ?? null),
-    notes: new FormControl<string | null>(this.initialData?.notes ?? null),
+    notes: new FormControl<string | null>(this.initialData?.notes ?? null, {
+      validators: [Validators.maxLength(200)],
+    }),
   });
 
   isAssetSelected(id: number): boolean {

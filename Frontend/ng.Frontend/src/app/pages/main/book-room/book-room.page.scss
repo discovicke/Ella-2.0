@@ -530,21 +530,74 @@
   }
 }
 
+// Room notes — clickable expand/collapse strip
 .room-notes {
-  margin: 0;
-  padding: 12px;
-  background: var(--color-bg-panel);
-  border-left: 3px solid var(--color-primary);
-  border-radius: 6px;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: var(--color-text-secondary);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 20px;
+  background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+  border: none;
+  border-top: 1px solid color-mix(in srgb, var(--color-primary) 15%, transparent);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--color-text-muted);
   font-style: italic;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  }
+
+  .note-icon {
+    width: 14px;
+    height: 14px;
+    margin-top: 1px;
+    stroke: var(--color-primary);
+    flex-shrink: 0;
+    opacity: 0.7;
+  }
+
+  .note-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .chevron {
+    width: 14px;
+    height: 14px;
+    margin-top: 1px;
+    stroke: var(--color-text-muted);
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+
+  &.expanded {
+    .note-text {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      word-break: break-word;
+    }
+
+    .chevron {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.room-notes-placeholder {
+  padding: 8px 20px;
+  border-top: 1px solid var(--color-border);
+  // match the height of .room-notes (font-size * line-height + vertical padding)
+  min-height: calc(0.8125rem * 1.4 + 16px);
 }
 
 .card-bottom {
