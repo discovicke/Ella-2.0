@@ -210,66 +210,6 @@ public class SqlitePermissionRepo(
         }
     }
 
-    public async Task SetUserOverrideAsync(long userId, string permissionKey, bool value)
-    {
-        try
-        {
-            await using var conn = connectionFactory.CreateConnection();
-            await conn.OpenAsync();
-
-            // 1. Get the base template value
-            const string templateValueSql =
-                @"
-                SELECT ptf.value 
-                FROM users u
-                JOIN permission_template_flags ptf ON u.permission_template_id = ptf.template_id
-                WHERE u.id = @userId AND ptf.permission_key = @permissionKey;";
-
-            // Default to 0 (false) if not found (e.g. key missing from template or user has no template)
-            var templateValueInt = await conn.ExecuteScalarAsync<int?>(
-                templateValueSql,
-                new { userId, permissionKey }
-            );
-            var templateValue = templateValueInt.GetValueOrDefault(0) == 1;
-
-            // 2. Compare new value with template value
-            if (value == templateValue)
-            {
-                // Redundant override -> Delete it
-                await conn.ExecuteAsync(
-                    "DELETE FROM user_permission_overrides WHERE user_id = @userId AND permission_key = @permissionKey;",
-                    new { userId, permissionKey }
-                );
-            }
-            else
-            {
-                // Different -> Upsert override
-                // SQLite has UPSERT syntax or INSERT OR REPLACE
-                // Since PK is (user_id, permission_key), INSERT OR REPLACE works fine.
-                await conn.ExecuteAsync(
-                    "INSERT OR REPLACE INTO user_permission_overrides (user_id, permission_key, value) VALUES (@userId, @permissionKey, @value);",
-                    new
-                    {
-                        userId,
-                        permissionKey,
-                        value = value ? 1 : 0,
-                    }
-                );
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Error setting override {Key}={Value} for user {UserId}",
-                permissionKey,
-                value,
-                userId
-            );
-            throw;
-        }
-    }
-
     public async Task SetUserOverridesBatchAsync(long userId, Dictionary<string, bool> overrides)
     {
         try
@@ -348,24 +288,6 @@ public class SqlitePermissionRepo(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error batch-setting overrides for user {UserId}", userId);
-            throw;
-        }
-    }
-
-    public async Task ClearUserOverridesAsync(long userId)
-    {
-        try
-        {
-            await using var conn = connectionFactory.CreateConnection();
-            await conn.OpenAsync();
-            await conn.ExecuteAsync(
-                "DELETE FROM user_permission_overrides WHERE user_id = @userId;",
-                new { userId }
-            );
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error clearing overrides for user {UserId}", userId);
             throw;
         }
     }

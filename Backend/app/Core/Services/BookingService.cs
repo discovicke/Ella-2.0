@@ -1,4 +1,3 @@
-using Azure.Identity;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;

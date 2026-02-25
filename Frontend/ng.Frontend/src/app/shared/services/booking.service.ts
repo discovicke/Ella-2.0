@@ -10,10 +10,6 @@ export class BookingService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = '/api/bookings';
 
-  getBookings(): Observable<BookingDetailedReadModel[]> {
-    return this.http.get<BookingDetailedReadModel[]>(this.apiUrl);
-  }
-
   getBookingsByUserId(userId: number): Observable<BookingDetailedReadModel[]> {
     // Note: userId param is ignored as the backend uses the token to identify the user
     return this.http.get<BookingDetailedReadModel[]>(`${this.apiUrl}/my-owned`);

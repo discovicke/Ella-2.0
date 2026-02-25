@@ -23,4 +23,4 @@ public record UpdateUserDto(
     BannedStatus IsBanned
 );
 
-public record DeleteUserDto(long Id);
+

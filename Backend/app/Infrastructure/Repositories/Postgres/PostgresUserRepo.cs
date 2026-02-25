@@ -58,26 +58,6 @@ public class PostgresUserRepo(
         }
     }
 
-    public async Task<User?> GetUserByDisplayNameAsync(string displayName)
-    {
-        try
-        {
-            await using var conn = connectionFactory.CreateConnection();
-            await conn.OpenAsync();
-            var sql = "SELECT * FROM users WHERE display_name = @displayName;";
-            return await conn.QuerySingleOrDefaultAsync<User>(sql, new { displayName });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Database error while fetching user with displayName {DisplayName}",
-                displayName
-            );
-            throw;
-        }
-    }
-
     public async Task<bool> CreateUserAsync(User user)
     {
         try

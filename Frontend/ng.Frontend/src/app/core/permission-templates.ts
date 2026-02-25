@@ -75,44 +75,4 @@ export function getTemplateLabels(): string[] {
   return permissionTemplates().map((t) => t.label ?? 'Custom');
 }
 
-// ---------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------
 
-/**
- * Compares a user's permission object against a template's
- * permission dictionary (snake_case keys from the backend).
- * Handles both boolean (true/false) and integer (1/0) values
- * from the API by coercing to boolean before comparison.
- */
-function permissionsMatch(
-  actual: NonNullable<UserPermissions>,
-  expected: Record<string, boolean>,
-): boolean {
-  // Build a PascalCase → value map from the actual Permission object (matching DB keys)
-  const actualMap: Record<string, boolean> = {
-    BookRoom: !!actual.bookRoom,
-    MyBookings: !!actual.myBookings,
-    ManageUsers: !!actual.manageUsers,
-    ManageClasses: !!actual.manageClasses,
-    ManageRooms: !!actual.manageRooms,
-    ManageAssets: !!actual.manageAssets,
-    ManageBookings: !!actual.manageBookings,
-    ManageCampuses: !!actual.manageCampuses,
-    ManageRoles: !!actual.manageRoles,
-  };
-
-  // Check every key in the template
-  for (const [key, value] of Object.entries(expected)) {
-    const actualValue = actualMap[key] ?? false;
-    // Coerce both sides to boolean to handle integer 1/0 from SQLite
-    if (actualValue !== !!value) return false;
-  }
-
-  // If the actual object has permission keys NOT in the template, those must be false
-  for (const [key, value] of Object.entries(actualMap)) {
-    if (!(key in expected) && value) return false;
-  }
-
-  return true;
-}

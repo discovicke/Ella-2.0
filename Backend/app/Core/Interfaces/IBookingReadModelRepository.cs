@@ -25,19 +25,6 @@ public interface IBookingReadModelRepository
     Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByUserIdAsync(long userId);
 
     /// <summary>
-    /// Get all detailed bookings for a specific room
-    /// </summary>
-    Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByRoomIdAsync(long roomId);
-
-    /// <summary>
-    /// Get detailed bookings within a time range
-    /// </summary>
-    Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByDateRangeAsync(
-        DateTime startDate,
-        DateTime endDate
-    );
-
-    /// <summary>
     /// Get detailed bookings filtered by multiple criteria
     /// </summary>
     Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsFilteredAsync(

@@ -8,11 +8,8 @@ public interface IBookingRepository
     // Reference: src/modules/bookings/booking.repo.js for all methods
     // CRUD stands for Create, Read, Update, and Delete – basic operations used to add, fetch, modify, and remove data.
     Task<long> CreateBookingAsync(Booking booking);
-    Task<IEnumerable<Booking>> GetAllBookingsAsync();
     Task<Booking?> GetBookingByIdAsync(long bookingId);
-    Task<IEnumerable<Booking>> GetBookingsByUserIdAsync(long userId);
     Task<IEnumerable<Booking>> GetBookingsByRoomIdAsync(long roomId);
-    Task<IEnumerable<Booking>> GetAllBookingsByDateAsync(DateTime startDate, DateTime endDate);
     Task<IEnumerable<Booking>> GetOverlappingBookingsAsync(
         long roomId,
         DateTime startDate,

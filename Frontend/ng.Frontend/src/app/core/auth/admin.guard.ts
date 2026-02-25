@@ -1,7 +1,6 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { SessionService } from '../session.service';
-import { UserPermissions } from '../../models/models';
 
 /**
  * Route guard that checks whether the current user has the permission

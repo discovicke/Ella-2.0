@@ -1,5 +1,3 @@
-using Backend.app.Core.Models.Enums;
-
 namespace Backend.app.Core.Models.Entities;
 
 public class Room

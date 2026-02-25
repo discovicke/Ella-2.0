@@ -69,52 +69,6 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
         }
     }
 
-    public async Task<IEnumerable<Booking>> GetAllBookingsAsync()
-    {
-        try
-        {
-            await using var conn = connectionFactory.CreateConnection();
-            await conn.OpenAsync();
-            var sql = "SELECT * FROM bookings;";
-            var bookings = await conn.QueryAsync<Booking>(sql);
-
-            return bookings;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Database error while fetching all bookings");
-            throw;
-        }
-    }
-
-    public async Task<IEnumerable<Booking>> GetAllBookingsByDateAsync(
-        DateTime startDate,
-        DateTime endDate
-    )
-    {
-        try
-        {
-            using var conn = connectionFactory.CreateConnection();
-            await conn.OpenAsync();
-            var sql = @"
-            SELECT * FROM bookings
-            WHERE start_time >= @StartDate AND end_time <= @EndDate;
-        ";
-
-            var bookings = await conn.QueryAsync<Booking>(
-                sql,
-                new { StartDate = startDate, EndDate = endDate }
-            );
-
-            return bookings;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Database error while fetching bookings between {StartDate} and {EndDate}", startDate, endDate);
-            throw;
-        }
-    }
-
     public async Task<Booking?> GetBookingByIdAsync(long bookingId)
     {
         try
@@ -151,26 +105,6 @@ public class SqliteBookingRepo(IDbConnectionFactory connectionFactory, ILogger<S
         catch (Exception ex)
         {
             logger.LogError(ex, "Database error while fetching bookings for room {RoomId}", roomId);
-            throw;
-        }
-    }
-
-    public async Task<IEnumerable<Booking>> GetBookingsByUserIdAsync(long userId)
-    {
-        try
-        {
-            using var conn = connectionFactory.CreateConnection();
-            await conn.OpenAsync();
-            var sql = "SELECT * FROM bookings WHERE user_id = @UserId;";
-            var bookings = await conn.QueryAsync<Booking>(
-                sql,
-                new { UserId = userId }
-            );
-            return bookings;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Database error while fetching bookings for user {UserId}", userId);
             throw;
         }
     }

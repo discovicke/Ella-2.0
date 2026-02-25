@@ -7,22 +7,6 @@ namespace Backend.app.Infrastructure.Repositories.Sqlite;
 public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<SqliteRoomRepo> logger)
     : IRoomRepository
 {
-    public async Task<IEnumerable<Room>> GetAllRoomsAsync()
-    {
-        try
-        {
-            await using var conn = connectionFactory.CreateConnection();
-            await conn.OpenAsync();
-            const string sql = "SELECT * FROM rooms;";
-            return await conn.QueryAsync<Room>(sql);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Database error while fetching all rooms");
-            throw;
-        }
-    }
-
     public async Task<Room?> GetRoomByIdAsync(long id)
     {
         try
@@ -35,46 +19,6 @@ public class SqliteRoomRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         catch (Exception ex)
         {
             logger.LogError(ex, "Database error while fetching room with ID {RoomId}", id);
-            throw;
-        }
-    }
-
-    public async Task<IEnumerable<Room>> GetRoomsByTypeIdAsync(long roomTypeId)
-    {
-        try
-        {
-            await using var conn = connectionFactory.CreateConnection();
-            await conn.OpenAsync();
-            const string sql = "SELECT * FROM rooms WHERE room_type_id = @roomTypeId;";
-            return await conn.QueryAsync<Room>(sql, new { roomTypeId });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Database error while fetching rooms with type ID {RoomTypeId}",
-                roomTypeId
-            );
-            throw;
-        }
-    }
-
-    public async Task<IEnumerable<Room>> GetRoomsByCampusIdAsync(long campusId)
-    {
-        try
-        {
-            await using var conn = connectionFactory.CreateConnection();
-            await conn.OpenAsync();
-            const string sql = "SELECT * FROM rooms WHERE campus_id = @campusId;";
-            return await conn.QueryAsync<Room>(sql, new { campusId });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Database error while fetching rooms for campus {CampusId}",
-                campusId
-            );
             throw;
         }
     }

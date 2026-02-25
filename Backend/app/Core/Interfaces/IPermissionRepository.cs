@@ -23,21 +23,9 @@ public interface IPermissionRepository
     Task SetUserTemplateAsync(long userId, long? templateId);
 
     /// <summary>
-    /// Sets a granular permission override for a user.
-    /// Handles the logic of checking against the template value:
-    /// - If new value matches template -> Delete override (cleanup).
-    /// - If new value differs -> Upsert override.
-    /// </summary>
-    Task SetUserOverrideAsync(long userId, string permissionKey, bool value);
-
-    /// <summary>
     /// Sets multiple permission overrides for a user in a single transaction.
     /// For each key: deletes if value matches template, upserts otherwise.
     /// </summary>
     Task SetUserOverridesBatchAsync(long userId, Dictionary<string, bool> overrides);
 
-    /// <summary>
-    /// Clears all overrides for a user.
-    /// </summary>
-    Task ClearUserOverridesAsync(long userId);
 }

@@ -55,10 +55,6 @@ export class ToastService {
     this.show(message, 'error', config);
   }
 
-  showInfo(message: string, config?: ToastConfig) {
-    this.show(message, 'info', config);
-  }
-
   remove(id: number) {
     this.toastsSignal.update(toasts => toasts.filter(t => t.id !== id));
   }

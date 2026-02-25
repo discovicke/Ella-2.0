@@ -205,62 +205,6 @@ public class PostgresPermissionRepo(
         }
     }
 
-    public async Task SetUserOverrideAsync(long userId, string permissionKey, bool value)
-    {
-        try
-        {
-            await using var conn = connectionFactory.CreateConnection();
-            await conn.OpenAsync();
-
-            const string templateValueSql = """
-                SELECT ptf.value
-                FROM users u
-                JOIN permission_template_flags ptf ON u.permission_template_id = ptf.template_id
-                WHERE u.id = @userId AND ptf.permission_key = @permissionKey;
-                """;
-
-            var templateValue = await conn.ExecuteScalarAsync<bool?>(
-                templateValueSql,
-                new { userId, permissionKey }
-            );
-
-            if (value == (templateValue ?? false))
-            {
-                await conn.ExecuteAsync(
-                    "DELETE FROM user_permission_overrides WHERE user_id = @userId AND permission_key = @permissionKey;",
-                    new { userId, permissionKey }
-                );
-            }
-            else
-            {
-                await conn.ExecuteAsync(
-                    """
-                    INSERT INTO user_permission_overrides (user_id, permission_key, value)
-                    VALUES (@userId, @permissionKey, @value)
-                    ON CONFLICT (user_id, permission_key) DO UPDATE SET value = @value;
-                    """,
-                    new
-                    {
-                        userId,
-                        permissionKey,
-                        value,
-                    }
-                );
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Error setting override {Key}={Value} for user {UserId}",
-                permissionKey,
-                value,
-                userId
-            );
-            throw;
-        }
-    }
-
     public async Task SetUserOverridesBatchAsync(long userId, Dictionary<string, bool> overrides)
     {
         try
@@ -343,24 +287,6 @@ public class PostgresPermissionRepo(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error batch-setting overrides for user {UserId}", userId);
-            throw;
-        }
-    }
-
-    public async Task ClearUserOverridesAsync(long userId)
-    {
-        try
-        {
-            await using var conn = connectionFactory.CreateConnection();
-            await conn.OpenAsync();
-            await conn.ExecuteAsync(
-                "DELETE FROM user_permission_overrides WHERE user_id = @userId;",
-                new { userId }
-            );
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error clearing overrides for user {UserId}", userId);
             throw;
         }
     }
