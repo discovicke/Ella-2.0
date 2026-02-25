@@ -547,8 +547,14 @@
   overflow: hidden;
 }
 
-.assets-section {
+.card-bottom {
   margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.assets-section {
 }
 
 .assets-chips {
@@ -582,8 +588,6 @@
   color: white;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-top: auto;
-
   svg {
     width: 18px;
     height: 18px;
