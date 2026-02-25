@@ -22,14 +22,18 @@ public class UserService(
         logger.LogInformation("Fetching all users");
         var users = await repo.GetAllUsersAsync();
 
-        // Single bulk query for all permissions instead of N+1
+        // Bulk queries to avoid N+1
         var allPerms = await permissionRepo.GetAllEffectivePermissionsAsync();
+        var allCampusNames = await repo.GetAllUserCampusNamesAsync();
+        var allClassNames = await repo.GetAllUserClassNamesAsync();
 
         return users
             .Select(user =>
             {
                 allPerms.TryGetValue(user.Id, out var perms);
-                return MapToDto(user, perms);
+                allCampusNames.TryGetValue(user.Id, out var campuses);
+                allClassNames.TryGetValue(user.Id, out var classes);
+                return MapToDto(user, perms, campuses, classes);
             })
             .ToList();
     }
@@ -217,14 +221,16 @@ public class UserService(
     }
 
     // Mapper: Entity → DTO
-    private static UserResponseDto MapToDto(User user, UserPermissions? permissions)
+    private static UserResponseDto MapToDto(User user, UserPermissions? permissions, List<string>? campusNames = null, List<string>? classNames = null)
     {
         return new UserResponseDto(
             user.Id,
             user.Email,
             user.DisplayName,
             user.IsBanned,
-            permissions
+            permissions,
+            campusNames,
+            classNames
         );
     }
 }

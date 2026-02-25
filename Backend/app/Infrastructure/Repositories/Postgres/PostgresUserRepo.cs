@@ -148,4 +148,144 @@ public class PostgresUserRepo(
             throw;
         }
     }
+
+    // ── User ↔ Campus ──────────────────────────────────────
+
+    public async Task<IEnumerable<long>> GetCampusIdsForUserAsync(long userId)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            return await conn.QueryAsync<long>("SELECT campus_id FROM user_campus WHERE user_id = @userId;", new { userId });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while fetching campus IDs for user {UserId}", userId);
+            throw;
+        }
+    }
+
+    public async Task SetCampusesForUserAsync(long userId, IEnumerable<long> campusIds)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            using var tx = await conn.BeginTransactionAsync();
+
+            await conn.ExecuteAsync("DELETE FROM user_campus WHERE user_id = @userId;", new { userId }, tx);
+
+            foreach (var campusId in campusIds)
+            {
+                await conn.ExecuteAsync(
+                    "INSERT INTO user_campus (user_id, campus_id) VALUES (@userId, @campusId);",
+                    new { userId, campusId }, tx);
+            }
+
+            await tx.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while setting campuses for user {UserId}", userId);
+            throw;
+        }
+    }
+
+    public async Task<Dictionary<long, List<string>>> GetAllUserCampusNamesAsync()
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            var sql = @"SELECT uc.user_id AS UserId, c.city AS Name
+                        FROM user_campus uc
+                        JOIN campus c ON c.id = uc.campus_id
+                        ORDER BY c.city;";
+            var rows = await conn.QueryAsync<(long UserId, string Name)>(sql);
+            var dict = new Dictionary<long, List<string>>();
+            foreach (var row in rows)
+            {
+                if (!dict.ContainsKey(row.UserId))
+                    dict[row.UserId] = new List<string>();
+                dict[row.UserId].Add(row.Name);
+            }
+            return dict;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while fetching all user-campus associations");
+            throw;
+        }
+    }
+
+    // ── User ↔ Class ───────────────────────────────────────
+
+    public async Task<IEnumerable<long>> GetClassIdsForUserAsync(long userId)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            return await conn.QueryAsync<long>("SELECT class_id FROM user_class WHERE user_id = @userId;", new { userId });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while fetching class IDs for user {UserId}", userId);
+            throw;
+        }
+    }
+
+    public async Task SetClassesForUserAsync(long userId, IEnumerable<long> classIds)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            using var tx = await conn.BeginTransactionAsync();
+
+            await conn.ExecuteAsync("DELETE FROM user_class WHERE user_id = @userId;", new { userId }, tx);
+
+            foreach (var classId in classIds)
+            {
+                await conn.ExecuteAsync(
+                    "INSERT INTO user_class (user_id, class_id) VALUES (@userId, @classId);",
+                    new { userId, classId }, tx);
+            }
+
+            await tx.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while setting classes for user {UserId}", userId);
+            throw;
+        }
+    }
+
+    public async Task<Dictionary<long, List<string>>> GetAllUserClassNamesAsync()
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            var sql = @"SELECT uc.user_id AS UserId, c.class_name AS Name
+                        FROM user_class uc
+                        JOIN class c ON c.id = uc.class_id
+                        ORDER BY c.class_name;";
+            var rows = await conn.QueryAsync<(long UserId, string Name)>(sql);
+            var dict = new Dictionary<long, List<string>>();
+            foreach (var row in rows)
+            {
+                if (!dict.ContainsKey(row.UserId))
+                    dict[row.UserId] = new List<string>();
+                dict[row.UserId].Add(row.Name);
+            }
+            return dict;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while fetching all user-class associations");
+            throw;
+        }
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
+using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models;
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
@@ -265,6 +266,86 @@ public static class UserEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
+        // GET /api/users/{id}/campuses — get campus IDs for a user
+        group
+            .MapGet(
+                "/{id}/campuses",
+                async (long id, IUserRepository repo) =>
+                {
+                    var ids = await repo.GetCampusIdsForUserAsync(id);
+                    return Results.Ok(ids);
+                }
+            )
+            .RequirePermission("ManageUsers")
+            .WithName("GetUserCampuses")
+            .WithSummary("Get campus IDs for a user")
+            .WithDescription(
+                "Retrieves the list of campus IDs associated with a user.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
+            )
+            .Produces<IEnumerable<long>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
+        // PUT /api/users/{id}/campuses — replace campus associations
+        group
+            .MapPut(
+                "/{id}/campuses",
+                async (long id, long[] campusIds, IUserRepository repo) =>
+                {
+                    await repo.SetCampusesForUserAsync(id, campusIds);
+                    return Results.NoContent();
+                }
+            )
+            .RequirePermission("ManageUsers")
+            .WithName("SetUserCampuses")
+            .WithSummary("Set campus associations for a user")
+            .WithDescription(
+                "Replaces all campus associations for a user.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
+            )
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
+        // GET /api/users/{id}/classes — get class IDs for a user
+        group
+            .MapGet(
+                "/{id}/classes",
+                async (long id, IUserRepository repo) =>
+                {
+                    var ids = await repo.GetClassIdsForUserAsync(id);
+                    return Results.Ok(ids);
+                }
+            )
+            .RequirePermission("ManageUsers")
+            .WithName("GetUserClasses")
+            .WithSummary("Get class IDs for a user")
+            .WithDescription(
+                "Retrieves the list of class IDs associated with a user.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
+            )
+            .Produces<IEnumerable<long>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
+        // PUT /api/users/{id}/classes — replace class associations
+        group
+            .MapPut(
+                "/{id}/classes",
+                async (long id, long[] classIds, IUserRepository repo) =>
+                {
+                    await repo.SetClassesForUserAsync(id, classIds);
+                    return Results.NoContent();
+                }
+            )
+            .RequirePermission("ManageUsers")
+            .WithName("SetUserClasses")
+            .WithSummary("Set class associations for a user")
+            .WithDescription(
+                "Replaces all class associations for a user.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
+            )
+            .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
 

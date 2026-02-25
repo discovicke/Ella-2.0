@@ -10,7 +10,9 @@ public record UserResponseDto(
     string Email,
     string? DisplayName,
     BannedStatus IsBanned,
-    UserPermissions? Permissions
+    UserPermissions? Permissions,
+    List<string>? CampusNames = null,
+    List<string>? ClassNames = null
 );
 
 public record CreateUserDto(string Email, string? DisplayName, string Password);
