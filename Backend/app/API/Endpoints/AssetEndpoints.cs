@@ -67,7 +67,7 @@ public static class AssetEndpoints
             .WithName("CreateAssetType")
             .WithSummary("Create a new asset type")
             .WithDescription(
-                "Creates a new asset type.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
+                "Creates a new asset type.\n\n🔒 **Authentication Required**\n🔑 **Requires manageAssets permission**"
             ) 
             .Accepts<CreateAssetTypeDto>("application/json")
             .Produces<AssetTypeResponseDto>(StatusCodes.Status201Created)
@@ -94,7 +94,7 @@ public static class AssetEndpoints
             .WithName("UpdateAssetType")
             .WithSummary("Update an asset type")
             .WithDescription(
-                "Updates an existing asset type.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
+                "Updates an existing asset type.\n\n🔒 **Authentication Required**\n🔑 **Requires manageAssets permission**"
             )
             .Accepts<UpdateAssetTypeDto>("application/json")
             .Produces(StatusCodes.Status204NoContent)
@@ -117,7 +117,7 @@ public static class AssetEndpoints
             .WithName("DeleteAssetType")
             .WithSummary("Delete an asset type")
             .WithDescription(
-                "Permanently deletes an asset type.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
+                "Permanently deletes an asset type.\n\n🔒 **Authentication Required**\n🔑 **Requires manageAssets permission**"
             )
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)

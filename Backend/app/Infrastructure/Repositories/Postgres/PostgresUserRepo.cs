@@ -16,7 +16,7 @@ public class PostgresUserRepo(
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            var sql = "SELECT * FROM users;";
+            var sql = "SELECT * FROM users ORDER BY id;";
             return await conn.QueryAsync<User>(sql);
         }
         catch (Exception ex)

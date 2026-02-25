@@ -77,7 +77,7 @@ public static class RoomEndpoints
             .WithName("CreateRoom")
             .WithSummary("Create a new room")
             .WithDescription(
-                "Creates a new room. You can optionally provide a list of 'assetIds' to link existing assets.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
+                "Creates a new room. You can optionally provide a list of 'assetIds' to link existing assets.\n\n🔒 **Authentication Required**\n🔑 **Requires manageRooms permission**"
             )
             .Accepts<CreateRoomDto>("application/json")
             .Produces<RoomResponseDto>(StatusCodes.Status201Created)
@@ -106,7 +106,7 @@ public static class RoomEndpoints
             .WithName("UpdateRoom")
             .WithSummary("Update an existing room")
             .WithDescription(
-                "Updates a room's details. Providing 'assetIds' will REPLACE the room's entire asset inventory.\n\n🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
+                "Updates a room's details. Providing 'assetIds' will REPLACE the room's entire asset inventory.\n\n🔒 **Authentication Required**\n🔑 **Requires manageRooms permission**"
             )
             .Accepts<UpdateRoomDto>("application/json")
             .Produces(StatusCodes.Status204NoContent)
@@ -142,7 +142,7 @@ public static class RoomEndpoints
             .WithDescription(
                 "Permanently deletes a room and optionally its bookings.\n\n"
                     + "Pass `?force=true` to cascade-delete all bookings.\n\n"
-                    + "🔒 **Authentication Required**\n🔑 **Role Required:** Admin"
+                    + "🔒 **Authentication Required**\n🔑 **Requires manageRooms permission**"
             )
             .Produces(StatusCodes.Status204NoContent)
             .Produces<string>(StatusCodes.Status400BadRequest)
