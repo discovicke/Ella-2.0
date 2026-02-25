@@ -20,6 +20,8 @@ import {
   PermissionTemplateDto,
   UpdateUserDto,
   UserResponseDto,
+  CampusResponseDto,
+  ClassResponseDto,
 } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import {
@@ -35,6 +37,8 @@ import {
   getTemplateLabels,
   RoleLabel,
 } from '../../../core/permission-templates';
+import { CampusService } from '../../../shared/services/campus.service';
+import { ClassService } from '../../../shared/services/class.service';
 
 @Component({
   selector: 'app-manage-users-page',
@@ -47,9 +51,13 @@ export class ManageUsersPage implements OnInit {
   private modalService = inject(ModalService);
   private userService = inject(UserService);
   private toastService = inject(ToastService);
+  private campusService = inject(CampusService);
+  private classService = inject(ClassService);
 
   @ViewChild('avatarTpl', { static: true }) avatarTpl!: TemplateRef<any>;
   @ViewChild('roleTpl', { static: true }) roleTpl!: TemplateRef<any>;
+  @ViewChild('campusTpl', { static: true }) campusTpl!: TemplateRef<any>;
+  @ViewChild('classTpl', { static: true }) classTpl!: TemplateRef<any>;
   @ViewChild('statusTpl', { static: true }) statusTpl!: TemplateRef<any>;
   @ViewChild('actionsTpl', { static: true }) actionsTpl!: TemplateRef<any>;
 
@@ -76,6 +84,18 @@ export class ManageUsersPage implements OnInit {
   userResource = resource({
     loader: () => firstValueFrom(this.userService.getAllUsers()),
   });
+
+  // Lookup resources for associations
+  campusResource = resource({
+    loader: () => firstValueFrom(this.campusService.getAll()),
+  });
+
+  classResource = resource({
+    loader: () => firstValueFrom(this.classService.getAll()),
+  });
+
+  readonly allCampuses = computed(() => this.campusResource.value() ?? []);
+  readonly allClasses = computed(() => this.classResource.value() ?? []);
 
   // --- COMPUTED ---
   filteredUsers = computed(() => {
@@ -115,6 +135,8 @@ export class ManageUsersPage implements OnInit {
       { header: '', template: this.avatarTpl, width: '40px', align: 'center' },
       { header: 'Namn', field: 'displayName' },
       { header: 'E-post', field: 'email' },
+      { header: 'Campus', template: this.campusTpl, width: '140px' },
+      { header: 'Klass', template: this.classTpl, width: '120px' },
       { header: 'Roll', template: this.roleTpl, width: '100px' },
       { header: 'Status', template: this.statusTpl, width: '100px' },
       { header: '', template: this.actionsTpl, width: '80px', align: 'right' },
@@ -198,16 +220,26 @@ export class ManageUsersPage implements OnInit {
           manageCampuses: false,
           manageRoles: false,
         },
+        campusOptions: this.allCampuses(),
+        classOptions: this.allClasses(),
+        initialCampusIds: [],
+        initialClassIds: [],
         onSave: (payload: UserFormPayload) => this.handleSave(payload),
       },
       width: '500px',
     });
   }
 
-  openEditUserModal(user: UserResponseDto, event?: Event) {
+  async openEditUserModal(user: UserResponseDto, event?: Event) {
     if (event) {
       event.stopPropagation();
     }
+
+    // Fetch current associations in parallel
+    const [campusIds, classIds] = await Promise.all([
+      firstValueFrom(this.userService.getUserCampuses(user.id)),
+      firstValueFrom(this.userService.getUserClasses(user.id)),
+    ]);
 
     this.modalService.open(UserFormModalComponent, {
       title: 'Redigera användare',
@@ -216,6 +248,10 @@ export class ManageUsersPage implements OnInit {
         templateOptions: this.templateOptions(),
         initialTemplateId: user.permissions?.permissionTemplateId ?? null,
         initialPermissions: user.permissions,
+        campusOptions: this.allCampuses(),
+        classOptions: this.allClasses(),
+        initialCampusIds: campusIds,
+        initialClassIds: classIds,
         onSave: (payload: UserFormPayload) => this.handleSave(payload, user.id, user.permissions),
         onDelete: (id: number) => this.handleDelete(id),
       },
@@ -252,6 +288,7 @@ export class ManageUsersPage implements OnInit {
   ) {
     try {
       const selectedTemplateId = payload.selectedTemplateId ?? null;
+      let targetUserId = userId;
 
       if (userId) {
         const updatePayload: UpdateUserDto = {
@@ -277,6 +314,7 @@ export class ManageUsersPage implements OnInit {
         };
 
         const created = await firstValueFrom(this.userService.createUser(createPayload));
+        targetUserId = created.id;
         if (created.id) {
           await this.syncTemplateAssignment(
             created.id,
@@ -285,6 +323,14 @@ export class ManageUsersPage implements OnInit {
             undefined,
           );
         }
+      }
+
+      // Sync campus/class associations
+      if (targetUserId) {
+        await Promise.all([
+          firstValueFrom(this.userService.setUserCampuses(targetUserId, payload.campusIds)),
+          firstValueFrom(this.userService.setUserClasses(targetUserId, payload.classIds)),
+        ]);
       }
 
       this.toastService.showSuccess(`Användaren ${userId ? 'uppdaterad' : 'skapad'}!`);

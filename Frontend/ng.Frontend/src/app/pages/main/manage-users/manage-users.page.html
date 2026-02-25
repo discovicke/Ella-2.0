@@ -125,6 +125,24 @@
       </span>
     </ng-template>
 
+    <!-- Campus Template -->
+    <ng-template #campusTpl let-user>
+      @if (user.campusNames?.length) {
+        <span class="cell-tags">{{ user.campusNames.join(', ') }}</span>
+      } @else {
+        <span class="cell-empty">—</span>
+      }
+    </ng-template>
+
+    <!-- Class Template -->
+    <ng-template #classTpl let-user>
+      @if (user.classNames?.length) {
+        <span class="cell-tags">{{ user.classNames.join(', ') }}</span>
+      } @else {
+        <span class="cell-empty">—</span>
+      }
+    </ng-template>
+
     <!-- Status Template -->
     <ng-template #statusTpl let-user>
       <div
