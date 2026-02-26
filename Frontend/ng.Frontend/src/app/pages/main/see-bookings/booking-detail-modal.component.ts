@@ -88,11 +88,7 @@ export interface BookingDetailModalConfig {
       <div class="modal-footer">
         <app-button variant="tertiary" (clicked)="onClose()">Stäng</app-button>
         @if (booking.status === 'Active') {
-          <app-button
-            variant="danger"
-            [disabled]="isCancelling()"
-            (clicked)="onCancel()"
-          >
+          <app-button variant="danger" [disabled]="isCancelling()" (clicked)="onCancel()">
             {{ isCancelling() ? 'Avbokar...' : 'Avboka' }}
           </app-button>
         }
