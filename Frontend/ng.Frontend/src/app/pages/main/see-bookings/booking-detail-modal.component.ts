@@ -4,52 +4,55 @@ import { ModalService } from '../../../shared/services/modal.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { BookingDetailedReadModel, BookingStatus } from '../../../models/models';
 
-export interface BookingEditModalConfig {
+export interface BookingDetailModalConfig {
   booking: BookingDetailedReadModel;
-  onStatusChange: (bookingId: number, newStatus: BookingStatus) => Promise<void>;
+  onCancel: (bookingId: number) => Promise<void>;
 }
 
 @Component({
-  selector: 'app-booking-edit-modal',
+  selector: 'app-booking-detail-modal',
   imports: [DatePipe, ButtonComponent],
   template: `
-    <div class="booking-modal">
-      <!-- Hero: Room + Status -->
+    <div class="detail-modal">
+      <!-- Hero -->
       <div class="modal-hero" [attr.data-status]="booking.status">
         <div class="hero-top">
           <span class="status-badge" [attr.data-status]="booking.status">
             {{ statusLabel(booking.status) }}
           </span>
+          @if (booking.status === 'Active') {
+            <span class="countdown">{{ getCountdownLabel() }}</span>
+          }
         </div>
         <h3 class="hero-room">{{ booking.roomName ?? 'Okänt rum' }}</h3>
         <div class="hero-meta">
-          <span class="hero-detail">{{ booking.roomType ?? '' }}</span>
+          <span class="meta-item">{{ booking.roomType ?? '' }}</span>
           @if (booking.roomFloor) {
-            <span class="hero-sep">·</span>
-            <span class="hero-detail">Våning {{ booking.roomFloor }}</span>
+            <span class="meta-sep">·</span>
+            <span class="meta-item">Våning {{ booking.roomFloor }}</span>
           }
           @if (booking.roomCapacity) {
-            <span class="hero-sep">·</span>
-            <span class="hero-detail">{{ booking.roomCapacity }} platser</span>
+            <span class="meta-sep">·</span>
+            <span class="meta-item">{{ booking.roomCapacity }} platser</span>
           }
           @if (booking.campusCity) {
-            <span class="hero-sep">·</span>
-            <span class="hero-detail">{{ booking.campusCity }}</span>
+            <span class="meta-sep">·</span>
+            <span class="meta-item">{{ booking.campusCity }}</span>
           }
         </div>
-        @if (parseAssets(booking.roomAssets).length) {
+        @if (assets.length) {
           <div class="hero-assets">
-            @for (asset of parseAssets(booking.roomAssets); track asset) {
+            @for (asset of assets; track asset) {
               <span class="asset-chip">{{ asset }}</span>
             }
           </div>
         }
       </div>
 
-      <!-- Info rows -->
-      <div class="info-rows">
-        <div class="info-row">
-          <div class="info-icon">
+      <!-- Details -->
+      <div class="detail-rows">
+        <div class="detail-row">
+          <div class="detail-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="4" width="18" height="18" rx="2" />
               <line x1="16" y1="2" x2="16" y2="6" />
@@ -57,87 +60,42 @@ export interface BookingEditModalConfig {
               <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
           </div>
-          <div class="info-content">
-            <span class="info-primary">
+          <div class="detail-content">
+            <span class="detail-primary">
               {{ booking.startTime | date: 'EEEE d MMMM yyyy' : '' : 'sv' }}
             </span>
-            <span class="info-secondary">
+            <span class="detail-secondary">
               {{ booking.startTime | date: 'HH:mm' }} – {{ booking.endTime | date: 'HH:mm' }}
             </span>
           </div>
         </div>
 
-        <div class="info-row">
-          <div class="info-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </div>
-          <div class="info-content">
-            <span class="info-primary">{{ booking.userName ?? '—' }}</span>
-            <span class="info-secondary">{{ booking.userEmail ?? '' }}</span>
-          </div>
-        </div>
-
-        @if (booking.registrationCount) {
-          <div class="info-row">
-            <div class="info-icon">
+        @if (booking.notes) {
+          <div class="detail-row">
+            <div class="detail-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
               </svg>
             </div>
-            <div class="info-content">
-              <span class="info-primary"
-                >{{ booking.registrationCount }} registrering{{
-                  booking.registrationCount !== 1 ? 'ar' : ''
-                }}</span
-              >
+            <div class="detail-content">
+              <span class="detail-primary">{{ booking.notes }}</span>
             </div>
           </div>
         }
       </div>
 
-      @if (booking.notes) {
-        <div class="notes-section">
-          <span class="notes-label">Anteckning</span>
-          <p class="notes-text">{{ booking.notes }}</p>
-        </div>
-      }
-
-      <!-- Footer: meta + actions -->
+      <!-- Footer -->
       <div class="modal-footer">
-        <span class="meta-text">
-          Skapad {{ booking.createdAt | date: 'yyyy-MM-dd HH:mm' }}
-          @if (booking.updatedAt) {
-            · Uppdaterad {{ booking.updatedAt | date: 'yyyy-MM-dd HH:mm' }}
-          }
-        </span>
-        <div class="footer-actions">
-          <app-button variant="tertiary" (clicked)="onClose()">Stäng</app-button>
-
-          @if (booking.status === 'Cancelled' || booking.status === 'Expired') {
-            <app-button
-              variant="primary"
-              [disabled]="isSubmitting()"
-              (clicked)="onSetStatus('Active')"
-            >
-              {{ isSubmitting() ? 'Sparar...' : 'Aktivera' }}
-            </app-button>
-          }
-          @if (booking.status === 'Active') {
-            <app-button
-              variant="danger"
-              [disabled]="isSubmitting()"
-              (clicked)="onSetStatus('Cancelled')"
-            >
-              {{ isSubmitting() ? 'Sparar...' : 'Avboka' }}
-            </app-button>
-          }
-        </div>
+        <app-button variant="tertiary" (clicked)="onClose()">Stäng</app-button>
+        @if (booking.status === 'Active') {
+          <app-button
+            variant="danger"
+            [disabled]="isCancelling()"
+            (clicked)="onCancel()"
+          >
+            {{ isCancelling() ? 'Avbokar...' : 'Avboka' }}
+          </app-button>
+        }
       </div>
     </div>
   `,
@@ -145,10 +103,9 @@ export interface BookingEditModalConfig {
     `
       @use 'styles/mixins' as *;
 
-      .booking-modal {
+      .detail-modal {
         display: flex;
         flex-direction: column;
-        gap: 0;
       }
 
       /* ── Hero ── */
@@ -165,7 +122,7 @@ export interface BookingEditModalConfig {
       .hero-top {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
       }
 
       .hero-room {
@@ -183,15 +140,22 @@ export interface BookingEditModalConfig {
         flex-wrap: wrap;
       }
 
-      .hero-detail {
+      .meta-item {
         font-size: 0.8rem;
         color: var(--color-text-muted);
       }
 
-      .hero-sep {
+      .meta-sep {
         font-size: 0.8rem;
         color: var(--color-text-muted);
         opacity: 0.5;
+      }
+
+      .countdown {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--color-primary);
+        letter-spacing: 0.02em;
       }
 
       .hero-assets {
@@ -238,26 +202,25 @@ export interface BookingEditModalConfig {
         }
       }
 
-      /* ── Info rows ── */
-      .info-rows {
+      /* ── Detail rows ── */
+      .detail-rows {
         display: flex;
         flex-direction: column;
         padding: 20px 0;
-        gap: 0;
       }
 
-      .info-row {
+      .detail-row {
         display: flex;
         align-items: center;
         gap: 14px;
         padding: 10px 0;
 
-        & + .info-row {
+        & + .detail-row {
           border-top: 1px solid var(--color-border);
         }
       }
 
-      .info-icon {
+      .detail-icon {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -274,14 +237,14 @@ export interface BookingEditModalConfig {
         }
       }
 
-      .info-content {
+      .detail-content {
         display: flex;
         flex-direction: column;
         gap: 1px;
         min-width: 0;
       }
 
-      .info-primary {
+      .detail-primary {
         font-size: 0.9rem;
         font-weight: 600;
         color: var(--color-text-primary);
@@ -291,73 +254,56 @@ export interface BookingEditModalConfig {
         }
       }
 
-      .info-secondary {
+      .detail-secondary {
         font-size: 0.8rem;
         color: var(--color-text-muted);
-      }
-
-      /* ── Notes ── */
-      .notes-section {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        padding: 14px 16px;
-        background: var(--color-bg-panel);
-        border-radius: 8px;
-        border: 1px solid var(--color-border);
-      }
-
-      .notes-label {
-        font-size: 0.7rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: var(--color-text-muted);
-      }
-
-      .notes-text {
-        margin: 0;
-        font-size: 0.85rem;
-        color: var(--color-text-primary);
-        line-height: 1.5;
       }
 
       /* ── Footer ── */
       .modal-footer {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 12px;
+        justify-content: flex-end;
+        gap: 10px;
         padding-top: 16px;
         margin-top: 4px;
-        flex-wrap: wrap;
-      }
-
-      .meta-text {
-        font-size: 0.72rem;
-        color: var(--color-text-muted);
-      }
-
-      .footer-actions {
-        display: flex;
-        gap: 10px;
-        margin-left: auto;
       }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BookingEditModalComponent {
+export class BookingDetailModalComponent {
   private readonly modalService = inject(ModalService);
 
-  private config: BookingEditModalConfig = this.modalService.modalData();
+  private config: BookingDetailModalConfig = this.modalService.modalData();
   protected booking = this.config.booking;
+  protected assets = this.parseAssets(this.config.booking.roomAssets);
 
-  readonly isSubmitting = signal(false);
+  readonly isCancelling = signal(false);
 
-  parseAssets(assetsStr: string | null | undefined): string[] {
+  private parseAssets(assetsStr: string | null | undefined): string[] {
     if (!assetsStr) return [];
     return assetsStr.split('|||').filter((a) => a.trim().length > 0);
+  }
+
+  getCountdownLabel(): string {
+    const now = new Date();
+    const start = new Date(this.booking.startTime ?? 0);
+    const diffMs = start.getTime() - now.getTime();
+
+    if (diffMs <= 0) return 'Pågår nu';
+
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 60) return `Startar om ${mins}m`;
+
+    const hours = Math.floor(mins / 60);
+    const remainMins = mins % 60;
+    if (hours < 24) {
+      return remainMins > 0 ? `Startar om ${hours}h ${remainMins}m` : `Startar om ${hours}h`;
+    }
+
+    const days = Math.floor(hours / 24);
+    return days === 1 ? 'Startar imorgon' : `Startar om ${days} dagar`;
   }
 
   statusLabel(status?: BookingStatus): string {
@@ -373,14 +319,14 @@ export class BookingEditModalComponent {
     }
   }
 
-  async onSetStatus(status: BookingStatus | string): Promise<void> {
+  async onCancel(): Promise<void> {
     if (!this.booking.bookingId) return;
 
-    this.isSubmitting.set(true);
+    this.isCancelling.set(true);
     try {
-      await this.config.onStatusChange(this.booking.bookingId, status as BookingStatus);
+      await this.config.onCancel(this.booking.bookingId);
     } catch {
-      this.isSubmitting.set(false);
+      this.isCancelling.set(false);
     }
   }
 

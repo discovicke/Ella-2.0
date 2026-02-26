@@ -15,9 +15,9 @@ import { BookingDetailedReadModel, BookingStatus } from '../../../models/models'
 import { ConfirmService } from '../../../shared/services/confirm.service';
 import { ModalService } from '../../../shared/services/modal.service';
 import {
-  BookingEditModalComponent,
-  BookingEditModalConfig,
-} from '../manage-bookings/booking-edit-modal.component';
+  BookingDetailModalComponent,
+  BookingDetailModalConfig,
+} from './booking-detail-modal.component';
 
 interface BookingGroup {
   label: string;
@@ -236,11 +236,11 @@ export class SeeBookingsPage {
   }
 
   openBookingDetail(booking: BookingDetailedReadModel): void {
-    this.modalService.open(BookingEditModalComponent, {
+    this.modalService.open(BookingDetailModalComponent, {
       title: 'Bokningsdetaljer',
       data: {
         booking,
-        onStatusChange: async (bookingId: number, _newStatus: BookingStatus) => {
+        onCancel: async (bookingId: number) => {
           const confirmed = await this.confirmService.show('Vill du avboka bokningen?', {
             title: 'Avboka bokning',
             icon: 'warning' as const,
@@ -254,9 +254,8 @@ export class SeeBookingsPage {
           this.modalService.close();
           this.bookingsResource.reload();
         },
-        showActivateButton: false,
-      } satisfies BookingEditModalConfig,
-      width: '520px',
+      } satisfies BookingDetailModalConfig,
+      width: '480px',
     });
   }
 
