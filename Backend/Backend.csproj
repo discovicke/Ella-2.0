@@ -11,9 +11,13 @@
     <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/../Frontend/ng.Frontend/openapi</OpenApiDocumentsDirectory>
   </PropertyGroup>
 
-  <Target Name="RenameOpenApiFile" AfterTargets="GenerateOpenApiDocuments">
+  <Target Name="RenameOpenApiFile" AfterTargets="GenerateOpenApiDocuments" Condition="'$(SkipOpenApi)' != 'true'">
     <Move SourceFiles="$(OpenApiDocumentsDirectory)/$(MSBuildProjectName).json" DestinationFiles="$(OpenApiDocumentsDirectory)/models.json" Condition="Exists('$(OpenApiDocumentsDirectory)/$(MSBuildProjectName).json')" />
   </Target>
+
+  <PropertyGroup Condition="'$(SkipOpenApi)' == 'true'">
+    <RunApiDescriptionServer>false</RunApiDescriptionServer>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.66" />

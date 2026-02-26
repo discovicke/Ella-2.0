@@ -63,6 +63,9 @@ public class PostgresDbInitializer(
 
         var schemaSql = await File.ReadAllTextAsync(schemaPath);
 
+        // Simple migration: ensure is_lesson exists before running the full schema (which might update views)
+        await conn.ExecuteAsync("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS is_lesson BOOLEAN NOT NULL DEFAULT FALSE;");
+
         // Apply schema
         await conn.ExecuteAsync(schemaSql);
 

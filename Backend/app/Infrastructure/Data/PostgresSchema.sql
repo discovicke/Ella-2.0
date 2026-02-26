@@ -226,6 +226,7 @@ CREATE TABLE IF NOT EXISTS bookings
     start_time TIMESTAMPTZ    NOT NULL,
     end_time   TIMESTAMPTZ    NOT NULL,
     status     booking_status NOT NULL DEFAULT 'active',
+    is_lesson  BOOLEAN        NOT NULL DEFAULT FALSE,
     notes      TEXT,
     created_at TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ,
@@ -272,6 +273,7 @@ FROM users u
 -- Berikad bokningsvy med användar- och rumsdata samt antal registrerade.
 -- status beräknas dynamiskt: om end_time har passerat sätts 'expired'
 -- automatiskt, utan att man behöver uppdatera raden i bookings.
+DROP VIEW IF EXISTS v_bookings_detailed CASCADE;
 CREATE
 OR REPLACE
 VIEW v_bookings_detailed AS
@@ -290,7 +292,9 @@ SELECT b.id               AS booking_id,
            WHEN b.status = 'cancelled' THEN 'cancelled'
            WHEN b.end_time < NOW() THEN 'expired'
            ELSE 'active'
-           END::booking_status                         AS status, b.notes,
+           END::booking_status                         AS status,
+       b.is_lesson,
+       b.notes,
        b.created_at,
        b.updated_at,
        COUNT(reg.user_id) AS registration_count,
@@ -307,7 +311,7 @@ FROM bookings b
          LEFT JOIN registrations reg ON b.id = reg.booking_id
 GROUP BY b.id, b.user_id, u.display_name, u.email,
          b.room_id, r.name, r.capacity, rt.name, r.floor,
-         b.start_time, b.end_time, b.status, b.notes,
+         b.start_time, b.end_time, b.status, b.is_lesson, b.notes,
          b.created_at, b.updated_at, c.city;
 
 
