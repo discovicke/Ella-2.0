@@ -27,4 +27,3 @@ public record BookingDetailedReadModel
     public int RegistrationCount { get; init; }
     public string? RoomAssets { get; init; }
 }
-

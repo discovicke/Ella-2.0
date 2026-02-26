@@ -121,7 +121,9 @@ export interface BookingEditModalConfig {
         <div class="footer-actions">
           <app-button variant="tertiary" (clicked)="onClose()">Stäng</app-button>
 
-          @if (showActivateButton && (booking.status === 'Cancelled' || booking.status === 'Expired')) {
+          @if (
+            showActivateButton && (booking.status === 'Cancelled' || booking.status === 'Expired')
+          ) {
             <app-button
               variant="primary"
               [disabled]="isSubmitting()"
