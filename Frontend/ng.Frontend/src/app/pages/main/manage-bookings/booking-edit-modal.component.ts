@@ -119,7 +119,7 @@ export interface BookingEditModalConfig {
         <div class="footer-actions">
           <app-button variant="tertiary" (clicked)="onClose()">Stäng</app-button>
 
-          @if (booking.status === 'Cancelled' || booking.status === 'Expired') {
+          @if (booking.status === 'Cancelled' && !hasEnded()) {
             <app-button
               variant="primary"
               [disabled]="isSubmitting()"
@@ -371,6 +371,11 @@ export class BookingEditModalComponent {
       default:
         return '—';
     }
+  }
+
+  hasEnded(): boolean {
+    const end = new Date(this.booking.endTime ?? 0);
+    return end < new Date();
   }
 
   async onSetStatus(status: BookingStatus | string): Promise<void> {
