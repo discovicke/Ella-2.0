@@ -13,10 +13,15 @@ import { BookingService } from '../../../shared/services/booking.service';
 import { SessionService } from '../../../core/session.service';
 import { BookingDetailedReadModel, BookingStatus } from '../../../models/models';
 import { ConfirmService } from '../../../shared/services/confirm.service';
+import { ModalService } from '../../../shared/services/modal.service';
+import {
+  BookingEditModalComponent,
+  BookingEditModalConfig,
+} from '../manage-bookings/booking-edit-modal.component';
 
 interface BookingGroup {
   label: string;
-  date: string;
+  key: string;
   bookings: BookingDetailedReadModel[];
 }
 
@@ -31,6 +36,7 @@ export class SeeBookingsPage {
   private readonly confirmService = inject(ConfirmService);
   private readonly bookingService = inject(BookingService);
   private readonly sessionService = inject(SessionService);
+  private readonly modalService = inject(ModalService);
 
   // --- STATE ---
   activeTab = signal<'upcoming' | 'history'>('upcoming');
@@ -58,17 +64,10 @@ export class SeeBookingsPage {
         const endTime = new Date(b.endTime ?? 0);
         const isCancelled = b.status === BookingStatus.Cancelled;
 
-        // 1. Toggle Filter
         if (!showCancelled && isCancelled) return false;
 
-        // 2. Tab Filter
         const isHistory = endTime < now;
-
-        if (tab === 'upcoming') {
-          return !isHistory;
-        } else {
-          return isHistory;
-        }
+        return tab === 'upcoming' ? !isHistory : isHistory;
       })
       .sort((a, b) => {
         const timeA = new Date(a.startTime ?? 0).getTime();
@@ -77,25 +76,37 @@ export class SeeBookingsPage {
       });
   });
 
-  upcomingBookings = computed(() => {
+  upcomingCount = computed(() => {
     const all = this.bookingsResource.value() ?? [];
     const showCancelled = this.showCancelled();
     const now = new Date();
 
     return all.filter((b) => {
       const endTime = new Date(b.endTime ?? 0);
-      const isCancelled = b.status === BookingStatus.Cancelled;
-      const isUpcoming = endTime >= now;
+      if (!showCancelled && b.status === BookingStatus.Cancelled) return false;
+      return endTime >= now;
+    }).length;
+  });
 
-      if (!showCancelled && isCancelled) return false;
-      return isUpcoming;
-    });
+  /** The soonest upcoming active booking — used for the hero card */
+  nextBooking = computed(() => {
+    const all = this.bookingsResource.value() ?? [];
+    const now = new Date();
+
+    return (
+      all
+        .filter((b) => {
+          const endTime = new Date(b.endTime ?? 0);
+          return endTime >= now && b.status === BookingStatus.Active;
+        })
+        .sort((a, b) => new Date(a.startTime ?? 0).getTime() - new Date(b.startTime ?? 0).getTime())
+        .at(0) ?? null
+    );
   });
 
   groupedBookings = computed(() => {
     const bookings = this.filteredBookings();
     const tab = this.activeTab();
-    const groups: BookingGroup[] = [];
 
     if (tab === 'upcoming') {
       return this.groupUpcomingBookings(bookings);
@@ -104,45 +115,83 @@ export class SeeBookingsPage {
     }
   });
 
+  // --- HELPERS ---
+
+  parseAssets(assetsStr: string | null | undefined): string[] {
+    if (!assetsStr) return [];
+    return assetsStr.split('|||').filter((a) => a.trim().length > 0);
+  }
+
+  getCountdownLabel(booking: BookingDetailedReadModel): string {
+    const now = new Date();
+    const start = new Date(booking.startTime ?? 0);
+    const diffMs = start.getTime() - now.getTime();
+
+    if (diffMs <= 0) return 'Pågår nu';
+
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 60) return `Startar om ${mins}m`;
+
+    const hours = Math.floor(mins / 60);
+    const remainMins = mins % 60;
+    if (hours < 24) {
+      return remainMins > 0 ? `Startar om ${hours}h ${remainMins}m` : `Startar om ${hours}h`;
+    }
+
+    const days = Math.floor(hours / 24);
+    return days === 1 ? 'Startar imorgon' : `Startar om ${days} dagar`;
+  }
+
+  statusLabel(status: BookingStatus | undefined): string {
+    switch (status) {
+      case BookingStatus.Active:
+        return 'Aktiv';
+      case BookingStatus.Cancelled:
+        return 'Avbokad';
+      case BookingStatus.Expired:
+        return 'Utgången';
+      default:
+        return '';
+    }
+  }
+
   private groupUpcomingBookings(bookings: BookingDetailedReadModel[]): BookingGroup[] {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const nextWeek = new Date(today);
-    nextWeek.setDate(nextWeek.getDate() + 7);
+    const dayAfterTomorrow = new Date(tomorrow);
+    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
+    const endOfWeek = new Date(today);
+    endOfWeek.setDate(endOfWeek.getDate() + 7);
+    const endOfNextWeek = new Date(endOfWeek);
+    endOfNextWeek.setDate(endOfNextWeek.getDate() + 7);
 
     const groups: BookingGroup[] = [
-      { label: 'Idag', date: today.toISOString(), bookings: [] },
-      { label: 'Imorgon', date: tomorrow.toISOString(), bookings: [] },
-      { label: 'Denna vecka', date: today.toISOString(), bookings: [] },
-      { label: 'Nästa vecka', date: nextWeek.toISOString(), bookings: [] },
-      { label: 'Senare', date: '', bookings: [] },
+      { label: 'Idag', key: 'today', bookings: [] },
+      { label: 'Imorgon', key: 'tomorrow', bookings: [] },
+      { label: 'Denna vecka', key: 'this-week', bookings: [] },
+      { label: 'Nästa vecka', key: 'next-week', bookings: [] },
+      { label: 'Senare', key: 'later', bookings: [] },
     ];
 
-    bookings.forEach((booking) => {
-      const bookingDate = new Date(booking.startTime ?? 0);
-      const bookingDay = new Date(
-        bookingDate.getFullYear(),
-        bookingDate.getMonth(),
-        bookingDate.getDate(),
-      );
+    for (const booking of bookings) {
+      const d = new Date(booking.startTime ?? 0);
+      const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const t = day.getTime();
 
-      if (bookingDay.getTime() === today.getTime()) {
+      if (t === today.getTime()) {
         groups[0].bookings.push(booking);
-      } else if (bookingDay.getTime() === tomorrow.getTime()) {
+      } else if (t === tomorrow.getTime()) {
         groups[1].bookings.push(booking);
-      } else if (bookingDay > tomorrow && bookingDay < nextWeek) {
+      } else if (t > tomorrow.getTime() && t < endOfWeek.getTime()) {
         groups[2].bookings.push(booking);
-      } else if (
-        bookingDay >= nextWeek &&
-        bookingDay.getTime() < nextWeek.getTime() + 7 * 24 * 60 * 60 * 1000
-      ) {
+      } else if (t >= endOfWeek.getTime() && t < endOfNextWeek.getTime()) {
         groups[3].bookings.push(booking);
       } else {
         groups[4].bookings.push(booking);
       }
-    });
+    }
 
     return groups.filter((g) => g.bookings.length > 0);
   }
@@ -150,27 +199,25 @@ export class SeeBookingsPage {
   private groupHistoryBookings(bookings: BookingDetailedReadModel[]): BookingGroup[] {
     const groupMap = new Map<string, BookingDetailedReadModel[]>();
 
-    bookings.forEach((booking) => {
+    for (const booking of bookings) {
       const date = new Date(booking.startTime ?? 0);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      const monthLabel = date.toLocaleDateString('sv-SE', { year: 'numeric', month: 'long' });
 
       if (!groupMap.has(monthKey)) {
         groupMap.set(monthKey, []);
       }
       groupMap.get(monthKey)!.push(booking);
-    });
+    }
 
     const groups: BookingGroup[] = [];
-    groupMap.forEach((bookings, key) => {
-      const firstBooking = bookings[0];
-      const date = new Date(firstBooking.startTime ?? 0);
+    groupMap.forEach((items, key) => {
+      const date = new Date(items[0].startTime ?? 0);
       const label = date.toLocaleDateString('sv-SE', { year: 'numeric', month: 'long' });
 
       groups.push({
         label: label.charAt(0).toUpperCase() + label.slice(1),
-        date: key,
-        bookings: bookings,
+        key,
+        bookings: items,
       });
     });
 
@@ -188,12 +235,35 @@ export class SeeBookingsPage {
     this.showCancelled.set(checked);
   }
 
-  getUpcomingCount(): number {
-    return this.upcomingBookings().length;
+  openBookingDetail(booking: BookingDetailedReadModel): void {
+    this.modalService.open(BookingEditModalComponent, {
+      title: 'Bokningsdetaljer',
+      data: {
+        booking,
+        onStatusChange: async (bookingId: number, _newStatus: BookingStatus) => {
+          const confirmed = await this.confirmService.show('Vill du avboka bokningen?', {
+            title: 'Avboka bokning',
+            icon: 'warning' as const,
+            confirmText: 'Avboka',
+            cancelText: 'Behåll',
+            dangerConfirm: true,
+          });
+          if (!confirmed) return;
+
+          await firstValueFrom(this.bookingService.cancelBooking(bookingId));
+          this.modalService.close();
+          this.bookingsResource.reload();
+        },
+        showActivateButton: false,
+      } satisfies BookingEditModalConfig,
+      width: '520px',
+    });
   }
 
-  async onCancelBooking(booking: BookingDetailedReadModel) {
+  async onCancelBooking(booking: BookingDetailedReadModel, event?: Event) {
+    event?.stopPropagation();
     if (!booking.bookingId) return;
+    if (booking.status !== BookingStatus.Active) return;
 
     const confirmed = await this.confirmService.show('Vill du avboka bokningen?', {
       title: 'Avboka bokning',

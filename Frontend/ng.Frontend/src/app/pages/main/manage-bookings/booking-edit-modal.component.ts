@@ -7,6 +7,8 @@ import { BookingDetailedReadModel, BookingStatus } from '../../../models/models'
 export interface BookingEditModalConfig {
   booking: BookingDetailedReadModel;
   onStatusChange: (bookingId: number, newStatus: BookingStatus) => Promise<void>;
+  /** Hide the "Aktivera" button (used for non-admin context). Defaults to true. */
+  showActivateButton?: boolean;
 }
 
 @Component({
@@ -37,6 +39,13 @@ export interface BookingEditModalConfig {
             <span class="hero-detail">{{ booking.campusCity }}</span>
           }
         </div>
+        @if (parseAssets(booking.roomAssets).length) {
+          <div class="hero-assets">
+            @for (asset of parseAssets(booking.roomAssets); track asset) {
+              <span class="asset-chip">{{ asset }}</span>
+            }
+          </div>
+        }
       </div>
 
       <!-- Info rows -->
@@ -112,7 +121,7 @@ export interface BookingEditModalConfig {
         <div class="footer-actions">
           <app-button variant="tertiary" (clicked)="onClose()">Stäng</app-button>
 
-          @if (booking.status === 'Cancelled' || booking.status === 'Expired') {
+          @if (showActivateButton && (booking.status === 'Cancelled' || booking.status === 'Expired')) {
             <app-button
               variant="primary"
               [disabled]="isSubmitting()"
@@ -185,6 +194,25 @@ export interface BookingEditModalConfig {
         font-size: 0.8rem;
         color: var(--color-text-muted);
         opacity: 0.5;
+      }
+
+      .hero-assets {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 2px;
+      }
+
+      .asset-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 10px;
+        background: var(--color-primary-surface);
+        color: var(--color-primary);
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
       }
 
       .status-badge {
@@ -326,8 +354,14 @@ export class BookingEditModalComponent {
 
   private config: BookingEditModalConfig = this.modalService.modalData();
   protected booking = this.config.booking;
+  protected showActivateButton = this.config.showActivateButton !== false;
 
   readonly isSubmitting = signal(false);
+
+  parseAssets(assetsStr: string | null | undefined): string[] {
+    if (!assetsStr) return [];
+    return assetsStr.split('|||').filter((a) => a.trim().length > 0);
+  }
 
   statusLabel(status?: BookingStatus): string {
     switch (status) {
