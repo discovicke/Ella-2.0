@@ -22,18 +22,24 @@ public class UserService(
         logger.LogInformation("Fetching all users");
         var users = await repo.GetAllUsersAsync();
 
-        // Bulk queries to avoid N+1
-        var allPerms = await permissionRepo.GetAllEffectivePermissionsAsync();
+        // Bulk queries for display data (campus/class names)
         var allCampusNames = await repo.GetAllUserCampusNamesAsync();
         var allClassNames = await repo.GetAllUserClassNamesAsync();
 
+        // For the list view we only need permissionTemplateId (for role badge display).
+        // The full 9 effective permission bools are fetched on-demand via GetByIdAsync
+        // when the admin opens a specific user's edit modal.
         return users
             .Select(user =>
             {
-                allPerms.TryGetValue(user.Id, out var perms);
+                var minimalPerms = new UserPermissions
+                {
+                    UserId = user.Id,
+                    PermissionTemplateId = user.PermissionTemplateId,
+                };
                 allCampusNames.TryGetValue(user.Id, out var campuses);
                 allClassNames.TryGetValue(user.Id, out var classes);
-                return MapToDto(user, perms, campuses, classes);
+                return MapToDto(user, minimalPerms, campuses, classes);
             })
             .ToList();
     }

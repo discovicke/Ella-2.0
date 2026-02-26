@@ -34,6 +34,10 @@ export class UserService {
     return this.http.get<UserResponseDto[]>(this.apiUrl);
   }
 
+  getUserById(userId: number): Observable<UserResponseDto> {
+    return this.http.get<UserResponseDto>(`${this.apiUrl}/${userId}`);
+  }
+
   refresh() {
     this.refreshTrigger.update((value) => value + 1);
   }

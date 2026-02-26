@@ -235,8 +235,9 @@ export class ManageUsersPage implements OnInit {
       event.stopPropagation();
     }
 
-    // Fetch current associations in parallel
-    const [campusIds, classIds] = await Promise.all([
+    // Fetch full user data (with effective permissions) + associations in parallel
+    const [fullUser, campusIds, classIds] = await Promise.all([
+      firstValueFrom(this.userService.getUserById(user.id)),
       firstValueFrom(this.userService.getUserCampuses(user.id)),
       firstValueFrom(this.userService.getUserClasses(user.id)),
     ]);
@@ -244,15 +245,16 @@ export class ManageUsersPage implements OnInit {
     this.modalService.open(UserFormModalComponent, {
       title: 'Redigera användare',
       data: {
-        user: user,
+        user: fullUser,
         templateOptions: this.templateOptions(),
-        initialTemplateId: user.permissions?.permissionTemplateId ?? null,
-        initialPermissions: user.permissions,
+        initialTemplateId: fullUser.permissions?.permissionTemplateId ?? null,
+        initialPermissions: fullUser.permissions,
         campusOptions: this.allCampuses(),
         classOptions: this.allClasses(),
         initialCampusIds: campusIds,
         initialClassIds: classIds,
-        onSave: (payload: UserFormPayload) => this.handleSave(payload, user.id, user.permissions),
+        onSave: (payload: UserFormPayload) =>
+          this.handleSave(payload, fullUser.id, fullUser.permissions),
         onDelete: (id: number) => this.handleDelete(id),
       },
       width: '500px',
