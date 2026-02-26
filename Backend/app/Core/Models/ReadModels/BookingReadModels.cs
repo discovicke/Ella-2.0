@@ -17,6 +17,7 @@ public record BookingDetailedReadModel
     public int? RoomCapacity { get; init; }
     public string? RoomType { get; init; }
     public string? RoomFloor { get; init; }
+    public string? CampusCity { get; init; }
     public DateTime StartTime { get; init; }
     public DateTime EndTime { get; init; }
     public BookingStatus Status { get; init; }

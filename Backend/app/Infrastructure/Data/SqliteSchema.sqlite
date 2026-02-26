@@ -200,6 +200,7 @@ SELECT
     r.capacity AS room_capacity,
     rt.name AS room_type,
     r.floor AS room_floor,
+    c.city AS campus_city,
     b.start_time AS start_time,
     b.end_time AS end_time,
     CASE
@@ -215,8 +216,9 @@ FROM bookings b
 LEFT JOIN users u ON b.user_id = u.id
 LEFT JOIN rooms r ON b.room_id = r.id
 LEFT JOIN room_types rt ON r.room_type_id = rt.id
+LEFT JOIN campus c ON r.campus_id = c.id
 LEFT JOIN registrations reg ON b.id = reg.booking_id
-GROUP BY b.id, b.user_id, u.display_name, u.email, b.room_id, r.name, r.capacity, rt.name, r.floor, b.start_time, b.end_time, b.status, b.notes, b.created_at, b.updated_at;
+GROUP BY b.id, b.user_id, u.display_name, u.email, b.room_id, r.name, r.capacity, rt.name, r.floor, c.city, b.start_time, b.end_time, b.status, b.notes, b.created_at, b.updated_at;
 
 -- View: Room Details with concatenated assets
 DROP VIEW IF EXISTS "v_room_details";

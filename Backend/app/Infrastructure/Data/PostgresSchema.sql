@@ -293,16 +293,18 @@ SELECT b.id               AS booking_id,
            END::booking_status                         AS status, b.notes,
        b.created_at,
        b.updated_at,
-       COUNT(reg.user_id) AS registration_count
+       COUNT(reg.user_id) AS registration_count,
+       c.city             AS campus_city
 FROM bookings b
          LEFT JOIN users u ON b.user_id = u.id
          LEFT JOIN rooms r ON b.room_id = r.id
          LEFT JOIN room_types rt ON r.room_type_id = rt.id
+         LEFT JOIN campus c ON r.campus_id = c.id
          LEFT JOIN registrations reg ON b.id = reg.booking_id
 GROUP BY b.id, b.user_id, u.display_name, u.email,
          b.room_id, r.name, r.capacity, rt.name, r.floor,
          b.start_time, b.end_time, b.status, b.notes,
-         b.created_at, b.updated_at;
+         b.created_at, b.updated_at, c.city;
 
 
 -- Rumsdetaljer med assets som en |||‑separerad sträng.
