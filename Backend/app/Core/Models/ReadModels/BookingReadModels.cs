@@ -25,5 +25,6 @@ public record BookingDetailedReadModel
     public DateTime CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; init; }
     public int RegistrationCount { get; init; }
+    public string? RoomAssets { get; init; }
 }
 

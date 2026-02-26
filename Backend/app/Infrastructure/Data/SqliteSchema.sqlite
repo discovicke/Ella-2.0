@@ -211,7 +211,11 @@ SELECT
     b.notes AS notes,
     b.created_at AS created_at,
     b.updated_at AS updated_at,
-    COALESCE(COUNT(reg.user_id), 0) AS registration_count
+    COALESCE(COUNT(reg.user_id), 0) AS registration_count,
+    (SELECT GROUP_CONCAT(at.description, '|||')
+     FROM room_assets ra
+     JOIN asset_types at ON ra.asset_type_id = at.id
+     WHERE ra.room_id = b.room_id) AS room_assets
 FROM bookings b
 LEFT JOIN users u ON b.user_id = u.id
 LEFT JOIN rooms r ON b.room_id = r.id

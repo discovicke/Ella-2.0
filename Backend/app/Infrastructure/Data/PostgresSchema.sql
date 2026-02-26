@@ -294,7 +294,11 @@ SELECT b.id               AS booking_id,
        b.created_at,
        b.updated_at,
        COUNT(reg.user_id) AS registration_count,
-       c.city             AS campus_city
+       c.city             AS campus_city,
+       (SELECT STRING_AGG(at.description, '|||')
+        FROM room_assets ra
+        JOIN asset_types at ON ra.asset_type_id = at.id
+        WHERE ra.room_id = b.room_id) AS room_assets
 FROM bookings b
          LEFT JOIN users u ON b.user_id = u.id
          LEFT JOIN rooms r ON b.room_id = r.id
