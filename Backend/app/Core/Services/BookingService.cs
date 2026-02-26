@@ -88,6 +88,7 @@ public class BookingService(
             EndTime = dto.EndTime,
             Notes = dto.Notes,
             Status = BookingStatus.Active,
+            IsLesson = dto.IsLesson
         };
 
         var id = await repo.CreateBookingAsync(booking);

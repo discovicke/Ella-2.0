@@ -8,7 +8,8 @@ public record CreateBookingDto(
     DateTime StartTime,
     DateTime EndTime,
     string? Notes,
-    BookingStatus Status
+    BookingStatus Status,
+    bool IsLesson = false
 );
 
 public record CancelBookingDto(long Id);

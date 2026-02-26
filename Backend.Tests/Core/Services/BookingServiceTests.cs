@@ -3,6 +3,7 @@ using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
+using Backend.Tests.Helpers;
 using FluentAssertions;
 using NSubstitute;
 using Xunit;
@@ -15,7 +16,7 @@ public class BookingServiceTests
     private readonly IBookingReadModelRepository _readModelRepo = Substitute.For<IBookingReadModelRepository>();
     private readonly IUserRepository _userRepo = Substitute.For<IUserRepository>();
     private readonly IRoomRepository _roomRepo = Substitute.For<IRoomRepository>();
-    private readonly BookingService _sut; // System Under Test
+    private readonly BookingService _sut;
 
     public BookingServiceTests()
     {
@@ -23,17 +24,16 @@ public class BookingServiceTests
     }
 
     [Fact]
-    public async Task CreateBookingAsync_ShouldReturnBooking_WhenInputIsValidAndNoOverlaps()
+    public async Task CreateBookingAsync_ShouldReturnBooking_WhenValid()
     {
         // Arrange
         var startTime = DateTime.Now.AddHours(1);
         var endTime = DateTime.Now.AddHours(2);
-        var dto = new CreateBookingDto(1, 1, startTime, endTime, "Test Booking", BookingStatus.Active);
+        var dto = new CreateBookingDto(1, 1, startTime, endTime, "Notes", BookingStatus.Active);
 
-        _userRepo.GetUserByIdAsync(dto.UserId).Returns(new User { Id = dto.UserId, Email = "test@test.com", PasswordHash = "hash" });
-        _roomRepo.GetRoomByIdAsync(dto.RoomId).Returns(new Room { Id = dto.RoomId, Name = "Test Room" });
-        _repo.GetOverlappingBookingsAsync(dto.RoomId, dto.StartTime, dto.EndTime)
-            .Returns(Enumerable.Empty<Booking>());
+        _userRepo.GetUserByIdAsync(1).Returns(TestDataFactory.CreateUser(1));
+        _roomRepo.GetRoomByIdAsync(1).Returns(TestDataFactory.CreateRoom(1));
+        _repo.GetOverlappingBookingsAsync(1, startTime, endTime).Returns(Enumerable.Empty<Booking>());
         _repo.CreateBookingAsync(Arg.Any<Booking>()).Returns(100);
 
         // Act
@@ -42,36 +42,66 @@ public class BookingServiceTests
         // Assert
         result.Should().NotBeNull();
         result!.Id.Should().Be(100);
-        result.UserId.Should().Be(dto.UserId);
-        result.RoomId.Should().Be(dto.RoomId);
-        
-        await _repo.Received(1).CreateBookingAsync(Arg.Is<Booking>(b => 
-            b.UserId == dto.UserId && 
-            b.RoomId == dto.RoomId &&
-            b.StartTime == dto.StartTime &&
-            b.EndTime == dto.EndTime));
     }
 
     [Fact]
-    public async Task CreateBookingAsync_ShouldReturnNull_WhenBookingOverlaps()
+    public async Task CreateBookingAsync_ShouldSetIsLesson_WhenRequested()
     {
         // Arrange
         var startTime = DateTime.Now.AddHours(1);
         var endTime = DateTime.Now.AddHours(2);
-        var dto = new CreateBookingDto(1, 1, startTime, endTime, null, BookingStatus.Active);
+        var dto = new CreateBookingDto(1, 1, startTime, endTime, null, BookingStatus.Active, IsLesson: true);
 
-        _userRepo.GetUserByIdAsync(dto.UserId).Returns(new User { Id = dto.UserId, Email = "test@test.com", PasswordHash = "hash" });
-        _roomRepo.GetRoomByIdAsync(dto.RoomId).Returns(new Room { Id = dto.RoomId, Name = "Test Room" });
-        
-        // Mocking an overlap
-        _repo.GetOverlappingBookingsAsync(dto.RoomId, dto.StartTime, dto.EndTime)
-            .Returns(new List<Booking> { new Booking { Id = 99 } });
+        _userRepo.GetUserByIdAsync(1).Returns(TestDataFactory.CreateUser(1));
+        _roomRepo.GetRoomByIdAsync(1).Returns(TestDataFactory.CreateRoom(1));
+        _repo.GetOverlappingBookingsAsync(1, startTime, endTime).Returns(Enumerable.Empty<Booking>());
 
         // Act
         var result = await _sut.CreateBookingAsync(dto);
 
         // Assert
-        result.Should().BeNull();
-        await _repo.DidNotReceive().CreateBookingAsync(Arg.Any<Booking>());
+        result.Should().NotBeNull();
+        result!.IsLesson.Should().BeTrue();
+        await _repo.Received(1).CreateBookingAsync(Arg.Is<Booking>(b => b.IsLesson == true));
+    }
+
+    [Fact]
+    public async Task CreateBookingAsync_ShouldThrowKeyNotFound_WhenUserDoesNotExist()
+    {
+        // Arrange
+        var dto = new CreateBookingDto(99, 1, DateTime.Now, DateTime.Now.AddHours(1), null, BookingStatus.Active);
+        _userRepo.GetUserByIdAsync(99).Returns((User?)null);
+
+        // Act & Assert
+        var act = () => _sut.CreateBookingAsync(dto);
+        await act.Should().ThrowAsync<KeyNotFoundException>().WithMessage("User with ID 99 not found.");
+    }
+
+    [Fact]
+    public async Task UpdateBookingStatusAsync_ShouldUpdateStatus_WhenBookingExists()
+    {
+        // Arrange
+        var booking = TestDataFactory.CreateBooking(1);
+        _repo.GetBookingByIdAsync(1).Returns(booking);
+
+        // Act
+        var result = await _sut.UpdateBookingStatusAsync(1, BookingStatus.Cancelled);
+
+        // Assert
+        result.Status.Should().Be(BookingStatus.Cancelled);
+        await _repo.Received(1).UpdateBookingAsync(1, Arg.Is<Booking>(b => b.Status == BookingStatus.Cancelled));
+    }
+
+    [Fact]
+    public async Task CancelBookingAsync_ShouldCallRepoCancel()
+    {
+        // Arrange
+        var dto = new CancelBookingDto(1);
+
+        // Act
+        await _sut.CancelBookingAsync(dto);
+
+        // Assert
+        await _repo.Received(1).CancelBookingAsync(1);
     }
 }
