@@ -4,7 +4,6 @@ using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
 using Backend.Tests.Helpers;
-using FluentAssertions;
 using NSubstitute;
 using Xunit;
 
@@ -29,7 +28,7 @@ public class BookingServiceTests
         // Arrange
         var startTime = DateTime.Now.AddHours(1);
         var endTime = DateTime.Now.AddHours(2);
-        var dto = new CreateBookingDto(1, 1, startTime, endTime, "Notes", BookingStatus.Active);
+        var dto = new CreateBookingDto(1, 1, startTime, endTime, "Notes", BookingStatus.Active, false);
 
         _userRepo.GetUserByIdAsync(1).Returns(TestDataFactory.CreateUser(1));
         _roomRepo.GetRoomByIdAsync(1).Returns(TestDataFactory.CreateRoom(1));
@@ -40,41 +39,86 @@ public class BookingServiceTests
         var result = await _sut.CreateBookingAsync(dto);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be(100);
+        Assert.NotNull(result);
+        Assert.Equal(100, result.Id);
     }
 
     [Fact]
-    public async Task CreateBookingAsync_ShouldSetIsLesson_WhenRequested()
+    public async Task CreateBookingAsync_ShouldOverridePrivateBooking_WhenNewIsLesson()
     {
         // Arrange
         var startTime = DateTime.Now.AddHours(1);
         var endTime = DateTime.Now.AddHours(2);
         var dto = new CreateBookingDto(1, 1, startTime, endTime, null, BookingStatus.Active, IsLesson: true);
 
+        var existingPrivate = TestDataFactory.CreateBooking(99, 2, 1);
+        existingPrivate.IsLesson = false;
+
         _userRepo.GetUserByIdAsync(1).Returns(TestDataFactory.CreateUser(1));
         _roomRepo.GetRoomByIdAsync(1).Returns(TestDataFactory.CreateRoom(1));
-        _repo.GetOverlappingBookingsAsync(1, startTime, endTime).Returns(Enumerable.Empty<Booking>());
+        _repo.GetOverlappingBookingsAsync(1, startTime, endTime).Returns(new List<Booking> { existingPrivate });
+        _repo.CreateBookingAsync(Arg.Any<Booking>()).Returns(101);
 
         // Act
         var result = await _sut.CreateBookingAsync(dto);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.IsLesson.Should().BeTrue();
-        await _repo.Received(1).CreateBookingAsync(Arg.Is<Booking>(b => b.IsLesson == true));
+        Assert.NotNull(result);
+        Assert.True(result.IsLesson);
+        await _repo.Received(1).CancelBookingAsync(99); // Should have cancelled the private one
+        await _repo.Received(1).CreateBookingAsync(Arg.Is<Booking>(b => b.IsLesson));
+    }
+
+    [Fact]
+    public async Task CreateBookingAsync_ShouldThrowConflict_WhenLessonOverlapsAnotherLesson()
+    {
+        // Arrange
+        var startTime = DateTime.Now.AddHours(1);
+        var endTime = DateTime.Now.AddHours(2);
+        var dto = new CreateBookingDto(1, 1, startTime, endTime, null, BookingStatus.Active, IsLesson: true);
+
+        var existingLesson = TestDataFactory.CreateBooking(99, 2, 1);
+        existingLesson.IsLesson = true;
+
+        _userRepo.GetUserByIdAsync(1).Returns(TestDataFactory.CreateUser(1));
+        _roomRepo.GetRoomByIdAsync(1).Returns(TestDataFactory.CreateRoom(1));
+        _repo.GetOverlappingBookingsAsync(1, startTime, endTime).Returns(new List<Booking> { existingLesson });
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.CreateBookingAsync(dto));
+        Assert.Contains("occupied by another lesson", ex.Message);
+        await _repo.DidNotReceive().CreateBookingAsync(Arg.Any<Booking>());
+    }
+
+    [Fact]
+    public async Task CreateBookingAsync_ShouldThrowConflict_WhenPrivateOverlapsAnything()
+    {
+        // Arrange
+        var startTime = DateTime.Now.AddHours(1);
+        var endTime = DateTime.Now.AddHours(2);
+        var dto = new CreateBookingDto(1, 1, startTime, endTime, null, BookingStatus.Active, IsLesson: false);
+
+        var existing = TestDataFactory.CreateBooking(99, 2, 1);
+
+        _userRepo.GetUserByIdAsync(1).Returns(TestDataFactory.CreateUser(1));
+        _roomRepo.GetRoomByIdAsync(1).Returns(TestDataFactory.CreateRoom(1));
+        _repo.GetOverlappingBookingsAsync(1, startTime, endTime).Returns(new List<Booking> { existing });
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.CreateBookingAsync(dto));
+        Assert.Contains("already occupied", ex.Message);
     }
 
     [Fact]
     public async Task CreateBookingAsync_ShouldThrowKeyNotFound_WhenUserDoesNotExist()
     {
         // Arrange
-        var dto = new CreateBookingDto(99, 1, DateTime.Now, DateTime.Now.AddHours(1), null, BookingStatus.Active);
+        var dto = new CreateBookingDto(99, 1, DateTime.Now, DateTime.Now.AddHours(1), null, BookingStatus.Active, false);
         _userRepo.GetUserByIdAsync(99).Returns((User?)null);
 
         // Act & Assert
-        var act = () => _sut.CreateBookingAsync(dto);
-        await act.Should().ThrowAsync<KeyNotFoundException>().WithMessage("User with ID 99 not found.");
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.CreateBookingAsync(dto));
+        Assert.Equal("User with ID 99 not found.", ex.Message);
     }
 
     [Fact]
@@ -88,7 +132,7 @@ public class BookingServiceTests
         var result = await _sut.UpdateBookingStatusAsync(1, BookingStatus.Cancelled);
 
         // Assert
-        result.Status.Should().Be(BookingStatus.Cancelled);
+        Assert.Equal(BookingStatus.Cancelled, result.Status);
         await _repo.Received(1).UpdateBookingAsync(1, Arg.Is<Booking>(b => b.Status == BookingStatus.Cancelled));
     }
 

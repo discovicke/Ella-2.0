@@ -54,11 +54,12 @@ public class BookingService(
     }
 
     /// <summary>
-    /// Create a new booking
+    /// Create a new booking. 
+    /// Logic: Lessons can override private bookings. Private bookings cannot override anything.
     /// </summary>
-    public async Task<Booking?> CreateBookingAsync(CreateBookingDto dto)
+    public async Task<Booking> CreateBookingAsync(CreateBookingDto dto)
     {
-        // Validation: Existence
+        // 1. Validation: Existence
         if (await userRepo.GetUserByIdAsync(dto.UserId) is null)
         {
             throw new KeyNotFoundException($"User with ID {dto.UserId} not found.");
@@ -69,17 +70,39 @@ public class BookingService(
             throw new KeyNotFoundException($"Room with ID {dto.RoomId} not found.");
         }
 
-        // Check for overlaps
-        var overlaps = await repo.GetOverlappingBookingsAsync(
+        // 2. Check for overlaps
+        var overlaps = (await repo.GetOverlappingBookingsAsync(
             dto.RoomId,
             dto.StartTime,
             dto.EndTime
-        );
+        )).ToList();
+
         if (overlaps.Any())
         {
-            return null; // Conflict
+            if (dto.IsLesson)
+            {
+                // Lesson priority logic: Can only override private bookings
+                var lessonConflicts = overlaps.Where(b => b.IsLesson).ToList();
+                if (lessonConflicts.Any())
+                {
+                    throw new InvalidOperationException("Cannot book lesson: Room is already occupied by another lesson.");
+                }
+
+                // Automatically cancel the private bookings that were in the way
+                foreach (var privateBooking in overlaps)
+                {
+                    await repo.CancelBookingAsync(privateBooking.Id);
+                    // TODO: In a real app, we would notify the users here
+                }
+            }
+            else
+            {
+                // Private booking logic: Cannot override anything
+                throw new InvalidOperationException("Cannot create private booking: Room is already occupied.");
+            }
         }
 
+        // 3. Create the booking
         var booking = new Booking
         {
             UserId = dto.UserId,
