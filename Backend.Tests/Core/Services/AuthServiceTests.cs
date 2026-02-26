@@ -1,4 +1,5 @@
 using Backend.app.Core.Interfaces;
+using Backend.app.Core.Models;
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
@@ -28,7 +29,7 @@ public class AuthServiceTests
     public async Task LoginAsync_ShouldReturnSuccessfulResult_WhenCredentialsAreCorrect()
     {
         // Arrange
-        var request = new LoginDto("test@example.com", "password123");
+        var request = new LoginDto { Email = "test@example.com", Password = "password123" };
         var user = TestDataFactory.CreateUser(1, request.Email);
         user.PasswordHash = "hashed_password";
 
@@ -51,7 +52,7 @@ public class AuthServiceTests
     public async Task LoginAsync_ShouldReturnEmptyResult_WhenUserNotFound()
     {
         // Arrange
-        var request = new LoginDto("nonexistent@example.com", "password");
+        var request = new LoginDto { Email = "nonexistent@example.com", Password = "password" };
         _userRepo.GetUserByEmailAsync(request.Email).Returns((User?)null);
 
         // Act
@@ -66,7 +67,7 @@ public class AuthServiceTests
     public async Task LoginAsync_ShouldReturnBannedResult_WhenUserIsBanned()
     {
         // Arrange
-        var request = new LoginDto("banned@example.com", "password");
+        var request = new LoginDto { Email = "banned@example.com", Password = "password" };
         var user = TestDataFactory.CreateUser(1, request.Email);
         user.IsBanned = BannedStatus.Banned;
 
@@ -85,7 +86,7 @@ public class AuthServiceTests
     public async Task RegisterAsync_ShouldReturnSuccessfulResult_WhenEmailIsUnique()
     {
         // Arrange
-        var request = new RegisterDto("new@example.com", "password", "New User");
+        var request = new RegisterDto { Email = "new@example.com", Password = "password", DisplayName = "New User" };
         _userRepo.GetUserByEmailAsync(request.Email).Returns((User?)null);
         _passwordHasher.HashPassword(request.Password).Returns("hashed_pass");
         _userRepo.CreateUserAsync(Arg.Any<User>()).Returns(true);
