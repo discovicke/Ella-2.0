@@ -1,5 +1,6 @@
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models;
+using Backend.app.Core.Models.Entities;
 using Dapper;
 
 namespace Backend.app.Infrastructure.Repositories.Sqlite;
@@ -288,6 +289,69 @@ public class SqlitePermissionRepo(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error batch-setting overrides for user {UserId}", userId);
+            throw;
+        }
+    }
+
+    public async Task<(User? User, UserPermissions? Permissions)> GetUserWithPermissionsAsync(long userId)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+
+            // Single query: fetch the full user row + effective permissions in one round-trip.
+            // Uses QueryMultipleAsync with two result sets to keep Dapper mapping clean.
+            const string sql = """
+                SELECT * FROM users WHERE id = @userId;
+
+                SELECT u.permission_template_id AS TemplateId,
+                       vp.permission_key        AS Key,
+                       vp.is_granted            AS IsGranted
+                FROM users u
+                LEFT JOIN v_user_effective_permissions vp
+                       ON u.id = vp.user_id
+                WHERE u.id = @userId;
+                """;
+
+            using var multi = await conn.QueryMultipleAsync(sql, new { userId });
+
+            var user = await multi.ReadSingleOrDefaultAsync<User>();
+            if (user is null)
+                return (null, null);
+
+            var rows = (await multi.ReadAsync<PermissionRow>()).AsList();
+
+            var permissions = new UserPermissions
+            {
+                UserId = userId,
+                PermissionTemplateId = rows.Count > 0 ? rows[0].TemplateId : null,
+            };
+
+            foreach (var row in rows)
+            {
+                if (row.Key is null)
+                    continue;
+                var val = row.IsGranted == 1;
+                switch (row.Key)
+                {
+                    case "BookRoom":        permissions.BookRoom = val; break;
+                    case "MyBookings":      permissions.MyBookings = val; break;
+                    case "ManageUsers":     permissions.ManageUsers = val; break;
+                    case "ManageClasses":   permissions.ManageClasses = val; break;
+                    case "ManageRooms":     permissions.ManageRooms = val; break;
+                    case "ManageAssets":    permissions.ManageAssets = val; break;
+                    case "ManageBookings":  permissions.ManageBookings = val; break;
+                    case "ManageCampuses":  permissions.ManageCampuses = val; break;
+                    case "ManageRoles":     permissions.ManageRoles = val; break;
+                }
+            }
+
+            return (user, permissions);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching user with permissions for user {UserId}", userId);
             throw;
         }
     }

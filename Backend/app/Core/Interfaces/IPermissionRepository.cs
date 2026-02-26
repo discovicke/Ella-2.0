@@ -10,6 +10,13 @@ public interface IPermissionRepository
     Task<UserPermissions?> GetEffectivePermissionsAsync(long userId);
 
     /// <summary>
+    /// Retrieves a user and their effective permissions in a single DB round-trip.
+    /// Used by the auth middleware to avoid two separate queries per request.
+    /// Returns (null, null) if the user does not exist.
+    /// </summary>
+    Task<(Models.Entities.User? User, UserPermissions? Permissions)> GetUserWithPermissionsAsync(long userId);
+
+    /// <summary>
     /// Retrieves effective permissions for all users in a single query.
     /// Returns a dictionary keyed by user ID.
     /// </summary>

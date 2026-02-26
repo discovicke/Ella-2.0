@@ -85,7 +85,9 @@ public class AuthService(
             return new TokenValidationResultDto();
         }
 
-        var user = await userRepo.GetUserByIdAsync(userId.Value);
+        // Single DB round-trip: fetch user + effective permissions together
+        var (user, permissions) = await permissionRepo.GetUserWithPermissionsAsync(userId.Value);
+
         if (user is null)
         {
             logger.LogWarning("Token validation failed: user {UserId} not found", userId);
@@ -108,7 +110,6 @@ public class AuthService(
             return new TokenValidationResultDto();
         }
 
-        var permissions = await permissionRepo.GetEffectivePermissionsAsync(user.Id);
         return new TokenValidationResultDto { User = user, Permissions = permissions };
     }
 

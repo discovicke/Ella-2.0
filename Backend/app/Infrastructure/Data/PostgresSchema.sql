@@ -389,6 +389,6 @@ CREATE INDEX IF NOT EXISTS idx_bookings_room_time
 CREATE INDEX IF NOT EXISTS idx_bookings_user_id
     ON bookings (user_id);
 
--- OBS: user_permission_overrides behöver inget separat index på user_id
--- eftersom primärnyckeln (user_id, permission_key) redan ger ett index
--- med user_id som leading column.
+-- Behörighetskontroll slår upp alla overrides för en specifik användare.
+CREATE INDEX IF NOT EXISTS idx_user_perm_overrides_user_id
+    ON user_permission_overrides (user_id);
