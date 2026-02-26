@@ -15,6 +15,8 @@
     "dotnet:build": "dotnet build Backend/Backend.csproj -v q -nologo",
     "dotnet:watch": "dotnet watch --project Backend/Backend.csproj -v q --no-hot-reload --non-interactive run",
     "dotnet:publish": "dotnet publish Backend/Backend.csproj -c Release -o dist/final_app -v q -nologo",
+    "test:backend": "dotnet test Backend.Tests/Backend.Tests.csproj",
+    "test": "npm run test:backend",
     "// --- FRONTEND ---": "",
     "frontend:install": "npm install --prefix Frontend/ng.Frontend",
     "frontend:sync": "npm run api:sync --prefix Frontend/ng.Frontend -- --quiet",
