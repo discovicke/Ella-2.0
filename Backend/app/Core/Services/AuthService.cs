@@ -171,8 +171,8 @@ public class AuthService(
             return new LoginResultDto();
         }
 
-        // Note: We do not assign a default template here. 
-        // If a role is needed, it should be assigned explicitly via the User Management API or 
+        // Note: We do not assign a default template here.
+        // If a role is needed, it should be assigned explicitly via the User Management API or
         // passed in the registration request (if we decide to support that in the future).
         // By default, a new user is a "Custom User" with 0 permissions.
 

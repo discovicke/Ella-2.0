@@ -293,7 +293,9 @@ public class SqlitePermissionRepo(
         }
     }
 
-    public async Task<(User? User, UserPermissions? Permissions)> GetUserWithPermissionsAsync(long userId)
+    public async Task<(User? User, UserPermissions? Permissions)> GetUserWithPermissionsAsync(
+        long userId
+    )
     {
         try
         {
@@ -335,15 +337,33 @@ public class SqlitePermissionRepo(
                 var val = row.IsGranted == 1;
                 switch (row.Key)
                 {
-                    case "BookRoom":        permissions.BookRoom = val; break;
-                    case "MyBookings":      permissions.MyBookings = val; break;
-                    case "ManageUsers":     permissions.ManageUsers = val; break;
-                    case "ManageClasses":   permissions.ManageClasses = val; break;
-                    case "ManageRooms":     permissions.ManageRooms = val; break;
-                    case "ManageAssets":    permissions.ManageAssets = val; break;
-                    case "ManageBookings":  permissions.ManageBookings = val; break;
-                    case "ManageCampuses":  permissions.ManageCampuses = val; break;
-                    case "ManageRoles":     permissions.ManageRoles = val; break;
+                    case "BookRoom":
+                        permissions.BookRoom = val;
+                        break;
+                    case "MyBookings":
+                        permissions.MyBookings = val;
+                        break;
+                    case "ManageUsers":
+                        permissions.ManageUsers = val;
+                        break;
+                    case "ManageClasses":
+                        permissions.ManageClasses = val;
+                        break;
+                    case "ManageRooms":
+                        permissions.ManageRooms = val;
+                        break;
+                    case "ManageAssets":
+                        permissions.ManageAssets = val;
+                        break;
+                    case "ManageBookings":
+                        permissions.ManageBookings = val;
+                        break;
+                    case "ManageCampuses":
+                        permissions.ManageCampuses = val;
+                        break;
+                    case "ManageRoles":
+                        permissions.ManageRoles = val;
+                        break;
                 }
             }
 

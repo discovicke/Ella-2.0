@@ -292,7 +292,9 @@ public class PostgresPermissionRepo(
         }
     }
 
-    public async Task<(User? User, UserPermissions? Permissions)> GetUserWithPermissionsAsync(long userId)
+    public async Task<(User? User, UserPermissions? Permissions)> GetUserWithPermissionsAsync(
+        long userId
+    )
     {
         try
         {
@@ -334,15 +336,33 @@ public class PostgresPermissionRepo(
                 var granted = row.IsGranted;
                 switch (row.Key)
                 {
-                    case "BookRoom":        permissions.BookRoom = granted; break;
-                    case "MyBookings":      permissions.MyBookings = granted; break;
-                    case "ManageUsers":     permissions.ManageUsers = granted; break;
-                    case "ManageClasses":   permissions.ManageClasses = granted; break;
-                    case "ManageRooms":     permissions.ManageRooms = granted; break;
-                    case "ManageAssets":    permissions.ManageAssets = granted; break;
-                    case "ManageBookings":  permissions.ManageBookings = granted; break;
-                    case "ManageCampuses":  permissions.ManageCampuses = granted; break;
-                    case "ManageRoles":     permissions.ManageRoles = granted; break;
+                    case "BookRoom":
+                        permissions.BookRoom = granted;
+                        break;
+                    case "MyBookings":
+                        permissions.MyBookings = granted;
+                        break;
+                    case "ManageUsers":
+                        permissions.ManageUsers = granted;
+                        break;
+                    case "ManageClasses":
+                        permissions.ManageClasses = granted;
+                        break;
+                    case "ManageRooms":
+                        permissions.ManageRooms = granted;
+                        break;
+                    case "ManageAssets":
+                        permissions.ManageAssets = granted;
+                        break;
+                    case "ManageBookings":
+                        permissions.ManageBookings = granted;
+                        break;
+                    case "ManageCampuses":
+                        permissions.ManageCampuses = granted;
+                        break;
+                    case "ManageRoles":
+                        permissions.ManageRoles = granted;
+                        break;
                 }
             }
 

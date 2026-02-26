@@ -14,7 +14,9 @@ public interface IPermissionRepository
     /// Used by the auth middleware to avoid two separate queries per request.
     /// Returns (null, null) if the user does not exist.
     /// </summary>
-    Task<(Models.Entities.User? User, UserPermissions? Permissions)> GetUserWithPermissionsAsync(long userId);
+    Task<(Models.Entities.User? User, UserPermissions? Permissions)> GetUserWithPermissionsAsync(
+        long userId
+    );
 
     /// <summary>
     /// Retrieves effective permissions for all users in a single query.
@@ -34,5 +36,4 @@ public interface IPermissionRepository
     /// For each key: deletes if value matches template, upserts otherwise.
     /// </summary>
     Task SetUserOverridesBatchAsync(long userId, Dictionary<string, bool> overrides);
-
 }
