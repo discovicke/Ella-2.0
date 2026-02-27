@@ -49,7 +49,8 @@ public class BookingService(
     /// Get paginated filtered bookings with search support
     /// </summary>
     public async Task<PagedResult<BookingDetailedReadModel>> GetFilteredBookingsPagedAsync(
-        int page, int pageSize,
+        int page,
+        int pageSize,
         string? search = null,
         long? userId = null,
         long? roomId = null,
@@ -59,7 +60,14 @@ public class BookingService(
     )
     {
         var (bookings, totalCount) = await readModelRepo.GetDetailedBookingsPagedAsync(
-            page, pageSize, search, userId, roomId, startDate, endDate, status
+            page,
+            pageSize,
+            search,
+            userId,
+            roomId,
+            startDate,
+            endDate,
+            status
         );
         return new PagedResult<BookingDetailedReadModel>(bookings, totalCount, page, pageSize);
     }
@@ -68,13 +76,19 @@ public class BookingService(
     /// Get paginated bookings a user has created (my-owned), with time filtering.
     /// </summary>
     public async Task<PagedResult<BookingDetailedReadModel>> GetUserOwnedBookingsPagedAsync(
-        long userId, int page, int pageSize,
+        long userId,
+        int page,
+        int pageSize,
         string? timeFilter = null,
         bool includeCancelled = true
     )
     {
         var (bookings, totalCount) = await readModelRepo.GetDetailedBookingsByUserIdPagedAsync(
-            userId, page, pageSize, timeFilter, includeCancelled
+            userId,
+            page,
+            pageSize,
+            timeFilter,
+            includeCancelled
         );
         return new PagedResult<BookingDetailedReadModel>(bookings, totalCount, page, pageSize);
     }

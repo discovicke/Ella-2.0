@@ -13,7 +13,8 @@ public interface IUserRepository
     /// templateId: null=no filter, 0=custom (no template), >0=specific template.
     /// </summary>
     Task<(IEnumerable<User> Users, int TotalCount)> GetUsersPagedAsync(
-        int page, int pageSize,
+        int page,
+        int pageSize,
         string? search = null,
         long? templateId = null,
         BannedStatus? bannedStatus = null

@@ -199,14 +199,19 @@ public class SqliteBookingReadModelRepo(
         }
     }
 
-    public async Task<(IEnumerable<BookingDetailedReadModel> Bookings, int TotalCount)> GetDetailedBookingsPagedAsync(
-        int page, int pageSize,
+    public async Task<(
+        IEnumerable<BookingDetailedReadModel> Bookings,
+        int TotalCount
+    )> GetDetailedBookingsPagedAsync(
+        int page,
+        int pageSize,
         string? search = null,
         long? userId = null,
         long? roomId = null,
         DateTime? startDate = null,
         DateTime? endDate = null,
-        BookingStatus? status = null)
+        BookingStatus? status = null
+    )
     {
         try
         {
@@ -218,7 +223,9 @@ public class SqliteBookingReadModelRepo(
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                where.Append(" AND (user_name LIKE @Search OR user_email LIKE @Search OR room_name LIKE @Search OR campus_city LIKE @Search OR notes LIKE @Search)");
+                where.Append(
+                    " AND (user_name LIKE @Search OR user_email LIKE @Search OR room_name LIKE @Search OR campus_city LIKE @Search OR notes LIKE @Search)"
+                );
                 parameters.Add("Search", $"%{search}%");
             }
 
@@ -259,7 +266,8 @@ public class SqliteBookingReadModelRepo(
             parameters.Add("Limit", pageSize);
             parameters.Add("Offset", offset);
 
-            var dataSql = $"SELECT * FROM v_bookings_detailed {where} ORDER BY start_time DESC LIMIT @Limit OFFSET @Offset;";
+            var dataSql =
+                $"SELECT * FROM v_bookings_detailed {where} ORDER BY start_time DESC LIMIT @Limit OFFSET @Offset;";
             var bookings = await conn.QueryAsync<BookingDetailedReadModel>(dataSql, parameters);
 
             return (bookings, totalCount);
@@ -271,10 +279,16 @@ public class SqliteBookingReadModelRepo(
         }
     }
 
-    public async Task<(IEnumerable<BookingDetailedReadModel> Bookings, int TotalCount)> GetDetailedBookingsByUserIdPagedAsync(
-        long userId, int page, int pageSize,
+    public async Task<(
+        IEnumerable<BookingDetailedReadModel> Bookings,
+        int TotalCount
+    )> GetDetailedBookingsByUserIdPagedAsync(
+        long userId,
+        int page,
+        int pageSize,
         string? timeFilter = null,
-        bool includeCancelled = true)
+        bool includeCancelled = true
+    )
     {
         try
         {
@@ -314,14 +328,19 @@ public class SqliteBookingReadModelRepo(
             parameters.Add("Limit", pageSize);
             parameters.Add("Offset", offset);
 
-            var dataSql = $"SELECT * FROM v_bookings_detailed {where} ORDER BY start_time {orderDir} LIMIT @Limit OFFSET @Offset;";
+            var dataSql =
+                $"SELECT * FROM v_bookings_detailed {where} ORDER BY start_time {orderDir} LIMIT @Limit OFFSET @Offset;";
             var bookings = await conn.QueryAsync<BookingDetailedReadModel>(dataSql, parameters);
 
             return (bookings, totalCount);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching paged bookings for user {UserId}", userId);
+            logger.LogError(
+                ex,
+                "Database error while fetching paged bookings for user {UserId}",
+                userId
+            );
             throw;
         }
     }
