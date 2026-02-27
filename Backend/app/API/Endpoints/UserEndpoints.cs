@@ -7,6 +7,7 @@ using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.app.API.Endpoints;
 
@@ -20,19 +21,32 @@ public static class UserEndpoints
         group
             .MapGet(
                 "/",
-                async (UserService service) =>
+                async (
+                    [FromQuery] int? page,
+                    [FromQuery] int? pageSize,
+                    [FromQuery] string? search,
+                    [FromQuery] long? templateId,
+                    [FromQuery] BannedStatus? isBanned,
+                    UserService service
+                ) =>
                 {
-                    var users = await service.GetAllAsync();
-                    return Results.Ok(users);
+                    var result = await service.GetAllPagedAsync(
+                        page is > 0 ? page.Value : 1,
+                        pageSize is > 0 ? pageSize.Value : 25,
+                        search,
+                        templateId,
+                        isBanned
+                    );
+                    return Results.Ok(result);
                 }
             )
             .RequirePermission("ManageUsers")
             .WithName("GetUsers")
-            .WithSummary("Get all users")
+            .WithSummary("Get all users (paginated)")
             .WithDescription(
-                "Retrieves all users in the system.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
+                "Retrieves a paginated list of users, optionally filtered by search, role, or status.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
             )
-            .Produces<IEnumerable<UserResponseDto>>(StatusCodes.Status200OK)
+            .Produces<PagedResult<UserResponseDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
 

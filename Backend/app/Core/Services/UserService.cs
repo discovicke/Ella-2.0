@@ -44,6 +44,36 @@ public class UserService(
             .ToList();
     }
 
+    public async Task<PagedResult<UserResponseDto>> GetAllPagedAsync(
+        int page, int pageSize,
+        string? search = null,
+        long? templateId = null,
+        BannedStatus? bannedStatus = null)
+    {
+        logger.LogInformation("Fetching paged users: page={Page}, size={Size}, search={Search}", page, pageSize, search);
+
+        var (users, totalCount) = await repo.GetUsersPagedAsync(page, pageSize, search, templateId, bannedStatus);
+        var userList = users.ToList();
+
+        // Bulk queries for display data
+        var allCampusNames = await repo.GetAllUserCampusNamesAsync();
+        var allClassNames = await repo.GetAllUserClassNamesAsync();
+
+        var items = userList.Select(user =>
+        {
+            var minimalPerms = new UserPermissions
+            {
+                UserId = user.Id,
+                PermissionTemplateId = user.PermissionTemplateId,
+            };
+            allCampusNames.TryGetValue(user.Id, out var campuses);
+            allClassNames.TryGetValue(user.Id, out var classes);
+            return MapToDto(user, minimalPerms, campuses, classes);
+        }).ToList();
+
+        return new PagedResult<UserResponseDto>(items, totalCount, page, pageSize);
+    }
+
     public async Task<UserResponseDto> GetByIdAsync(long id)
     {
         logger.LogDebug("Fetching user with ID {UserId}", id);
