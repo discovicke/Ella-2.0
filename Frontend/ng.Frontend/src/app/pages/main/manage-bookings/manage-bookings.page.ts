@@ -9,7 +9,7 @@ import {
 import { DatePipe } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { BookingDetailedReadModel, BookingStatus } from '../../../models/models';
-import { BookingService } from '../../../shared/services/booking.service';
+import { BookingService, BookingPagedFilterParams } from '../../../shared/services/booking.service';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { BookingEditModalComponent } from './booking-edit-modal.component';
@@ -34,17 +34,20 @@ export interface BookingGroup {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManageBookingsPage {
+  protected readonly BookingStatus = BookingStatus;
   private readonly bookingService = inject(BookingService);
   private readonly modalService = inject(ModalService);
   private readonly toastService = inject(ToastService);
 
   // --- Filter state ---
   searchQuery = signal('');
+  debouncedSearch = signal('');
+  private searchDebounceTimer: ReturnType<typeof setTimeout> | undefined;
   selectedStatus = signal<BookingStatus | 'All'>(BookingStatus.Active);
   viewMode = signal<ViewMode>('week');
   collapsedGroups = signal<Set<string>>(new Set());
   pageIndex = signal(0);
-  readonly groupsPerPage = 7;
+  pageSize = signal(25);
 
   // Derived from viewMode
   readonly selectedDateRange = computed((): DateRange => {
@@ -79,13 +82,6 @@ export class ManageBookingsPage {
     }
   });
 
-  // --- Resource ---
-  bookingsResource = resource({
-    loader: () => firstValueFrom(this.bookingService.getAllBookings()),
-  });
-
-  readonly bookings = computed(() => this.bookingsResource.value() ?? []);
-
   private getDateBounds(range: DateRange): { start: Date; end: Date } | null {
     if (range === 'all') return null;
     const now = new Date();
@@ -107,31 +103,67 @@ export class ManageBookingsPage {
     }
   }
 
-  readonly filteredBookings = computed(() => {
-    const query = this.searchQuery().trim().toLowerCase();
-    const status = this.selectedStatus();
-    const bounds = this.getDateBounds(this.selectedDateRange());
+  readonly dateBounds = computed(() => this.getDateBounds(this.selectedDateRange()));
 
-    return this.bookings().filter((b) => {
-      const matchesStatus = status === 'All' || b.status === status;
-      const matchesSearch =
-        !query ||
-        (b.userName ?? '').toLowerCase().includes(query) ||
-        (b.userEmail ?? '').toLowerCase().includes(query) ||
-        (b.roomName ?? '').toLowerCase().includes(query) ||
-        (b.campusCity ?? '').toLowerCase().includes(query) ||
-        (b.notes ?? '').toLowerCase().includes(query);
-      const matchesDate =
-        !bounds ||
-        (b.startTime != null &&
-          new Date(b.startTime) >= bounds.start &&
-          new Date(b.startTime) < bounds.end);
-      return matchesStatus && matchesSearch && matchesDate;
-    });
+  // --- Resource (server-side paginated) ---
+  bookingsResource = resource({
+    params: () => ({
+      page: this.pageIndex() + 1,
+      pageSize: this.pageSize(),
+      search: this.debouncedSearch(),
+      status: this.selectedStatus(),
+      bounds: this.dateBounds(),
+    }),
+    loader: ({ params }) => {
+      const p: BookingPagedFilterParams = {
+        page: params.page,
+        pageSize: params.pageSize,
+      };
+      if (params.search) p.search = params.search;
+      if (params.status !== 'All') p.status = params.status;
+      if (params.bounds) {
+        p.startDate = params.bounds.start.toISOString();
+        p.endDate = params.bounds.end.toISOString();
+      }
+      return firstValueFrom(this.bookingService.getAllBookings(p));
+    },
   });
 
-  readonly totalBookings = computed(() => this.filteredBookings().length);
-  readonly totalAllBookings = computed(() => this.bookings().length);
+  // Keep previous data visible while loading to avoid flash
+  private lastBookings: BookingDetailedReadModel[] = [];
+  private lastTotalBookings = 0;
+
+  readonly bookings = computed(() => {
+    const val = this.bookingsResource.value();
+    if (val) {
+      this.lastBookings = val.items;
+      this.lastTotalBookings = val.totalCount;
+    }
+    return this.lastBookings;
+  });
+  readonly totalBookings = computed(() => {
+    const val = this.bookingsResource.value();
+    if (val) return val.totalCount;
+    return this.lastTotalBookings;
+  });
+  readonly totalPages = computed(() => Math.ceil(this.totalBookings() / this.pageSize()));
+
+  /** Returns page indices to render, with -1 as ellipsis placeholder. Max ~7 buttons. */
+  readonly visiblePages = computed(() => {
+    const total = this.totalPages();
+    const current = this.pageIndex();
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i);
+
+    const pages: number[] = [];
+    pages.push(0);
+    if (current > 2) pages.push(-1);
+    for (let i = Math.max(1, current - 1); i <= Math.min(total - 2, current + 1); i++) {
+      pages.push(i);
+    }
+    if (current < total - 3) pages.push(-1);
+    pages.push(total - 1);
+    return pages;
+  });
 
   readonly hasActiveFilters = computed(
     () =>
@@ -160,7 +192,7 @@ export class ManageBookingsPage {
 
   // --- Grouping ---
   readonly groupedBookings = computed((): BookingGroup[] => {
-    const bookings = this.filteredBookings();
+    const bookings = this.bookings();
     const mode = this.groupBy();
     const map = new Map<string, BookingDetailedReadModel[]>();
 
@@ -281,20 +313,15 @@ export class ManageBookingsPage {
       );
   });
 
-  readonly totalGroups = computed(() => this.groupedBookings().length);
-
-  readonly totalPages = computed(() => Math.ceil(this.totalGroups() / this.groupsPerPage));
-
-  readonly paginatedGroups = computed(() => {
-    const all = this.groupedBookings();
-    const start = this.pageIndex() * this.groupsPerPage;
-    return all.slice(start, start + this.groupsPerPage);
-  });
-
   // --- Filter actions ---
   updateSearch(event: Event): void {
-    this.searchQuery.set((event.target as HTMLInputElement).value);
-    this.pageIndex.set(0);
+    const value = (event.target as HTMLInputElement).value;
+    this.searchQuery.set(value);
+    clearTimeout(this.searchDebounceTimer);
+    this.searchDebounceTimer = setTimeout(() => {
+      this.debouncedSearch.set(value);
+      this.pageIndex.set(0);
+    }, 300);
   }
 
   updateStatus(event: Event): void {
@@ -304,9 +331,11 @@ export class ManageBookingsPage {
 
   resetFilters(): void {
     this.searchQuery.set('');
+    this.debouncedSearch.set('');
     this.selectedStatus.set(BookingStatus.Active);
     this.viewMode.set('week');
     this.pageIndex.set(0);
+    clearTimeout(this.searchDebounceTimer);
   }
 
   setView(mode: ViewMode): void {
@@ -348,6 +377,11 @@ export class ManageBookingsPage {
     if (page >= 0 && page < this.totalPages()) {
       this.pageIndex.set(page);
     }
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize.set(size);
+    this.pageIndex.set(0);
   }
 
   getInitials(name?: string | null): string {
