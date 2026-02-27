@@ -21,6 +21,9 @@ public static class BookingEndpoints
             .MapGet(
                 "/",
                 async (
+                    [FromQuery] int? page,
+                    [FromQuery] int? pageSize,
+                    [FromQuery] string? search,
                     [FromQuery] long? userId,
                     [FromQuery] long? roomId,
                     [FromQuery] DateTime? startDate,
@@ -29,23 +32,26 @@ public static class BookingEndpoints
                     BookingService service
                 ) =>
                 {
-                    var bookings = await service.GetFilteredBookingsAsync(
+                    var result = await service.GetFilteredBookingsPagedAsync(
+                        page is > 0 ? page.Value : 1,
+                        pageSize is > 0 ? pageSize.Value : 25,
+                        search,
                         userId,
                         roomId,
                         startDate,
                         endDate,
                         status
                     );
-                    return Results.Ok(bookings);
+                    return Results.Ok(result);
                 }
             )
             .RequirePermission("ManageBookings")
             .WithName("GetAllBookings")
-            .WithSummary("Get all bookings")
+            .WithSummary("Get all bookings (paginated)")
             .WithDescription(
-                "Retrieves a list of bookings, optionally filtered by user, room, date range, or status.\n\n🔒 **Authentication Required**\n🔑 **Requires manageBookings permission**"
+                "Retrieves a paginated list of bookings, optionally filtered by user, room, date range, status, or search.\n\n🔒 **Authentication Required**\n🔑 **Requires manageBookings permission**"
             )
-            .Produces<IEnumerable<BookingDetailedReadModel>>(StatusCodes.Status200OK)
+            .Produces<PagedResult<BookingDetailedReadModel>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
 
@@ -150,21 +156,34 @@ public static class BookingEndpoints
         group
             .MapGet(
                 "/my-owned",
-                async (HttpContext context, BookingService service) =>
+                async (
+                    [FromQuery] int? page,
+                    [FromQuery] int? pageSize,
+                    [FromQuery] string? timeFilter,
+                    [FromQuery] bool? includeCancelled,
+                    HttpContext context,
+                    BookingService service
+                ) =>
                 {
                     if (context.Items["UserId"] is not long userId)
                         return Results.Unauthorized();
 
-                    var bookings = await service.GetUserOwnedBookingsAsync(userId);
-                    return Results.Ok(bookings);
+                    var result = await service.GetUserOwnedBookingsPagedAsync(
+                        userId,
+                        page is > 0 ? page.Value : 1,
+                        pageSize is > 0 ? pageSize.Value : 20,
+                        timeFilter,
+                        includeCancelled ?? true
+                    );
+                    return Results.Ok(result);
                 }
             )
             .WithName("GetMyOwnedBookings")
-            .WithSummary("Get owned bookings")
+            .WithSummary("Get owned bookings (paginated)")
             .WithDescription(
-                "Retrieves all bookings created by the authenticated user.\n\n🔒 **Authentication Required**"
+                "Retrieves paginated bookings created by the authenticated user. Use timeFilter=upcoming or timeFilter=history to filter.\n\n🔒 **Authentication Required**"
             )
-            .Produces<IEnumerable<BookingDetailedReadModel>>(StatusCodes.Status200OK)
+            .Produces<PagedResult<BookingDetailedReadModel>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
 
         return group;
