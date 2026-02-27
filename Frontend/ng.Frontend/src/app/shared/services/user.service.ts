@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import {
@@ -6,6 +6,7 @@ import {
   UserPermissions,
   UpdateUserDto,
   UserResponseDto,
+  PagedResult,
 } from '../../models/models';
 
 export interface UpdatePermissionsRequest {
@@ -21,6 +22,14 @@ export interface UpdatePermissionsRequest {
   manageRoles: boolean;
 }
 
+export interface UserPagedParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  templateId?: number;
+  isBanned?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -30,8 +39,15 @@ export class UserService {
 
   public readonly refreshTrigger = signal(0);
 
-  getAllUsers(): Observable<UserResponseDto[]> {
-    return this.http.get<UserResponseDto[]>(this.apiUrl);
+  getAllUsers(params?: UserPagedParams): Observable<PagedResult<UserResponseDto>> {
+    let httpParams = new HttpParams();
+    if (params?.page) httpParams = httpParams.set('page', params.page);
+    if (params?.pageSize) httpParams = httpParams.set('pageSize', params.pageSize);
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    if (params?.templateId !== undefined)
+      httpParams = httpParams.set('templateId', params.templateId);
+    if (params?.isBanned) httpParams = httpParams.set('isBanned', params.isBanned);
+    return this.http.get<PagedResult<UserResponseDto>>(this.apiUrl, { params: httpParams });
   }
 
   getUserById(userId: number): Observable<UserResponseDto> {
