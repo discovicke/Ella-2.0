@@ -119,20 +119,20 @@ export interface BookingEditModalConfig {
         <div class="footer-actions">
           <app-button variant="tertiary" (clicked)="onClose()">Stäng</app-button>
 
-          @if (booking.status === 'Cancelled' && !hasEnded()) {
+          @if (booking.status === BookingStatus.Cancelled && !hasEnded()) {
             <app-button
               variant="primary"
               [disabled]="isSubmitting()"
-              (clicked)="onSetStatus('Active')"
+              (clicked)="onSetStatus(BookingStatus.Active)"
             >
               {{ isSubmitting() ? 'Sparar...' : 'Aktivera' }}
             </app-button>
           }
-          @if (booking.status === 'Active') {
+          @if (booking.status === BookingStatus.Active) {
             <app-button
               variant="danger"
               [disabled]="isSubmitting()"
-              (clicked)="onSetStatus('Cancelled')"
+              (clicked)="onSetStatus(BookingStatus.Cancelled)"
             >
               {{ isSubmitting() ? 'Sparar...' : 'Avboka' }}
             </app-button>
@@ -348,6 +348,7 @@ export interface BookingEditModalConfig {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BookingEditModalComponent {
+  protected readonly BookingStatus = BookingStatus;
   private readonly modalService = inject(ModalService);
 
   private config: BookingEditModalConfig = this.modalService.modalData();
@@ -378,12 +379,12 @@ export class BookingEditModalComponent {
     return end < new Date();
   }
 
-  async onSetStatus(status: BookingStatus | string): Promise<void> {
+  async onSetStatus(status: BookingStatus): Promise<void> {
     if (!this.booking.bookingId) return;
 
     this.isSubmitting.set(true);
     try {
-      await this.config.onStatusChange(this.booking.bookingId, status as BookingStatus);
+      await this.config.onStatusChange(this.booking.bookingId, status);
     } catch {
       this.isSubmitting.set(false);
     }

@@ -19,9 +19,7 @@
       </div>
       <div class="header-right">
         @if (hasActiveFilters()) {
-          <span class="result-count"
-            >Visar {{ totalBookings() }} av {{ totalAllBookings() }} bokningar</span
-          >
+          <span class="result-count">{{ totalBookings() }} träffar</span>
           <button class="btn-reset" (click)="resetFilters()" title="Rensa filter">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="1 4 1 10 7 10" />
@@ -133,7 +131,7 @@
         <div class="spinner"></div>
         <span>Laddar bokningar...</span>
       </div>
-    } @else if (paginatedGroups().length === 0) {
+    } @else if (groupedBookings().length === 0) {
       <div class="empty-state">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <rect x="3" y="4" width="18" height="18" rx="2" />
@@ -153,7 +151,7 @@
         </button>
       </div>
       <div class="groups-list">
-        @for (group of paginatedGroups(); track group.key) {
+        @for (group of groupedBookings(); track group.key) {
           <div class="group-card" [class.group-card--collapsed]="isGroupCollapsed(group.key)">
             <!-- Group Header -->
             <button
@@ -218,8 +216,8 @@
                 @for (booking of group.bookings; track booking.bookingId) {
                   <div
                     class="booking-row"
-                    [class.booking-row--cancelled]="booking.status === 'Cancelled'"
-                    [class.booking-row--expired]="booking.status === 'Expired'"
+                    [class.booking-row--cancelled]="booking.status === BookingStatus.Cancelled"
+                    [class.booking-row--expired]="booking.status === BookingStatus.Expired"
                     (click)="openBookingModal(booking)"
                   >
                     <div class="booking-row__user">
@@ -235,14 +233,14 @@
                         } @else if (isTimeGrouping()) {
                           <span
                             class="user-name"
-                            [class.line-through]="booking.status === 'Cancelled'"
+                            [class.line-through]="booking.status === BookingStatus.Cancelled"
                             >{{ booking.userName ?? '—' }}</span
                           >
                           <span class="user-email">{{ booking.roomName ?? '' }}</span>
                         } @else {
                           <span
                             class="user-name"
-                            [class.line-through]="booking.status === 'Cancelled'"
+                            [class.line-through]="booking.status === BookingStatus.Cancelled"
                             >{{ booking.userName ?? '—' }}</span
                           >
                           <span class="user-email">{{ booking.userEmail ?? '' }}</span>
@@ -291,9 +289,7 @@
       @if (totalPages() > 1) {
         <div class="pagination-footer">
           <span class="pagination-info">
-            Visar {{ pageIndex() * groupsPerPage + 1 }} –
-            {{ pageIndex() * groupsPerPage + paginatedGroups().length }} av
-            {{ totalGroups() }} grupper ({{ totalBookings() }} bokningar)
+            Sida {{ pageIndex() + 1 }} av {{ totalPages() }} ({{ totalBookings() }} bokningar)
           </span>
           <div class="pagination-controls">
             <button
@@ -305,14 +301,18 @@
                 <polyline points="15 18 9 12 15 6" />
               </svg>
             </button>
-            @for (p of [].constructor(totalPages()); track $index) {
-              <button
-                class="page-btn"
-                [class.page-btn--active]="$index === pageIndex()"
-                (click)="handlePageChange($index)"
-              >
-                {{ $index + 1 }}
-              </button>
+            @for (p of visiblePages(); track p) {
+              @if (p === -1) {
+                <span class="page-ellipsis">…</span>
+              } @else {
+                <button
+                  class="page-btn"
+                  [class.page-btn--active]="p === pageIndex()"
+                  (click)="handlePageChange(p)"
+                >
+                  {{ p + 1 }}
+                </button>
+              }
             }
             <button
               class="page-btn"
