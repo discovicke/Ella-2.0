@@ -144,9 +144,49 @@ VALUES (1, 'admin@edugrade.com', '__HASH__', 'Admin Testberg', 3),
        (31, 'elena.popova.dev24@edu.edugrade.com', '__HASH__', 'Elena Popova', 1),
        (32, 'oscar.lundin.dev24@edu.edugrade.com', '__HASH__', 'Oscar Lundin', 1),
        (33, 'oscar.lundin.dev222@edu.edugrade.com', '__HASH__', 'Custom Guy', NULL),
-       (50, 'elev@edugrade.com', '__HASH__', 'Elev Testlund', 1);
+       (50, 'elev@edugrade.com', '__HASH__', 'Elev Testlund', 1),
+
+       -- Extra students for pagination testing (sys25 - Hudiksvall)
+       (60, 'lisa.franzen.sys25@edu.edugrade.com', '__HASH__', 'Lisa Franzén', 1),
+       (61, 'david.hall.sys25@edu.edugrade.com', '__HASH__', 'David Hall', 1),
+       (62, 'emma.lindqvist.sys25@edu.edugrade.com', '__HASH__', 'Emma Lindqvist', 1),
+       (63, 'alexander.norberg.sys25@edu.edugrade.com', '__HASH__', 'Alexander Norberg', 1),
+       (64, 'maja.pettersson.sys25@edu.edugrade.com', '__HASH__', 'Maja Pettersson', 1),
+       (65, 'hugo.sandberg.sys25@edu.edugrade.com', '__HASH__', 'Hugo Sandberg', 1),
+
+       -- Extra students (net25 - Hudiksvall)
+       (66, 'wilma.ekman.net25@edu.edugrade.com', '__HASH__', 'Wilma Ekman', 1),
+       (67, 'lucas.blom.net25@edu.edugrade.com', '__HASH__', 'Lucas Blom', 1),
+       (68, 'ella.dahlgren.net25@edu.edugrade.com', '__HASH__', 'Ella Dahlgren', 1),
+       (69, 'oliver.forsberg.net25@edu.edugrade.com', '__HASH__', 'Oliver Forsberg', 1),
+
+       -- Extra students (ux25 - Gävle)
+       (70, 'astrid.hedlund.ux25@edu.edugrade.com', '__HASH__', 'Astrid Hedlund', 1),
+       (71, 'leo.isaksson.ux25@edu.edugrade.com', '__HASH__', 'Leo Isaksson', 1),
+       (72, 'saga.jansson.ux25@edu.edugrade.com', '__HASH__', 'Saga Jansson', 1),
+       (73, 'nils.karlberg.ux25@edu.edugrade.com', '__HASH__', 'Nils Karlberg', 1),
+
+       -- Extra students (dev24 - Sundsvall)
+       (74, 'freja.larsson.dev24@edu.edugrade.com', '__HASH__', 'Freja Larsson', 1),
+       (75, 'axel.magnusson.dev24@edu.edugrade.com', '__HASH__', 'Axel Magnusson', 1),
+       (76, 'klara.nyberg.dev24@edu.edugrade.com', '__HASH__', 'Klara Nyberg', 1),
+       (77, 'filip.olsson.dev24@edu.edugrade.com', '__HASH__', 'Filip Olsson', 1),
+       (78, 'ines.persson.dev24@edu.edugrade.com', '__HASH__', 'Ines Persson', 1),
+
+       -- Extra educators
+       (80, 'marie.wallin@edugrade.com', '__HASH__', 'Marie Wallin', 2),
+       (81, 'thomas.berggren@edugrade.com', '__HASH__', 'Thomas Berggren', 2),
+
+       -- Extra admins
+       (82, 'johanna.admin@edugrade.com', '__HASH__', 'Johanna Lindström', 3),
+
+       -- Banned user for filter testing
+       (83, 'banned.user@edu.edugrade.com', '__HASH__', 'Avstängd Testsson', 1);
 
 SELECT setval(pg_get_serial_sequence('users', 'id'), (SELECT MAX(id) FROM users));
+
+-- Ban user 83
+UPDATE users SET is_banned = TRUE WHERE id = 83;
 
 
 -- -------------------------------------------------------------
@@ -161,13 +201,32 @@ VALUES (50, 1),
        (13, 2),
        (14, 2),
        (15, 2),
+       (66, 2),
+       (67, 2),
+       (68, 2),
+       (69, 2),
        (20, 3),
        (21, 3),
        (22, 3),
        (23, 3),
+       (70, 3),
+       (71, 3),
+       (72, 3),
+       (73, 3),
        (30, 4),
        (31, 4),
-       (32, 4);
+       (32, 4),
+       (74, 4),
+       (75, 4),
+       (76, 4),
+       (77, 4),
+       (78, 4),
+       (60, 5),
+       (61, 5),
+       (62, 5),
+       (63, 5),
+       (64, 5),
+       (65, 5);
 
 
 -- -------------------------------------------------------------
@@ -187,13 +246,36 @@ VALUES (1, 1),
        (13, 1),
        (14, 1),
        (15, 1),
+       (66, 1),
+       (67, 1),
+       (68, 1),
+       (69, 1),
        (20, 2),
        (21, 2),
        (22, 2),
        (23, 2),
+       (70, 2),
+       (71, 2),
+       (72, 2),
+       (73, 2),
        (30, 3),
        (31, 3),
-       (32, 3);
+       (32, 3),
+       (74, 3),
+       (75, 3),
+       (76, 3),
+       (77, 3),
+       (78, 3),
+       (60, 1),
+       (61, 1),
+       (62, 1),
+       (63, 1),
+       (64, 1),
+       (65, 1),
+       (80, 1),
+       (81, 2),
+       (82, 1),
+       (83, 1);
 
 
 -- -------------------------------------------------------------
@@ -277,7 +359,12 @@ VALUES (1, 1),
 
 INSERT INTO bookings (id, room_id, user_id, start_time, end_time, status, notes)
     OVERRIDING SYSTEM VALUE
-VALUES (100, 3, 1, '2026-02-01 09:00:00+01', '2026-02-01 10:00:00+01', 'active', 'Månadsmöte administration'),
+VALUES
+       -- ============================================================
+       --  ADMIN TESTBERG (user 1) — 40 bookings total for pagination
+       -- ============================================================
+       -- Februari (historik)
+       (100, 3, 1, '2026-02-01 09:00:00+01', '2026-02-01 10:00:00+01', 'active', 'Månadsmöte administration'),
        (101, 12, 1, '2026-02-05 14:00:00+01', '2026-02-05 15:30:00+01', 'active', 'Intervju ny personal'),
        (102, 3, 1, '2026-02-10 08:30:00+01', '2026-02-10 09:30:00+01', 'cancelled', 'AVBOKAT: Ledningsgrupp'),
        (103, 1, 1, '2026-02-12 10:00:00+01', '2026-02-12 12:00:00+01', 'active', 'Genomgång av säkerhetsprocedurer'),
@@ -287,9 +374,42 @@ VALUES (100, 3, 1, '2026-02-01 09:00:00+01', '2026-02-01 10:00:00+01', 'active',
        (107, 22, 1, '2026-02-25 13:00:00+01', '2026-02-25 14:00:00+01', 'active', 'Budgetmöte Q1'),
        (108, 12, 1, '2026-02-26 09:00:00+01', '2026-02-26 10:30:00+01', 'active', 'Möte med fastighetsskötare'),
        (109, 3, 1, '2026-02-27 15:00:00+01', '2026-02-27 16:00:00+01', 'cancelled', 'AVBOKAT: Fredagsfika special'),
+       -- Mars (kommande)
        (110, 4, 1, '2026-03-01 08:00:00+01', '2026-03-01 12:00:00+01', 'active', 'Personalutbildning: HLR'),
        (111, 20, 1, '2026-03-05 10:00:00+01', '2026-03-05 15:00:00+01', 'active', 'Campus-turné: Sundsvall'),
        (112, 10, 1, '2026-03-06 10:00:00+01', '2026-03-06 15:00:00+01', 'active', 'Campus-turné: Gävle'),
+       (113, 3, 1, '2026-03-09 09:00:00+01', '2026-03-09 10:30:00+01', 'active', 'Uppföljning kursutvärdering'),
+       (114, 1, 1, '2026-03-10 13:00:00+01', '2026-03-10 15:00:00+01', 'active', 'Workshop: Ny LMS-plattform'),
+       (115, 12, 1, '2026-03-11 10:00:00+01', '2026-03-11 11:30:00+01', 'cancelled', 'AVBOKAT: Leverantörsmöte'),
+       (116, 4, 1, '2026-03-13 08:00:00+01', '2026-03-13 12:00:00+01', 'active', 'Brandövning hela campus'),
+       (117, 22, 1, '2026-03-16 14:00:00+01', '2026-03-16 16:00:00+01', 'active', 'IT-säkerhet genomgång'),
+       (118, 3, 1, '2026-03-18 09:00:00+01', '2026-03-18 10:00:00+01', 'active', 'Veckomöte ledning'),
+       (119, 6, 1, '2026-03-19 13:00:00+01', '2026-03-19 15:00:00+01', 'active', 'Labbinventering fiberlab'),
+       (120, 10, 1, '2026-03-20 09:00:00+01', '2026-03-20 16:00:00+01', 'active', 'Rekryteringsdag Gävle'),
+       (121, 3, 1, '2026-03-23 10:00:00+01', '2026-03-23 11:00:00+01', 'active', 'Schemaplanering HT2026'),
+       (122, 20, 1, '2026-03-25 09:00:00+01', '2026-03-25 12:00:00+01', 'active', 'Strategimöte Sundsvall'),
+       (123, 1, 1, '2026-03-26 13:00:00+01', '2026-03-26 15:00:00+01', 'cancelled', 'AVBOKAT: Nätverksmigration'),
+       (124, 4, 1, '2026-03-27 08:30:00+01', '2026-03-27 11:00:00+01', 'active', 'Examinationsplanering'),
+       (125, 12, 1, '2026-03-30 14:00:00+01', '2026-03-30 15:30:00+01', 'active', 'Medarbetarsamtal'),
+       (126, 3, 1, '2026-03-31 09:00:00+01', '2026-03-31 10:30:00+01', 'active', 'Kvartalsavslut Q1'),
+       -- April
+       (127, 1, 1, '2026-04-01 08:00:00+02', '2026-04-01 10:00:00+02', 'active', 'Terminsstart uppföljning'),
+       (128, 6, 1, '2026-04-03 13:00:00+02', '2026-04-03 16:00:00+02', 'active', 'Uppgradering labbutrustning'),
+       (129, 22, 1, '2026-04-07 10:00:00+02', '2026-04-07 12:00:00+02', 'active', 'Samarbete med Mittuniversitetet'),
+       (130, 3, 1, '2026-04-08 09:00:00+02', '2026-04-08 10:00:00+02', 'active', 'Veckomöte ledning'),
+       (131, 10, 1, '2026-04-10 09:00:00+02', '2026-04-10 16:00:00+02', 'active', 'Öppet hus Gävle'),
+       (132, 4, 1, '2026-04-14 08:00:00+02', '2026-04-14 12:00:00+02', 'active', 'Tentamensövervakning'),
+       (133, 3, 1, '2026-04-15 14:00:00+02', '2026-04-15 15:00:00+02', 'cancelled', 'AVBOKAT: Konferens Stockholm'),
+       (134, 20, 1, '2026-04-17 09:00:00+02', '2026-04-17 15:00:00+02', 'active', 'Campus-inspektion Sundsvall'),
+       (135, 1, 1, '2026-04-22 10:00:00+02', '2026-04-22 12:00:00+02', 'active', 'Budget HT2026 planering'),
+       (136, 12, 1, '2026-04-24 13:00:00+02', '2026-04-24 14:30:00+02', 'active', 'Intervju: Ny lärartjänst'),
+       (137, 3, 1, '2026-04-28 09:00:00+02', '2026-04-28 10:00:00+02', 'active', 'Månadsmöte april'),
+       (138, 6, 1, '2026-04-29 13:00:00+02', '2026-04-29 15:00:00+02', 'active', 'Felsökning nätverkslab'),
+       (139, 4, 1, '2026-04-30 08:00:00+02', '2026-04-30 12:00:00+02', 'active', 'Terminsutvärdering VT2026'),
+
+       -- ============================================================
+       --  ELEV TESTLUND (user 50) — keep existing 14
+       -- ============================================================
        (200, 1, 50, '2026-02-10 08:30:00+01', '2026-02-10 12:00:00+01', 'active', 'Grupparbete: Databaser intro'),
        (201, 2, 50, '2026-02-11 13:00:00+01', '2026-02-11 16:00:00+01', 'active', 'Projekt: Frontend basics'),
        (202, 1, 50, '2026-02-12 09:00:00+01', '2026-02-12 12:00:00+01', 'active', 'Eget arbete: SQL Lab'),
@@ -304,10 +424,56 @@ VALUES (100, 3, 1, '2026-02-01 09:00:00+01', '2026-02-01 10:00:00+01', 'active',
        (211, 4, 50, '2026-02-26 13:00:00+01', '2026-02-26 16:00:00+01', 'active', 'Projektpresentation övning'),
        (212, 2, 50, '2026-02-27 10:00:00+01', '2026-02-27 12:00:00+01', 'active', 'Självstudier: Molntjänster'),
        (213, 1, 50, '2026-03-02 08:30:00+01', '2026-03-02 12:00:00+01', 'active', 'Repetitionsdag inför tentamen'),
+
+       -- ============================================================
+       --  EDUCATORS (users 3, 4, 5, 80, 81) — richer booking data
+       -- ============================================================
        (300, 2, 3, '2026-02-20 09:00:00+01', '2026-02-20 16:00:00+01', 'active', 'Föreläsning: C# Advanced (demo26)'),
        (301, 5, 4, '2026-02-21 08:30:00+01', '2026-02-21 15:30:00+01', 'active', 'Labbarbete: Gävle Tech Night'),
        (302, 10, 4, '2026-02-24 09:00:00+01', '2026-02-24 16:00:00+01', 'active', 'UX Workshop: Design Systems'),
-       (303, 20, 5, '2026-02-28 09:00:00+01', '2026-02-28 17:00:00+01', 'active', 'Öppet hus: Sundsvall');
+       (303, 20, 5, '2026-02-28 09:00:00+01', '2026-02-28 17:00:00+01', 'active', 'Öppet hus: Sundsvall'),
+       (304, 2, 3, '2026-03-03 09:00:00+01', '2026-03-03 12:00:00+01', 'active', 'Föreläsning: Entity Framework'),
+       (305, 4, 3, '2026-03-06 13:00:00+01', '2026-03-06 16:00:00+01', 'active', 'Kodgenomgång: Studentprojekt'),
+       (306, 1, 3, '2026-03-10 08:30:00+01', '2026-03-10 11:30:00+01', 'active', 'Tentamen: Databasteknik'),
+       (307, 2, 3, '2026-03-17 09:00:00+01', '2026-03-17 16:00:00+01', 'cancelled', 'AVBOKAT: Konferens'),
+       (308, 10, 4, '2026-03-04 09:00:00+01', '2026-03-04 16:00:00+01', 'active', 'Figma workshop dag 1'),
+       (309, 10, 4, '2026-03-05 09:00:00+01', '2026-03-05 16:00:00+01', 'active', 'Figma workshop dag 2'),
+       (310, 11, 4, '2026-03-11 10:00:00+01', '2026-03-11 15:00:00+01', 'active', 'Prototyp-labb: React Native'),
+       (311, 20, 5, '2026-03-12 09:00:00+01', '2026-03-12 12:00:00+01', 'active', 'Gästföreläsning: AI i utbildning'),
+       (312, 21, 5, '2026-03-18 13:00:00+01', '2026-03-18 16:00:00+01', 'active', 'Lab: Python maskinlärning'),
+       (313, 20, 5, '2026-03-25 09:00:00+01', '2026-03-25 17:00:00+01', 'active', 'Hackathonarrangemang'),
+       (314, 2, 80, '2026-03-02 09:00:00+01', '2026-03-02 12:00:00+01', 'active', 'Föreläsning: Systemdesign'),
+       (315, 4, 80, '2026-03-09 13:00:00+01', '2026-03-09 16:00:00+01', 'active', 'Workshop: Docker & Kubernetes'),
+       (316, 1, 80, '2026-03-16 08:30:00+01', '2026-03-16 11:30:00+01', 'active', 'Tentamen: Operativsystem'),
+       (317, 10, 81, '2026-03-07 09:00:00+01', '2026-03-07 16:00:00+01', 'active', 'Kurs: Användbarhetstestning'),
+       (318, 11, 81, '2026-03-14 10:00:00+01', '2026-03-14 15:00:00+01', 'active', 'Studiebesök: Sandvik UX-avd'),
+       (319, 12, 81, '2026-03-21 13:00:00+01', '2026-03-21 15:00:00+01', 'active', 'Handledning: Examensarbete'),
+
+       -- ============================================================
+       --  STUDENT BOOKINGS (various students) — more volume
+       -- ============================================================
+       (400, 1, 10, '2026-03-03 09:00:00+01', '2026-03-03 12:00:00+01', 'active', 'Grupparbete: REST API'),
+       (401, 5, 11, '2026-03-04 13:00:00+01', '2026-03-04 16:00:00+01', 'active', 'Laboration: Nätverkssäkerhet'),
+       (402, 4, 12, '2026-03-05 08:00:00+01', '2026-03-05 12:00:00+01', 'active', 'Eget arbete: Slutprojekt'),
+       (403, 1, 13, '2026-03-06 09:00:00+01', '2026-03-06 11:00:00+01', 'cancelled', 'AVBOKAT: Sjuk'),
+       (404, 2, 14, '2026-03-09 13:00:00+01', '2026-03-09 16:00:00+01', 'active', 'Projekt: Webbshop frontend'),
+       (405, 1, 15, '2026-03-10 08:30:00+01', '2026-03-10 11:30:00+01', 'active', 'Grupparbete: CI/CD pipeline'),
+       (406, 10, 20, '2026-03-03 09:00:00+01', '2026-03-03 12:00:00+01', 'active', 'Skissarbete: Rebranding'),
+       (407, 10, 21, '2026-03-06 13:00:00+01', '2026-03-06 16:00:00+01', 'active', 'Användartester: App v2'),
+       (408, 12, 22, '2026-03-10 10:00:00+01', '2026-03-10 12:00:00+01', 'active', 'Handledning: Portfolio'),
+       (409, 10, 23, '2026-03-12 09:00:00+01', '2026-03-12 11:00:00+01', 'active', 'Wireframes: Kundprojekt'),
+       (410, 20, 30, '2026-03-04 09:00:00+01', '2026-03-04 16:00:00+01', 'active', 'Hackathon-förberedelse'),
+       (411, 21, 31, '2026-03-09 13:00:00+01', '2026-03-09 16:00:00+01', 'active', 'Labb: Arduino IoT-sensor'),
+       (412, 20, 32, '2026-03-11 08:30:00+01', '2026-03-11 12:00:00+01', 'active', 'Grupparbete: Mobilapp'),
+       (413, 1, 60, '2026-03-05 09:00:00+01', '2026-03-05 12:00:00+01', 'active', 'Labb: Linux-administration'),
+       (414, 5, 61, '2026-03-06 13:00:00+01', '2026-03-06 16:00:00+01', 'active', 'Nätverkslabb: VLAN-konfiguration'),
+       (415, 4, 62, '2026-03-10 08:00:00+01', '2026-03-10 12:00:00+01', 'active', 'Eget arbete: Serverprojekt'),
+       (416, 1, 66, '2026-03-11 09:00:00+01', '2026-03-11 12:00:00+01', 'active', 'Grupparbete: Blazor-app'),
+       (417, 2, 67, '2026-03-12 13:00:00+01', '2026-03-12 16:00:00+01', 'active', 'Projekt: SignalR realtidschat'),
+       (418, 10, 70, '2026-03-10 09:00:00+01', '2026-03-10 12:00:00+01', 'active', 'Designsprint: Dag 1'),
+       (419, 10, 71, '2026-03-11 09:00:00+01', '2026-03-11 12:00:00+01', 'active', 'Designsprint: Dag 2'),
+       (420, 20, 74, '2026-03-12 09:00:00+01', '2026-03-12 16:00:00+01', 'active', 'Kodmaraton: Game jam'),
+       (421, 21, 75, '2026-03-13 13:00:00+01', '2026-03-13 16:00:00+01', 'cancelled', 'AVBOKAT: Tågförsenad');
 
 SELECT setval(pg_get_serial_sequence('bookings', 'id'), (SELECT MAX(id) FROM bookings));
 
@@ -329,4 +495,59 @@ VALUES (300, 50),
        (110, 50),
        (110, 10),
        (110, 11),
-       (110, 20);
+       (110, 20),
+       (304, 10),
+       (304, 11),
+       (304, 12),
+       (304, 66),
+       (304, 67),
+       (305, 13),
+       (305, 14),
+       (305, 15),
+       (306, 10),
+       (306, 11),
+       (306, 12),
+       (306, 13),
+       (306, 14),
+       (306, 15),
+       (306, 66),
+       (306, 67),
+       (306, 68),
+       (306, 69),
+       (308, 20),
+       (308, 21),
+       (308, 70),
+       (308, 71),
+       (309, 22),
+       (309, 23),
+       (309, 72),
+       (309, 73),
+       (311, 30),
+       (311, 31),
+       (311, 74),
+       (313, 32),
+       (313, 75),
+       (313, 76),
+       (314, 60),
+       (314, 61),
+       (314, 62),
+       (315, 63),
+       (315, 64),
+       (315, 65),
+       (316, 60),
+       (316, 61),
+       (316, 62),
+       (316, 63),
+       (316, 64),
+       (316, 65),
+       (317, 20),
+       (317, 21),
+       (317, 22),
+       (317, 23),
+       (317, 70),
+       (317, 71),
+       (420, 74),
+       (420, 75),
+       (420, 76),
+       (420, 77),
+       (420, 78);
