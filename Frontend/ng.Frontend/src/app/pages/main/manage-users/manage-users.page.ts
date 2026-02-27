@@ -20,8 +20,6 @@ import {
   PermissionTemplateDto,
   UpdateUserDto,
   UserResponseDto,
-  CampusResponseDto,
-  ClassResponseDto,
 } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import {
@@ -65,9 +63,11 @@ export class ManageUsersPage implements OnInit {
 
   // --- FILTER STATE ---
   searchQuery = signal('');
+  debouncedSearch = signal('');
   selectedRole = signal<RoleLabel | 'All'>('All');
   selectedStatus = signal<BannedStatus | 'All'>('All');
   filtersOpen = signal(typeof window !== 'undefined' ? window.innerWidth > 768 : true);
+  private searchDebounceTimer: ReturnType<typeof setTimeout> | undefined;
 
   readonly roleLabels = computed(() => [...getTemplateLabels(), 'Custom']);
   readonly templateOptions = computed<PermissionTemplateDto[]>(() =>
@@ -76,13 +76,43 @@ export class ManageUsersPage implements OnInit {
   readonly resolveRoleLabel = resolveRoleLabel;
   readonly resolveRoleCssClass = resolveRoleCssClass;
 
+  /** Resolve selected role label → templateId for server filtering.
+   *  undefined = no filter, 0 = custom (no template), >0 = specific template */
+  private resolvedTemplateId = computed((): number | undefined => {
+    const role = this.selectedRole();
+    if (role === 'All') return undefined;
+    if (role === 'Custom') return 0;
+    const template = this.templateOptions().find((t) => t.label === role);
+    return template?.id ?? undefined;
+  });
+
   // Pagination state
   pageIndex = signal(0);
-  pageSize = signal(10);
+  pageSize = signal(0); // starts at 0; autoSize sets the real value before first fetch
 
-  // Resource för användarlistan
+  // Resource för användarlistan — server-side pagination + filtering
   userResource = resource({
-    loader: () => firstValueFrom(this.userService.getAllUsers()),
+    params: () => {
+      const ps = this.pageSize();
+      if (ps === 0) return undefined; // wait for autoSize
+      return {
+        page: this.pageIndex() + 1,
+        pageSize: ps,
+        search: this.debouncedSearch() || undefined,
+        templateId: this.resolvedTemplateId(),
+        isBanned: this.selectedStatus() === 'All' ? undefined : this.selectedStatus(),
+      };
+    },
+    loader: ({ params }) =>
+      firstValueFrom(
+        this.userService.getAllUsers({
+          page: params.page,
+          pageSize: params.pageSize,
+          search: params.search,
+          templateId: params.templateId,
+          isBanned: params.isBanned,
+        }),
+      ),
   });
 
   // Lookup resources for associations
@@ -97,32 +127,23 @@ export class ManageUsersPage implements OnInit {
   readonly allCampuses = computed(() => this.campusResource.value() ?? []);
   readonly allClasses = computed(() => this.classResource.value() ?? []);
 
-  // --- COMPUTED ---
-  filteredUsers = computed(() => {
-    const all = this.userResource.value() ?? [];
-    const query = this.searchQuery().toLowerCase();
-    const role = this.selectedRole();
-    const status = this.selectedStatus();
-
-    return all.filter((u) => {
-      const matchesSearch =
-        !query ||
-        u.displayName?.toLowerCase().includes(query) ||
-        u.email?.toLowerCase().includes(query);
-      const matchesRole = role === 'All' || resolveRoleLabel(u.permissions) === role;
-      const matchesStatus = status === 'All' || u.isBanned === status;
-      return matchesSearch && matchesRole && matchesStatus;
-    });
-  });
-
-  totalUsers = computed(() => this.filteredUsers().length);
-  totalAllUsers = computed(() => this.userResource.value()?.length ?? 0);
+  // --- COMPUTED (server provides filtered + paginated data) ---
+  // Keep previous data visible while loading to avoid flash
+  private lastUsers: UserResponseDto[] = [];
+  private lastTotal = 0;
 
   paginatedUsers = computed(() => {
-    const users = this.filteredUsers();
-    const start = this.pageIndex() * this.pageSize();
-    const end = start + this.pageSize();
-    return users.slice(start, end);
+    const val = this.userResource.value();
+    if (val) {
+      this.lastUsers = val.items;
+      this.lastTotal = val.totalCount;
+    }
+    return this.lastUsers;
+  });
+  totalUsers = computed(() => {
+    const val = this.userResource.value();
+    if (val) return val.totalCount;
+    return this.lastTotal;
   });
 
   hasActiveFilters = computed(
@@ -158,20 +179,18 @@ export class ManageUsersPage implements OnInit {
 
   onPageSizeChange(size: number) {
     this.pageSize.set(size);
-    // Optionally reset to page 0 if current page is out of bounds,
-    // but TableComponent usually handles the display logic or parent should check.
-    // If we are on page 5 and size doubles, page 5 might still be valid or not.
-    // Simpler to keep pageIndex unless it's invalid.
-    const maxPage = Math.ceil(this.totalUsers() / size) - 1;
-    if (this.pageIndex() > maxPage && maxPage >= 0) {
-      this.pageIndex.set(maxPage);
-    }
+    this.pageIndex.set(0);
   }
 
   // --- FILTER ACTIONS ---
   updateSearch(event: Event) {
-    this.searchQuery.set((event.target as HTMLInputElement).value);
-    this.pageIndex.set(0);
+    const value = (event.target as HTMLInputElement).value;
+    this.searchQuery.set(value);
+    clearTimeout(this.searchDebounceTimer);
+    this.searchDebounceTimer = setTimeout(() => {
+      this.debouncedSearch.set(value);
+      this.pageIndex.set(0);
+    }, 300);
   }
 
   updateStatus(event: Event) {
@@ -186,9 +205,11 @@ export class ManageUsersPage implements OnInit {
 
   resetFilters() {
     this.searchQuery.set('');
+    this.debouncedSearch.set('');
     this.selectedRole.set('All');
     this.selectedStatus.set('All');
     this.pageIndex.set(0);
+    clearTimeout(this.searchDebounceTimer);
   }
 
   toggleFilters() {

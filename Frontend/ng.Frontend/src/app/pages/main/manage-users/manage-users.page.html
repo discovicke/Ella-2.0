@@ -16,9 +16,7 @@
       </div>
       <div class="header-right" (click)="$event.stopPropagation()">
         @if (hasActiveFilters()) {
-          <span class="result-count"
-            >Visar {{ totalUsers() }} av {{ totalAllUsers() }} användare</span
-          >
+          <span class="result-count">{{ totalUsers() }} träffar</span>
           <button class="btn-reset" (click)="resetFilters()" title="Rensa alla filter">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="1 4 1 10 7 10" />
@@ -102,6 +100,7 @@
       [pageSize]="pageSize()"
       [total]="totalUsers()"
       [autoSize]="true"
+      [rowHeight]="61"
       (pageChange)="handlePageChange($event)"
       (pageSizeChange)="onPageSizeChange($event)"
       (rowClicked)="openEditUserModal($event)"
