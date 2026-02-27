@@ -1,12 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import {
-  CreateBookingDto,
-  BookingDetailedReadModel,
-  BookingStatus,
-  PagedResult,
-} from '../../models/models';
+import { CreateBookingDto, BookingDetailedReadModel, BookingStatus, PagedResultOfBookingDetailedReadModel } from '../../models/models';
 
 export interface BookingFilterParams {
   userId?: number;
@@ -38,21 +33,21 @@ export class BookingService {
 
   getBookingsByUserId(
     params?: MyBookingsParams,
-  ): Observable<PagedResult<BookingDetailedReadModel>> {
+  ): Observable<PagedResultOfBookingDetailedReadModel> {
     let httpParams = new HttpParams();
     if (params?.page) httpParams = httpParams.set('page', params.page);
     if (params?.pageSize) httpParams = httpParams.set('pageSize', params.pageSize);
     if (params?.timeFilter) httpParams = httpParams.set('timeFilter', params.timeFilter);
     if (params?.includeCancelled !== undefined)
       httpParams = httpParams.set('includeCancelled', params.includeCancelled);
-    return this.http.get<PagedResult<BookingDetailedReadModel>>(`${this.apiUrl}/my-owned`, {
+    return this.http.get<PagedResultOfBookingDetailedReadModel>(`${this.apiUrl}/my-owned`, {
       params: httpParams,
     });
   }
 
   getAllBookings(
     filters?: BookingPagedFilterParams,
-  ): Observable<PagedResult<BookingDetailedReadModel>> {
+  ): Observable<PagedResultOfBookingDetailedReadModel> {
     let params = new HttpParams();
     if (filters?.page) params = params.set('page', filters.page);
     if (filters?.pageSize) params = params.set('pageSize', filters.pageSize);
@@ -62,7 +57,7 @@ export class BookingService {
     if (filters?.startDate) params = params.set('startDate', filters.startDate);
     if (filters?.endDate) params = params.set('endDate', filters.endDate);
     if (filters?.status) params = params.set('status', filters.status);
-    return this.http.get<PagedResult<BookingDetailedReadModel>>(this.apiUrl, { params });
+    return this.http.get<PagedResultOfBookingDetailedReadModel>(this.apiUrl, { params });
   }
 
   updateBookingStatus(bookingId: number, status: BookingStatus): Observable<unknown> {

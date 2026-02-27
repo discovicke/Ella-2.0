@@ -19,6 +19,8 @@
 .page-content {
   flex: 1;
   overflow-y: auto;
+  scrollbar-width: none; // Firefox
+  &::-webkit-scrollbar { display: none; } // Chrome/Edge/Safari
   padding: 24px;
   max-width: 1000px;
   margin: 0 auto;

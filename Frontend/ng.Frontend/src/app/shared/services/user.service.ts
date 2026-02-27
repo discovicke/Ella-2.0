@@ -6,7 +6,7 @@ import {
   UserPermissions,
   UpdateUserDto,
   UserResponseDto,
-  PagedResult,
+  PagedResultOfUserResponseDto,
 } from '../../models/models';
 
 export interface UpdatePermissionsRequest {
@@ -39,7 +39,7 @@ export class UserService {
 
   public readonly refreshTrigger = signal(0);
 
-  getAllUsers(params?: UserPagedParams): Observable<PagedResult<UserResponseDto>> {
+  getAllUsers(params?: UserPagedParams): Observable<PagedResultOfUserResponseDto> {
     let httpParams = new HttpParams();
     if (params?.page) httpParams = httpParams.set('page', params.page);
     if (params?.pageSize) httpParams = httpParams.set('pageSize', params.pageSize);
@@ -47,7 +47,7 @@ export class UserService {
     if (params?.templateId !== undefined)
       httpParams = httpParams.set('templateId', params.templateId);
     if (params?.isBanned) httpParams = httpParams.set('isBanned', params.isBanned);
-    return this.http.get<PagedResult<UserResponseDto>>(this.apiUrl, { params: httpParams });
+    return this.http.get<PagedResultOfUserResponseDto>(this.apiUrl, { params: httpParams });
   }
 
   getUserById(userId: number): Observable<UserResponseDto> {
