@@ -1,5 +1,7 @@
 ﻿using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.Entities;
+using Backend.app.Core.Models.Enums;
+using System.Text;
 using Dapper;
 
 namespace Backend.app.Infrastructure.Repositories.Sqlite;
@@ -19,6 +21,62 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         catch (Exception ex)
         {
             logger.LogError(ex, "Database error while fetching all users");
+            throw;
+        }
+    }
+
+    public async Task<(IEnumerable<User> Users, int TotalCount)> GetUsersPagedAsync(
+        int page, int pageSize,
+        string? search = null,
+        long? templateId = null,
+        BannedStatus? bannedStatus = null)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+
+            var where = new StringBuilder("WHERE 1=1");
+            var parameters = new DynamicParameters();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                where.Append(" AND (display_name LIKE @Search OR email LIKE @Search)");
+                parameters.Add("Search", $"%{search}%");
+            }
+
+            if (templateId.HasValue)
+            {
+                if (templateId.Value == 0)
+                    where.Append(" AND permission_template_id IS NULL");
+                else
+                {
+                    where.Append(" AND permission_template_id = @TemplateId");
+                    parameters.Add("TemplateId", templateId.Value);
+                }
+            }
+
+            if (bannedStatus.HasValue)
+            {
+                where.Append(" AND is_banned = @IsBanned");
+                parameters.Add("IsBanned", (int)bannedStatus.Value);
+            }
+
+            var countSql = $"SELECT COUNT(*) FROM users {where};";
+            var totalCount = await conn.ExecuteScalarAsync<int>(countSql, parameters);
+
+            var offset = (page - 1) * pageSize;
+            parameters.Add("Limit", pageSize);
+            parameters.Add("Offset", offset);
+
+            var dataSql = $"SELECT * FROM users {where} ORDER BY id LIMIT @Limit OFFSET @Offset;";
+            var users = await conn.QueryAsync<User>(dataSql, parameters);
+
+            return (users, totalCount);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while fetching paged users");
             throw;
         }
     }
