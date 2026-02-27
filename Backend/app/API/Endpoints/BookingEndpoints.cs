@@ -11,7 +11,6 @@ namespace Backend.app.API.Endpoints;
 
 public static class BookingEndpoints
 {
-
     public static RouteGroupBuilder MapBookingEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/bookings").WithTags("Bookings").RequireAuth();
@@ -110,9 +109,17 @@ public static class BookingEndpoints
         group
             .MapPut(
                 "/{id}",
-                async (long id, BookingStatus newStatus, HttpContext context, BookingService service) =>
+                async (
+                    long id,
+                    BookingStatus newStatus,
+                    HttpContext context,
+                    BookingService service
+                ) =>
                 {
-                    if (context.Items["UserId"] is not long userId || context.Items["Permissions"] is not UserPermissions permissions)
+                    if (
+                        context.Items["UserId"] is not long userId
+                        || context.Items["Permissions"] is not UserPermissions permissions
+                    )
                     {
                         return Results.Unauthorized();
                     }
@@ -135,7 +142,9 @@ public static class BookingEndpoints
                     // Business Logic: Regular users can only cancel their bookings
                     if (!canManage && newStatus != BookingStatus.Cancelled)
                     {
-                        return Results.BadRequest(new { message = "You can only cancel your own bookings." });
+                        return Results.BadRequest(
+                            new { message = "You can only cancel your own bookings." }
+                        );
                     }
 
                     var updatedBooking = await service.UpdateBookingStatusAsync(id, newStatus);

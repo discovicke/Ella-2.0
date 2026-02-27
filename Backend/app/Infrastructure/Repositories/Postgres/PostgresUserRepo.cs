@@ -1,7 +1,7 @@
+using System.Text;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
-using System.Text;
 using Dapper;
 
 namespace Backend.app.Infrastructure.Repositories.Postgres;
@@ -28,10 +28,12 @@ public class PostgresUserRepo(
     }
 
     public async Task<(IEnumerable<User> Users, int TotalCount)> GetUsersPagedAsync(
-        int page, int pageSize,
+        int page,
+        int pageSize,
         string? search = null,
         long? templateId = null,
-        BannedStatus? bannedStatus = null)
+        BannedStatus? bannedStatus = null
+    )
     {
         try
         {

@@ -45,8 +45,12 @@ public interface IBookingReadModelRepository
     /// <summary>
     /// Get paginated filtered bookings with total count. Supports search across user/room/campus/notes.
     /// </summary>
-    Task<(IEnumerable<BookingDetailedReadModel> Bookings, int TotalCount)> GetDetailedBookingsPagedAsync(
-        int page, int pageSize,
+    Task<(
+        IEnumerable<BookingDetailedReadModel> Bookings,
+        int TotalCount
+    )> GetDetailedBookingsPagedAsync(
+        int page,
+        int pageSize,
         string? search = null,
         long? userId = null,
         long? roomId = null,
@@ -59,8 +63,13 @@ public interface IBookingReadModelRepository
     /// Get paginated bookings for a user (my-owned), with time filtering and cancellation toggle.
     /// timeFilter: "upcoming" = endTime >= now sorted ASC, "history" = endTime &lt; now sorted DESC, null = all sorted DESC.
     /// </summary>
-    Task<(IEnumerable<BookingDetailedReadModel> Bookings, int TotalCount)> GetDetailedBookingsByUserIdPagedAsync(
-        long userId, int page, int pageSize,
+    Task<(
+        IEnumerable<BookingDetailedReadModel> Bookings,
+        int TotalCount
+    )> GetDetailedBookingsByUserIdPagedAsync(
+        long userId,
+        int page,
+        int pageSize,
         string? timeFilter = null,
         bool includeCancelled = true
     );
