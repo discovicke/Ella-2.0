@@ -10,8 +10,8 @@
             (click)="setActiveTab('upcoming')"
           >
             <span>Kommande</span>
-            @if (activeTab() === 'upcoming' && upcomingCount() > 0) {
-              <span class="count-badge">{{ upcomingCount() }}</span>
+            @if (activeTab() === 'upcoming' && totalCount() > 0) {
+              <span class="count-badge">{{ totalCount() }}</span>
             }
           </button>
 
@@ -117,7 +117,7 @@
             @for (booking of group.bookings; track booking.bookingId) {
               <article
                 class="booking-row clickable"
-                [class.cancelled]="booking.status === 'Cancelled'"
+                [class.cancelled]="booking.status === BookingStatus.Cancelled"
                 (click)="openBookingDetail(booking)"
               >
                 <div class="row-accent"></div>
@@ -167,7 +167,7 @@
         </section>
       } @empty {
         <div class="empty-state">
-          @if (bookingsResource.isLoading()) {
+          @if (isLoading()) {
             <div class="loading">
               <div class="spinner"></div>
               <p>Laddar bokningar...</p>
@@ -204,5 +204,17 @@
         </div>
       }
     </div>
+
+    <!-- Load More -->
+    @if (hasMore() && !isLoading()) {
+      <div class="load-more">
+        <button class="btn-load-more" (click)="loadMore()">Ladda fler bokningar</button>
+      </div>
+    }
+    @if (isLoading() && bookings().length > 0) {
+      <div class="load-more">
+        <div class="spinner"></div>
+      </div>
+    }
   </div>
 </div>

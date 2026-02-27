@@ -20,7 +20,7 @@ export interface BookingDetailModalConfig {
           <span class="status-badge" [attr.data-status]="booking.status">
             {{ statusLabel(booking.status) }}
           </span>
-          @if (booking.status === 'Active') {
+          @if (booking.status === BookingStatus.Active) {
             <span class="countdown">{{ getCountdownLabel() }}</span>
           }
         </div>
@@ -87,7 +87,7 @@ export interface BookingDetailModalConfig {
       <!-- Footer -->
       <div class="modal-footer">
         <app-button variant="tertiary" (clicked)="onClose()">Stäng</app-button>
-        @if (booking.status === 'Active') {
+        @if (booking.status === BookingStatus.Active) {
           <app-button variant="danger" [disabled]="isCancelling()" (clicked)="onCancel()">
             {{ isCancelling() ? 'Avbokar...' : 'Avboka' }}
           </app-button>
@@ -269,6 +269,7 @@ export interface BookingDetailModalConfig {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BookingDetailModalComponent {
+  protected readonly BookingStatus = BookingStatus;
   private readonly modalService = inject(ModalService);
 
   private config: BookingDetailModalConfig = this.modalService.modalData();

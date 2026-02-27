@@ -2,18 +2,19 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
-  resource,
   signal,
+  untracked,
 } from '@angular/core';
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { BookingService } from '../../../shared/services/booking.service';
-import { SessionService } from '../../../core/session.service';
 import { BookingDetailedReadModel, BookingStatus } from '../../../models/models';
 import { ConfirmService } from '../../../shared/services/confirm.service';
 import { ModalService } from '../../../shared/services/modal.service';
+import { ToastService } from '../../../shared/services/toast.service';
 import {
   BookingDetailModalComponent,
   BookingDetailModalConfig,
@@ -33,79 +34,45 @@ interface BookingGroup {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeeBookingsPage {
+  protected readonly BookingStatus = BookingStatus;
   private readonly confirmService = inject(ConfirmService);
   private readonly bookingService = inject(BookingService);
-  private readonly sessionService = inject(SessionService);
   private readonly modalService = inject(ModalService);
+  private readonly toastService = inject(ToastService);
 
   // --- STATE ---
   activeTab = signal<'upcoming' | 'history'>('upcoming');
   showCancelled = signal<boolean>(false);
 
-  // --- RESOURCES ---
-  bookingsResource = resource({
-    loader: () => {
-      const user = this.sessionService.currentUser();
-      if (!user?.id) return Promise.resolve([]);
-      return firstValueFrom(this.bookingService.getBookingsByUserId(user.id));
-    },
-  });
+  // Accumulated bookings across pages (load-more pattern)
+  bookings = signal<BookingDetailedReadModel[]>([]);
+  totalCount = signal<number>(0);
+  currentPage = signal<number>(1);
+  isLoading = signal<boolean>(false);
+  private readonly PAGE_SIZE = 20;
+
+  constructor() {
+    // Auto-fetch when tab or showCancelled changes
+    effect(() => {
+      const _tab = this.activeTab();
+      const _cancelled = this.showCancelled();
+      untracked(() => this.loadBookings(true));
+    });
+  }
 
   // --- COMPUTED ---
 
-  filteredBookings = computed(() => {
-    const all = this.bookingsResource.value() ?? [];
-    const tab = this.activeTab();
-    const showCancelled = this.showCancelled();
-    const now = new Date();
-
-    return all
-      .filter((b) => {
-        const endTime = new Date(b.endTime ?? 0);
-        const isCancelled = b.status === BookingStatus.Cancelled;
-
-        if (!showCancelled && isCancelled) return false;
-
-        const isHistory = endTime < now;
-        return tab === 'upcoming' ? !isHistory : isHistory;
-      })
-      .sort((a, b) => {
-        const timeA = new Date(a.startTime ?? 0).getTime();
-        const timeB = new Date(b.startTime ?? 0).getTime();
-        return tab === 'upcoming' ? timeA - timeB : timeB - timeA;
-      });
-  });
-
-  upcomingCount = computed(() => {
-    const all = this.bookingsResource.value() ?? [];
-    const showCancelled = this.showCancelled();
-    const now = new Date();
-
-    return all.filter((b) => {
-      const endTime = new Date(b.endTime ?? 0);
-      if (!showCancelled && b.status === BookingStatus.Cancelled) return false;
-      return endTime >= now;
-    }).length;
-  });
+  hasMore = computed(() => this.bookings().length < this.totalCount());
 
   /** The soonest upcoming active booking — used for the hero card */
   nextBooking = computed(() => {
-    const all = this.bookingsResource.value() ?? [];
-    const now = new Date();
-
-    return (
-      all
-        .filter((b) => {
-          const endTime = new Date(b.endTime ?? 0);
-          return endTime >= now && b.status === BookingStatus.Active;
-        })
-        .sort((a, b) => new Date(a.startTime ?? 0).getTime() - new Date(b.startTime ?? 0).getTime())
-        .at(0) ?? null
-    );
+    if (this.activeTab() !== 'upcoming') return null;
+    // Server returns upcoming in ASC order, so first active is soonest
+    return this.bookings().find((b) => b.status === BookingStatus.Active) ?? null;
   });
 
   groupedBookings = computed(() => {
-    const bookings = this.filteredBookings();
+    const bookings = this.bookings();
     const tab = this.activeTab();
 
     if (tab === 'upcoming') {
@@ -235,6 +202,42 @@ export class SeeBookingsPage {
     this.showCancelled.set(checked);
   }
 
+  async loadBookings(reset: boolean) {
+    if (reset) {
+      this.currentPage.set(1);
+      this.bookings.set([]);
+      this.totalCount.set(0);
+    }
+
+    this.isLoading.set(true);
+    try {
+      const result = await firstValueFrom(
+        this.bookingService.getBookingsByUserId({
+          page: this.currentPage(),
+          pageSize: this.PAGE_SIZE,
+          timeFilter: this.activeTab(),
+          includeCancelled: this.showCancelled(),
+        }),
+      );
+
+      if (reset) {
+        this.bookings.set(result.items);
+      } else {
+        this.bookings.update((prev) => [...prev, ...result.items]);
+      }
+      this.totalCount.set(result.totalCount);
+    } catch (err) {
+      console.error('Failed to load bookings', err);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  loadMore() {
+    this.currentPage.update((p) => p + 1);
+    this.loadBookings(false);
+  }
+
   openBookingDetail(booking: BookingDetailedReadModel): void {
     this.modalService.open(BookingDetailModalComponent, {
       title: 'Bokningsdetaljer',
@@ -252,7 +255,7 @@ export class SeeBookingsPage {
 
           await firstValueFrom(this.bookingService.cancelBooking(bookingId));
           this.modalService.close();
-          this.bookingsResource.reload();
+          this.loadBookings(true);
         },
       } satisfies BookingDetailModalConfig,
       width: '480px',
@@ -275,10 +278,10 @@ export class SeeBookingsPage {
 
     try {
       await firstValueFrom(this.bookingService.cancelBooking(booking.bookingId));
-      this.bookingsResource.reload();
+      this.loadBookings(true);
     } catch (error) {
       console.error('Failed to cancel booking', error);
-      alert('Kunde inte avboka. Försök igen.');
+      this.toastService.showError('Kunde inte avboka. Försök igen.');
     }
   }
 }
