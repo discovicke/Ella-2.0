@@ -1,7 +1,12 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CreateBookingDto, BookingDetailedReadModel, BookingStatus, PagedResultOfBookingDetailedReadModel } from '../../models/models';
+import {
+  CreateBookingDto,
+  BookingDetailedReadModel,
+  BookingStatus,
+  PagedResultOfBookingDetailedReadModel,
+} from '../../models/models';
 
 export interface BookingFilterParams {
   userId?: number;
