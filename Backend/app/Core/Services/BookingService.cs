@@ -46,6 +46,40 @@ public class BookingService(
     }
 
     /// <summary>
+    /// Get paginated filtered bookings with search support
+    /// </summary>
+    public async Task<PagedResult<BookingDetailedReadModel>> GetFilteredBookingsPagedAsync(
+        int page, int pageSize,
+        string? search = null,
+        long? userId = null,
+        long? roomId = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        BookingStatus? status = null
+    )
+    {
+        var (bookings, totalCount) = await readModelRepo.GetDetailedBookingsPagedAsync(
+            page, pageSize, search, userId, roomId, startDate, endDate, status
+        );
+        return new PagedResult<BookingDetailedReadModel>(bookings, totalCount, page, pageSize);
+    }
+
+    /// <summary>
+    /// Get paginated bookings a user has created (my-owned), with time filtering.
+    /// </summary>
+    public async Task<PagedResult<BookingDetailedReadModel>> GetUserOwnedBookingsPagedAsync(
+        long userId, int page, int pageSize,
+        string? timeFilter = null,
+        bool includeCancelled = true
+    )
+    {
+        var (bookings, totalCount) = await readModelRepo.GetDetailedBookingsByUserIdPagedAsync(
+            userId, page, pageSize, timeFilter, includeCancelled
+        );
+        return new PagedResult<BookingDetailedReadModel>(bookings, totalCount, page, pageSize);
+    }
+
+    /// <summary>
     /// Get detailed booking by ID with enriched data
     /// </summary>
     public async Task<BookingDetailedReadModel?> GetDetailedBookingByIdAsync(long id)

@@ -198,4 +198,131 @@ public class PostgresBookingReadModelRepo(
             throw;
         }
     }
+
+    public async Task<(IEnumerable<BookingDetailedReadModel> Bookings, int TotalCount)> GetDetailedBookingsPagedAsync(
+        int page, int pageSize,
+        string? search = null,
+        long? userId = null,
+        long? roomId = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        BookingStatus? status = null)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+
+            var where = new StringBuilder("WHERE 1=1");
+            var parameters = new DynamicParameters();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                where.Append(" AND (user_name ILIKE @Search OR user_email ILIKE @Search OR room_name ILIKE @Search OR campus_city ILIKE @Search OR notes ILIKE @Search)");
+                parameters.Add("Search", $"%{search}%");
+            }
+
+            if (userId.HasValue)
+            {
+                where.Append(" AND user_id = @UserId");
+                parameters.Add("UserId", userId.Value);
+            }
+
+            if (roomId.HasValue)
+            {
+                where.Append(" AND room_id = @RoomId");
+                parameters.Add("RoomId", roomId.Value);
+            }
+
+            if (startDate.HasValue)
+            {
+                where.Append(" AND start_time >= @StartDate");
+                parameters.Add("StartDate", startDate.Value.ToUniversalTime());
+            }
+
+            if (endDate.HasValue)
+            {
+                where.Append(" AND start_time < @EndDate");
+                parameters.Add("EndDate", endDate.Value.ToUniversalTime());
+            }
+
+            if (status.HasValue)
+            {
+                where.Append(" AND status = @Status::booking_status");
+                parameters.Add("Status", status.Value.ToString().ToLower());
+            }
+
+            var countSql = $"SELECT COUNT(*) FROM v_bookings_detailed {where};";
+            var totalCount = await conn.ExecuteScalarAsync<int>(countSql, parameters);
+
+            var offset = (page - 1) * pageSize;
+            parameters.Add("Limit", pageSize);
+            parameters.Add("Offset", offset);
+
+            var dataSql = $"SELECT * FROM v_bookings_detailed {where} ORDER BY start_time DESC LIMIT @Limit OFFSET @Offset;";
+            var bookings = await conn.QueryAsync<BookingDetailedReadModel>(dataSql, parameters);
+
+            return (bookings, totalCount);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while fetching paged detailed bookings");
+            throw;
+        }
+    }
+
+    public async Task<(IEnumerable<BookingDetailedReadModel> Bookings, int TotalCount)> GetDetailedBookingsByUserIdPagedAsync(
+        long userId, int page, int pageSize,
+        string? timeFilter = null,
+        bool includeCancelled = true)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+
+            var where = new StringBuilder("WHERE user_id = @UserId");
+            var parameters = new DynamicParameters();
+            parameters.Add("UserId", userId);
+
+            var now = DateTime.UtcNow;
+            var orderDir = "DESC";
+
+            if (timeFilter == "upcoming")
+            {
+                where.Append(" AND end_time >= @Now");
+                parameters.Add("Now", now);
+                orderDir = "ASC";
+            }
+            else if (timeFilter == "history")
+            {
+                where.Append(" AND end_time < @Now");
+                parameters.Add("Now", now);
+                orderDir = "DESC";
+            }
+
+            if (!includeCancelled)
+            {
+                where.Append(" AND status != @CancelledStatus::booking_status");
+                parameters.Add("CancelledStatus", BookingStatus.Cancelled.ToString().ToLower());
+            }
+
+            var countSql = $"SELECT COUNT(*) FROM v_bookings_detailed {where};";
+            var totalCount = await conn.ExecuteScalarAsync<int>(countSql, parameters);
+
+            var offset = (page - 1) * pageSize;
+            parameters.Add("Limit", pageSize);
+            parameters.Add("Offset", offset);
+
+            var dataSql = $"SELECT * FROM v_bookings_detailed {where} ORDER BY start_time {orderDir} LIMIT @Limit OFFSET @Offset;";
+            var bookings = await conn.QueryAsync<BookingDetailedReadModel>(dataSql, parameters);
+
+            return (bookings, totalCount);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while fetching paged bookings for user {UserId}", userId);
+            throw;
+        }
+    }
 }
