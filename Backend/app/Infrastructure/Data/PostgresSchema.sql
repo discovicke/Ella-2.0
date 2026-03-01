@@ -253,9 +253,8 @@ CREATE TABLE IF NOT EXISTS registrations
 -- Kombinerar template-flaggor med personliga overrides.
 -- COALESCE: personlig override vinner om den finns (även FALSE),
 -- annars används templatens värde, annars FALSE (nekad).
-CREATE
-OR REPLACE
-VIEW v_user_effective_permissions AS
+DROP VIEW IF EXISTS v_user_effective_permissions;
+CREATE VIEW v_user_effective_permissions AS
 SELECT u.id                                  AS user_id,
        sp.key                                AS permission_key,
        COALESCE(upo.value, ptf.value, FALSE) AS is_granted
@@ -272,9 +271,8 @@ FROM users u
 -- Berikad bokningsvy med användar- och rumsdata samt antal registrerade.
 -- status beräknas dynamiskt: om end_time har passerat sätts 'expired'
 -- automatiskt, utan att man behöver uppdatera raden i bookings.
-CREATE
-OR REPLACE
-VIEW v_bookings_detailed AS
+DROP VIEW IF EXISTS v_bookings_detailed;
+CREATE VIEW v_bookings_detailed AS
 SELECT b.id               AS booking_id,
        b.user_id,
        u.display_name     AS user_name,
