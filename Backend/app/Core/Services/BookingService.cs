@@ -73,6 +73,45 @@ public class BookingService(
     }
 
     /// <summary>
+    /// Get group-aware paginated filtered bookings.
+    /// Paginates by groups (e.g. 10 rooms per page) and returns all bookings for those groups.
+    /// </summary>
+    public async Task<
+        GroupedPagedResult<BookingDetailedReadModel>
+    > GetGroupedFilteredBookingsPagedAsync(
+        string groupBy,
+        int page,
+        int groupsPerPage,
+        string? search = null,
+        long? userId = null,
+        long? roomId = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        BookingStatus? status = null
+    )
+    {
+        var (bookings, totalGroups, totalItemCount) =
+            await readModelRepo.GetDetailedBookingsGroupedPagedAsync(
+                groupBy,
+                page,
+                groupsPerPage,
+                search,
+                userId,
+                roomId,
+                startDate,
+                endDate,
+                status
+            );
+        return new GroupedPagedResult<BookingDetailedReadModel>(
+            bookings,
+            totalGroups,
+            totalItemCount,
+            page,
+            groupsPerPage
+        );
+    }
+
+    /// <summary>
     /// Get paginated bookings a user has created (my-owned), with time filtering.
     /// </summary>
     public async Task<PagedResult<BookingDetailedReadModel>> GetUserOwnedBookingsPagedAsync(

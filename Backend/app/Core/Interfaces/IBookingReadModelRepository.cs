@@ -73,4 +73,25 @@ public interface IBookingReadModelRepository
         string? timeFilter = null,
         bool includeCancelled = true
     );
+
+    /// <summary>
+    /// Get bookings with group-aware pagination.
+    /// Groups by the specified column (room, user, campus, day, week, month)
+    /// and returns all bookings for the requested page of groups.
+    /// </summary>
+    Task<(
+        IEnumerable<BookingDetailedReadModel> Bookings,
+        int TotalGroups,
+        int TotalItemCount
+    )> GetDetailedBookingsGroupedPagedAsync(
+        string groupBy,
+        int page,
+        int groupsPerPage,
+        string? search = null,
+        long? userId = null,
+        long? roomId = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        BookingStatus? status = null
+    );
 }
