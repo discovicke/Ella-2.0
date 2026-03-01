@@ -147,7 +147,19 @@
     } @else {
       <div class="groups-toolbar">
         <button class="btn-toggle-all" (click)="toggleAllCollapse()">
-          {{ allCollapsed() ? 'Expandera alla' : 'Minimera alla' }}
+          @if (defaultCollapsed()) {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="7 13 12 18 17 13" />
+              <polyline points="7 6 12 11 17 6" />
+            </svg>
+            Expandera alla
+          } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="17 11 12 6 7 11" />
+              <polyline points="17 18 12 13 7 18" />
+            </svg>
+            Minimera alla
+          }
         </button>
       </div>
       <div class="groups-list">
