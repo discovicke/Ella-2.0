@@ -254,9 +254,8 @@ CREATE TABLE IF NOT EXISTS registrations
 -- Kombinerar template-flaggor med personliga overrides.
 -- COALESCE: personlig override vinner om den finns (även FALSE),
 -- annars används templatens värde, annars FALSE (nekad).
-CREATE
-OR REPLACE
-VIEW v_user_effective_permissions AS
+DROP VIEW IF EXISTS v_user_effective_permissions;
+CREATE VIEW v_user_effective_permissions AS
 SELECT u.id                                  AS user_id,
        sp.key                                AS permission_key,
        COALESCE(upo.value, ptf.value, FALSE) AS is_granted
