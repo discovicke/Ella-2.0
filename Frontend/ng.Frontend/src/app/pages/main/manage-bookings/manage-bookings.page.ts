@@ -8,7 +8,11 @@ import {
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
-import { BookingDetailedReadModel, BookingStatus } from '../../../models/models';
+import {
+  BookingDetailedReadModel,
+  BookingStatus,
+  GroupedPagedResultOfBookingDetailedReadModel,
+} from '../../../models/models';
 import { BookingService, BookingPagedFilterParams } from '../../../shared/services/booking.service';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -45,9 +49,21 @@ export class ManageBookingsPage {
   private searchDebounceTimer: ReturnType<typeof setTimeout> | undefined;
   selectedStatus = signal<BookingStatus | 'All'>(BookingStatus.Active);
   viewMode = signal<ViewMode>('week');
-  collapsedGroups = signal<Set<string>>(new Set());
+  /** Sticky preference: should groups default to collapsed? Survives filter/page changes. */
+  defaultCollapsed = signal(false);
+  /** Per-group overrides that differ from the default. Reset on filter/page change. */
+  private groupOverrides = signal<Set<string>>(new Set());
   pageIndex = signal(0);
-  pageSize = signal(25);
+
+  /**
+   * Groups per page sent to the server.
+   * Date-bounded views (today/week/month) use a high limit so all groups load at once.
+   * Unbounded views paginate by groups (10 groups per page).
+   */
+  readonly groupsPerPage = computed(() => {
+    const range = this.selectedDateRange();
+    return range === 'all' ? 10 : 1_000;
+  });
 
   // Derived from viewMode
   readonly selectedDateRange = computed((): DateRange => {
@@ -105,19 +121,21 @@ export class ManageBookingsPage {
 
   readonly dateBounds = computed(() => this.getDateBounds(this.selectedDateRange()));
 
-  // --- Resource (server-side paginated) ---
+  // --- Resource (server-side group-aware pagination) ---
   bookingsResource = resource({
     params: () => ({
       page: this.pageIndex() + 1,
-      pageSize: this.pageSize(),
+      groupsPerPage: this.groupsPerPage(),
       search: this.debouncedSearch(),
       status: this.selectedStatus(),
       bounds: this.dateBounds(),
+      groupBy: this.groupBy(),
     }),
     loader: ({ params }) => {
       const p: BookingPagedFilterParams = {
         page: params.page,
-        pageSize: params.pageSize,
+        pageSize: params.groupsPerPage,
+        groupBy: params.groupBy,
       };
       if (params.search) p.search = params.search;
       if (params.status !== 'All') p.status = params.status;
@@ -125,28 +143,35 @@ export class ManageBookingsPage {
         p.startDate = params.bounds.start.toISOString();
         p.endDate = params.bounds.end.toISOString();
       }
-      return firstValueFrom(this.bookingService.getAllBookings(p));
+      return firstValueFrom(this.bookingService.getGroupedBookings(p));
     },
   });
 
   // Keep previous data visible while loading to avoid flash
   private lastBookings: BookingDetailedReadModel[] = [];
+  private lastTotalGroups = 0;
   private lastTotalBookings = 0;
 
   readonly bookings = computed(() => {
     const val = this.bookingsResource.value();
     if (val) {
       this.lastBookings = val.items;
-      this.lastTotalBookings = val.totalCount;
+      this.lastTotalGroups = val.totalGroups;
+      this.lastTotalBookings = val.totalItemCount;
     }
     return this.lastBookings;
   });
+  readonly totalGroups = computed(() => {
+    const val = this.bookingsResource.value();
+    if (val) return val.totalGroups;
+    return this.lastTotalGroups;
+  });
   readonly totalBookings = computed(() => {
     const val = this.bookingsResource.value();
-    if (val) return val.totalCount;
+    if (val) return val.totalItemCount;
     return this.lastTotalBookings;
   });
-  readonly totalPages = computed(() => Math.ceil(this.totalBookings() / this.pageSize()));
+  readonly totalPages = computed(() => Math.ceil(this.totalGroups() / this.groupsPerPage()));
 
   /** Returns page indices to render, with -1 as ellipsis placeholder. Max ~7 buttons. */
   readonly visiblePages = computed(() => {
@@ -341,47 +366,33 @@ export class ManageBookingsPage {
   setView(mode: ViewMode): void {
     this.viewMode.set(mode);
     this.pageIndex.set(0);
-    this.collapsedGroups.set(new Set());
+    this.groupOverrides.set(new Set());
   }
 
   toggleGroupCollapse(key: string): void {
-    const current = new Set(this.collapsedGroups());
+    const current = new Set(this.groupOverrides());
     if (current.has(key)) {
       current.delete(key);
     } else {
       current.add(key);
     }
-    this.collapsedGroups.set(current);
+    this.groupOverrides.set(current);
   }
 
   isGroupCollapsed(key: string): boolean {
-    return this.collapsedGroups().has(key);
+    const overridden = this.groupOverrides().has(key);
+    return overridden ? !this.defaultCollapsed() : this.defaultCollapsed();
   }
 
-  readonly allCollapsed = computed(() => {
-    const groups = this.groupedBookings();
-    if (groups.length === 0) return false;
-    const collapsed = this.collapsedGroups();
-    return groups.every((g) => collapsed.has(g.key));
-  });
-
   toggleAllCollapse(): void {
-    if (this.allCollapsed()) {
-      this.collapsedGroups.set(new Set());
-    } else {
-      this.collapsedGroups.set(new Set(this.groupedBookings().map((g) => g.key)));
-    }
+    this.defaultCollapsed.update((v) => !v);
+    this.groupOverrides.set(new Set());
   }
 
   handlePageChange(page: number): void {
     if (page >= 0 && page < this.totalPages()) {
       this.pageIndex.set(page);
     }
-  }
-
-  onPageSizeChange(size: number): void {
-    this.pageSize.set(size);
-    this.pageIndex.set(0);
   }
 
   getInitials(name?: string | null): string {
