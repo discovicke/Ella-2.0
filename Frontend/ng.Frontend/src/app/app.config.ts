@@ -1,7 +1,8 @@
 import {
-  APP_INITIALIZER,
   ApplicationConfig,
+  inject,
   LOCALE_ID,
+  provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
@@ -12,6 +13,8 @@ import localeSv from '@angular/common/locales/sv';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { initPermissionTemplates } from './core/permission-templates';
+import { AuthService } from './core/auth/auth.service';
+import { SessionService } from './core/session.service';
 
 registerLocaleData(localeSv);
 
@@ -21,10 +24,11 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
     { provide: LOCALE_ID, useValue: 'sv' },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: () => () => initPermissionTemplates(),
-      multi: true,
-    },
+    provideAppInitializer(() => initPermissionTemplates()),
+    provideAppInitializer(() => {
+      const authService = inject(AuthService);
+      const sessionService = inject(SessionService);
+      return sessionService.isAuthenticated() ? authService.refreshCurrentUser() : Promise.resolve();
+    }),
   ],
 };
