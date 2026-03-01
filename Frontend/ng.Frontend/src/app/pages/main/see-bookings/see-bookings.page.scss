@@ -14,15 +14,15 @@
   flex-direction: column;
   height: 100%;
   background: var(--color-bg-body);
-}
-
-.page-content {
-  flex: 1;
   overflow-y: auto;
   scrollbar-width: none; // Firefox
   &::-webkit-scrollbar {
     display: none;
   } // Chrome/Edge/Safari
+}
+
+.page-content {
+  flex: 1;
   padding: 24px;
   max-width: 1000px;
   margin: 0 auto;
