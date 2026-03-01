@@ -11,14 +11,14 @@
  */
 
 export enum BookingStatus {
-  Active = 'Active',
-  Cancelled = 'Cancelled',
-  Expired = 'Expired',
+  Active = "Active",
+  Cancelled = "Cancelled",
+  Expired = "Expired",
 }
 
 export enum BannedStatus {
-  NotBanned = 'NotBanned',
-  Banned = 'Banned',
+  NotBanned = "NotBanned",
+  Banned = "Banned",
 }
 
 export interface AssetTypeResponseDto {
@@ -138,6 +138,18 @@ export interface CreateUserDto {
   password: string;
 }
 
+export interface GroupedPagedResultOfBookingDetailedReadModel {
+  items: BookingDetailedReadModel[];
+  /** @format int32 */
+  totalGroups: number;
+  /** @format int32 */
+  totalItemCount: number;
+  /** @format int32 */
+  page: number;
+  /** @format int32 */
+  groupsPerPage: number;
+}
+
 export interface LoginDto {
   email: string;
   password: string;
@@ -151,18 +163,6 @@ export interface PagedResultOfBookingDetailedReadModel {
   page: number;
   /** @format int32 */
   pageSize: number;
-}
-
-export interface GroupedPagedResultOfBookingDetailedReadModel {
-  items: BookingDetailedReadModel[];
-  /** @format int32 */
-  totalGroups: number;
-  /** @format int32 */
-  totalItemCount: number;
-  /** @format int32 */
-  page: number;
-  /** @format int32 */
-  groupsPerPage: number;
 }
 
 export interface PagedResultOfUserResponseDto {
