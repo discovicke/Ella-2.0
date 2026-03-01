@@ -49,7 +49,7 @@ export class SeeBookingsPage {
   totalCount = signal<number>(0);
   currentPage = signal<number>(1);
   isLoading = signal<boolean>(false);
-  private readonly PAGE_SIZE = 20;
+  private readonly PAGE_SIZE = 8;
 
   constructor() {
     // Auto-fetch when tab or showCancelled changes

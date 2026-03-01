@@ -88,6 +88,7 @@ public static class BookingEndpoints
                 "Retrieves a paginated list of bookings, optionally filtered by user, room, date range, status, or search.\nWhen groupBy is provided, paginates by groups (e.g., 10 rooms per page) and returns all bookings for those groups.\n\n🔒 **Authentication Required**\n🔑 **Requires manageBookings permission**"
             )
             .Produces<PagedResult<BookingDetailedReadModel>>(StatusCodes.Status200OK)
+            .Produces<GroupedPagedResult<BookingDetailedReadModel>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
 
