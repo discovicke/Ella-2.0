@@ -6,6 +6,7 @@ import {
   BookingDetailedReadModel,
   BookingStatus,
   PagedResultOfBookingDetailedReadModel,
+  GroupedPagedResultOfBookingDetailedReadModel,
 } from '../../models/models';
 
 export interface BookingFilterParams {
@@ -20,6 +21,7 @@ export interface BookingPagedFilterParams extends BookingFilterParams {
   page?: number;
   pageSize?: number;
   search?: string;
+  groupBy?: string;
 }
 
 export interface MyBookingsParams {
@@ -63,6 +65,22 @@ export class BookingService {
     if (filters?.endDate) params = params.set('endDate', filters.endDate);
     if (filters?.status) params = params.set('status', filters.status);
     return this.http.get<PagedResultOfBookingDetailedReadModel>(this.apiUrl, { params });
+  }
+
+  getGroupedBookings(
+    filters?: BookingPagedFilterParams,
+  ): Observable<GroupedPagedResultOfBookingDetailedReadModel> {
+    let params = new HttpParams();
+    if (filters?.page) params = params.set('page', filters.page);
+    if (filters?.pageSize) params = params.set('pageSize', filters.pageSize);
+    if (filters?.search) params = params.set('search', filters.search);
+    if (filters?.userId) params = params.set('userId', filters.userId);
+    if (filters?.roomId) params = params.set('roomId', filters.roomId);
+    if (filters?.startDate) params = params.set('startDate', filters.startDate);
+    if (filters?.endDate) params = params.set('endDate', filters.endDate);
+    if (filters?.status) params = params.set('status', filters.status);
+    if (filters?.groupBy) params = params.set('groupBy', filters.groupBy);
+    return this.http.get<GroupedPagedResultOfBookingDetailedReadModel>(this.apiUrl, { params });
   }
 
   updateBookingStatus(bookingId: number, status: BookingStatus): Observable<unknown> {

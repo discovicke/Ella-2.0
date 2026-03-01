@@ -28,9 +28,46 @@ public static class BookingEndpoints
                     [FromQuery] DateTime? startDate,
                     [FromQuery] DateTime? endDate,
                     [FromQuery] BookingStatus? status,
+                    [FromQuery] string? groupBy,
                     BookingService service
                 ) =>
                 {
+                    // When groupBy is provided, use group-aware pagination
+                    if (!string.IsNullOrWhiteSpace(groupBy))
+                    {
+                        var validGroups = new HashSet<string>
+                        {
+                            "room",
+                            "user",
+                            "campus",
+                            "day",
+                            "week",
+                            "month",
+                        };
+                        if (!validGroups.Contains(groupBy))
+                        {
+                            return Results.BadRequest(
+                                new
+                                {
+                                    message = $"Invalid groupBy value '{groupBy}'. Must be one of: {string.Join(", ", validGroups)}",
+                                }
+                            );
+                        }
+
+                        var grouped = await service.GetGroupedFilteredBookingsPagedAsync(
+                            groupBy,
+                            page is > 0 ? page.Value : 1,
+                            pageSize is > 0 ? pageSize.Value : 10,
+                            search,
+                            userId,
+                            roomId,
+                            startDate,
+                            endDate,
+                            status
+                        );
+                        return Results.Ok(grouped);
+                    }
+
                     var result = await service.GetFilteredBookingsPagedAsync(
                         page is > 0 ? page.Value : 1,
                         pageSize is > 0 ? pageSize.Value : 25,
@@ -46,9 +83,9 @@ public static class BookingEndpoints
             )
             .RequirePermission("ManageBookings")
             .WithName("GetAllBookings")
-            .WithSummary("Get all bookings (paginated)")
+            .WithSummary("Get all bookings (paginated, optionally grouped)")
             .WithDescription(
-                "Retrieves a paginated list of bookings, optionally filtered by user, room, date range, status, or search.\n\n🔒 **Authentication Required**\n🔑 **Requires manageBookings permission**"
+                "Retrieves a paginated list of bookings, optionally filtered by user, room, date range, status, or search.\nWhen groupBy is provided, paginates by groups (e.g., 10 rooms per page) and returns all bookings for those groups.\n\n🔒 **Authentication Required**\n🔑 **Requires manageBookings permission**"
             )
             .Produces<PagedResult<BookingDetailedReadModel>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)

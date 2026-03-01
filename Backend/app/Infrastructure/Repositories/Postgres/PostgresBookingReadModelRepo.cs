@@ -344,4 +344,128 @@ public class PostgresBookingReadModelRepo(
             throw;
         }
     }
+
+    public async Task<(
+        IEnumerable<BookingDetailedReadModel> Bookings,
+        int TotalGroups,
+        int TotalItemCount
+    )> GetDetailedBookingsGroupedPagedAsync(
+        string groupBy,
+        int page,
+        int groupsPerPage,
+        string? search = null,
+        long? userId = null,
+        long? roomId = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        BookingStatus? status = null
+    )
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+
+            // Build shared WHERE clause
+            var where = new StringBuilder("WHERE 1=1");
+            var parameters = new DynamicParameters();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                where.Append(
+                    " AND (user_name ILIKE @Search OR user_email ILIKE @Search OR room_name ILIKE @Search OR campus_city ILIKE @Search OR notes ILIKE @Search)"
+                );
+                parameters.Add("Search", $"%{search}%");
+            }
+
+            if (userId.HasValue)
+            {
+                where.Append(" AND user_id = @UserId");
+                parameters.Add("UserId", userId.Value);
+            }
+
+            if (roomId.HasValue)
+            {
+                where.Append(" AND room_id = @RoomId");
+                parameters.Add("RoomId", roomId.Value);
+            }
+
+            if (startDate.HasValue)
+            {
+                where.Append(" AND start_time >= @StartDate");
+                parameters.Add("StartDate", startDate.Value.ToUniversalTime());
+            }
+
+            if (endDate.HasValue)
+            {
+                where.Append(" AND start_time < @EndDate");
+                parameters.Add("EndDate", endDate.Value.ToUniversalTime());
+            }
+
+            if (status.HasValue)
+            {
+                where.Append(" AND status = @Status::booking_status");
+                parameters.Add("Status", status.Value.ToString().ToLower());
+            }
+
+            // Map groupBy to SQL expressions (PostgreSQL syntax)
+            var (groupExpr, sortExpr) = groupBy switch
+            {
+                "room" => ("room_id", "MIN(room_name)"),
+                "user" => ("user_id", "MIN(user_name)"),
+                "campus" => ("campus_city", "MIN(campus_city)"),
+                "day" => ("start_time::date", "start_time::date"),
+                "week" => (
+                    "to_char(start_time, 'IYYY-\"W\"IW')",
+                    "to_char(start_time, 'IYYY-\"W\"IW')"
+                ),
+                "month" => ("to_char(start_time, 'YYYY-MM')", "to_char(start_time, 'YYYY-MM')"),
+                _ => throw new ArgumentException($"Unsupported groupBy value: {groupBy}"),
+            };
+
+            // Determine sort direction: newest months first, everything else ascending
+            var sortDirection = groupBy == "month" ? "DESC" : "ASC";
+            var fullSort = $"{sortExpr} {sortDirection}";
+
+            // Count total groups
+            var countSql = $"SELECT COUNT(DISTINCT {groupExpr}) FROM v_bookings_detailed {where};";
+            var totalGroups = await conn.ExecuteScalarAsync<int>(countSql, parameters);
+
+            // Count total items
+            var itemCountSql = $"SELECT COUNT(*) FROM v_bookings_detailed {where};";
+            var totalItemCount = await conn.ExecuteScalarAsync<int>(itemCountSql, parameters);
+
+            if (totalGroups == 0)
+            {
+                return (Enumerable.Empty<BookingDetailedReadModel>(), 0, 0);
+            }
+
+            // Get paginated group keys
+            var offset = (page - 1) * groupsPerPage;
+            parameters.Add("GLimit", groupsPerPage);
+            parameters.Add("GOffset", offset);
+
+            var keysSql =
+                $"SELECT {groupExpr}::text AS gk FROM v_bookings_detailed {where} GROUP BY {groupExpr} ORDER BY {fullSort} LIMIT @GLimit OFFSET @GOffset;";
+            var groupKeys = (await conn.QueryAsync<string>(keysSql, parameters)).ToList();
+
+            if (groupKeys.Count == 0)
+            {
+                return (Enumerable.Empty<BookingDetailedReadModel>(), totalGroups, totalItemCount);
+            }
+
+            // Fetch all bookings belonging to the selected groups
+            parameters.Add("GroupKeys", groupKeys);
+            var dataSql =
+                $"SELECT * FROM v_bookings_detailed {where} AND {groupExpr}::text = ANY(@GroupKeys) ORDER BY start_time;";
+            var bookings = await conn.QueryAsync<BookingDetailedReadModel>(dataSql, parameters);
+
+            return (bookings, totalGroups, totalItemCount);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while fetching grouped paged detailed bookings");
+            throw;
+        }
+    }
 }
