@@ -7,7 +7,7 @@
 - [ ] Fixa de sista sakerna för att booking-form ska fungera fullt ut (@christiangennari)
 - [ ] Se över möjligheten för att skapa en kalender med ett library (hitta alternativ och jämför)
   - **MÖTE MED GÄNGET OM DETTA TORSDAG 2026-03-05**
-  -
+
 
 #### Priority: MEDIUM
 
