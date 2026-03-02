@@ -77,6 +77,11 @@ export interface BookingEditModalConfig {
           <div class="info-content">
             <span class="info-primary">{{ booking.userName ?? '—' }}</span>
             <span class="info-secondary">{{ booking.userEmail ?? '' }}</span>
+            @if (booking.bookerName) {
+              <span class="info-secondary form-label"
+                >Via bokningsformulär – {{ booking.bookerName }}</span
+              >
+            }
           </div>
         </div>
 
@@ -135,6 +140,22 @@ export interface BookingEditModalConfig {
               (clicked)="onSetStatus(BookingStatus.Cancelled)"
             >
               {{ isSubmitting() ? 'Sparar...' : 'Avboka' }}
+            </app-button>
+          }
+          @if (booking.status === BookingStatus.Pending) {
+            <app-button
+              variant="primary"
+              [disabled]="isSubmitting()"
+              (clicked)="onSetStatus(BookingStatus.Active)"
+            >
+              {{ isSubmitting() ? 'Sparar...' : 'Godkänn' }}
+            </app-button>
+            <app-button
+              variant="danger"
+              [disabled]="isSubmitting()"
+              (clicked)="onSetStatus(BookingStatus.Cancelled)"
+            >
+              {{ isSubmitting() ? 'Sparar...' : 'Neka' }}
             </app-button>
           }
         </div>
@@ -236,6 +257,10 @@ export interface BookingEditModalConfig {
           color: var(--color-text-muted);
           border: 1px solid var(--color-border);
         }
+        &[data-status='Pending'] {
+          background: #fef3c7;
+          color: #b45309;
+        }
       }
 
       /* ── Info rows ── */
@@ -294,6 +319,13 @@ export interface BookingEditModalConfig {
       .info-secondary {
         font-size: 0.8rem;
         color: var(--color-text-muted);
+
+        &.form-label {
+          font-size: 0.72rem;
+          font-weight: 600;
+          color: #b45309;
+          margin-top: 2px;
+        }
       }
 
       /* ── Notes ── */
@@ -365,6 +397,8 @@ export class BookingEditModalComponent {
     switch (status) {
       case BookingStatus.Active:
         return 'Aktiv';
+      case BookingStatus.Pending:
+        return 'V\u00e4ntande';
       case BookingStatus.Cancelled:
         return 'Avbokad';
       case BookingStatus.Expired:

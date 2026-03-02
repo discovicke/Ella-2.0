@@ -18,7 +18,7 @@
         <h2>Bokningar</h2>
       </div>
       <div class="header-right">
-        @if (hasActiveFilters()) {
+        <div class="filter-actions" [class.filter-actions--visible]="hasActiveFilters()">
           <span class="result-count">{{ totalBookings() }} träffar</span>
           <button class="btn-reset" (click)="resetFilters()" title="Rensa filter">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -26,6 +26,29 @@
               <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
             </svg>
             Rensa
+          </button>
+        </div>
+        @if (isBookingFormEnabled() !== null) {
+          <button
+            class="btn-form-toggle"
+            [class.btn-form-toggle--enabled]="isBookingFormEnabled()"
+            [class.btn-form-toggle--disabled]="!isBookingFormEnabled()"
+            [disabled]="isTogglingForm()"
+            (click)="toggleBookingForm()"
+            [title]="
+              isBookingFormEnabled() ? 'Stäng bokningsformuläret' : 'Öppna bokningsformuläret'
+            "
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              @if (isBookingFormEnabled()) {
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M9 9l6 6M15 9l-6 6" />
+              } @else {
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M9 12l2 2 4-4" />
+              }
+            </svg>
+            {{ isBookingFormEnabled() ? 'Formulär på' : 'Formulär av' }}
           </button>
         }
       </div>
@@ -60,6 +83,7 @@
           <select (change)="updateStatus($event)" [value]="selectedStatus()">
             <option value="All">Alla</option>
             <option value="Active">Aktiv</option>
+            <option value="Pending">Väntande</option>
             <option value="Cancelled">Avbokad</option>
             <option value="Expired">Utgången</option>
           </select>
@@ -123,6 +147,35 @@
       </div>
     </div>
   </div>
+
+  <!-- Pending Requests Banner -->
+  @if (pendingCount() > 0) {
+    <button class="pending-banner" (click)="filterPending()">
+      <div class="pending-banner__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      </div>
+      <div class="pending-banner__text">
+        <span class="pending-banner__title">Väntande förfrågningar</span>
+        <span class="pending-banner__desc"
+          >{{ pendingCount() }} bokning{{ pendingCount() === 1 ? '' : 'ar' }} väntar på
+          godkännande</span
+        >
+      </div>
+      <span class="pending-banner__count">{{ pendingCount() }}</span>
+      <svg
+        class="pending-banner__arrow"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <polyline points="9 18 15 12 9 6" />
+      </svg>
+    </button>
+  }
 
   <!-- Groups Container -->
   <div class="groups-container">
@@ -230,6 +283,7 @@
                     class="booking-row"
                     [class.booking-row--cancelled]="booking.status === BookingStatus.Cancelled"
                     [class.booking-row--expired]="booking.status === BookingStatus.Expired"
+                    [class.booking-row--pending]="booking.status === BookingStatus.Pending"
                     (click)="openBookingModal(booking)"
                   >
                     <div class="booking-row__user">
