@@ -11,14 +11,15 @@
  */
 
 export enum BookingStatus {
-  Active = "Active",
-  Cancelled = "Cancelled",
-  Expired = "Expired",
+  Active = 'Active',
+  Cancelled = 'Cancelled',
+  Expired = 'Expired',
+  Pending = 'Pending',
 }
 
 export enum BannedStatus {
-  NotBanned = "NotBanned",
-  Banned = "Banned",
+  NotBanned = 'NotBanned',
+  Banned = 'Banned',
 }
 
 export interface AssetTypeResponseDto {
@@ -63,6 +64,7 @@ export interface BookingDetailedReadModel {
   endTime?: string;
   status?: BookingStatus;
   notes?: string | null;
+  bookerName?: string | null;
   /** @format date-time */
   createdAt?: string;
   /** @format date-time */
@@ -105,6 +107,8 @@ export interface CreateBookingDto {
   endTime: string;
   notes: string | null;
   status: BookingStatus;
+  /** @default null */
+  bookerName?: string | null;
 }
 
 export interface CreateCampusDto {
@@ -117,6 +121,17 @@ export interface CreateCampusDto {
 
 export interface CreateClassDto {
   className: string;
+}
+
+export interface CreatePublicBookingDto {
+  bookerName: string;
+  /** @format int64 */
+  roomId: number;
+  /** @format date-time */
+  startTime: string;
+  /** @format date-time */
+  endTime: string;
+  notes: string | null;
 }
 
 export interface CreateRoomDto {

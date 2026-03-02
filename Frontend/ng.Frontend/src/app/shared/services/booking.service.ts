@@ -94,4 +94,14 @@ export class BookingService {
   createBooking(booking: CreateBookingDto): Observable<unknown> {
     return this.http.post(this.apiUrl, booking);
   }
+
+  // ── Booking form admin (kill switch) ──
+
+  getFormStatus(): Observable<{ enabled: boolean; systemUserId: number }> {
+    return this.http.get<{ enabled: boolean; systemUserId: number }>(`${this.apiUrl}/form-status`);
+  }
+
+  toggleForm(): Observable<{ enabled: boolean }> {
+    return this.http.post<{ enabled: boolean }>(`${this.apiUrl}/form-toggle`, {});
+  }
 }
