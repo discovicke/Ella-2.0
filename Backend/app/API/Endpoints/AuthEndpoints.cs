@@ -3,7 +3,6 @@ using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
-using Backend.app.Core.Validation;
 using Backend.app.Infrastructure.Auth;
 
 namespace Backend.app.API.Endpoints;
@@ -30,22 +29,6 @@ public static class AuthEndpoints
                     IConfiguration configuration
                 ) =>
                 {
-                    // Length limits
-                    var lengthError =
-                        InputLimits.CheckLength(request.Email, InputLimits.Email, "Email")
-                        ?? InputLimits.CheckLength(
-                            request.Password,
-                            InputLimits.Password,
-                            "Password"
-                        )
-                        ?? InputLimits.CheckLength(
-                            request.DisplayName,
-                            InputLimits.DisplayName,
-                            "Display name"
-                        );
-                    if (lengthError is not null)
-                        return lengthError;
-
                     var result = await authService.RegisterAsync(request);
 
                     if (!result.Success || result.Response is null)
@@ -104,17 +87,6 @@ public static class AuthEndpoints
                     IConfiguration configuration
                 ) =>
                 {
-                    // Length limits
-                    var lengthError =
-                        InputLimits.CheckLength(request.Email, InputLimits.Email, "Email")
-                        ?? InputLimits.CheckLength(
-                            request.Password,
-                            InputLimits.Password,
-                            "Password"
-                        );
-                    if (lengthError is not null)
-                        return lengthError;
-
                     var result = await authService.LoginAsync(request);
 
                     if (result.IsBanned)

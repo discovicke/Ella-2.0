@@ -1,6 +1,6 @@
 /**
  * Auto-generated from the OpenAPI spec — DO NOT EDIT manually.
- * Generated: 2026-03-02 16:46:18
+ * Generated: 2026-03-02 17:23:24
  *
  * Source of truth: [MaxLength] attributes on C# DTOs →
  *   Backend/app/Core/Validation/InputLimits.cs

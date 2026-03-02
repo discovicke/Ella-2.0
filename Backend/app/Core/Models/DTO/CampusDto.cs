@@ -1,22 +1,21 @@
 using System.ComponentModel.DataAnnotations;
-using Backend.app.Core.Validation;
 
 namespace Backend.app.Core.Models.DTO;
 
 public record CreateCampusDto(
-    [property: MaxLength(InputLimits.CampusStreet)] string Street,
-    [property: MaxLength(InputLimits.CampusZip)] string? Zip,
-    [property: MaxLength(InputLimits.CampusCity)] string City,
-    [property: MaxLength(InputLimits.CampusCountry)] string Country,
-    [property: MaxLength(InputLimits.CampusContact)] string? Contact
+    [property: MaxLength(150)] string Street,
+    [property: MaxLength(20)] string? Zip,
+    [property: MaxLength(100)] string City,
+    [property: MaxLength(100)] string Country,
+    [property: MaxLength(150)] string? Contact
 );
 
 public record UpdateCampusDto(
-    [property: MaxLength(InputLimits.CampusStreet)] string Street,
-    [property: MaxLength(InputLimits.CampusZip)] string? Zip,
-    [property: MaxLength(InputLimits.CampusCity)] string City,
-    [property: MaxLength(InputLimits.CampusCountry)] string Country,
-    [property: MaxLength(InputLimits.CampusContact)] string? Contact
+    [property: MaxLength(150)] string Street,
+    [property: MaxLength(20)] string? Zip,
+    [property: MaxLength(100)] string City,
+    [property: MaxLength(100)] string Country,
+    [property: MaxLength(150)] string? Contact
 );
 
 public record CampusResponseDto(

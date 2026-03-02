@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
-import { INPUT_LIMITS } from '../../../shared/constants/input-limits';
 import { ConfirmService } from '../../../shared/services/confirm.service';
 import { CampusResponseDto } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
@@ -171,22 +170,18 @@ export class CampusFormModalComponent {
   readonly campusForm = new FormGroup({
     city: new FormControl(this.initialData?.city ?? '', {
       nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(INPUT_LIMITS.CreateCampusDto.city)],
+      validators: [Validators.required],
     }),
     street: new FormControl(this.initialData?.street ?? '', {
       nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(INPUT_LIMITS.CreateCampusDto.street)],
+      validators: [Validators.required],
     }),
-    zip: new FormControl<string | null>(this.initialData?.zip ?? null, {
-      validators: [Validators.maxLength(INPUT_LIMITS.CreateCampusDto.zip)],
-    }),
+    zip: new FormControl<string | null>(this.initialData?.zip ?? null),
     country: new FormControl(this.initialData?.country ?? 'Sverige', {
       nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(INPUT_LIMITS.CreateCampusDto.country)],
+      validators: [Validators.required],
     }),
-    contact: new FormControl<string | null>(this.initialData?.contact ?? null, {
-      validators: [Validators.maxLength(INPUT_LIMITS.CreateCampusDto.contact)],
-    }),
+    contact: new FormControl<string | null>(this.initialData?.contact ?? null),
   });
 
   async onSubmit(): Promise<void> {

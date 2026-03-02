@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
-import { INPUT_LIMITS } from '../../../shared/constants/input-limits';
 import { ConfirmService } from '../../../shared/services/confirm.service';
 import { ClassResponseDto, CampusResponseDto } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
@@ -199,7 +198,6 @@ export class ClassFormModalComponent {
       nonNullable: true,
       validators: [
         Validators.required,
-        Validators.maxLength(INPUT_LIMITS.CreateClassDto.className),
       ],
     }),
   });

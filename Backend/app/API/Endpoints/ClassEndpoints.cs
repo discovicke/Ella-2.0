@@ -1,6 +1,5 @@
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Services;
-using Backend.app.Core.Validation;
 using Backend.app.Infrastructure.Auth;
 using Microsoft.AspNetCore.Mvc;
 
@@ -55,13 +54,6 @@ public static class ClassEndpoints
                 {
                     if (string.IsNullOrWhiteSpace(dto.ClassName))
                         return Results.BadRequest("ClassName is required.");
-                    var lengthError = InputLimits.CheckLength(
-                        dto.ClassName,
-                        InputLimits.ClassName,
-                        "Class name"
-                    );
-                    if (lengthError is not null)
-                        return lengthError;
 
                     var created = await service.CreateAsync(dto);
                     return Results.Created($"/api/classes/{created.Id}", created);
@@ -87,13 +79,6 @@ public static class ClassEndpoints
                 {
                     if (string.IsNullOrWhiteSpace(dto.ClassName))
                         return Results.BadRequest("ClassName is required.");
-                    var lengthError = InputLimits.CheckLength(
-                        dto.ClassName,
-                        InputLimits.ClassName,
-                        "Class name"
-                    );
-                    if (lengthError is not null)
-                        return lengthError;
 
                     await service.UpdateAsync(id, dto);
                     return Results.NoContent();

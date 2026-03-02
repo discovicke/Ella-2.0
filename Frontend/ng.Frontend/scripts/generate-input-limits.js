@@ -62,7 +62,7 @@ const lines = [
   ` * Generated: ${new Date().toISOString().slice(0, 19).replace('T', ' ')}`,
   ' *',
   ' * Source of truth: [MaxLength] attributes on C# DTOs →',
-  ' *   Backend/app/Core/Validation/InputLimits.cs',
+  ' *   Backend/app/Core/Models/DTO/*.cs',
   ' *',
   ' * Re-generate: npm run refresh:models  (or npm run api:sync)',
   ' */',

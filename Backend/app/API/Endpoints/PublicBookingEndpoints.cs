@@ -3,7 +3,6 @@ using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Models.ReadModels;
 using Backend.app.Core.Services;
-using Backend.app.Core.Validation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.app.API.Endpoints;
@@ -95,13 +94,6 @@ public static class PublicBookingEndpoints
                         return Results.BadRequest(
                             new { message = "Start time must be before end time." }
                         );
-
-                    // Length limits
-                    var lengthError =
-                        InputLimits.CheckLength(dto.BookerName, InputLimits.BookerName, "Name")
-                        ?? InputLimits.CheckLength(dto.Notes, InputLimits.BookingNotes, "Notes");
-                    if (lengthError is not null)
-                        return lengthError;
 
                     // Look up the system user
                     var systemUser = await GetSystemUserAsync(config, userService);

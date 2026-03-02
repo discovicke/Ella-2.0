@@ -80,7 +80,7 @@ app.UseJwtAuthentication();
 app.UseRateLimiter();
 
 // 4. THE API GATES
-var api = app.MapGroup("api");
+var api = app.MapGroup("api").AddEndpointFilter<ValidationFilter>();
 api.MapAuthEndpoints();
 api.MapUserEndpoints();
 api.MapRoomEndpoints();
