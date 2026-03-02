@@ -5,4 +5,5 @@ public enum BookingStatus
     Active,
     Cancelled,
     Expired,
+    Pending,
 }

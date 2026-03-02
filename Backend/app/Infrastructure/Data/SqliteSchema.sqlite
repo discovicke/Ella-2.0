@@ -166,6 +166,7 @@ CREATE TABLE IF NOT EXISTS "bookings" (
     "end_time" TEXT NOT NULL,
     "status" INTEGER NOT NULL DEFAULT 0,
     "notes" TEXT,
+    "booker_name" TEXT,
     "created_at" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TEXT,
     PRIMARY KEY("id"),
@@ -205,10 +206,12 @@ SELECT
     b.end_time AS end_time,
     CASE
         WHEN b.status = 1 THEN 1
+        WHEN b.status = 3 THEN 3
         WHEN datetime(b.end_time) < datetime('now') THEN 2
         ELSE b.status
     END AS status,
     b.notes AS notes,
+    b.booker_name AS booker_name,
     b.created_at AS created_at,
     b.updated_at AS updated_at,
     COALESCE(COUNT(reg.user_id), 0) AS registration_count,
@@ -222,7 +225,7 @@ LEFT JOIN rooms r ON b.room_id = r.id
 LEFT JOIN room_types rt ON r.room_type_id = rt.id
 LEFT JOIN campus c ON r.campus_id = c.id
 LEFT JOIN registrations reg ON b.id = reg.booking_id
-GROUP BY b.id, b.user_id, u.display_name, u.email, b.room_id, r.name, r.capacity, rt.name, r.floor, c.city, b.start_time, b.end_time, b.status, b.notes, b.created_at, b.updated_at;
+GROUP BY b.id, b.user_id, u.display_name, u.email, b.room_id, r.name, r.capacity, rt.name, r.floor, c.city, b.start_time, b.end_time, b.status, b.notes, b.booker_name, b.created_at, b.updated_at;
 
 -- View: Room Details with concatenated assets
 DROP VIEW IF EXISTS "v_room_details";

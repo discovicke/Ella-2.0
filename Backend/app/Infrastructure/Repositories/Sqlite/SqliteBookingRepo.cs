@@ -24,8 +24,8 @@ public class SqliteBookingRepo(
             await conn.OpenAsync();
             var sql =
                 @"
-            INSERT INTO bookings (user_id, room_id, start_time, end_time, notes)
-            VALUES (@UserId, @RoomId, @StartTime, @EndTime, @Notes);
+            INSERT INTO bookings (user_id, room_id, start_time, end_time, status, notes, booker_name)
+            VALUES (@UserId, @RoomId, @StartTime, @EndTime, @Status, @Notes, @BookerName);
             SELECT last_insert_rowid();
         ";
             var id = await conn.ExecuteScalarAsync<long>(
@@ -36,7 +36,9 @@ public class SqliteBookingRepo(
                     booking.RoomId,
                     booking.StartTime,
                     booking.EndTime,
+                    Status = (int)booking.Status,
                     booking.Notes,
+                    booking.BookerName,
                 }
             );
 
@@ -176,7 +178,8 @@ public class SqliteBookingRepo(
             start_time = @StartTime,
             end_time = @EndTime,
             status = @Status,
-            notes = @Notes
+            notes = @Notes,
+            booker_name = @BookerName
             WHERE id = @BookingId;
         ";
             var rows = await conn.ExecuteAsync(
@@ -189,6 +192,7 @@ public class SqliteBookingRepo(
                     booking.EndTime,
                     Status = (int)booking.Status,
                     booking.Notes,
+                    booking.BookerName,
                     BookingId = bookingId,
                 }
             );

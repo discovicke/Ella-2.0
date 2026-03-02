@@ -19,8 +19,8 @@ public class PostgresBookingRepo(
 
             var sql =
                 @"
-                INSERT INTO bookings (user_id, room_id, start_time, end_time, notes)
-                VALUES (@UserId, @RoomId, @StartTime, @EndTime, @Notes)
+                INSERT INTO bookings (user_id, room_id, start_time, end_time, status, notes, booker_name)
+                VALUES (@UserId, @RoomId, @StartTime, @EndTime, @Status::booking_status, @Notes, @BookerName)
                 RETURNING id;
             ";
 
@@ -32,7 +32,9 @@ public class PostgresBookingRepo(
                     booking.RoomId,
                     StartTime = booking.StartTime.ToUniversalTime(),
                     EndTime = booking.EndTime.ToUniversalTime(),
+                    Status = booking.Status.ToString().ToLower(),
                     booking.Notes,
+                    booking.BookerName,
                 }
             );
 
@@ -173,7 +175,8 @@ public class PostgresBookingRepo(
                     start_time = @StartTime,
                     end_time = @EndTime,
                     status = @Status::booking_status,
-                    notes = @Notes
+                    notes = @Notes,
+                    booker_name = @BookerName
                 WHERE id = @BookingId;
             ";
 
@@ -187,6 +190,7 @@ public class PostgresBookingRepo(
                     EndTime = booking.EndTime.ToUniversalTime(),
                     Status = booking.Status.ToString().ToLower(),
                     booking.Notes,
+                    booking.BookerName,
                     BookingId = bookingId,
                 }
             );
