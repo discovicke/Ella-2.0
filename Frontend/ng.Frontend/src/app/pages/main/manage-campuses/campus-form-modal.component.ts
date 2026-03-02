@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
+import { INPUT_LIMITS } from '../../../shared/constants/input-limits';
 import { ConfirmService } from '../../../shared/services/confirm.service';
 import { CampusResponseDto } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
@@ -26,7 +27,13 @@ export interface CampusFormModalConfig {
     <form [formGroup]="campusForm" (ngSubmit)="onSubmit()" class="campus-form">
       <div class="form-group">
         <label for="campus-city">Stad</label>
-        <input id="campus-city" type="text" formControlName="city" placeholder="t.ex. Gävle" />
+        <input
+          id="campus-city"
+          type="text"
+          formControlName="city"
+          placeholder="t.ex. Gävle"
+          maxlength="100"
+        />
         @if (campusForm.get('city')?.invalid && campusForm.get('city')?.touched) {
           <span class="error-msg">Stad krävs</span>
         }
@@ -39,6 +46,7 @@ export interface CampusFormModalConfig {
           type="text"
           formControlName="street"
           placeholder="t.ex. Kungsgatan 12"
+          maxlength="150"
         />
         @if (campusForm.get('street')?.invalid && campusForm.get('street')?.touched) {
           <span class="error-msg">Adress krävs</span>
@@ -48,7 +56,13 @@ export interface CampusFormModalConfig {
       <div class="form-row">
         <div class="form-group">
           <label for="campus-zip">Postnummer</label>
-          <input id="campus-zip" type="text" formControlName="zip" placeholder="t.ex. 802 10" />
+          <input
+            id="campus-zip"
+            type="text"
+            formControlName="zip"
+            placeholder="t.ex. 802 10"
+            maxlength="20"
+          />
         </div>
 
         <div class="form-group">
@@ -58,6 +72,7 @@ export interface CampusFormModalConfig {
             type="text"
             formControlName="country"
             placeholder="t.ex. Sverige"
+            maxlength="100"
           />
           @if (campusForm.get('country')?.invalid && campusForm.get('country')?.touched) {
             <span class="error-msg">Land krävs</span>
@@ -72,6 +87,7 @@ export interface CampusFormModalConfig {
           type="text"
           formControlName="contact"
           placeholder="Valfri kontaktinfo..."
+          maxlength="150"
         />
       </div>
 
@@ -155,18 +171,22 @@ export class CampusFormModalComponent {
   readonly campusForm = new FormGroup({
     city: new FormControl(this.initialData?.city ?? '', {
       nonNullable: true,
-      validators: [Validators.required],
+      validators: [Validators.required, Validators.maxLength(INPUT_LIMITS.CreateCampusDto.city)],
     }),
     street: new FormControl(this.initialData?.street ?? '', {
       nonNullable: true,
-      validators: [Validators.required],
+      validators: [Validators.required, Validators.maxLength(INPUT_LIMITS.CreateCampusDto.street)],
     }),
-    zip: new FormControl<string | null>(this.initialData?.zip ?? null),
+    zip: new FormControl<string | null>(this.initialData?.zip ?? null, {
+      validators: [Validators.maxLength(INPUT_LIMITS.CreateCampusDto.zip)],
+    }),
     country: new FormControl(this.initialData?.country ?? 'Sverige', {
       nonNullable: true,
-      validators: [Validators.required],
+      validators: [Validators.required, Validators.maxLength(INPUT_LIMITS.CreateCampusDto.country)],
     }),
-    contact: new FormControl<string | null>(this.initialData?.contact ?? null),
+    contact: new FormControl<string | null>(this.initialData?.contact ?? null, {
+      validators: [Validators.maxLength(INPUT_LIMITS.CreateCampusDto.contact)],
+    }),
   });
 
   async onSubmit(): Promise<void> {

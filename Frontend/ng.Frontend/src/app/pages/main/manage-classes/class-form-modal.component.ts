@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
+import { INPUT_LIMITS } from '../../../shared/constants/input-limits';
 import { ConfirmService } from '../../../shared/services/confirm.service';
 import { ClassResponseDto, CampusResponseDto } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
@@ -25,7 +26,13 @@ export interface ClassFormModalConfig {
     <form [formGroup]="classForm" (ngSubmit)="onSubmit()" class="class-form">
       <div class="form-group">
         <label for="class-name">Klassnamn</label>
-        <input id="class-name" type="text" formControlName="className" placeholder="t.ex. net25" />
+        <input
+          id="class-name"
+          type="text"
+          formControlName="className"
+          placeholder="t.ex. net25"
+          maxlength="100"
+        />
         @if (classForm.get('className')?.invalid && classForm.get('className')?.touched) {
           <span class="error-msg">Klassnamn krävs</span>
         }
@@ -190,7 +197,10 @@ export class ClassFormModalComponent {
   readonly classForm = new FormGroup({
     className: new FormControl(this.initialData?.className ?? '', {
       nonNullable: true,
-      validators: [Validators.required],
+      validators: [
+        Validators.required,
+        Validators.maxLength(INPUT_LIMITS.CreateClassDto.className),
+      ],
     }),
   });
 

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
+import { INPUT_LIMITS } from '../../../shared/constants/input-limits';
 import { ConfirmService } from '../../../shared/services/confirm.service';
 import { AssetTypeResponseDto, RoomDetailModel, RoomTypeResponseDto } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
@@ -32,7 +33,13 @@ export interface RoomFormModalConfig {
     <form [formGroup]="roomForm" (ngSubmit)="onSubmit()" class="room-form">
       <div class="form-group">
         <label for="room-name">Namn</label>
-        <input id="room-name" type="text" formControlName="name" placeholder="t.ex. Sal A3" />
+        <input
+          id="room-name"
+          type="text"
+          formControlName="name"
+          placeholder="t.ex. Sal A3"
+          maxlength="100"
+        />
         @if (roomForm.get('name')?.invalid && roomForm.get('name')?.touched) {
           <span class="error-msg">Namn krävs</span>
         }
@@ -74,7 +81,13 @@ export interface RoomFormModalConfig {
 
         <div class="form-group">
           <label for="room-floor">Våning</label>
-          <input id="room-floor" type="text" formControlName="floor" placeholder="t.ex. 2" />
+          <input
+            id="room-floor"
+            type="text"
+            formControlName="floor"
+            placeholder="t.ex. 2"
+            maxlength="20"
+          />
         </div>
       </div>
 
@@ -280,7 +293,7 @@ export class RoomFormModalComponent {
   readonly roomForm = new FormGroup({
     name: new FormControl(this.initialData?.name ?? '', {
       nonNullable: true,
-      validators: [Validators.required],
+      validators: [Validators.required, Validators.maxLength(INPUT_LIMITS.CreateRoomDto.name)],
     }),
     campusId: new FormControl<number | null>(this.initialData?.campusId ?? null, {
       validators: [Validators.required],
@@ -289,9 +302,11 @@ export class RoomFormModalComponent {
       validators: [Validators.required],
     }),
     capacity: new FormControl<number | null>(this.initialData?.capacity ?? null),
-    floor: new FormControl<string | null>(this.initialData?.floor ?? null),
+    floor: new FormControl<string | null>(this.initialData?.floor ?? null, {
+      validators: [Validators.maxLength(INPUT_LIMITS.CreateRoomDto.floor)],
+    }),
     notes: new FormControl<string | null>(this.initialData?.notes ?? null, {
-      validators: [Validators.maxLength(200)],
+      validators: [Validators.maxLength(INPUT_LIMITS.CreateRoomDto.notes)],
     }),
   });
 
