@@ -1,18 +1,28 @@
+using System.ComponentModel.DataAnnotations;
 using Backend.app.Core.Models;
 using Backend.app.Core.Models.Entities;
+using Backend.app.Core.Validation;
 
 namespace Backend.app.Core.Models.DTO;
 
 public record LoginDto
 {
+    [MaxLength(InputLimits.Email)]
     public required string Email { get; set; }
+
+    [MaxLength(InputLimits.Password)]
     public required string Password { get; set; }
 }
 
 public record RegisterDto
 {
+    [MaxLength(InputLimits.Email)]
     public required string Email { get; set; }
+
+    [MaxLength(InputLimits.Password)]
     public required string Password { get; set; }
+
+    [MaxLength(InputLimits.DisplayName)]
     public string? DisplayName { get; set; }
 }
 

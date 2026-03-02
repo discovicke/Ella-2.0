@@ -1,6 +1,7 @@
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.ReadModels;
 using Backend.app.Core.Services;
+using Backend.app.Core.Validation;
 using Backend.app.Infrastructure.Auth;
 using Microsoft.AspNetCore.Mvc;
 
@@ -213,27 +214,27 @@ public static class RoomEndpoints
     {
         if (string.IsNullOrWhiteSpace(dto.Name))
             return Results.BadRequest("Room name is required.");
-
         if (dto.Capacity.HasValue && dto.Capacity <= 0)
             return Results.BadRequest("Capacity must be a positive number.");
-
         if (dto.RoomTypeId <= 0)
             return Results.BadRequest("Room type is required.");
 
-        return null;
+        return InputLimits.CheckLength(dto.Name, InputLimits.RoomName, "Room name")
+            ?? InputLimits.CheckLength(dto.Floor, InputLimits.RoomFloor, "Floor")
+            ?? InputLimits.CheckLength(dto.Notes, InputLimits.RoomNotes, "Notes");
     }
 
     private static IResult? ValidateUpdateRoom(UpdateRoomDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Name))
             return Results.BadRequest("Room name is required.");
-
         if (dto.Capacity.HasValue && dto.Capacity <= 0)
             return Results.BadRequest("Capacity must be a positive number.");
-
         if (dto.RoomTypeId <= 0)
             return Results.BadRequest("Room type is required.");
 
-        return null;
+        return InputLimits.CheckLength(dto.Name, InputLimits.RoomName, "Room name")
+            ?? InputLimits.CheckLength(dto.Floor, InputLimits.RoomFloor, "Floor")
+            ?? InputLimits.CheckLength(dto.Notes, InputLimits.RoomNotes, "Notes");
     }
 }
