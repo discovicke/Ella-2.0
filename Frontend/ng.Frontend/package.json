@@ -9,7 +9,7 @@
     "test": "ng test",
     "g-layout": "node scripts/generate-layout.js",
     "g-page": "node scripts/generate-page.js",
-    "api:sync": "npx swagger-typescript-api generate -p ./openapi/models.json -o src/app/models -n models.ts --no-client"
+    "api:sync": "npx swagger-typescript-api generate -p ./openapi/models.json -o src/app/models -n models.ts --no-client && node scripts/generate-input-limits.js"
   },
   "prettier": {
     "printWidth": 100,

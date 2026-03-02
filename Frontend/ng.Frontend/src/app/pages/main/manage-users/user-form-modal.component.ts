@@ -9,6 +9,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
+import { INPUT_LIMITS } from '../../../shared/constants/input-limits';
 import { ConfirmService } from '../../../shared/services/confirm.service';
 import {
   BannedStatus,
@@ -70,6 +71,7 @@ export const passwordMatchValidator: ValidatorFn = (
           type="text"
           formControlName="displayName"
           placeholder="Förnamn Efternamn"
+          maxlength="100"
         />
         @if (userForm.get('displayName')?.invalid && userForm.get('displayName')?.touched) {
           <span class="error-msg">Namn krävs</span>
@@ -78,7 +80,13 @@ export const passwordMatchValidator: ValidatorFn = (
 
       <div class="form-group">
         <label for="email">E-post</label>
-        <input id="email" type="email" formControlName="email" placeholder="namn@example.com" />
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="namn@example.com"
+          maxlength="254"
+        />
         @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
           <span class="error-msg">Giltig e-post krävs</span>
         }
@@ -122,6 +130,7 @@ export const passwordMatchValidator: ValidatorFn = (
             type="password"
             formControlName="password"
             placeholder="Minst 6 tecken (krävs)"
+            maxlength="128"
           />
           @if (initialData) {
             <span class="field-hint">Lämna tomt om du inte vill ändra lösenordet.</span>
@@ -138,6 +147,7 @@ export const passwordMatchValidator: ValidatorFn = (
             type="password"
             formControlName="confirmPassword"
             placeholder="Upprepa lösenordet"
+            maxlength="128"
           />
           @if (userForm.errors?.['passwordMismatch'] && userForm.get('confirmPassword')?.touched) {
             <span class="error-msg">Lösenorden matchar inte</span>
@@ -485,11 +495,18 @@ export class UserFormModalComponent {
     {
       displayName: new FormControl(this.initialData?.displayName || '', {
         nonNullable: true,
-        validators: [Validators.required],
+        validators: [
+          Validators.required,
+          Validators.maxLength(INPUT_LIMITS.CreateUserDto.displayName),
+        ],
       }),
       email: new FormControl(this.initialData?.email || '', {
         nonNullable: true,
-        validators: [Validators.required, Validators.email],
+        validators: [
+          Validators.required,
+          Validators.email,
+          Validators.maxLength(INPUT_LIMITS.CreateUserDto.email),
+        ],
       }),
       templateId: new FormControl<number | null>(this.initialTemplateId),
       bookRoom: new FormControl<boolean>(this.initialPermissions?.bookRoom ?? true, {
@@ -522,8 +539,12 @@ export class UserFormModalComponent {
       password: new FormControl('', {
         nonNullable: true,
         validators: this.initialData
-          ? [Validators.minLength(6)]
-          : [Validators.required, Validators.minLength(6)],
+          ? [Validators.minLength(6), Validators.maxLength(INPUT_LIMITS.CreateUserDto.password)]
+          : [
+              Validators.required,
+              Validators.minLength(6),
+              Validators.maxLength(INPUT_LIMITS.CreateUserDto.password),
+            ],
       }),
       confirmPassword: new FormControl(
         { value: '', disabled: true },

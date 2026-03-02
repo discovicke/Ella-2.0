@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BookingService } from '../../../../shared/services/booking.service';
+import { INPUT_LIMITS } from '../../../../shared/constants/input-limits';
 import { ModalService } from '../../../../shared/services/modal.service';
 import { SessionService } from '../../../../core/session.service';
 import { ToastService } from '../../../../shared/services/toast.service';
@@ -40,7 +41,10 @@ export class BookingModalComponent {
     startTime: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     endDate: new FormControl(this.today, { nonNullable: true, validators: [Validators.required] }),
     endTime: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    notes: new FormControl('', { nonNullable: true }),
+    notes: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.maxLength(INPUT_LIMITS.CreateBookingDto.notes)],
+    }),
   });
 
   readonly isSubmitting = signal(false);
