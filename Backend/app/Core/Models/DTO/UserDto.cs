@@ -1,5 +1,7 @@
+using System.ComponentModel.DataAnnotations;
 using Backend.app.Core.Models;
 using Backend.app.Core.Models.Enums;
+using Backend.app.Core.Validation;
 
 namespace Backend.app.Core.Models.DTO;
 
@@ -15,12 +17,16 @@ public record UserResponseDto(
     List<string>? ClassNames = null
 );
 
-public record CreateUserDto(string Email, string? DisplayName, string Password);
+public record CreateUserDto(
+    [property: MaxLength(InputLimits.Email)] string Email,
+    [property: MaxLength(InputLimits.DisplayName)] string? DisplayName,
+    [property: MaxLength(InputLimits.Password)] string Password
+);
 
 public record UpdateUserDto(
     long Id,
-    string Email,
-    string? DisplayName,
-    string? Password,
+    [property: MaxLength(InputLimits.Email)] string Email,
+    [property: MaxLength(InputLimits.DisplayName)] string? DisplayName,
+    [property: MaxLength(InputLimits.Password)] string? Password,
     BannedStatus IsBanned
 );

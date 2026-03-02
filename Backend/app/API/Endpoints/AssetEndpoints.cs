@@ -1,5 +1,6 @@
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Services;
+using Backend.app.Core.Validation;
 using Backend.app.Infrastructure.Auth;
 using Microsoft.AspNetCore.Mvc;
 
@@ -55,9 +56,14 @@ public static class AssetEndpoints
                 async (CreateAssetTypeDto dto, AssetService service) =>
                 {
                     if (string.IsNullOrWhiteSpace(dto.Description))
-                    {
                         return Results.BadRequest("Description is required.");
-                    }
+                    var lengthError = InputLimits.CheckLength(
+                        dto.Description,
+                        InputLimits.AssetDescription,
+                        "Description"
+                    );
+                    if (lengthError is not null)
+                        return lengthError;
 
                     var created = await service.CreateAsync(dto);
                     return Results.Created($"/api/assets/{created.Id}", created);
@@ -68,7 +74,7 @@ public static class AssetEndpoints
             .WithSummary("Create a new asset type")
             .WithDescription(
                 "Creates a new asset type.\n\n🔒 **Authentication Required**\n🔑 **Requires manageAssets permission**"
-            ) 
+            )
             .Accepts<CreateAssetTypeDto>("application/json")
             .Produces<AssetTypeResponseDto>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
@@ -82,9 +88,14 @@ public static class AssetEndpoints
                 async (long id, UpdateAssetTypeDto dto, AssetService service) =>
                 {
                     if (string.IsNullOrWhiteSpace(dto.Description))
-                    {
                         return Results.BadRequest("Description is required.");
-                    }
+                    var lengthError = InputLimits.CheckLength(
+                        dto.Description,
+                        InputLimits.AssetDescription,
+                        "Description"
+                    );
+                    if (lengthError is not null)
+                        return lengthError;
 
                     await service.UpdateAsync(id, dto);
                     return Results.NoContent();

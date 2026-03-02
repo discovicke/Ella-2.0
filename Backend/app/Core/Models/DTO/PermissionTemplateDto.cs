@@ -1,4 +1,6 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using Backend.app.Core.Validation;
 
 namespace Backend.app.Core.Models.DTO;
 
@@ -18,15 +20,18 @@ public class PermissionTemplateDto
     /// Unique internal name (slug). e.g. "admin", "student".
     /// </summary>
     [JsonPropertyName("name")]
+    [MaxLength(InputLimits.TemplateName)]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// Display name. e.g. "Administrator".
     /// </summary>
     [JsonPropertyName("label")]
+    [MaxLength(InputLimits.TemplateLabel)]
     public string Label { get; set; } = string.Empty;
 
     [JsonPropertyName("cssClass")]
+    [MaxLength(InputLimits.TemplateCssClass)]
     public string CssClass { get; set; } = string.Empty;
 
     /// <summary>
