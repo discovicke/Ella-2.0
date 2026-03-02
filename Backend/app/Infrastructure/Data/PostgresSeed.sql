@@ -181,7 +181,10 @@ VALUES (1, 'admin@edugrade.com', '__HASH__', 'Admin Testberg', 3),
        (82, 'johanna.admin@edugrade.com', '__HASH__', 'Johanna Lindström', 3),
 
        -- Banned user for filter testing
-       (83, 'banned.user@edu.edugrade.com', '__HASH__', 'Avstängd Testsson', 1);
+       (83, 'banned.user@edu.edugrade.com', '__HASH__', 'Avstängd Testsson', 1),
+
+       -- System user for public booking form
+       (99, 'bookingform@system.local', '__NOLOGIN__', 'Bokningsformulär', NULL);
 
 SELECT setval(pg_get_serial_sequence('users', 'id'), (SELECT MAX(id) FROM users));
 

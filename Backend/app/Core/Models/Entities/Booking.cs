@@ -15,6 +15,7 @@ public class Booking
     public BookingStatus Status { get; set; }
     public bool IsLesson { get; set; }
     public string? Notes { get; set; }
+    public string? BookerName { get; set; } // for booking form submissions without auth
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }

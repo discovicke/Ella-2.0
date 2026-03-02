@@ -122,6 +122,9 @@ public class PostgresDbInitializer(
 
         seedSql = ReplaceHashPlaceholders(seedSql, stubPassword);
 
+        // Replace __NOLOGIN__ placeholders with an impossible hash (system accounts)
+        seedSql = seedSql.Replace("__NOLOGIN__", "!NOLOGIN");
+
         await conn.ExecuteAsync(seedSql);
 
         logger.LogInformation("Database seeded successfully.");

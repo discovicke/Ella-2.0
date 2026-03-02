@@ -22,6 +22,7 @@ public record BookingDetailedReadModel
     public DateTime EndTime { get; init; }
     public BookingStatus Status { get; init; }
     public string? Notes { get; init; }
+    public string? BookerName { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; init; }
     public int RegistrationCount { get; init; }

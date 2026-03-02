@@ -101,6 +101,14 @@ public class UserService(
         return MapToDto(user, perms);
     }
 
+    /// <summary>
+    /// Get user entity by email (for internal lookups like system user).
+    /// </summary>
+    public async Task<User?> GetUserByEmailAsync(string email)
+    {
+        return await repo.GetUserByEmailAsync(email);
+    }
+
     public async Task<UserResponseDto> CreateUserAsync(CreateUserDto dto)
     {
         logger.LogInformation("Creating user with email {Email}", dto.Email);

@@ -206,6 +206,7 @@ SELECT
     b.end_time AS end_time,
     CASE
         WHEN b.status = 1 THEN 1
+        WHEN b.status = 3 THEN 3
         WHEN datetime(b.end_time) < datetime('now') THEN 2
         ELSE b.status
     END AS status,
