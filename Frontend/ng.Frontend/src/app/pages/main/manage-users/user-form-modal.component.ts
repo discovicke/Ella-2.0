@@ -494,16 +494,11 @@ export class UserFormModalComponent {
     {
       displayName: new FormControl(this.initialData?.displayName || '', {
         nonNullable: true,
-        validators: [
-          Validators.required,
-        ],
+        validators: [Validators.required],
       }),
       email: new FormControl(this.initialData?.email || '', {
         nonNullable: true,
-        validators: [
-          Validators.required,
-          Validators.email,
-        ],
+        validators: [Validators.required, Validators.email],
       }),
       templateId: new FormControl<number | null>(this.initialTemplateId),
       bookRoom: new FormControl<boolean>(this.initialPermissions?.bookRoom ?? true, {
@@ -537,10 +532,7 @@ export class UserFormModalComponent {
         nonNullable: true,
         validators: this.initialData
           ? [Validators.minLength(6)]
-          : [
-              Validators.required,
-              Validators.minLength(6),
-            ],
+          : [Validators.required, Validators.minLength(6)],
       }),
       confirmPassword: new FormControl(
         { value: '', disabled: true },

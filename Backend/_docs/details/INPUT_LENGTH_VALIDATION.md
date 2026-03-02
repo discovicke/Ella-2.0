@@ -103,31 +103,31 @@ That's it. No manual frontend edits needed.
 
 ## Current Limits Reference
 
-| Category | DTO Property  | Max Length |
-| -------- | ------------- | ---------- |
-| Identity | Email         | 254        |
-| Identity | Password      | 128        |
-| Identity | DisplayName   | 100        |
-| Booking  | BookerName    | 100        |
-| Booking  | Notes         | 500        |
-| Room     | Name          | 100        |
-| Room     | Floor         | 20         |
-| Room     | Notes         | 200        |
-| Campus   | City          | 100        |
-| Campus   | Street        | 150        |
-| Campus   | Zip           | 20         |
-| Campus   | Country       | 100        |
-| Campus   | Contact       | 150        |
-| Class    | ClassName     | 100        |
-| Asset    | Description   | 100        |
-| Template | Name          | 50         |
-| Template | Label         | 100        |
-| Template | CssClass      | 50         |
+| Category | DTO Property | Max Length |
+| -------- | ------------ | ---------- |
+| Identity | Email        | 254        |
+| Identity | Password     | 128        |
+| Identity | DisplayName  | 100        |
+| Booking  | BookerName   | 100        |
+| Booking  | Notes        | 500        |
+| Room     | Name         | 100        |
+| Room     | Floor        | 20         |
+| Room     | Notes        | 200        |
+| Campus   | City         | 100        |
+| Campus   | Street       | 150        |
+| Campus   | Zip          | 20         |
+| Campus   | Country      | 100        |
+| Campus   | Contact      | 150        |
+| Class    | ClassName    | 100        |
+| Asset    | Description  | 100        |
+| Template | Name         | 50         |
+| Template | Label        | 100        |
+| Template | CssClass     | 50         |
 
 ## Key Files
 
-| File                                                            | Role                                            |
-| --------------------------------------------------------------- | ----------------------------------------------- |
+| File                                                            | Role                                             |
+| --------------------------------------------------------------- | ------------------------------------------------ |
 | `Backend/app/Infrastructure/Middleware/ValidationFilter.cs`     | Auto-enforces DataAnnotation attributes          |
 | `Backend/app/Core/Models/DTO/*.cs`                              | `[MaxLength(N)]` → single source of truth        |
 | `Frontend/ng.Frontend/scripts/generate-input-limits.js`         | Reads OpenAPI → generates TS constants           |

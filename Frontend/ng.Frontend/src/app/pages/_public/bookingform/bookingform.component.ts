@@ -36,9 +36,7 @@ export class BookingformComponent implements OnInit {
   readonly bookingForm = new FormGroup({
     name: new FormControl('', {
       nonNullable: true,
-      validators: [
-        Validators.required,
-      ],
+      validators: [Validators.required],
     }),
     selectedCity: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     selectedRoomId: new FormControl<number | null>(null, { validators: [Validators.required] }),
