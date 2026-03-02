@@ -4,7 +4,6 @@ using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Models.ReadModels;
 using Backend.app.Core.Services;
-using Backend.app.Core.Validation;
 using Backend.app.Infrastructure.Auth;
 using Microsoft.AspNetCore.Mvc;
 
@@ -99,17 +98,6 @@ public static class BookingEndpoints
                 "/",
                 async (CreateBookingDto dto, HttpContext context, BookingService service) =>
                 {
-                    // Length limits
-                    var lengthError =
-                        InputLimits.CheckLength(dto.Notes, InputLimits.BookingNotes, "Notes")
-                        ?? InputLimits.CheckLength(
-                            dto.BookerName,
-                            InputLimits.BookerName,
-                            "Booker name"
-                        );
-                    if (lengthError is not null)
-                        return lengthError;
-
                     // Layer 2 Validation: Logic Check
                     if (dto.StartTime >= dto.EndTime)
                     {

@@ -6,7 +6,6 @@ using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
-using Backend.app.Core.Validation;
 using Backend.app.Infrastructure.Auth;
 using Microsoft.AspNetCore.Mvc;
 
@@ -393,9 +392,7 @@ public static class UserEndpoints
         if (string.IsNullOrWhiteSpace(dto.Password))
             return Results.BadRequest("Password is required.");
 
-        return InputLimits.CheckLength(dto.Email, InputLimits.Email, "Email")
-            ?? InputLimits.CheckLength(dto.Password, InputLimits.Password, "Password")
-            ?? InputLimits.CheckLength(dto.DisplayName, InputLimits.DisplayName, "Display name");
+        return null;
     }
 
     private static IResult? ValidateUpdateUser(UpdateUserDto dto)
@@ -403,8 +400,6 @@ public static class UserEndpoints
         if (string.IsNullOrWhiteSpace(dto.Email))
             return Results.BadRequest("Email is required.");
 
-        return InputLimits.CheckLength(dto.Email, InputLimits.Email, "Email")
-            ?? InputLimits.CheckLength(dto.Password, InputLimits.Password, "Password")
-            ?? InputLimits.CheckLength(dto.DisplayName, InputLimits.DisplayName, "Display name");
+        return null;
     }
 }

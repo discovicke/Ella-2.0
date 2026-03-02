@@ -1,6 +1,5 @@
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Services;
-using Backend.app.Core.Validation;
 using Backend.app.Infrastructure.Auth;
 
 namespace Backend.app.API.Endpoints;
@@ -36,29 +35,6 @@ public static class PermissionTemplateEndpoints
                 "/",
                 async (List<PermissionTemplateDto> templates, PermissionTemplateService service) =>
                 {
-                    // Length limits on each template's string fields
-                    foreach (var t in templates)
-                    {
-                        var lengthError =
-                            InputLimits.CheckLength(
-                                t.Name,
-                                InputLimits.TemplateName,
-                                "Template name"
-                            )
-                            ?? InputLimits.CheckLength(
-                                t.Label,
-                                InputLimits.TemplateLabel,
-                                "Template label"
-                            )
-                            ?? InputLimits.CheckLength(
-                                t.CssClass,
-                                InputLimits.TemplateCssClass,
-                                "CSS class"
-                            );
-                        if (lengthError is not null)
-                            return lengthError;
-                    }
-
                     var result = await service.UpdateAllAsync(templates);
                     return Results.Ok(result);
                 }

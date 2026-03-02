@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
-import { INPUT_LIMITS } from '../../../shared/constants/input-limits';
 import { ConfirmService } from '../../../shared/services/confirm.service';
 import { AssetTypeResponseDto, RoomDetailModel, RoomTypeResponseDto } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
@@ -293,7 +292,7 @@ export class RoomFormModalComponent {
   readonly roomForm = new FormGroup({
     name: new FormControl(this.initialData?.name ?? '', {
       nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(INPUT_LIMITS.CreateRoomDto.name)],
+      validators: [Validators.required],
     }),
     campusId: new FormControl<number | null>(this.initialData?.campusId ?? null, {
       validators: [Validators.required],
@@ -302,12 +301,8 @@ export class RoomFormModalComponent {
       validators: [Validators.required],
     }),
     capacity: new FormControl<number | null>(this.initialData?.capacity ?? null),
-    floor: new FormControl<string | null>(this.initialData?.floor ?? null, {
-      validators: [Validators.maxLength(INPUT_LIMITS.CreateRoomDto.floor)],
-    }),
-    notes: new FormControl<string | null>(this.initialData?.notes ?? null, {
-      validators: [Validators.maxLength(INPUT_LIMITS.CreateRoomDto.notes)],
-    }),
+    floor: new FormControl<string | null>(this.initialData?.floor ?? null),
+    notes: new FormControl<string | null>(this.initialData?.notes ?? null),
   });
 
   isAssetSelected(id: number): boolean {

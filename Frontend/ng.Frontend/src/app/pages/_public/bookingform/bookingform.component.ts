@@ -9,7 +9,6 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PublicBookingService } from '../../../shared/services/public-booking.service';
-import { INPUT_LIMITS } from '../../../shared/constants/input-limits';
 import { CreatePublicBookingDto, RoomDetailModel, CampusResponseDto } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -39,7 +38,6 @@ export class BookingformComponent implements OnInit {
       nonNullable: true,
       validators: [
         Validators.required,
-        Validators.maxLength(INPUT_LIMITS.CreatePublicBookingDto.bookerName),
       ],
     }),
     selectedCity: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -50,7 +48,6 @@ export class BookingformComponent implements OnInit {
     endTime: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     notes: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.maxLength(INPUT_LIMITS.CreatePublicBookingDto.notes)],
     }),
   });
 

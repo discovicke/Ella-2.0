@@ -9,7 +9,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { ModalService } from '../../../shared/services/modal.service';
-import { INPUT_LIMITS } from '../../../shared/constants/input-limits';
 import { ConfirmService } from '../../../shared/services/confirm.service';
 import {
   BannedStatus,
@@ -497,7 +496,6 @@ export class UserFormModalComponent {
         nonNullable: true,
         validators: [
           Validators.required,
-          Validators.maxLength(INPUT_LIMITS.CreateUserDto.displayName),
         ],
       }),
       email: new FormControl(this.initialData?.email || '', {
@@ -505,7 +503,6 @@ export class UserFormModalComponent {
         validators: [
           Validators.required,
           Validators.email,
-          Validators.maxLength(INPUT_LIMITS.CreateUserDto.email),
         ],
       }),
       templateId: new FormControl<number | null>(this.initialTemplateId),
@@ -539,11 +536,10 @@ export class UserFormModalComponent {
       password: new FormControl('', {
         nonNullable: true,
         validators: this.initialData
-          ? [Validators.minLength(6), Validators.maxLength(INPUT_LIMITS.CreateUserDto.password)]
+          ? [Validators.minLength(6)]
           : [
               Validators.required,
               Validators.minLength(6),
-              Validators.maxLength(INPUT_LIMITS.CreateUserDto.password),
             ],
       }),
       confirmPassword: new FormControl(

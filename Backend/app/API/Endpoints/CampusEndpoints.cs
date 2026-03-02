@@ -1,6 +1,5 @@
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Services;
-using Backend.app.Core.Validation;
 using Backend.app.Infrastructure.Auth;
 using Microsoft.AspNetCore.Mvc;
 
@@ -62,23 +61,6 @@ public static class CampusEndpoints
                         return Results.BadRequest("Street, City, and Country are required.");
                     }
 
-                    var lengthError =
-                        InputLimits.CheckLength(dto.City, InputLimits.CampusCity, "City")
-                        ?? InputLimits.CheckLength(dto.Street, InputLimits.CampusStreet, "Street")
-                        ?? InputLimits.CheckLength(dto.Zip, InputLimits.CampusZip, "Zip")
-                        ?? InputLimits.CheckLength(
-                            dto.Country,
-                            InputLimits.CampusCountry,
-                            "Country"
-                        )
-                        ?? InputLimits.CheckLength(
-                            dto.Contact,
-                            InputLimits.CampusContact,
-                            "Contact"
-                        );
-                    if (lengthError is not null)
-                        return lengthError;
-
                     var created = await service.CreateAsync(dto);
                     return Results.Created($"/api/campuses/{created.Id}", created);
                 }
@@ -109,23 +91,6 @@ public static class CampusEndpoints
                     {
                         return Results.BadRequest("Street, City, and Country are required.");
                     }
-
-                    var lengthError =
-                        InputLimits.CheckLength(dto.City, InputLimits.CampusCity, "City")
-                        ?? InputLimits.CheckLength(dto.Street, InputLimits.CampusStreet, "Street")
-                        ?? InputLimits.CheckLength(dto.Zip, InputLimits.CampusZip, "Zip")
-                        ?? InputLimits.CheckLength(
-                            dto.Country,
-                            InputLimits.CampusCountry,
-                            "Country"
-                        )
-                        ?? InputLimits.CheckLength(
-                            dto.Contact,
-                            InputLimits.CampusContact,
-                            "Contact"
-                        );
-                    if (lengthError is not null)
-                        return lengthError;
 
                     await service.UpdateAsync(id, dto);
                     return Results.NoContent();

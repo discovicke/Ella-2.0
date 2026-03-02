@@ -1,25 +1,24 @@
 using System.ComponentModel.DataAnnotations;
-using Backend.app.Core.Validation;
 
 namespace Backend.app.Core.Models.DTO;
 
 public record CreateRoomDto(
     long CampusId,
-    [property: MaxLength(InputLimits.RoomName)] string Name,
+    [property: MaxLength(100)] string Name,
     int? Capacity,
     long RoomTypeId,
-    [property: MaxLength(InputLimits.RoomFloor)] string? Floor,
-    [property: MaxLength(InputLimits.RoomNotes)] string? Notes,
+    [property: MaxLength(20)] string? Floor,
+    [property: MaxLength(200)] string? Notes,
     List<long>? AssetIds
 );
 
 public record UpdateRoomDto(
     long CampusId,
-    [property: MaxLength(InputLimits.RoomName)] string Name,
+    [property: MaxLength(100)] string Name,
     int? Capacity,
     long RoomTypeId,
-    [property: MaxLength(InputLimits.RoomFloor)] string? Floor,
-    [property: MaxLength(InputLimits.RoomNotes)] string? Notes,
+    [property: MaxLength(20)] string? Floor,
+    [property: MaxLength(200)] string? Notes,
     List<long>? AssetIds
 );
 

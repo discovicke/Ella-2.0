@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
-import { INPUT_LIMITS } from '../../../shared/constants/input-limits';
 import { SessionService } from '../../../core/session.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
@@ -28,12 +27,11 @@ export class LoginPage {
       validators: [
         Validators.required,
         Validators.email,
-        Validators.maxLength(INPUT_LIMITS.LoginDto.email),
       ],
     }),
     password: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(INPUT_LIMITS.LoginDto.password)],
+      validators: [Validators.required],
     }),
   });
 

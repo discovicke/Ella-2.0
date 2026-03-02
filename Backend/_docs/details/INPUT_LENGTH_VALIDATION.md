@@ -1,6 +1,6 @@
 # Input Length Validation
 
-> Single source of truth in C# → auto-synced to frontend via OpenAPI.
+> `[MaxLength]` on DTOs → auto-enforced by `ValidationFilter` → auto-synced to frontend via OpenAPI.
 
 ## Why
 
@@ -9,112 +9,69 @@ Without max-length limits, any text field is an attack surface. A malicious (or 
 ## Architecture Overview
 
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│  InputLimits.cs                                                  │
-│  (single source of truth — all constants live here)              │
-└──────┬───────────────────────────┬───────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│  DTOs  (e.g. CreateRoomDto)                              │
+│  [MaxLength(100)] directly on each string property       │
+└──────┬───────────────────────────┬───────────────────────┘
        │                           │
        ▼                           ▼
-  [MaxLength] on DTOs        CheckLength() in endpoints
-       │                      (imperative server-side guard)
-       │
-       ▼
-  OpenAPI spec (models.json)
-  ── maxLength appears in schema ──
-       │
-       ▼
-  generate-input-limits.js
-  (reads models.json at build time)
-       │
-       ▼
-  input-limits.ts  ← auto-generated, never hand-edited
-       │
-       ▼
-  Angular forms (Validators.maxLength + HTML maxlength)
+  ValidationFilter             OpenAPI spec (models.json)
+  (auto-enforces at runtime)   ── maxLength in schema ──
+                                   │
+                                   ▼
+                             generate-input-limits.js
+                             (reads models.json at build time)
+                                   │
+                                   ▼
+                             input-limits.ts  ← auto-generated
+                                   │
+                                   ▼
+                             Angular HTML maxlength attrs
 ```
 
-## The Three Enforcement Layers
+## The Two Enforcement Layers
 
-### 1. Backend — `InputLimits.cs`
+### 1. Backend — `ValidationFilter` + `[MaxLength]` on DTOs
 
-**Location:** `Backend/app/Core/Validation/InputLimits.cs`
-
-All max-length constants are declared here as `public const int`. Every limit in the entire system reads from this single file.
+**ValidationFilter** (`Backend/app/Infrastructure/Middleware/ValidationFilter.cs`) is an `IEndpointFilter` registered once on the API group in `Program.cs`:
 
 ```csharp
-public static class InputLimits
-{
-    public const int Email = 254;          // RFC 5321
-    public const int Password = 128;
-    public const int BookerName = 100;
-    public const int BookingNotes = 500;
-    // ... etc
-}
+var api = app.MapGroup("api").AddEndpointFilter<ValidationFilter>();
 ```
 
-It also provides a helper method used by endpoints:
+It automatically validates all `System.ComponentModel.DataAnnotations` attributes (like `[MaxLength]`) on every DTO parameter before the endpoint code runs. If validation fails, it returns `400 Bad Request` with error details.
+
+Every DTO string property has a `[MaxLength(N)]` annotation with the limit written directly:
 
 ```csharp
-public static IResult? CheckLength(string? value, int maxLength, string fieldName)
-```
-
-Returns `400 Bad Request` if the string exceeds the limit, or `null` if OK.
-
-### 2. Backend — `[MaxLength]` on DTOs
-
-Every DTO string property has a `[MaxLength(InputLimits.X)]` annotation:
-
-```csharp
-// Positional record syntax uses [property: ...]
+// Positional record syntax
 public record CreateRoomDto(
     long CampusId,
-    [property: MaxLength(InputLimits.RoomName)] string Name,
-    [property: MaxLength(InputLimits.RoomFloor)] string? Floor,
-    [property: MaxLength(InputLimits.RoomNotes)] string? Notes,
-    // ...
+    [property: MaxLength(100)] string Name,
+    [property: MaxLength(20)] string? Floor,
+    [property: MaxLength(200)] string? Notes,
+    List<long>? AssetIds
 );
 
-// Class-style record uses standard [MaxLength]
+// Class-style record
 public record LoginDto
 {
-    [MaxLength(InputLimits.Email)]
+    [MaxLength(254)]
     public required string Email { get; set; }
 }
 ```
 
-**Why both `[MaxLength]` and `CheckLength()`?**
+No manual `CheckLength()` calls needed — the filter handles everything.
 
-- `[MaxLength]` → feeds into the **OpenAPI spec** so the frontend can auto-discover limits.
-- `CheckLength()` → **imperative server-side guard** at runtime. ASP.NET Minimal APIs do not automatically enforce data annotations, so we guard manually in each endpoint's validation block.
+### 2. Frontend — HTML `maxlength` Attributes
 
-### 3. Frontend — Auto-Generated `input-limits.ts`
-
-**Location:** `Frontend/ng.Frontend/src/app/shared/constants/input-limits.ts`
-
-This file is **auto-generated** — **never edit it by hand**. It is regenerated every time `api:sync` runs.
-
-```typescript
-// Auto-generated from the OpenAPI spec — DO NOT EDIT manually.
-export const INPUT_LIMITS = {
-  CreateRoomDto: { floor: 20, name: 100, notes: 200 },
-  LoginDto: { email: 254, password: 128 },
-  // ... one entry per schema, one key per constrained property
-} as const;
-```
-
-Forms use it for both Angular validator and HTML attribute:
-
-```typescript
-// TS — reactive form validator
-name: new FormControl('', {
-  validators: [Validators.required, Validators.maxLength(INPUT_LIMITS.CreateRoomDto.name)],
-}),
-```
+HTML `maxlength` attributes on `<input>` and `<textarea>` elements prevent users from typing beyond the limit. The values come from the auto-generated `input-limits.ts` constant file.
 
 ```html
-<!-- HTML — native browser enforcement -->
 <input formControlName="name" maxlength="100" />
 ```
+
+The constants file (`input-limits.ts`) is auto-generated from the OpenAPI spec — never edit it by hand.
 
 ## How Auto-Sync Works
 
@@ -124,20 +81,15 @@ The generation script: `Frontend/ng.Frontend/scripts/generate-input-limits.js`
 2. Iterates `components.schemas`, extracting every property with a `maxLength` field
 3. Writes `input-limits.ts` keyed by schema name (DTO name)
 
-**It runs automatically** as part of the `api:sync` npm script (see `Frontend/ng.Frontend/package.json`):
+**It runs automatically** as part of the `api:sync` npm script:
 
 ```
 api:sync = swagger-typescript-api generate ... && node scripts/generate-input-limits.js
 ```
 
-Which is called by the root scripts:
-
-- `npm start` (via `refresh:models` chain)
-- `npm run refresh:models`
-
 ## How to Change a Limit
 
-1. Update the constant in **`InputLimits.cs`** (e.g. change `BookerName = 100` → `BookerName = 150`)
+1. Update the `[MaxLength(N)]` value on the relevant DTO property
 2. Run `npm run refresh:models` from the project root
 3. Done — both `models.json` and `input-limits.ts` are regenerated
 
@@ -145,29 +97,27 @@ That's it. No manual frontend edits needed.
 
 ## How to Add a New Field
 
-1. Add a new constant to `InputLimits.cs`
-2. Add `[MaxLength(InputLimits.NewField)]` to the relevant DTO property
-3. Add `InputLimits.CheckLength(dto.NewField, InputLimits.NewField, "NewField")` to the endpoint validation
-4. Run `npm run refresh:models`
-5. In the Angular form, use `INPUT_LIMITS.YourDto.newField` for `Validators.maxLength()` and the HTML `maxlength` attribute
+1. Add `[MaxLength(N)]` to the new DTO string property
+2. Run `npm run refresh:models`
+3. In the Angular template, use `INPUT_LIMITS.YourDto.newField` for the HTML `maxlength` attribute
 
 ## Current Limits Reference
 
-| Category | Field         | Max Length |
+| Category | DTO Property  | Max Length |
 | -------- | ------------- | ---------- |
 | Identity | Email         | 254        |
 | Identity | Password      | 128        |
 | Identity | DisplayName   | 100        |
 | Booking  | BookerName    | 100        |
-| Booking  | BookingNotes  | 500        |
-| Room     | RoomName      | 100        |
-| Room     | RoomFloor     | 20         |
-| Room     | RoomNotes     | 200        |
-| Campus   | CampusCity    | 100        |
-| Campus   | CampusStreet  | 150        |
-| Campus   | CampusZip     | 20         |
-| Campus   | CampusCountry | 100        |
-| Campus   | CampusContact | 150        |
+| Booking  | Notes         | 500        |
+| Room     | Name          | 100        |
+| Room     | Floor         | 20         |
+| Room     | Notes         | 200        |
+| Campus   | City          | 100        |
+| Campus   | Street        | 150        |
+| Campus   | Zip           | 20         |
+| Campus   | Country       | 100        |
+| Campus   | Contact       | 150        |
 | Class    | ClassName     | 100        |
 | Asset    | Description   | 100        |
 | Template | Name          | 50         |
@@ -176,11 +126,10 @@ That's it. No manual frontend edits needed.
 
 ## Key Files
 
-| File                                                            | Role                                          |
-| --------------------------------------------------------------- | --------------------------------------------- |
-| `Backend/app/Core/Validation/InputLimits.cs`                    | Single source of truth for all limits         |
-| `Backend/app/Core/Models/DTO/*.cs`                              | `[MaxLength]` annotations → flow into OpenAPI |
-| `Backend/app/API/Endpoints/*.cs`                                | `CheckLength()` imperative guards at runtime  |
-| `Frontend/ng.Frontend/scripts/generate-input-limits.js`         | Reads OpenAPI → generates TS constants        |
-| `Frontend/ng.Frontend/src/app/shared/constants/input-limits.ts` | Auto-generated frontend constants             |
-| `Frontend/ng.Frontend/src/app/pages/**/*.ts`                    | Forms use `INPUT_LIMITS.DtoName.field`        |
+| File                                                            | Role                                            |
+| --------------------------------------------------------------- | ----------------------------------------------- |
+| `Backend/app/Infrastructure/Middleware/ValidationFilter.cs`     | Auto-enforces DataAnnotation attributes          |
+| `Backend/app/Core/Models/DTO/*.cs`                              | `[MaxLength(N)]` → single source of truth        |
+| `Frontend/ng.Frontend/scripts/generate-input-limits.js`         | Reads OpenAPI → generates TS constants           |
+| `Frontend/ng.Frontend/src/app/shared/constants/input-limits.ts` | Auto-generated frontend constants                |
+| `Frontend/ng.Frontend/src/app/pages/**/*.html`                  | HTML `maxlength` attrs use `INPUT_LIMITS` values |
