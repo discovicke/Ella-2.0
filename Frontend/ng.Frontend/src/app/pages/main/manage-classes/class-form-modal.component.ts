@@ -196,9 +196,7 @@ export class ClassFormModalComponent {
   readonly classForm = new FormGroup({
     className: new FormControl(this.initialData?.className ?? '', {
       nonNullable: true,
-      validators: [
-        Validators.required,
-      ],
+      validators: [Validators.required],
     }),
   });
 
