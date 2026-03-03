@@ -1,28 +1,17 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { BookingService } from '../../../shared/services/booking.service';
-import { CreateBookingDto, BookingStatus } from '../../../models/models';
+import { PublicBookingService } from '../../../shared/services/public-booking.service';
+import { CreatePublicBookingDto, RoomDetailModel, CampusResponseDto } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { ToastService } from '../../../shared/services/toast.service';
-
-interface Asset {
-  id: number;
-  name: string;
-}
-
-interface Room {
-  id: number;
-  name: string;
-  city: string;
-  capacity: number;
-  roomTypeName: string;
-  assets: Asset[];
-}
-
-interface City {
-  name: string;
-}
 
 @Component({
   selector: 'app-bookingform',
@@ -31,121 +20,131 @@ interface City {
   styleUrl: './bookingform.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BookingformComponent {
-  private readonly bookingService = inject(BookingService);
+export class BookingformComponent implements OnInit {
+  private readonly publicBookingService = inject(PublicBookingService);
   private readonly toastService = inject(ToastService);
 
-  // Signal Forms - nytt API i Angular
+  // --- State signals ---
+  readonly rooms = signal<RoomDetailModel[]>([]);
+  readonly campuses = signal<CampusResponseDto[]>([]);
+  readonly isFormEnabled = signal(true);
+  readonly isLoading = signal(true);
+  readonly isSubmitting = signal(false);
+  readonly submitSuccess = signal(false);
+
+  // --- Form ---
   readonly bookingForm = new FormGroup({
-    name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    name: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
     selectedCity: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     selectedRoomId: new FormControl<number | null>(null, { validators: [Validators.required] }),
     startDate: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     startTime: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     endDate: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     endTime: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    notes: new FormControl('', { nonNullable: true }),
+    notes: new FormControl('', {
+      nonNullable: true,
+    }),
   });
 
-  // Signals för formulärdata - uppdateras automatiskt när formuläret ändras
+  // Signals from form controls
   readonly name = toSignal(this.bookingForm.controls.name.valueChanges, { initialValue: '' });
-  readonly selectedCity = toSignal(this.bookingForm.controls.selectedCity.valueChanges, { initialValue: '' });
-  readonly selectedRoomId = toSignal(this.bookingForm.controls.selectedRoomId.valueChanges, { initialValue: null });
-  readonly startDate = toSignal(this.bookingForm.controls.startDate.valueChanges, { initialValue: '' });
-  readonly startTime = toSignal(this.bookingForm.controls.startTime.valueChanges, { initialValue: '' });
+  readonly selectedCity = toSignal(this.bookingForm.controls.selectedCity.valueChanges, {
+    initialValue: '',
+  });
+  readonly selectedRoomId = toSignal(this.bookingForm.controls.selectedRoomId.valueChanges, {
+    initialValue: null,
+  });
+  readonly startDate = toSignal(this.bookingForm.controls.startDate.valueChanges, {
+    initialValue: '',
+  });
+  readonly startTime = toSignal(this.bookingForm.controls.startTime.valueChanges, {
+    initialValue: '',
+  });
   readonly endDate = toSignal(this.bookingForm.controls.endDate.valueChanges, { initialValue: '' });
   readonly endTime = toSignal(this.bookingForm.controls.endTime.valueChanges, { initialValue: '' });
   readonly notes = toSignal(this.bookingForm.controls.notes.valueChanges, { initialValue: '' });
 
-  // Mockdata för städer
-  readonly cities: City[] = [{ name: 'Hudiksvall' }, { name: 'Uppsala' }, { name: 'Stockholm' }];
+  // --- Computed: unique cities from real campus data ---
+  readonly cities = computed(() => {
+    const citySet = new Set(this.campuses().map((c) => c.city));
+    return [...citySet].sort();
+  });
 
-  // Mockdata för rum
-  readonly rooms: Room[] = [
-    {
-      id: 1,
-      name: 'Lintjärn',
-      city: 'Hudiksvall',
-      capacity: 16,
-      roomTypeName: 'Datasal',
-      assets: [
-        { id: 1, name: 'Whiteboard' },
-        { id: 2, name: 'TV' },
-        { id: 4, name: 'Projektor' },
-        { id: 3, name: 'Nätverksutrustning' },
-      ],
-    },
-    {
-      id: 2,
-      name: 'Lillfjärden',
-      city: 'Hudiksvall',
-      capacity: 22,
-      roomTypeName: 'Klassrum',
-      assets: [{ id: 2, name: 'TV' }],
-    },
-    {
-      id: 3,
-      name: 'Personalrum',
-      city: 'Uppsala',
-      capacity: 10,
-      roomTypeName: 'Grupprum',
-      assets: [{ id: 2, name: 'TV' }],
-    },
-    {
-      id: 4,
-      name: 'Dellen',
-      city: 'Hudiksvall',
-      capacity: 24,
-      roomTypeName: 'Klassrum',
-      assets: [
-        { id: 1, name: 'Whiteboard' },
-        { id: 2, name: 'TV' },
-        { id: 3, name: 'Projektor' },
-      ],
-    },
-    {
-      id: 5,
-      name: 'Kopparlab',
-      city: 'Hudiksvall',
-      capacity: 26,
-      roomTypeName: 'Laboratorium',
-      assets: [
-        { id: 1, name: 'Whiteboard' },
-        { id: 4, name: 'Projektor' },
-        { id: 5, name: 'Fiberutrustning' },
-      ],
-    },
-    {
-      id: 6,
-      name: 'Fiberlab',
-      city: 'Hudiksvall',
-      capacity: 20,
-      roomTypeName: 'Laboratorium',
-      assets: [
-        { id: 1, name: 'Whiteboard' },
-        { id: 4, name: 'Projektor' },
-        { id: 5, name: 'Fiberutrustning' },
-      ],
-    },
-  ];
-
-  // Expanded rooms i listan (för collapsable)
-  readonly expandedRooms = signal<Set<number>>(new Set());
-
-  // Computed: filtrerade rum baserat på vald stad
+  // --- Computed: rooms filtered by selected city ---
   readonly filteredRooms = computed(() => {
     const city = this.selectedCity();
     if (!city) return [];
-    return this.rooms.filter((room) => room.city === city);
+    return this.rooms().filter((room) => room.campusCity === city);
   });
 
-  // Signal för formulärets status
+  // Expanded rooms for collapsible list
+  readonly expandedRooms = signal<Set<number>>(new Set());
+
+  // Form status
   readonly formStatus = toSignal(this.bookingForm.statusChanges, { initialValue: 'INVALID' });
+  readonly isFormValid = computed(() => this.formStatus() === 'VALID');
 
-  // Computed: formulärvalidering
-  readonly isFormValid = computed(() => {
-    return this.formStatus() === 'VALID';
+  // Time validation error
+  readonly timeError = computed(() => {
+    const sd = this.startDate();
+    const st = this.startTime();
+    const ed = this.endDate();
+    const et = this.endTime();
+    if (!sd || !st || !ed || !et) return null;
+    const start = new Date(`${sd}T${st}`);
+    const end = new Date(`${ed}T${et}`);
+    if (end <= start) return 'Sluttid måste vara efter starttid.';
+    return null;
   });
+
+  // Today's date as default for date inputs
+  readonly today = new Date().toISOString().split('T')[0];
+
+  ngOnInit(): void {
+    this.loadData();
+    // Set default dates to today
+    this.bookingForm.controls.startDate.setValue(this.today);
+    this.bookingForm.controls.endDate.setValue(this.today);
+  }
+
+  private loadData(): void {
+    this.isLoading.set(true);
+
+    // Load form status
+    this.publicBookingService.getFormStatus().subscribe({
+      next: (status) => {
+        this.isFormEnabled.set(status.enabled);
+        if (!status.enabled) {
+          this.bookingForm.disable();
+        }
+      },
+      error: () => {
+        this.isFormEnabled.set(false);
+        this.bookingForm.disable();
+      },
+    });
+
+    // Load rooms
+    this.publicBookingService.getRooms().subscribe({
+      next: (rooms) => this.rooms.set(rooms),
+      error: () => this.toastService.showError('Kunde inte ladda rum.'),
+    });
+
+    // Load campuses
+    this.publicBookingService.getCampuses().subscribe({
+      next: (campuses) => {
+        this.campuses.set(campuses);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.toastService.showError('Kunde inte ladda campus.');
+        this.isLoading.set(false);
+      },
+    });
+  }
 
   toggleRoom(roomId: number): void {
     const expanded = new Set(this.expandedRooms());
@@ -162,47 +161,60 @@ export class BookingformComponent {
   }
 
   getRoomTypeLabel(type: string): string {
-    return type; // Now just returns the string from the DB/mock
+    return type;
   }
 
   onCityChange(): void {
-    // Återställ valt rum när stad ändras
     this.bookingForm.controls.selectedRoomId.setValue(null);
   }
 
   onSubmit(): void {
-    if (!this.isFormValid()) return;
+    if (!this.isFormValid() || this.timeError() || this.isSubmitting()) return;
+
+    this.isSubmitting.set(true);
 
     const startDateTime = new Date(`${this.startDate()}T${this.startTime()}`);
     const endDateTime = new Date(`${this.endDate()}T${this.endTime()}`);
 
-    // Slå ihop namn och anteckningar
-    const combinedNotes = `Namn: ${this.name()}${
-      this.notes() ? '\nAnteckningar: ' + this.notes() : ''
-    }`;
-
-    const booking: CreateBookingDto = {
-      userId: 1, // Mock userId
+    const dto: CreatePublicBookingDto = {
+      bookerName: this.name(),
       roomId: this.selectedRoomId()!,
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
-      notes: combinedNotes,
-      status: BookingStatus.Active,
+      notes: this.notes() || null,
     };
 
-    this.bookingService.createBooking(booking).subscribe({
+    this.publicBookingService.createBooking(dto).subscribe({
       next: () => {
-        this.toastService.showSuccess('Bokning skapad!');
+        this.submitSuccess.set(true);
+        this.toastService.showSuccess(
+          'Din bokningsförfrågan har skickats och inväntar godkännande!',
+        );
         this.resetForm();
+        this.isSubmitting.set(false);
       },
       error: (err) => {
-        console.error('Fel vid bokning:', err);
-        this.toastService.showError('Något gick fel vid bokningen.');
+        this.isSubmitting.set(false);
+        const status = err.status;
+        if (status === 403) {
+          this.toastService.showError('Bokningsformuläret är tillfälligt stängt.');
+          this.isFormEnabled.set(false);
+          this.bookingForm.disable();
+        } else if (status === 409) {
+          this.toastService.showError('Rummet är redan bokat för den valda tiden.');
+        } else if (status === 429) {
+          this.toastService.showError('För många förfrågningar. Försök igen senare.');
+        } else {
+          this.toastService.showError('Något gick fel vid bokningen.');
+        }
       },
     });
   }
 
   private resetForm(): void {
-    this.bookingForm.reset();
+    this.bookingForm.reset({
+      startDate: this.today,
+      endDate: this.today,
+    });
   }
 }

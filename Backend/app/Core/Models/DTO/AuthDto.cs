@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Backend.app.Core.Models;
 using Backend.app.Core.Models.Entities;
 
@@ -5,14 +6,22 @@ namespace Backend.app.Core.Models.DTO;
 
 public record LoginDto
 {
+    [MaxLength(254)]
     public required string Email { get; set; }
+
+    [MaxLength(128)]
     public required string Password { get; set; }
 }
 
 public record RegisterDto
 {
+    [MaxLength(254)]
     public required string Email { get; set; }
+
+    [MaxLength(128)]
     public required string Password { get; set; }
+
+    [MaxLength(100)]
     public string? DisplayName { get; set; }
 }
 

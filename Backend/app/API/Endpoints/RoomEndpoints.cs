@@ -213,10 +213,8 @@ public static class RoomEndpoints
     {
         if (string.IsNullOrWhiteSpace(dto.Name))
             return Results.BadRequest("Room name is required.");
-
         if (dto.Capacity.HasValue && dto.Capacity <= 0)
             return Results.BadRequest("Capacity must be a positive number.");
-
         if (dto.RoomTypeId <= 0)
             return Results.BadRequest("Room type is required.");
 
@@ -227,10 +225,8 @@ public static class RoomEndpoints
     {
         if (string.IsNullOrWhiteSpace(dto.Name))
             return Results.BadRequest("Room name is required.");
-
         if (dto.Capacity.HasValue && dto.Capacity <= 0)
             return Results.BadRequest("Capacity must be a positive number.");
-
         if (dto.RoomTypeId <= 0)
             return Results.BadRequest("Room type is required.");
 

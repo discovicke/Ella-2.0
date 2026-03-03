@@ -389,7 +389,6 @@ public static class UserEndpoints
     {
         if (string.IsNullOrWhiteSpace(dto.Email))
             return Results.BadRequest("Email is required.");
-
         if (string.IsNullOrWhiteSpace(dto.Password))
             return Results.BadRequest("Password is required.");
 

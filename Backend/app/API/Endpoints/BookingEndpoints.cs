@@ -233,6 +233,62 @@ public static class BookingEndpoints
             .Produces<PagedResult<BookingDetailedReadModel>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
 
+        // GET /api/bookings/form-status – admin check if public booking form is enabled
+        group
+            .MapGet(
+                "/form-status",
+                async (IConfiguration config, UserService userService) =>
+                {
+                    var email = config["BookingForm:SystemUserEmail"] ?? "bookingform@system.local";
+                    var user = await userService.GetUserByEmailAsync(email);
+                    if (user == null)
+                        return Results.Ok(new { enabled = false });
+                    return Results.Ok(
+                        new
+                        {
+                            enabled = user.IsBanned == BannedStatus.NotBanned,
+                            systemUserId = user.Id,
+                        }
+                    );
+                }
+            )
+            .RequirePermission("ManageBookings")
+            .WithName("GetBookingFormStatus")
+            .WithSummary("Get booking form status")
+            .WithDescription(
+                "Returns whether the public booking form is enabled (system user not banned), plus the system user ID.\n\n🔒 **Authentication Required**\n🔑 **Requires manageBookings permission**"
+            )
+            .Produces(StatusCodes.Status200OK);
+
+        // POST /api/bookings/form-toggle – admin toggle public booking form on/off
+        group
+            .MapPost(
+                "/form-toggle",
+                async (IConfiguration config, UserService userService) =>
+                {
+                    var email = config["BookingForm:SystemUserEmail"] ?? "bookingform@system.local";
+                    var user = await userService.GetUserByEmailAsync(email);
+                    if (user == null)
+                        return Results.NotFound("System user for booking form not found.");
+
+                    var newStatus =
+                        user.IsBanned == BannedStatus.Banned
+                            ? BannedStatus.NotBanned
+                            : BannedStatus.Banned;
+                    await userService.SetBannedStatusAsync(user.Id, newStatus);
+                    var enabled = newStatus == BannedStatus.NotBanned;
+                    return Results.Ok(new { enabled });
+                }
+            )
+            .RequirePermission("ManageBookings")
+            .WithName("ToggleBookingForm")
+            .WithSummary("Toggle public booking form on/off")
+            .WithDescription(
+                "Toggles the public booking form by banning/unbanning the system user.\n\n🔒 **Authentication Required**\n🔑 **Requires manageBookings permission**"
+            )
+            .Produces(StatusCodes.Status200OK)
+            .Produces<string>(StatusCodes.Status404NotFound);
+
         return group;
     }
 }

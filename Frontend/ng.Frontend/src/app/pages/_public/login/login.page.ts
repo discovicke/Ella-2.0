@@ -26,7 +26,10 @@ export class LoginPage {
       nonNullable: true,
       validators: [Validators.required, Validators.email],
     }),
-    password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    password: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
   });
 
   readonly isSubmitting = signal(false);

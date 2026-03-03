@@ -32,7 +32,13 @@ export interface RoomFormModalConfig {
     <form [formGroup]="roomForm" (ngSubmit)="onSubmit()" class="room-form">
       <div class="form-group">
         <label for="room-name">Namn</label>
-        <input id="room-name" type="text" formControlName="name" placeholder="t.ex. Sal A3" />
+        <input
+          id="room-name"
+          type="text"
+          formControlName="name"
+          placeholder="t.ex. Sal A3"
+          maxlength="100"
+        />
         @if (roomForm.get('name')?.invalid && roomForm.get('name')?.touched) {
           <span class="error-msg">Namn krävs</span>
         }
@@ -74,7 +80,13 @@ export interface RoomFormModalConfig {
 
         <div class="form-group">
           <label for="room-floor">Våning</label>
-          <input id="room-floor" type="text" formControlName="floor" placeholder="t.ex. 2" />
+          <input
+            id="room-floor"
+            type="text"
+            formControlName="floor"
+            placeholder="t.ex. 2"
+            maxlength="20"
+          />
         </div>
       </div>
 
@@ -290,9 +302,7 @@ export class RoomFormModalComponent {
     }),
     capacity: new FormControl<number | null>(this.initialData?.capacity ?? null),
     floor: new FormControl<string | null>(this.initialData?.floor ?? null),
-    notes: new FormControl<string | null>(this.initialData?.notes ?? null, {
-      validators: [Validators.maxLength(200)],
-    }),
+    notes: new FormControl<string | null>(this.initialData?.notes ?? null),
   });
 
   isAssetSelected(id: number): boolean {

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.RateLimiting;
 using Backend.app.API.Endpoints;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.Enums;
@@ -9,6 +10,7 @@ using Backend.app.Infrastructure.Middleware;
 using Backend.app.Infrastructure.Repositories.Postgres;
 using Backend.app.Infrastructure.Repositories.Sqlite;
 using DotNetEnv;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 
@@ -34,6 +36,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 // 3. SETUP
 ConfigureDatabase(builder);
 ConfigureCoreServices(builder.Services);
+ConfigureRateLimiting(builder.Services);
 
 var app = builder.Build();
 
@@ -74,9 +77,10 @@ if (app.Environment.IsDevelopment())
 
 // 3. THE BOUNCER (Security)
 app.UseJwtAuthentication();
+app.UseRateLimiter();
 
 // 4. THE API GATES
-var api = app.MapGroup("api");
+var api = app.MapGroup("api").AddEndpointFilter<ValidationFilter>();
 api.MapAuthEndpoints();
 api.MapUserEndpoints();
 api.MapRoomEndpoints();
@@ -86,6 +90,7 @@ api.MapRegistrationEndpoints();
 api.MapPermissionTemplateEndpoints();
 api.MapCampusEndpoints();
 api.MapClassEndpoints();
+api.MapPublicBookingEndpoints();
 
 // 5. THE CATCH-ALL (SPA Fallback)
 app.MapFallbackToFile("index.html");
@@ -271,4 +276,28 @@ static void ConfigureCoreServices(IServiceCollection services)
     services.AddScoped<PermissionTemplateService>();
     services.AddScoped<CampusService>();
     services.AddScoped<ClassService>();
+}
+
+static void ConfigureRateLimiting(IServiceCollection services)
+{
+    services.AddRateLimiter(options =>
+    {
+        options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+        options.AddPolicy(
+            "publicBooking",
+            context =>
+                RateLimitPartition.GetSlidingWindowLimiter(
+                    partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    factory: _ => new SlidingWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(15),
+                        SegmentsPerWindow = 3,
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0,
+                    }
+                )
+        );
+    });
 }

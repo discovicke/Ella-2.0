@@ -17,7 +17,7 @@
 DO $$
 BEGIN
 CREATE
-TYPE booking_status AS ENUM ('active', 'cancelled', 'expired');
+TYPE booking_status AS ENUM ('active', 'cancelled', 'expired', 'pending');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -227,6 +227,7 @@ CREATE TABLE IF NOT EXISTS bookings
     end_time   TIMESTAMPTZ    NOT NULL,
     status     booking_status NOT NULL DEFAULT 'active',
     notes      TEXT,
+    booker_name TEXT,
     created_at TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ,
 
@@ -286,9 +287,11 @@ SELECT b.id               AS booking_id,
        b.end_time,
        CASE
            WHEN b.status = 'cancelled' THEN 'cancelled'
+           WHEN b.status = 'pending' THEN 'pending'
            WHEN b.end_time < NOW() THEN 'expired'
            ELSE 'active'
            END::booking_status                         AS status, b.notes,
+       b.booker_name,
        b.created_at,
        b.updated_at,
        COUNT(reg.user_id) AS registration_count,
@@ -306,7 +309,7 @@ FROM bookings b
 GROUP BY b.id, b.user_id, u.display_name, u.email,
          b.room_id, r.name, r.capacity, rt.name, r.floor,
          b.start_time, b.end_time, b.status, b.notes,
-         b.created_at, b.updated_at, c.city;
+         b.booker_name, b.created_at, b.updated_at, c.city;
 
 
 -- Rumsdetaljer med assets som en |||‑separerad sträng.

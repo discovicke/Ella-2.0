@@ -43,6 +43,54 @@ export class ManageBookingsPage {
   private readonly modalService = inject(ModalService);
   private readonly toastService = inject(ToastService);
 
+  // --- Booking form kill switch ---
+  readonly isBookingFormEnabled = signal<boolean | null>(null);
+  readonly isTogglingForm = signal(false);
+
+  // --- Pending count ---
+  readonly pendingCount = signal(0);
+
+  constructor() {
+    this.loadFormStatus();
+    this.loadPendingCount();
+  }
+
+  private loadFormStatus(): void {
+    this.bookingService.getFormStatus().subscribe({
+      next: (res) => this.isBookingFormEnabled.set(res.enabled),
+      error: () => this.isBookingFormEnabled.set(null),
+    });
+  }
+
+  toggleBookingForm(): void {
+    this.isTogglingForm.set(true);
+    this.bookingService.toggleForm().subscribe({
+      next: (res) => {
+        this.isBookingFormEnabled.set(res.enabled);
+        this.isTogglingForm.set(false);
+        const label = res.enabled ? 'aktiverat' : 'inaktiverat';
+        this.toastService.showSuccess(`Bokningsformulär ${label}.`);
+      },
+      error: () => {
+        this.isTogglingForm.set(false);
+        this.toastService.showError('Kunde inte ändra formulärstatus.');
+      },
+    });
+  }
+
+  private loadPendingCount(): void {
+    this.bookingService.getAllBookings({ status: BookingStatus.Pending, pageSize: 1 }).subscribe({
+      next: (res) => this.pendingCount.set(res.totalCount),
+      error: () => this.pendingCount.set(0),
+    });
+  }
+
+  filterPending(): void {
+    this.selectedStatus.set(BookingStatus.Pending);
+    this.viewMode.set('all');
+    this.pageIndex.set(0);
+  }
+
   // --- Filter state ---
   searchQuery = signal('');
   debouncedSearch = signal('');
@@ -410,6 +458,8 @@ export class ManageBookingsPage {
     switch (status) {
       case BookingStatus.Active:
         return 'Aktiv';
+      case BookingStatus.Pending:
+        return 'Väntande';
       case BookingStatus.Cancelled:
         return 'Avbokad';
       case BookingStatus.Expired:
@@ -437,10 +487,14 @@ export class ManageBookingsPage {
   private async handleStatusChange(bookingId: number, newStatus: BookingStatus): Promise<void> {
     try {
       await firstValueFrom(this.bookingService.updateBookingStatus(bookingId, newStatus));
-      const label = newStatus === BookingStatus.Active ? 'aktiverad' : 'avbokad';
+      let label: string;
+      if (newStatus === BookingStatus.Active) label = 'godkänts';
+      else if (newStatus === BookingStatus.Cancelled) label = 'nekats';
+      else label = 'uppdaterad';
       this.toastService.showSuccess(`Bokningen har ${label}.`);
       this.modalService.close();
       this.bookingsResource.reload();
+      this.loadPendingCount();
     } catch (err) {
       console.error('Failed updating booking status', err);
       this.toastService.showError('Kunde inte uppdatera bokningens status.');

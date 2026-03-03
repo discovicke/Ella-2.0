@@ -174,7 +174,8 @@ public class BookingService(
             StartTime = dto.StartTime,
             EndTime = dto.EndTime,
             Notes = dto.Notes,
-            Status = BookingStatus.Active,
+            BookerName = dto.BookerName,
+            Status = dto.Status != default ? dto.Status : BookingStatus.Active,
         };
 
         var id = await repo.CreateBookingAsync(booking);

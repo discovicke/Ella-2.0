@@ -55,9 +55,7 @@ public static class AssetEndpoints
                 async (CreateAssetTypeDto dto, AssetService service) =>
                 {
                     if (string.IsNullOrWhiteSpace(dto.Description))
-                    {
                         return Results.BadRequest("Description is required.");
-                    }
 
                     var created = await service.CreateAsync(dto);
                     return Results.Created($"/api/assets/{created.Id}", created);
@@ -68,7 +66,7 @@ public static class AssetEndpoints
             .WithSummary("Create a new asset type")
             .WithDescription(
                 "Creates a new asset type.\n\n🔒 **Authentication Required**\n🔑 **Requires manageAssets permission**"
-            ) 
+            )
             .Accepts<CreateAssetTypeDto>("application/json")
             .Produces<AssetTypeResponseDto>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
@@ -82,9 +80,7 @@ public static class AssetEndpoints
                 async (long id, UpdateAssetTypeDto dto, AssetService service) =>
                 {
                     if (string.IsNullOrWhiteSpace(dto.Description))
-                    {
                         return Results.BadRequest("Description is required.");
-                    }
 
                     await service.UpdateAsync(id, dto);
                     return Results.NoContent();

@@ -1,22 +1,24 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Backend.app.Core.Models.DTO;
 
 public record CreateRoomDto(
     long CampusId,
-    string Name,
+    [property: MaxLength(100)] string Name,
     int? Capacity,
     long RoomTypeId,
-    string? Floor,
-    string? Notes,
+    [property: MaxLength(20)] string? Floor,
+    [property: MaxLength(200)] string? Notes,
     List<long>? AssetIds
 );
 
 public record UpdateRoomDto(
     long CampusId,
-    string Name,
+    [property: MaxLength(100)] string Name,
     int? Capacity,
     long RoomTypeId,
-    string? Floor,
-    string? Notes,
+    [property: MaxLength(20)] string? Floor,
+    [property: MaxLength(200)] string? Notes,
     List<long>? AssetIds
 );
 

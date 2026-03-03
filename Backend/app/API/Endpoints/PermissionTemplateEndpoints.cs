@@ -33,10 +33,7 @@ public static class PermissionTemplateEndpoints
         group
             .MapPut(
                 "/",
-                async (
-                    List<PermissionTemplateDto> templates,
-                    PermissionTemplateService service
-                ) =>
+                async (List<PermissionTemplateDto> templates, PermissionTemplateService service) =>
                 {
                     var result = await service.UpdateAllAsync(templates);
                     return Results.Ok(result);

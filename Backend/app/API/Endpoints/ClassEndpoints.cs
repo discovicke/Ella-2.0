@@ -53,9 +53,7 @@ public static class ClassEndpoints
                 async (CreateClassDto dto, ClassService service) =>
                 {
                     if (string.IsNullOrWhiteSpace(dto.ClassName))
-                    {
                         return Results.BadRequest("ClassName is required.");
-                    }
 
                     var created = await service.CreateAsync(dto);
                     return Results.Created($"/api/classes/{created.Id}", created);
@@ -80,9 +78,7 @@ public static class ClassEndpoints
                 async (long id, UpdateClassDto dto, ClassService service) =>
                 {
                     if (string.IsNullOrWhiteSpace(dto.ClassName))
-                    {
                         return Results.BadRequest("ClassName is required.");
-                    }
 
                     await service.UpdateAsync(id, dto);
                     return Results.NoContent();

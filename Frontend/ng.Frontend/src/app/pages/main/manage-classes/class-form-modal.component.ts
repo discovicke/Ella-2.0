@@ -25,7 +25,13 @@ export interface ClassFormModalConfig {
     <form [formGroup]="classForm" (ngSubmit)="onSubmit()" class="class-form">
       <div class="form-group">
         <label for="class-name">Klassnamn</label>
-        <input id="class-name" type="text" formControlName="className" placeholder="t.ex. net25" />
+        <input
+          id="class-name"
+          type="text"
+          formControlName="className"
+          placeholder="t.ex. net25"
+          maxlength="100"
+        />
         @if (classForm.get('className')?.invalid && classForm.get('className')?.touched) {
           <span class="error-msg">Klassnamn krävs</span>
         }

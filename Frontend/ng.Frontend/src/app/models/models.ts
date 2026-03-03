@@ -14,6 +14,7 @@ export enum BookingStatus {
   Active = "Active",
   Cancelled = "Cancelled",
   Expired = "Expired",
+  Pending = "Pending",
 }
 
 export enum BannedStatus {
@@ -63,6 +64,7 @@ export interface BookingDetailedReadModel {
   endTime?: string;
   status?: BookingStatus;
   notes?: string | null;
+  bookerName?: string | null;
   /** @format date-time */
   createdAt?: string;
   /** @format date-time */
@@ -91,6 +93,7 @@ export interface ClassResponseDto {
 }
 
 export interface CreateAssetTypeDto {
+  /** @maxLength 100 */
   description: string;
 }
 
@@ -103,38 +106,69 @@ export interface CreateBookingDto {
   startTime: string;
   /** @format date-time */
   endTime: string;
+  /** @maxLength 500 */
   notes: string | null;
   status: BookingStatus;
+  /**
+   * @maxLength 100
+   * @default null
+   */
+  bookerName?: string | null;
 }
 
 export interface CreateCampusDto {
+  /** @maxLength 150 */
   street: string;
+  /** @maxLength 20 */
   zip: string | null;
+  /** @maxLength 100 */
   city: string;
+  /** @maxLength 100 */
   country: string;
+  /** @maxLength 150 */
   contact: string | null;
 }
 
 export interface CreateClassDto {
+  /** @maxLength 100 */
   className: string;
+}
+
+export interface CreatePublicBookingDto {
+  /** @maxLength 100 */
+  bookerName: string;
+  /** @format int64 */
+  roomId: number;
+  /** @format date-time */
+  startTime: string;
+  /** @format date-time */
+  endTime: string;
+  /** @maxLength 500 */
+  notes: string | null;
 }
 
 export interface CreateRoomDto {
   /** @format int64 */
   campusId: number;
+  /** @maxLength 100 */
   name: string;
   /** @format int32 */
   capacity: number | null;
   /** @format int64 */
   roomTypeId: number;
+  /** @maxLength 20 */
   floor: string | null;
+  /** @maxLength 200 */
   notes: string | null;
   assetIds: number[] | null;
 }
 
 export interface CreateUserDto {
+  /** @maxLength 254 */
   email: string;
+  /** @maxLength 100 */
   displayName: string | null;
+  /** @maxLength 128 */
   password: string;
 }
 
@@ -151,7 +185,9 @@ export interface GroupedPagedResultOfBookingDetailedReadModel {
 }
 
 export interface LoginDto {
+  /** @maxLength 254 */
   email: string;
+  /** @maxLength 128 */
   password: string;
 }
 
@@ -178,15 +214,21 @@ export interface PagedResultOfUserResponseDto {
 export interface PermissionTemplateDto {
   /** @format int64 */
   id?: number | null;
+  /** @maxLength 50 */
   name?: string;
+  /** @maxLength 100 */
   label?: string;
+  /** @maxLength 50 */
   cssClass?: string;
   permissions?: Record<string, boolean>;
 }
 
 export interface RegisterDto {
+  /** @maxLength 254 */
   email: string;
+  /** @maxLength 128 */
   password: string;
+  /** @maxLength 100 */
   displayName?: string | null;
 }
 
@@ -231,18 +273,25 @@ export interface RoomTypeResponseDto {
 }
 
 export interface UpdateAssetTypeDto {
+  /** @maxLength 100 */
   description: string;
 }
 
 export interface UpdateCampusDto {
+  /** @maxLength 150 */
   street: string;
+  /** @maxLength 20 */
   zip: string | null;
+  /** @maxLength 100 */
   city: string;
+  /** @maxLength 100 */
   country: string;
+  /** @maxLength 150 */
   contact: string | null;
 }
 
 export interface UpdateClassDto {
+  /** @maxLength 100 */
   className: string;
 }
 
@@ -263,12 +312,15 @@ export interface UpdatePermissionDto {
 export interface UpdateRoomDto {
   /** @format int64 */
   campusId: number;
+  /** @maxLength 100 */
   name: string;
   /** @format int32 */
   capacity: number | null;
   /** @format int64 */
   roomTypeId: number;
+  /** @maxLength 20 */
   floor: string | null;
+  /** @maxLength 200 */
   notes: string | null;
   assetIds: number[] | null;
 }
@@ -276,8 +328,11 @@ export interface UpdateRoomDto {
 export interface UpdateUserDto {
   /** @format int64 */
   id: number;
+  /** @maxLength 254 */
   email: string;
+  /** @maxLength 100 */
   displayName: string | null;
+  /** @maxLength 128 */
   password: string | null;
   isBanned: BannedStatus;
 }

@@ -40,7 +40,9 @@ export class BookingModalComponent {
     startTime: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     endDate: new FormControl(this.today, { nonNullable: true, validators: [Validators.required] }),
     endTime: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    notes: new FormControl('', { nonNullable: true }),
+    notes: new FormControl('', {
+      nonNullable: true,
+    }),
   });
 
   readonly isSubmitting = signal(false);

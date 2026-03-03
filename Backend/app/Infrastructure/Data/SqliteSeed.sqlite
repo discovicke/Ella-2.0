@@ -141,7 +141,10 @@ VALUES
     (82, 'johanna.admin@edugrade.com', '__HASH__', 'Johanna Lindström', 3),
 
     -- Banned user for filter testing
-    (83, 'banned.user@edu.edugrade.com', '__HASH__', 'Avstängd Testsson', 1);
+    (83, 'banned.user@edu.edugrade.com', '__HASH__', 'Avstängd Testsson', 1),
+
+    -- System user for public booking form
+    (99, 'bookingform@system.local', '__NOLOGIN__', 'Bokningsformulär', NULL);
 
 -- Ban user 83
 UPDATE users SET is_banned = 1 WHERE id = 83;

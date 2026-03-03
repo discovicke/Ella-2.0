@@ -1,19 +1,21 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Backend.app.Core.Models.DTO;
 
 public record CreateCampusDto(
-    string Street,
-    string? Zip,
-    string City,
-    string Country,
-    string? Contact
+    [property: MaxLength(150)] string Street,
+    [property: MaxLength(20)] string? Zip,
+    [property: MaxLength(100)] string City,
+    [property: MaxLength(100)] string Country,
+    [property: MaxLength(150)] string? Contact
 );
 
 public record UpdateCampusDto(
-    string Street,
-    string? Zip,
-    string City,
-    string Country,
-    string? Contact
+    [property: MaxLength(150)] string Street,
+    [property: MaxLength(20)] string? Zip,
+    [property: MaxLength(100)] string City,
+    [property: MaxLength(100)] string Country,
+    [property: MaxLength(150)] string? Contact
 );
 
 public record CampusResponseDto(
