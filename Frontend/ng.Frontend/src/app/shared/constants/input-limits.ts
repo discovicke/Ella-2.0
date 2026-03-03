@@ -1,9 +1,9 @@
 /**
  * Auto-generated from the OpenAPI spec — DO NOT EDIT manually.
- * Generated: 2026-03-02 17:23:24
+ * Generated: 2026-03-03 13:24:17
  *
  * Source of truth: [MaxLength] attributes on C# DTOs →
- *   Backend/app/Core/Validation/InputLimits.cs
+ *   Backend/app/Core/Models/DTO/*.cs
  *
  * Re-generate: npm run refresh:models  (or npm run api:sync)
  */
