@@ -38,7 +38,7 @@ Enter choice (1-3) [default: 1]:
 
 After picking, setup:
 
-1. Writes `Backend/.env-example` with the correct connection string (credentials pulled directly from the provider's compose file).
+1. Writes `Backend/.env-example` with the correct connection string (credentials pulled directly from the provider's compose file) and an auto-generated JWT signing key.
 2. Starts the Docker container if the chosen provider requires one.
 3. Prints **"Setup complete! Run `npm start` to launch the project."**
 
@@ -76,6 +76,11 @@ cp Backend/.env-example Backend/.env
 ```
 
 Both files are gitignored. The app loads `.env` first, falling back to `.env-example`.
+
+> **Note:** Setup auto-generates a unique JWT signing key — no manual step needed for development.
+
+> **Production:** The `.env-example` fallback is blocked when `ASPNETCORE_ENVIRONMENT=Production`.  
+> In production, use a real `.env` file or set environment variables directly (e.g. via Azure App Service Configuration, CI/CD, etc.).
 
 ---
 
@@ -115,3 +120,14 @@ docker-compose -f docker-compose.postgres.yml up -d
 # or
 docker-compose -f docker-compose.sqlserver.yml up -d
 ```
+
+> **Tip:** Docker compose credentials can be overridden with environment variables (e.g. `POSTGRES_PASSWORD`, `MSSQL_SA_PASSWORD`). The compose files use `${VAR:-default}` syntax — see the files for all supported variables.
+
+**`JWT SecretKey is set to a placeholder`** — This happens if the `.env` / `.env-example` file was manually created or edited with a placeholder value instead of a real key. To fix:
+
+1. Open `Backend/.env` (or `Backend/.env-example`)
+2. Replace the `JwtSettings__SecretKey=...` value with a real key:
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+   ```
+3. Or delete both env files and run `npm run setup` — it auto-generates a key for you.
