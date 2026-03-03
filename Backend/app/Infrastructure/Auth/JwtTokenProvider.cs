@@ -34,6 +34,27 @@ public class JwtTokenProvider : ITokenProvider
             configuration["JwtSettings:AccessTokenExpirationMinutes"] ?? "60"
         );
 
+        // Block known placeholder values — these must never be used
+        string[] placeholders = ["CHANGE_ME", "REPLACE_WITH_SECURE_KEY_MIN_32_CHARS"];
+        if (placeholders.Contains(_secretKey, StringComparer.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "\n\n"
+                    + "  ══════════════════════════════════════════════════════════════\n"
+                    + "   JWT SecretKey is set to a placeholder — the app cannot start.\n"
+                    + "  ══════════════════════════════════════════════════════════════\n\n"
+                    + "  This usually means the .env file was manually created or edited\n"
+                    + "  without replacing the placeholder value.\n\n"
+                    + "  How to fix:\n\n"
+                    + "  1. Open Backend/.env (or Backend/.env-example)\n"
+                    + "  2. Find the line:  JwtSettings__SecretKey=...\n"
+                    + "  3. Replace it with a real key (min 32 chars). Generate one with:\n\n"
+                    + "       node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\"\n\n"
+                    + "  Alternatively, delete Backend/.env and Backend/.env-example,\n"
+                    + "  then run 'npm run setup' to regenerate everything automatically.\n"
+            );
+        }
+
         // Validera att secret key är tillräckligt lång (minst 256 bitar för HS256)
         if (_secretKey.Length < 32)
         {

@@ -41,9 +41,33 @@ if (!fs.existsSync(ENV_PATH) && !fs.existsSync(ENV_EXAMPLE_PATH)) {
   process.exit(1);
 }
 
-// --- Read provider ---
+// --- Read env file ---
 const envFile = fs.existsSync(ENV_PATH) ? ENV_PATH : ENV_EXAMPLE_PATH;
 const content = fs.readFileSync(envFile, "utf8");
+
+// --- Check for JWT placeholder key ---
+const jwtMatch = content.match(/JwtSettings__SecretKey=(.+)/);
+const jwtKey = jwtMatch ? jwtMatch[1].trim() : null;
+const PLACEHOLDERS = ["CHANGE_ME", "REPLACE_WITH_SECURE_KEY_MIN_32_CHARS"];
+if (jwtKey && PLACEHOLDERS.includes(jwtKey.toUpperCase())) {
+  console.log(`\n${DIV}`);
+  fail("JWT SecretKey is set to a placeholder — the app will not start.");
+  console.log();
+  hint(
+    `Open ${c.cyan}${envFile}${c.reset}${c.dim} and replace the JwtSettings__SecretKey value.`,
+  );
+  hint(
+    `Generate a key with: ${c.cyan}node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"${c.reset}`,
+  );
+  console.log();
+  hint(
+    `Or delete both env files and run ${c.cyan}npm run setup${c.reset}${c.dim} to regenerate automatically.`,
+  );
+  console.log(`${DIV}\n`);
+  process.exit(1);
+}
+
+// --- Read provider ---
 const match = content.match(/DatabaseSettings__Provider=(.+)/);
 const provider = match ? match[1].trim().toLowerCase() : null;
 

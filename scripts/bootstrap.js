@@ -3,7 +3,7 @@
  * First-time project bootstrap.
  * - Reads the DbProviders enum from the C# source.
  * - Prompts the user to pick a database provider.
- * - Writes a .env-example file into Backend/.
+ * - Writes a .env-example file into Backend/ (with auto-generated JWT key).
  * - Starts Docker containers if the chosen provider needs them.
  *
  * Called by `npm run setup`.
@@ -12,6 +12,7 @@
 const fs = require("fs");
 const path = require("path");
 const readline = require("readline");
+const crypto = require("crypto");
 const { execSync } = require("child_process");
 
 // --- Output helpers ---
@@ -45,6 +46,18 @@ const DB_PROVIDERS_CS = path.join(
 );
 
 const DOCKER_PROVIDERS = ["postgres", "sqlserver"];
+
+// --- Helper: extract value from compose env vars ---
+// Handles both plain values (KEY: value) and Docker ${VAR:-default} syntax.
+function extractEnvValue(yml, pattern) {
+  const raw = yml.match(pattern)?.[1]?.trim();
+  if (!raw) return null;
+  // Strip surrounding quotes
+  const unquoted = raw.replace(/^["']|["']$/g, "");
+  // Match ${VAR:-default} and extract the default
+  const fallbackMatch = unquoted.match(/^\$\{[^:-]+:-?(.+)\}$/);
+  return fallbackMatch ? fallbackMatch[1] : unquoted;
+}
 
 // --- Already set up ---
 if (fs.existsSync(ENV_PATH) || fs.existsSync(ENV_EXAMPLE_PATH)) {
@@ -86,19 +99,24 @@ function getConnectionString(providerName) {
   const yml = fs.readFileSync(composeFile, "utf8");
 
   if (providerLower === "postgres") {
-    const user = yml.match(/POSTGRES_USER:\s*(.+)/)?.[1]?.trim() ?? "postgres";
+    const user = extractEnvValue(yml, /POSTGRES_USER:\s*(.+)/) ?? "postgres";
     const pass =
-      yml.match(/POSTGRES_PASSWORD:\s*(.+)/)?.[1]?.trim() ?? "postgres";
-    const db = yml.match(/POSTGRES_DB:\s*(.+)/)?.[1]?.trim() ?? "postgres";
-    const port = yml.match(/"(\d+):5432"/)?.[1] ?? "5432";
+      extractEnvValue(yml, /POSTGRES_PASSWORD:\s*(.+)/) ?? "postgres";
+    const db = extractEnvValue(yml, /POSTGRES_DB:\s*(.+)/) ?? "postgres";
+    const port =
+      extractEnvValue(yml, /POSTGRES_PORT:-?(\d+)/) ??
+      yml.match(/"(\d+):5432"/)?.[1] ??
+      "5432";
     return `Host=localhost;Port=${port};Database=${db};Username=${user};Password=${pass};`;
   }
 
   if (providerLower === "sqlserver") {
     const pass =
-      yml.match(/MSSQL_SA_PASSWORD:\s*"?(.+?)"?\s*$/m)?.[1]?.trim() ??
-      "YourPasswordHere!";
-    const port = yml.match(/"(\d+):1433"/)?.[1] ?? "1433";
+      extractEnvValue(yml, /MSSQL_SA_PASSWORD:\s*(.+)/) ?? "YourPasswordHere!";
+    const port =
+      extractEnvValue(yml, /MSSQL_PORT:-?(\d+)/) ??
+      yml.match(/"(\d+):1433"/)?.[1] ??
+      "1433";
     return `Server=localhost,${port};Database=ella_db;User Id=sa;Password=${pass};TrustServerCertificate=True;`;
   }
 
@@ -138,14 +156,16 @@ rl.question(`Enter choice (1-${providers.length}) [default: 1]: `, (answer) => {
   const chosen = providers[index];
   const connStr = getConnectionString(chosen);
 
+  const jwtKey = crypto.randomBytes(32).toString("base64");
+
   const content = [
     `# --- Database Settings ---`,
     `# Available providers: ${providers.join(" | ")}`,
     `DatabaseSettings__Provider=${chosen.toLowerCase()}`,
     `DatabaseSettings__ConnectionString=${connStr}`,
     `# --- JWT Settings ---`,
-    `# WARNING: Replace this with a secure, random key of at least 32 characters`,
-    `JwtSettings__SecretKey=REPLACE_WITH_SECURE_KEY_MIN_32_CHARS`,
+    `# Auto-generated secure key. Replace if needed (min 32 characters).`,
+    `JwtSettings__SecretKey=${jwtKey}`,
     `JwtSettings__Issuer=EllaBookingAPI`,
     `JwtSettings__Audience=EllaBookingClient`,
     `JwtSettings__AccessTokenExpirationMinutes=60`,
@@ -155,7 +175,10 @@ rl.question(`Enter choice (1-${providers.length}) [default: 1]: `, (answer) => {
 
   section("Environment");
   ok(`Created Backend/.env-example  ${c.dim}(provider: ${chosen})${c.reset}`);
-  hint("Copy to Backend/.env and fill in your real credentials.");
+  ok(
+    `Generated JWT signing key  ${c.dim}(auto-generated, unique to this machine)${c.reset}`,
+  );
+  hint("For production, copy to Backend/.env and configure real credentials.");
 
   // Start Docker if needed
   const providerLower = chosen.toLowerCase();

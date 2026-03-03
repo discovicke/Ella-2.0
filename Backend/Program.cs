@@ -116,6 +116,14 @@ static void LoadEnvironmentVariables()
     }
     else if (File.Exists(envExamplePath))
     {
+        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "";
+        if (env.Equals("Production", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "Cannot use .env-example in Production. Create a Backend/.env with real credentials or set environment variables directly."
+            );
+        }
+
         Env.Load(envExamplePath);
         Console.WriteLine("  \u001b[33m\u25b8\u001b[0m  Configuration loaded from .env-example");
         Console.WriteLine(
