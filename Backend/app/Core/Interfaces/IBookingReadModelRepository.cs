@@ -47,6 +47,21 @@ public interface IBookingReadModelRepository
     );
 
     /// <summary>
+    /// Paginated version of GetDetailedBookingsByUserRegistrationAsync.
+    /// Returns bookings + total count for the given user/statuses/timeFilter.
+    /// </summary>
+    Task<(
+        IEnumerable<BookingDetailedReadModel> Bookings,
+        int TotalCount
+    )> GetDetailedBookingsByUserRegistrationPagedAsync(
+        long userId,
+        IEnumerable<RegistrationStatus> statuses,
+        int page,
+        int pageSize,
+        string? timeFilter = null
+    );
+
+    /// <summary>
     /// Get paginated filtered bookings with total count. Supports search across user/room/campus/notes.
     /// </summary>
     Task<(

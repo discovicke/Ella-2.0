@@ -249,8 +249,8 @@ export class SeeBookingsPage {
       const timeFilter = isUpcoming ? 'upcoming' : 'history';
       const userId = this.sessionService.currentUser()?.id;
 
-      // Two parallel calls: paged own bookings + unified registration bookings
-      const [ownResult, regBookings] = await Promise.all([
+      // Two parallel calls: paged own bookings + paged registration bookings
+      const [ownResult, regResult] = await Promise.all([
         firstValueFrom(
           this.bookingService.getBookingsByUserId({
             page: this.currentPage(),
@@ -263,6 +263,8 @@ export class SeeBookingsPage {
           this.registrationService.getMyRegistrationBookings(
             ['registered', 'invited', 'declined'],
             timeFilter,
+            this.currentPage(),
+            this.PAGE_SIZE,
           ),
         ),
       ]);
@@ -270,6 +272,7 @@ export class SeeBookingsPage {
       const ownBookings = this.enrichBookings(ownResult.items, 'owned');
 
       // Enrich registration bookings based on userRegistrationStatus from the server
+      const regBookings = regResult.items;
       const enrichedReg = regBookings
         .filter((b) => b.userId !== userId) // exclude own bookings (already in ownBookings)
         .map((b) => {
@@ -312,7 +315,7 @@ export class SeeBookingsPage {
       }
 
       this.bookings.set(deduped);
-      this.totalCount.set(ownResult.totalCount + enrichedReg.length);
+      this.totalCount.set(ownResult.totalCount + regResult.totalCount);
     } catch (err) {
       console.error('Failed to load bookings', err);
     } finally {

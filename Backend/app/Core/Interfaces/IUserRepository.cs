@@ -29,9 +29,11 @@ public interface IUserRepository
     Task<IEnumerable<long>> GetCampusIdsForUserAsync(long userId);
     Task SetCampusesForUserAsync(long userId, IEnumerable<long> campusIds);
     Task<Dictionary<long, List<string>>> GetAllUserCampusNamesAsync();
+    Task<Dictionary<long, List<string>>> GetUserCampusNamesAsync(IEnumerable<long> userIds);
 
     // User ↔ Class associations
     Task<IEnumerable<long>> GetClassIdsForUserAsync(long userId);
     Task SetClassesForUserAsync(long userId, IEnumerable<long> classIds);
     Task<Dictionary<long, List<string>>> GetAllUserClassNamesAsync();
+    Task<Dictionary<long, List<string>>> GetUserClassNamesAsync(IEnumerable<long> userIds);
 }

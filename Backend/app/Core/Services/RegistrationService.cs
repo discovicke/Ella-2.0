@@ -130,6 +130,21 @@ public class RegistrationService(
             userId, statuses, timeFilter);
     }
 
+    /// <summary>
+    /// Paginated version — returns a page of registration bookings + total count.
+    /// </summary>
+    public async Task<(IEnumerable<BookingDetailedReadModel> Bookings, int TotalCount)>
+        GetUserRegistrationBookingsPagedAsync(
+            long userId,
+            IEnumerable<RegistrationStatus> statuses,
+            int page,
+            int pageSize,
+            string? timeFilter = null)
+    {
+        return await bookingReadModelRepo.GetDetailedBookingsByUserRegistrationPagedAsync(
+            userId, statuses, page, pageSize, timeFilter);
+    }
+
     /// <summary>Get confirmed participants for a booking.</summary>
     public async Task<
         IEnumerable<(long UserId, string DisplayName, string Email)>
