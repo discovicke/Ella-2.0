@@ -74,7 +74,6 @@ export interface BookingDetailedReadModel {
   /** @format int32 */
   invitationCount?: number;
   roomAssets?: string | null;
-  /** Only populated by the unified registration endpoint. Values: 'invited' | 'registered' | 'declined' */
   userRegistrationStatus?: string | null;
 }
 
