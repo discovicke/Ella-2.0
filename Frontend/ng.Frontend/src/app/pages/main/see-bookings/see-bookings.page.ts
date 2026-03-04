@@ -88,7 +88,9 @@ export class SeeBookingsPage {
   /** The soonest upcoming active booking — from own OR registered bookings */
   nextBooking = computed(() => {
     if (this.activeTab() !== 'upcoming') return null;
-    return this.bookings().find((b) => b.status === BookingStatus.Active && !b.isInvitation) ?? null;
+    return (
+      this.bookings().find((b) => b.status === BookingStatus.Active && !b.isInvitation) ?? null
+    );
   });
 
   groupedBookings = computed(() => {
@@ -400,7 +402,12 @@ export class SeeBookingsPage {
     };
 
     // Mark attended bookings so the modal can show "Du deltar"
-    if (!booking.isOwned && !booking.isDeclined && !booking.isExpiredInvitation && !booking.isInvitation) {
+    if (
+      !booking.isOwned &&
+      !booking.isDeclined &&
+      !booking.isExpiredInvitation &&
+      !booking.isInvitation
+    ) {
       config.isRegistered = true;
     }
 
@@ -410,7 +417,13 @@ export class SeeBookingsPage {
     }
 
     // Upcoming attended bookings: allow unregister (reverts to invited)
-    if (!isHistory && !booking.isOwned && !booking.isDeclined && !booking.isExpiredInvitation && !booking.isInvitation) {
+    if (
+      !isHistory &&
+      !booking.isOwned &&
+      !booking.isDeclined &&
+      !booking.isExpiredInvitation &&
+      !booking.isInvitation
+    ) {
       config.onUnregister = async (bookingId: number) => {
         await firstValueFrom(this.registrationService.unregister(bookingId));
         this.toastService.showSuccess('Du har avregistrerats. Inbjudan finns kvar.');

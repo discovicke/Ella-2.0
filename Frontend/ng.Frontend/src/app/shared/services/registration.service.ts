@@ -1,7 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { BookingDetailedReadModel, PagedResultOfBookingDetailedReadModel } from '../../models/models';
+import {
+  BookingDetailedReadModel,
+  PagedResultOfBookingDetailedReadModel,
+} from '../../models/models';
 
 export interface RegistrationParticipant {
   userId: number;

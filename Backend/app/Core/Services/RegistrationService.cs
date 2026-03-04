@@ -48,11 +48,17 @@ public class RegistrationService(
         if (currentStatus == RegistrationStatus.Registered)
             return true; // already confirmed
 
-        if (currentStatus == RegistrationStatus.Invited || currentStatus == RegistrationStatus.Declined)
+        if (
+            currentStatus == RegistrationStatus.Invited
+            || currentStatus == RegistrationStatus.Declined
+        )
             return await repo.UpdateStatusAsync(userId, bookingId, RegistrationStatus.Registered);
 
         // No row yet — direct registration (e.g. from a public link)
-        if (booking.RoomCapacity.HasValue && booking.RegistrationCount >= booking.RoomCapacity.Value)
+        if (
+            booking.RoomCapacity.HasValue
+            && booking.RegistrationCount >= booking.RoomCapacity.Value
+        )
             logger.LogWarning("Booking {BookingId} is over capacity.", bookingId);
 
         return await repo.AddAsync(userId, bookingId, RegistrationStatus.Registered);
@@ -103,7 +109,11 @@ public class RegistrationService(
     /// <summary>
     /// Remove an invitation entirely. Only the booking owner should call this.
     /// </summary>
-    public async Task<bool> RemoveInvitationAsync(long ownerUserId, long bookingId, long targetUserId)
+    public async Task<bool> RemoveInvitationAsync(
+        long ownerUserId,
+        long bookingId,
+        long targetUserId
+    )
     {
         var booking =
             await bookingReadModelRepo.GetDetailedBookingByIdAsync(bookingId)
@@ -124,25 +134,37 @@ public class RegistrationService(
     public async Task<IEnumerable<BookingDetailedReadModel>> GetUserRegistrationBookingsAsync(
         long userId,
         IEnumerable<RegistrationStatus> statuses,
-        string? timeFilter = null)
+        string? timeFilter = null
+    )
     {
         return await bookingReadModelRepo.GetDetailedBookingsByUserRegistrationAsync(
-            userId, statuses, timeFilter);
+            userId,
+            statuses,
+            timeFilter
+        );
     }
 
     /// <summary>
     /// Paginated version — returns a page of registration bookings + total count.
     /// </summary>
-    public async Task<(IEnumerable<BookingDetailedReadModel> Bookings, int TotalCount)>
-        GetUserRegistrationBookingsPagedAsync(
-            long userId,
-            IEnumerable<RegistrationStatus> statuses,
-            int page,
-            int pageSize,
-            string? timeFilter = null)
+    public async Task<(
+        IEnumerable<BookingDetailedReadModel> Bookings,
+        int TotalCount
+    )> GetUserRegistrationBookingsPagedAsync(
+        long userId,
+        IEnumerable<RegistrationStatus> statuses,
+        int page,
+        int pageSize,
+        string? timeFilter = null
+    )
     {
         return await bookingReadModelRepo.GetDetailedBookingsByUserRegistrationPagedAsync(
-            userId, statuses, page, pageSize, timeFilter);
+            userId,
+            statuses,
+            page,
+            pageSize,
+            timeFilter
+        );
     }
 
     /// <summary>Get confirmed participants for a booking.</summary>

@@ -169,7 +169,8 @@ public class PostgresBookingReadModelRepo(
     > GetDetailedBookingsByUserRegistrationAsync(
         long userId,
         IEnumerable<RegistrationStatus> statuses,
-        string? timeFilter = null)
+        string? timeFilter = null
+    )
     {
         try
         {
@@ -177,24 +178,29 @@ public class PostgresBookingReadModelRepo(
             await conn.OpenAsync();
 
             // Map enum values to Postgres enum strings
-            var pgStatuses = statuses.Select(s => s switch
-            {
-                RegistrationStatus.Invited => "invited",
-                RegistrationStatus.Registered => "registered",
-                RegistrationStatus.Declined => "declined",
-                _ => throw new ArgumentOutOfRangeException(nameof(s), s, null)
-            }).ToArray();
+            var pgStatuses = statuses
+                .Select(s =>
+                    s switch
+                    {
+                        RegistrationStatus.Invited => "invited",
+                        RegistrationStatus.Registered => "registered",
+                        RegistrationStatus.Declined => "declined",
+                        _ => throw new ArgumentOutOfRangeException(nameof(s), s, null),
+                    }
+                )
+                .ToArray();
 
             var timeClause = timeFilter switch
             {
                 "upcoming" => "AND v.end_time >= NOW()",
                 "history" => "AND v.end_time < NOW()",
-                _ => ""
+                _ => "",
             };
 
             var orderDir = timeFilter == "upcoming" ? "ASC" : "DESC";
 
-            var sql = $@"
+            var sql =
+                $@"
                 SELECT v.*, r.status::text AS user_registration_status
                 FROM v_bookings_detailed v
                 INNER JOIN registrations r ON v.booking_id = r.booking_id
@@ -227,32 +233,38 @@ public class PostgresBookingReadModelRepo(
         IEnumerable<RegistrationStatus> statuses,
         int page,
         int pageSize,
-        string? timeFilter = null)
+        string? timeFilter = null
+    )
     {
         try
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            var pgStatuses = statuses.Select(s => s switch
-            {
-                RegistrationStatus.Invited => "invited",
-                RegistrationStatus.Registered => "registered",
-                RegistrationStatus.Declined => "declined",
-                _ => throw new ArgumentOutOfRangeException(nameof(s), s, null)
-            }).ToArray();
+            var pgStatuses = statuses
+                .Select(s =>
+                    s switch
+                    {
+                        RegistrationStatus.Invited => "invited",
+                        RegistrationStatus.Registered => "registered",
+                        RegistrationStatus.Declined => "declined",
+                        _ => throw new ArgumentOutOfRangeException(nameof(s), s, null),
+                    }
+                )
+                .ToArray();
 
             var timeClause = timeFilter switch
             {
                 "upcoming" => "AND v.end_time >= NOW()",
                 "history" => "AND v.end_time < NOW()",
-                _ => ""
+                _ => "",
             };
 
             var orderDir = timeFilter == "upcoming" ? "ASC" : "DESC";
             var offset = (page - 1) * pageSize;
 
-            var countSql = $@"
+            var countSql =
+                $@"
                 SELECT COUNT(*)
                 FROM v_bookings_detailed v
                 INNER JOIN registrations r ON v.booking_id = r.booking_id
@@ -260,7 +272,8 @@ public class PostgresBookingReadModelRepo(
                   AND r.status = ANY(@Statuses::registration_status[])
                   {timeClause};";
 
-            var dataSql = $@"
+            var dataSql =
+                $@"
                 SELECT v.*, r.status::text AS user_registration_status
                 FROM v_bookings_detailed v
                 INNER JOIN registrations r ON v.booking_id = r.booking_id
@@ -270,7 +283,13 @@ public class PostgresBookingReadModelRepo(
                 ORDER BY v.start_time {orderDir}
                 LIMIT @PageSize OFFSET @Offset;";
 
-            var parameters = new { UserId = userId, Statuses = pgStatuses, PageSize = pageSize, Offset = offset };
+            var parameters = new
+            {
+                UserId = userId,
+                Statuses = pgStatuses,
+                PageSize = pageSize,
+                Offset = offset,
+            };
 
             var totalCount = await conn.ExecuteScalarAsync<int>(countSql, parameters);
             var bookings = await conn.QueryAsync<BookingDetailedReadModel>(dataSql, parameters);
