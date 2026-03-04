@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
@@ -7,6 +7,14 @@ import { BookingDetailedReadModel, BookingStatus } from '../../../models/models'
 export interface BookingDetailModalConfig {
   booking: BookingDetailedReadModel;
   onCancel: (bookingId: number) => Promise<void>;
+  /** Whether the current user is registered for this booking */
+  isRegistered?: boolean;
+  /** Whether the current user has declined this invitation */
+  isDeclined?: boolean;
+  /** Called when user registers for this booking */
+  onRegister?: (bookingId: number) => Promise<void>;
+  /** Called when user unregisters from this booking */
+  onUnregister?: (bookingId: number) => Promise<void>;
 }
 
 @Component({
@@ -82,12 +90,54 @@ export interface BookingDetailModalConfig {
             </div>
           </div>
         }
+
+        <!-- Registration row — show participant count for attended bookings -->
+        @if (hasRegistration) {
+          <div class="detail-row">
+            @if (isDeclined()) {
+              <div class="detail-icon detail-icon--declined">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="15" y1="9" x2="9" y2="15" />
+                  <line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
+              </div>
+              <div class="detail-content">
+                <span class="detail-primary detail-primary--declined">Du avböjde</span>
+                <span class="detail-secondary">
+                  {{ registrationCountLabel() }}
+                </span>
+              </div>
+            } @else {
+              <div class="detail-icon detail-icon--success">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+              </div>
+              <div class="detail-content">
+                <span class="detail-primary detail-primary--success">Du deltar</span>
+                <span class="detail-secondary">
+                  {{ registrationCountLabel() }}
+                </span>
+              </div>
+            }
+          </div>
+        }
       </div>
 
       <!-- Footer -->
       <div class="modal-footer">
         <app-button variant="tertiary" (clicked)="onClose()">Stäng</app-button>
-        @if (booking.status === BookingStatus.Active) {
+        @if (config.onRegister && isDeclined()) {
+          <app-button variant="primary" [disabled]="isRegistering()" (clicked)="onRegister()">
+            {{ isRegistering() ? 'Accepterar...' : 'Acceptera inbjudan' }}
+          </app-button>
+        } @else if (config.onUnregister && isRegistered()) {
+          <app-button variant="danger" [disabled]="isRegistering()" (clicked)="onUnregister()">
+            {{ isRegistering() ? 'Avregistrerar...' : 'Avregistrera' }}
+          </app-button>
+        } @else if (booking.status === BookingStatus.Active && !isDeclined()) {
           <app-button variant="danger" [disabled]="isCancelling()" (clicked)="onCancel()">
             {{ isCancelling() ? 'Avbokar...' : 'Avboka' }}
           </app-button>
@@ -264,6 +314,75 @@ export interface BookingDetailModalConfig {
         padding-top: 16px;
         margin-top: 4px;
       }
+
+      /* ── Registration integrated into detail rows ── */
+      .detail-icon--success {
+        background: var(--color-success-surface, #dcfce7);
+
+        svg {
+          stroke: var(--color-success, #16a34a);
+        }
+      }
+
+      .detail-primary--success {
+        color: var(--color-success, #16a34a);
+      }
+
+      .detail-icon--declined {
+        background: var(--color-danger-surface, #fef2f2);
+
+        svg {
+          stroke: var(--color-danger, #dc2626);
+        }
+      }
+
+      .detail-primary--declined {
+        color: var(--color-text-muted);
+      }
+
+      .detail-action {
+        margin-left: auto;
+        flex-shrink: 0;
+      }
+
+      .inline-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 14px;
+        border-radius: 6px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.15s ease;
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        &--register {
+          background: var(--color-primary);
+          color: white;
+
+          &:hover:not(:disabled) {
+            background: var(--color-primary-hover);
+            box-shadow: var(--shadow-sm);
+          }
+        }
+
+        &--unregister {
+          background: transparent;
+          color: var(--color-text-muted);
+          border-color: var(--color-border);
+
+          &:hover:not(:disabled) {
+            color: var(--color-danger, #dc2626);
+            border-color: var(--color-danger, #dc2626);
+            background: var(--color-danger-surface, #fde2e2);
+          }
+        }
+      }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -272,11 +391,25 @@ export class BookingDetailModalComponent {
   protected readonly BookingStatus = BookingStatus;
   private readonly modalService = inject(ModalService);
 
-  private config: BookingDetailModalConfig = this.modalService.modalData();
+  protected config: BookingDetailModalConfig = this.modalService.modalData();
   protected booking = this.config.booking;
   protected assets = this.parseAssets(this.config.booking.roomAssets);
 
+  /** Whether to show the registration row at all */
+  protected hasRegistration = !!(this.config.onRegister || this.config.onUnregister || this.config.isRegistered || this.config.isDeclined);
+
   readonly isCancelling = signal(false);
+  readonly isRegistering = signal(false);
+  readonly isRegistered = signal(this.config.isRegistered ?? false);
+  readonly isDeclined = signal(this.config.isDeclined ?? false);
+  readonly registrationCount = signal(this.config.booking.registrationCount ?? 0);
+
+  /** Reactive label for participant count */
+  registrationCountLabel = computed(() => {
+    const count = this.registrationCount();
+    if (count === 0) return 'Inga registrerade ännu';
+    return `${count} registrerad${count !== 1 ? 'e' : ''}`;
+  });
 
   private parseAssets(assetsStr: string | null | undefined): string[] {
     if (!assetsStr) return [];
@@ -324,6 +457,37 @@ export class BookingDetailModalComponent {
       await this.config.onCancel(this.booking.bookingId);
     } catch {
       this.isCancelling.set(false);
+    }
+  }
+
+  async onRegister(): Promise<void> {
+    if (!this.booking.bookingId || !this.config.onRegister) return;
+
+    this.isRegistering.set(true);
+    try {
+      await this.config.onRegister(this.booking.bookingId);
+      this.isRegistered.set(true);
+      this.isDeclined.set(false);
+      this.registrationCount.update((c) => c + 1);
+    } catch {
+      // keep current state
+    } finally {
+      this.isRegistering.set(false);
+    }
+  }
+
+  async onUnregister(): Promise<void> {
+    if (!this.booking.bookingId || !this.config.onUnregister) return;
+
+    this.isRegistering.set(true);
+    try {
+      await this.config.onUnregister(this.booking.bookingId);
+      this.isRegistered.set(false);
+      this.registrationCount.update((c) => Math.max(0, c - 1));
+    } catch {
+      // keep current state
+    } finally {
+      this.isRegistering.set(false);
     }
   }
 

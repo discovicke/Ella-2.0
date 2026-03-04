@@ -1,6 +1,6 @@
 /**
  * Auto-generated from the OpenAPI spec — DO NOT EDIT manually.
- * Generated: 2026-03-03 17:38:10
+ * Generated: 2026-03-04 14:19:21
  *
  * Source of truth: [MaxLength] attributes on C# DTOs →
  *   Backend/app/Core/Models/DTO/*.cs
