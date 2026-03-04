@@ -36,10 +36,14 @@ public interface IBookingReadModelRepository
     );
 
     /// <summary>
-    /// Get all bookings a specific user is registered to attend.
+    /// Get all bookings where the user has a registration with any of the given statuses.
+    /// Replaces the separate Registered/Invited/Declined methods with one parameterised query.
+    /// Optional timeFilter: "upcoming" (endTime >= now, ASC) or "history" (endTime &lt; now, DESC), null = all DESC.
     /// </summary>
-    Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByRegisteredUserIdAsync(
-        long userId
+    Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByUserRegistrationAsync(
+        long userId,
+        IEnumerable<RegistrationStatus> statuses,
+        string? timeFilter = null
     );
 
     /// <summary>

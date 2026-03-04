@@ -166,33 +166,53 @@ public class PostgresBookingReadModelRepo(
 
     public async Task<
         IEnumerable<BookingDetailedReadModel>
-    > GetDetailedBookingsByRegisteredUserIdAsync(long userId)
+    > GetDetailedBookingsByUserRegistrationAsync(
+        long userId,
+        IEnumerable<RegistrationStatus> statuses,
+        string? timeFilter = null)
     {
         try
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            var sql =
-                @"
-                SELECT v.* 
+            // Map enum values to Postgres enum strings
+            var pgStatuses = statuses.Select(s => s switch
+            {
+                RegistrationStatus.Invited => "invited",
+                RegistrationStatus.Registered => "registered",
+                RegistrationStatus.Declined => "declined",
+                _ => throw new ArgumentOutOfRangeException(nameof(s), s, null)
+            }).ToArray();
+
+            var timeClause = timeFilter switch
+            {
+                "upcoming" => "AND v.end_time >= NOW()",
+                "history" => "AND v.end_time < NOW()",
+                _ => ""
+            };
+
+            var orderDir = timeFilter == "upcoming" ? "ASC" : "DESC";
+
+            var sql = $@"
+                SELECT v.*, r.status::text AS user_registration_status
                 FROM v_bookings_detailed v
                 INNER JOIN registrations r ON v.booking_id = r.booking_id
                 WHERE r.user_id = @UserId
-                ORDER BY v.start_time DESC;";
+                  AND r.status = ANY(@Statuses::registration_status[])
+                  {timeClause}
+                ORDER BY v.start_time {orderDir};";
 
-            var bookings = await conn.QueryAsync<BookingDetailedReadModel>(
+            return await conn.QueryAsync<BookingDetailedReadModel>(
                 sql,
-                new { UserId = userId }
+                new { UserId = userId, Statuses = pgStatuses }
             );
-
-            return bookings;
         }
         catch (Exception ex)
         {
             logger.LogError(
                 ex,
-                "Database error while fetching bookings registered for user {UserId}",
+                "Database error while fetching registration bookings for user {UserId}",
                 userId
             );
             throw;

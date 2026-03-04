@@ -166,33 +166,52 @@ public class SqliteBookingReadModelRepo(
 
     public async Task<
         IEnumerable<BookingDetailedReadModel>
-    > GetDetailedBookingsByRegisteredUserIdAsync(long userId)
+    > GetDetailedBookingsByUserRegistrationAsync(
+        long userId,
+        IEnumerable<RegistrationStatus> statuses,
+        string? timeFilter = null)
     {
         try
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
 
-            var sql =
-                @"
-                SELECT v.* 
+            // Map enum values to SQLite integers
+            var intStatuses = statuses.Select(s => (int)s).ToArray();
+
+            var timeClause = timeFilter switch
+            {
+                "upcoming" => "AND v.end_time >= datetime('now')",
+                "history" => "AND v.end_time < datetime('now')",
+                _ => ""
+            };
+
+            var orderDir = timeFilter == "upcoming" ? "ASC" : "DESC";
+
+            var sql = $@"
+                SELECT v.*,
+                       CASE r.status
+                         WHEN 0 THEN 'invited'
+                         WHEN 1 THEN 'registered'
+                         WHEN 2 THEN 'declined'
+                       END AS user_registration_status
                 FROM v_bookings_detailed v
                 INNER JOIN registrations r ON v.booking_id = r.booking_id
                 WHERE r.user_id = @UserId
-                ORDER BY v.start_time DESC;";
+                  AND r.status IN @Statuses
+                  {timeClause}
+                ORDER BY v.start_time {orderDir};";
 
-            var bookings = await conn.QueryAsync<BookingDetailedReadModel>(
+            return await conn.QueryAsync<BookingDetailedReadModel>(
                 sql,
-                new { UserId = userId }
+                new { UserId = userId, Statuses = intStatuses }
             );
-
-            return bookings;
         }
         catch (Exception ex)
         {
             logger.LogError(
                 ex,
-                "Database error while fetching bookings registered for user {UserId}",
+                "Database error while fetching registration bookings for user {UserId}",
                 userId
             );
             throw;
