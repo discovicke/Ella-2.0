@@ -21,6 +21,17 @@ TYPE booking_status AS ENUM ('active', 'cancelled', 'expired', 'pending');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
+DO $$
+BEGIN
+CREATE
+TYPE registration_status AS ENUM ('invited', 'registered', 'declined');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- Migration: add 'declined' to existing registration_status enum
+-- (ADD VALUE IF NOT EXISTS is safe and idempotent since PG 9.3)
+ALTER TYPE registration_status ADD VALUE IF NOT EXISTS 'declined';
+
 
 -- =============================================================
 --  MIGRATIONSHISTORIK
@@ -237,13 +248,34 @@ CREATE TABLE IF NOT EXISTS bookings
 
 
 -- Kopplingstabell användare ↔ bokning.
--- Används för bokningar med flera deltagare utöver bokaren själv.
+-- Används både för inbjudningar och bekräftade registreringar.
+-- status: 'invited' = väntar på svar, 'registered' = bekräftad närvaro.
 CREATE TABLE IF NOT EXISTS registrations
 (
-    user_id    BIGINT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    booking_id BIGINT NOT NULL REFERENCES bookings (id) ON DELETE CASCADE,
+    user_id    BIGINT              NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    booking_id BIGINT              NOT NULL REFERENCES bookings (id) ON DELETE CASCADE,
+    status     registration_status NOT NULL DEFAULT 'invited',
+    created_at TIMESTAMPTZ         NOT NULL DEFAULT NOW(),
     PRIMARY KEY (user_id, booking_id)
 );
+
+-- Migration: add status + created_at to existing registrations table
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'registrations' AND column_name = 'status'
+    ) THEN
+        ALTER TABLE registrations ADD COLUMN status registration_status NOT NULL DEFAULT 'invited';
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'registrations' AND column_name = 'created_at'
+    ) THEN
+        ALTER TABLE registrations ADD COLUMN created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+    END IF;
+END $$;
 
 
 -- =============================================================
@@ -294,7 +326,8 @@ SELECT b.id               AS booking_id,
        b.booker_name,
        b.created_at,
        b.updated_at,
-       COUNT(reg.user_id) AS registration_count,
+       COUNT(reg.user_id) FILTER (WHERE reg.status = 'registered') AS registration_count,
+       COUNT(reg.user_id) FILTER (WHERE reg.status = 'invited')    AS invitation_count,
        c.city             AS campus_city,
        (SELECT STRING_AGG(at.description, '|||')
         FROM room_assets ra
@@ -399,3 +432,7 @@ CREATE INDEX IF NOT EXISTS idx_bookings_user_id
 -- Behörighetskontroll slår upp alla overrides för en specifik användare.
 CREATE INDEX IF NOT EXISTS idx_user_perm_overrides_user_id
     ON user_permission_overrides (user_id);
+
+-- Registreringar filtreras per användare och status i "mina bokningar"-vyer.
+CREATE INDEX IF NOT EXISTS idx_registrations_user_status
+    ON registrations (user_id, status);

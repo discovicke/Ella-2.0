@@ -176,15 +176,21 @@ CREATE TABLE IF NOT EXISTS "bookings" (
     ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+-- status: 0 = Invited, 1 = Registered, 2 = Declined
 CREATE TABLE IF NOT EXISTS "registrations" (
     "user_id" INTEGER NOT NULL,
     "booking_id" INTEGER NOT NULL,
+    "status" INTEGER NOT NULL DEFAULT 0,
+    "created_at" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY("user_id", "booking_id"),
     FOREIGN KEY ("user_id") REFERENCES "users"("id")
     ON UPDATE NO ACTION ON DELETE NO ACTION,
     FOREIGN KEY ("booking_id") REFERENCES "bookings"("id")
     ON UPDATE NO ACTION ON DELETE NO ACTION
 );
+
+CREATE INDEX IF NOT EXISTS idx_registrations_user_status
+    ON registrations (user_id, status);
 
 
 -- 4. Views for Read Models
@@ -214,7 +220,8 @@ SELECT
     b.booker_name AS booker_name,
     b.created_at AS created_at,
     b.updated_at AS updated_at,
-    COALESCE(COUNT(reg.user_id), 0) AS registration_count,
+    COALESCE(SUM(CASE WHEN reg.status = 1 THEN 1 ELSE 0 END), 0) AS registration_count,
+    COALESCE(SUM(CASE WHEN reg.status = 0 THEN 1 ELSE 0 END), 0) AS invitation_count,
     (SELECT GROUP_CONCAT(at.description, '|||')
      FROM room_assets ra
      JOIN asset_types at ON ra.asset_type_id = at.id

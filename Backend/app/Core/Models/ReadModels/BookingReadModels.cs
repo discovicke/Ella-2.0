@@ -26,5 +26,13 @@ public record BookingDetailedReadModel
     public DateTime CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; init; }
     public int RegistrationCount { get; init; }
+    public int InvitationCount { get; init; }
     public string? RoomAssets { get; init; }
+
+    /// <summary>
+    /// The current user's registration status for this booking.
+    /// Only populated by the unified registration query endpoint.
+    /// Values: "invited", "registered", "declined", or null.
+    /// </summary>
+    public string? UserRegistrationStatus { get; init; }
 }

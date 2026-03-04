@@ -1,3 +1,4 @@
+using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
 
@@ -7,82 +8,290 @@ public static class RegistrationEndpoints
 {
     public static RouteGroupBuilder MapRegistrationEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/bookings")
-            .WithTags("Registrations")
-            .RequireAuth();
+        var group = app.MapGroup("/bookings").WithTags("Registrations").RequireAuth();
 
-        // POST /api/bookings/{id}/register
-        group.MapPost(
-            "/{id}/register",
-            async (long id, HttpContext context, RegistrationService service) =>
-            {
-                if (context.Items["UserId"] is not long userId)
-                    return Results.Unauthorized();
-
-                try
+        // ─── RSVP / register ────────────────────────────────
+        // POST /api/bookings/{id}/register  — accept invite or self-register
+        group
+            .MapPost(
+                "/{id}/register",
+                async (long id, HttpContext context, RegistrationService service) =>
                 {
-                    var success = await service.RegisterParticipantAsync(userId, id);
-                    return success
-                        ? Results.Created(
-                            $"/api/bookings/{id}/register",
-                            new { message = "Registered successfully" }
-                        )
-                        : Results.BadRequest(new { message = "Registration failed" });
+                    if (context.Items["UserId"] is not long userId)
+                        return Results.Unauthorized();
+
+                    try
+                    {
+                        var success = await service.AcceptInvitationAsync(userId, id);
+                        return success
+                            ? Results.Created(
+                                $"/api/bookings/{id}/register",
+                                new { message = "Registered successfully" }
+                            )
+                            : Results.BadRequest(new { message = "Registration failed" });
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        return Results.NotFound(new { message = ex.Message });
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        return Results.BadRequest(new { message = ex.Message });
+                    }
                 }
-                catch (KeyNotFoundException ex)
+            )
+            .WithName("RegisterForBooking")
+            .WithSummary("Register / RSVP for a booking")
+            .WithDescription(
+                "Accepts an invitation or self-registers the authenticated user for a booking.\n\n🔒 **Authentication Required**"
+            )
+            .Produces(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status400BadRequest);
+
+        // DELETE /api/bookings/{id}/register  — unregister / decline
+        group
+            .MapDelete(
+                "/{id}/register",
+                async (long id, HttpContext context, RegistrationService service) =>
                 {
-                    return Results.NotFound(new { message = ex.Message });
+                    if (context.Items["UserId"] is not long userId)
+                        return Results.Unauthorized();
+
+                    try
+                    {
+                        await service.UnregisterAsync(userId, id);
+                        return Results.NoContent();
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        return Results.NotFound(new { message = ex.Message });
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        return Results.BadRequest(new { message = ex.Message });
+                    }
                 }
-                catch (InvalidOperationException ex)
+            )
+            .WithName("UnregisterFromBooking")
+            .WithSummary("Unregister / decline invitation")
+            .WithDescription(
+                "Removes the authenticated user's registration from a booking.\n\n🔒 **Authentication Required**"
+            )
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status400BadRequest);
+
+        // POST /api/bookings/{id}/decline  — decline an invitation (keeps row as declined)
+        group
+            .MapPost(
+                "/{id}/decline",
+                async (long id, HttpContext context, RegistrationService service) =>
                 {
-                    return Results.BadRequest(new { message = ex.Message });
+                    if (context.Items["UserId"] is not long userId)
+                        return Results.Unauthorized();
+
+                    try
+                    {
+                        var success = await service.DeclineInvitationAsync(userId, id);
+                        return success
+                            ? Results.Ok(new { message = "Invitation declined" })
+                            : Results.BadRequest(new { message = "Could not decline" });
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        return Results.NotFound(new { message = ex.Message });
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        return Results.BadRequest(new { message = ex.Message });
+                    }
                 }
-            }
-        )
-        .WithName("RegisterForBooking")
-        .WithSummary("Register for a booking")
-        .WithDescription("Signs up the authenticated user for a specific booking.\n\n🔒 **Authentication Required**")
-        .Produces(StatusCodes.Status201Created)
-        .Produces(StatusCodes.Status401Unauthorized)
-        .Produces(StatusCodes.Status404NotFound)
-        .Produces(StatusCodes.Status400BadRequest);
+            )
+            .WithName("DeclineInvitation")
+            .WithSummary("Decline an invitation")
+            .WithDescription(
+                "Sets the invitation status to 'declined'. The invitation remains visible but the user is not counted as attending. Can be re-accepted later.\n\n🔒 **Authentication Required**"
+            )
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status400BadRequest);
 
-        // DELETE /api/bookings/{id}/register
-        group.MapDelete(
-            "/{id}/register",
-            async (long id, HttpContext context, RegistrationService service) =>
-            {
-                if (context.Items["UserId"] is not long userId)
-                    return Results.Unauthorized();
+        // DELETE /api/bookings/{id}/invitations/{targetUserId}  — owner removes an invitation
+        group
+            .MapDelete(
+                "/{id}/invitations/{targetUserId}",
+                async (long id, long targetUserId, HttpContext context, RegistrationService service) =>
+                {
+                    if (context.Items["UserId"] is not long userId)
+                        return Results.Unauthorized();
 
-                await service.UnregisterParticipantAsync(userId, id);
-                return Results.NoContent();
-            }
-        )
-        .WithName("UnregisterFromBooking")
-        .WithSummary("Unregister from a booking")
-        .WithDescription("Removes the authenticated user from a specific booking.\n\n🔒 **Authentication Required**")
-        .Produces(StatusCodes.Status204NoContent)
-        .Produces(StatusCodes.Status401Unauthorized);
+                    try
+                    {
+                        await service.RemoveInvitationAsync(userId, id, targetUserId);
+                        return Results.NoContent();
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        return Results.NotFound(new { message = ex.Message });
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        return Results.Forbid();
+                    }
+                }
+            )
+            .WithName("RemoveInvitation")
+            .WithSummary("Remove an invitation (owner only)")
+            .WithDescription(
+                "Permanently removes an invitation for a specific user. Only the booking owner can perform this action.\n\n🔒 **Authentication Required** — **Owner Only**"
+            )
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status404NotFound);
 
-        // GET /api/bookings/my-registrations
-        group.MapGet(
-            "/my-registrations",
-            async (HttpContext context, RegistrationService service) =>
-            {
-                if (context.Items["UserId"] is not long userId)
-                    return Results.Unauthorized();
+        // ─── Current-user lists ─────────────────────────────
+        // GET /api/bookings/my-registration-bookings?statuses=registered,invited&timeFilter=upcoming
+        group
+            .MapGet(
+                "/my-registration-bookings",
+                async (HttpContext context, RegistrationService service, string? statuses, string? timeFilter) =>
+                {
+                    if (context.Items["UserId"] is not long userId)
+                        return Results.Unauthorized();
 
-                var bookings = await service.GetUserRegistrationsAsync(userId);
-                return Results.Ok(bookings);
-            }
-        )
-        .WithName("GetMyRegistrations")
-        .WithSummary("Get user registrations")
-        .WithDescription("Retrieves all bookings the authenticated user is registered for.\n\n🔒 **Authentication Required**")
-        .Produces(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status401Unauthorized);
+                    var parsed = new List<RegistrationStatus>();
+                    if (!string.IsNullOrWhiteSpace(statuses))
+                    {
+                        foreach (var s in statuses.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                        {
+                            if (Enum.TryParse<RegistrationStatus>(s, ignoreCase: true, out var status))
+                                parsed.Add(status);
+                            else
+                                return Results.BadRequest(new { message = $"Invalid status: '{s}'. Valid values: invited, registered, declined." });
+                        }
+                    }
+
+                    // Default to all statuses when none specified
+                    if (parsed.Count == 0)
+                        parsed.AddRange([RegistrationStatus.Invited, RegistrationStatus.Registered, RegistrationStatus.Declined]);
+
+                    // Validate timeFilter
+                    if (timeFilter is not null && timeFilter is not "upcoming" and not "history")
+                        return Results.BadRequest(new { message = "Invalid timeFilter. Valid values: upcoming, history." });
+
+                    var bookings = await service.GetUserRegistrationBookingsAsync(userId, parsed, timeFilter);
+                    return Results.Ok(bookings);
+                }
+            )
+            .WithName("GetMyRegistrationBookings")
+            .WithSummary("Get bookings by user's registration status")
+            .WithDescription(
+                "Retrieves bookings where the authenticated user has a registration with the specified status(es).\n\n"
+                + "**Query parameters:**\n"
+                + "- `statuses` — comma-separated list: `invited`, `registered`, `declined` (default: all)\n"
+                + "- `timeFilter` — `upcoming` (end_time >= now) or `history` (end_time < now) (default: all)\n\n"
+                + "🔒 **Authentication Required**"
+            )
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status400BadRequest);
+
+        // ─── Booking-level queries ──────────────────────────
+        // GET /api/bookings/{id}/registrations
+        group
+            .MapGet(
+                "/{id}/registrations",
+                async (long id, RegistrationService service) =>
+                {
+                    var participants = await service.GetBookingParticipantsAsync(id);
+                    return Results.Ok(
+                        participants.Select(p => new
+                        {
+                            userId = p.UserId,
+                            displayName = p.DisplayName,
+                            email = p.Email,
+                        })
+                    );
+                }
+            )
+            .WithName("GetBookingRegistrations")
+            .WithSummary("Get confirmed participants for a booking")
+            .WithDescription(
+                "Retrieves all users who have confirmed attendance for a specific booking.\n\n🔒 **Authentication Required**"
+            )
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        // GET /api/bookings/{id}/invitations
+        group
+            .MapGet(
+                "/{id}/invitations",
+                async (long id, RegistrationService service) =>
+                {
+                    var invited = await service.GetBookingInvitedUsersAsync(id);
+                    return Results.Ok(
+                        invited.Select(p => new
+                        {
+                            userId = p.UserId,
+                            displayName = p.DisplayName,
+                            email = p.Email,
+                        })
+                    );
+                }
+            )
+            .WithName("GetBookingInvitations")
+            .WithSummary("Get invited (pending) users for a booking")
+            .WithDescription(
+                "Retrieves all users who have been invited to a booking but haven't RSVP'd yet.\n\n🔒 **Authentication Required**"
+            )
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        // ─── Invite action ──────────────────────────────────
+        // POST /api/bookings/{id}/invite
+        group
+            .MapPost(
+                "/{id}/invite",
+                async (long id, InviteRequest request, HttpContext context, RegistrationService service) =>
+                {
+                    if (context.Items["UserId"] is not long userId)
+                        return Results.Unauthorized();
+
+                    if (request.UserIds is null || !request.UserIds.Any())
+                        return Results.BadRequest(new { message = "userIds is required." });
+
+                    try
+                    {
+                        var count = await service.InviteUsersAsync(id, request.UserIds);
+                        return Results.Ok(new { invited = count });
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        return Results.NotFound(new { message = ex.Message });
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        return Results.BadRequest(new { message = ex.Message });
+                    }
+                }
+            )
+            .WithName("InviteUsersToBooking")
+            .WithSummary("Invite users to a booking")
+            .WithDescription(
+                "Sends invitations to the specified users for a booking. Skips already invited/registered users.\n\n🔒 **Authentication Required**"
+            )
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status400BadRequest);
 
         return group;
     }
+
+    private record InviteRequest(IEnumerable<long> UserIds);
 }
