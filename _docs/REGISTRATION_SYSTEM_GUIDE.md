@@ -9,20 +9,17 @@ This document describes the registration/invitation system — how users get inv
 Every booking can have **registrations** — rows that link a user to a booking with a status. The three statuses form a simple state machine:
 
 ```
-                ┌──────────────────────────────┐
-                │                              │
-                ▼                              │
   ┌──────────┐    AcceptInvitation    ┌────────────┐
   │ Invited  │ ──────────────────────►│ Registered │
-  │  (0)     │                        │    (1)     │
-  └──────────┘                        └────────────┘
+  │  (0)     │◄───────────────────────│    (1)     │
+  └──────────┘    AcceptInvitation    └────────────┘
+       │            (re-accept)             │
        │                                    │
-       │  DeclineInvitation                 │  Unregister
+       │  Decline                           │  Decline
        ▼                                    ▼
-  ┌──────────┐                        ┌──────────┐
-  │ Declined │◄───────────────────────│ Invited  │
-  │   (2)    │    (reverts to         │  (back)  │
-  └──────────┘     invited)           └──────────┘
+  ┌──────────────────────────────────────────┐
+  │               Declined (2)               │
+  └──────────────────────────────────────────┘
        │
        │  AcceptInvitation (re-accept)
        ▼
@@ -31,11 +28,13 @@ Every booking can have **registrations** — rows that link a user to a booking 
   └────────────┘
 ```
 
-| Status       | Enum value | Postgres type           | Meaning                              |
-| ------------ | ---------- | ----------------------- | ------------------------------------ |
-| `Invited`    | 0          | `'invited'`             | Pending — awaiting user response     |
-| `Registered` | 1          | `'registered'`          | Confirmed — user is attending        |
-| `Declined`   | 2          | `'declined'`            | Declined — visible but not attending |
+Both "decline an invitation" and "unregister from a confirmed booking" lead to the same **Declined** state. The user can always re-accept later via `AcceptInvitation`.
+
+| Status       | Enum value | Postgres type  | Meaning                              |
+| ------------ | ---------- | -------------- | ------------------------------------ |
+| `Invited`    | 0          | `'invited'`    | Pending — awaiting user response     |
+| `Registered` | 1          | `'registered'` | Confirmed — user is attending        |
+| `Declined`   | 2          | `'declined'`   | Declined — visible but not attending |
 
 ---
 
@@ -100,10 +99,10 @@ Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByUserRegistratio
 
 **Implementation details:**
 
-| DB engine  | Status filter                            | Time function      |
-| ---------- | ---------------------------------------- | ------------------ |
-| PostgreSQL | `ANY(@Statuses::registration_status[])` | `NOW()`            |
-| SQLite     | `IN @Statuses` (integer array)           | `datetime('now')`  |
+| DB engine  | Status filter                           | Time function     |
+| ---------- | --------------------------------------- | ----------------- |
+| PostgreSQL | `ANY(@Statuses::registration_status[])` | `NOW()`           |
+| SQLite     | `IN @Statuses` (integer array)          | `datetime('now')` |
 
 The query also selects `r.status` as `user_registration_status` so each returned booking carries the user's registration status.
 
@@ -111,13 +110,12 @@ The query also selects `r.status` as `user_registration_status` so each returned
 
 **Write operations** (unchanged):
 
-| Method                  | Description                                       |
-| ----------------------- | ------------------------------------------------- |
-| `AcceptInvitationAsync` | Invited/Declined → Registered                     |
-| `UnregisterAsync`       | Registered → Invited (reverts, keeps the row)     |
-| `DeclineInvitationAsync`| Invited → Declined                                |
-| `InviteUsersAsync`      | Creates rows with status = Invited                |
-| `RemoveInvitationAsync` | Deletes the registration row (owner action)       |
+| Method                   | Description                                           |
+| ------------------------ | ----------------------------------------------------- |
+| `AcceptInvitationAsync`  | Invited/Declined → Registered                         |
+| `DeclineInvitationAsync` | Invited/Registered → Declined (covers unregister too) |
+| `InviteUsersAsync`       | Creates rows with status = Invited                    |
+| `RemoveInvitationAsync`  | Deletes the registration row (owner action)           |
 
 **Read operation** (consolidated):
 
@@ -137,22 +135,21 @@ Task<IEnumerable<BookingDetailedReadModel>> GetUserRegistrationBookingsAsync(
 GET /api/bookings/my-registration-bookings?statuses=registered,invited,declined&timeFilter=upcoming
 ```
 
-| Query Param  | Type   | Default | Description                                                |
-| ------------ | ------ | ------- | ---------------------------------------------------------- |
-| `statuses`   | string | all     | Comma-separated: `invited`, `registered`, `declined`       |
-| `timeFilter` | string | all     | `upcoming` (end_time ≥ now, ASC) or `history` (< now, DESC)|
+| Query Param  | Type   | Default | Description                                                 |
+| ------------ | ------ | ------- | ----------------------------------------------------------- |
+| `statuses`   | string | all     | Comma-separated: `invited`, `registered`, `declined`        |
+| `timeFilter` | string | all     | `upcoming` (end_time ≥ now, ASC) or `history` (< now, DESC) |
 
 **Other registration endpoints** (unchanged):
 
-| Method | Path                                       | Description                          |
-| ------ | ------------------------------------------ | ------------------------------------ |
-| POST   | `/api/bookings/{id}/register`              | Accept invite / RSVP                 |
-| DELETE | `/api/bookings/{id}/register`              | Unregister (reverts to invited)      |
-| POST   | `/api/bookings/{id}/decline`               | Decline invitation                   |
-| POST   | `/api/bookings/{id}/invite`                | Invite users (body: `{ userIds }`)   |
-| DELETE | `/api/bookings/{id}/invitations/{userId}`  | Remove invitation (owner only)       |
-| GET    | `/api/bookings/{id}/registrations`         | List confirmed participants          |
-| GET    | `/api/bookings/{id}/invitations`           | List pending invitations             |
+| Method | Path                                      | Description                        |
+| ------ | ----------------------------------------- | ---------------------------------- |
+| POST   | `/api/bookings/{id}/register`             | Accept invite / RSVP               |
+| POST   | `/api/bookings/{id}/decline`              | Decline or unregister (→ declined) |
+| POST   | `/api/bookings/{id}/invite`               | Invite users (body: `{ userIds }`) |
+| DELETE | `/api/bookings/{id}/invitations/{userId}` | Remove invitation (owner only)     |
+| GET    | `/api/bookings/{id}/registrations`        | List confirmed participants        |
+| GET    | `/api/bookings/{id}/invitations`          | List pending invitations           |
 
 ---
 
@@ -186,13 +183,13 @@ The server handles time filtering, so no client-side date comparisons are needed
 
 Each booking is enriched with metadata based on `userRegistrationStatus` from the API response:
 
-| `userRegistrationStatus` | Tab      | Enrichment source    | UI treatment                              |
-| ------------------------ | -------- | -------------------- | ----------------------------------------- |
-| `'registered'`           | both     | `'registered'`       | Blue accent, "Du deltar" in modal         |
-| `'invited'`              | upcoming | `'invitation'`       | Green accent, accept/decline buttons      |
-| `'invited'`              | history  | `'expired-invitation'`| Grey accent, no actions                  |
-| `'declined'`             | both     | `'declined'`         | Red accent, re-accept option in modal     |
-| *(own booking)*          | both     | `'owned'`            | Purple accent, cancel/edit actions        |
+| `userRegistrationStatus` | Tab      | Enrichment source      | UI treatment                          |
+| ------------------------ | -------- | ---------------------- | ------------------------------------- |
+| `'registered'`           | both     | `'registered'`         | Blue accent, "Du deltar" in modal     |
+| `'invited'`              | upcoming | `'invitation'`         | Green accent, accept/decline buttons  |
+| `'invited'`              | history  | `'expired-invitation'` | Grey accent, no actions               |
+| `'declined'`             | both     | `'declined'`           | Red accent, re-accept option in modal |
+| _(own booking)_          | both     | `'owned'`              | Purple accent, cancel/edit actions    |
 
 ### Deduplication
 
@@ -202,12 +199,12 @@ Own bookings and registration bookings can overlap (user is owner AND has a regi
 
 Each registration status has distinct styling in the booking list:
 
-| Status     | Left accent color | Origin tag         |
-| ---------- | ----------------- | ------------------ |
-| Owned      | Purple (default)  | —                  |
-| Registered | Blue              | "Du deltar"        |
-| Invitation | Green             | "Ny inbjudan"      |
-| Declined   | Red               | "Avböjd"           |
+| Status     | Left accent color | Origin tag    |
+| ---------- | ----------------- | ------------- |
+| Owned      | Purple (default)  | —             |
+| Registered | Blue              | "Du deltar"   |
+| Invitation | Green             | "Ny inbjudan" |
+| Declined   | Red               | "Avböjd"      |
 
 Invitations show inline **Acceptera** / **Avböj** buttons directly in the booking row.
 
