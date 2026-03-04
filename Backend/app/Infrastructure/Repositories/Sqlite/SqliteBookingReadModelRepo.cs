@@ -221,6 +221,74 @@ public class SqliteBookingReadModelRepo(
     public async Task<(
         IEnumerable<BookingDetailedReadModel> Bookings,
         int TotalCount
+    )> GetDetailedBookingsByUserRegistrationPagedAsync(
+        long userId,
+        IEnumerable<RegistrationStatus> statuses,
+        int page,
+        int pageSize,
+        string? timeFilter = null)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+
+            var intStatuses = statuses.Select(s => (int)s).ToArray();
+
+            var timeClause = timeFilter switch
+            {
+                "upcoming" => "AND v.end_time >= datetime('now')",
+                "history" => "AND v.end_time < datetime('now')",
+                _ => ""
+            };
+
+            var orderDir = timeFilter == "upcoming" ? "ASC" : "DESC";
+            var offset = (page - 1) * pageSize;
+
+            var countSql = $@"
+                SELECT COUNT(*)
+                FROM v_bookings_detailed v
+                INNER JOIN registrations r ON v.booking_id = r.booking_id
+                WHERE r.user_id = @UserId
+                  AND r.status IN @Statuses
+                  {timeClause};";
+
+            var dataSql = $@"
+                SELECT v.*,
+                       CASE r.status
+                         WHEN 0 THEN 'invited'
+                         WHEN 1 THEN 'registered'
+                         WHEN 2 THEN 'declined'
+                       END AS user_registration_status
+                FROM v_bookings_detailed v
+                INNER JOIN registrations r ON v.booking_id = r.booking_id
+                WHERE r.user_id = @UserId
+                  AND r.status IN @Statuses
+                  {timeClause}
+                ORDER BY v.start_time {orderDir}
+                LIMIT @PageSize OFFSET @Offset;";
+
+            var parameters = new { UserId = userId, Statuses = intStatuses, PageSize = pageSize, Offset = offset };
+
+            var totalCount = await conn.ExecuteScalarAsync<int>(countSql, parameters);
+            var bookings = await conn.QueryAsync<BookingDetailedReadModel>(dataSql, parameters);
+
+            return (bookings, totalCount);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Database error while fetching paged registration bookings for user {UserId}",
+                userId
+            );
+            throw;
+        }
+    }
+
+    public async Task<(
+        IEnumerable<BookingDetailedReadModel> Bookings,
+        int TotalCount
     )> GetDetailedBookingsPagedAsync(
         int page,
         int pageSize,

@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { BookingDetailedReadModel } from '../../models/models';
+import { BookingDetailedReadModel, PagedResultOfBookingDetailedReadModel } from '../../models/models';
 
 export interface RegistrationParticipant {
   userId: number;
@@ -32,18 +32,24 @@ export class RegistrationService {
   }
 
   /**
-   * Get bookings by the current user's registration status.
+   * Get bookings by the current user's registration status (paginated).
    * @param statuses   array of statuses to include, e.g. ['registered','invited','declined']
    * @param timeFilter 'upcoming' | 'history' | undefined (all)
+   * @param page       page number (default 1)
+   * @param pageSize   items per page (default 20)
    */
   getMyRegistrationBookings(
     statuses: string[],
     timeFilter?: 'upcoming' | 'history',
-  ): Observable<BookingDetailedReadModel[]> {
+    page: number = 1,
+    pageSize: number = 20,
+  ): Observable<PagedResultOfBookingDetailedReadModel> {
     const params: Record<string, string> = {};
     if (statuses.length > 0) params['statuses'] = statuses.join(',');
     if (timeFilter) params['timeFilter'] = timeFilter;
-    return this.http.get<BookingDetailedReadModel[]>(
+    params['page'] = page.toString();
+    params['pageSize'] = pageSize.toString();
+    return this.http.get<PagedResultOfBookingDetailedReadModel>(
       `${this.apiUrl}/my-registration-bookings`,
       { params },
     );

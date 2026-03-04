@@ -159,7 +159,7 @@ public static class RegistrationEndpoints
         group
             .MapGet(
                 "/my-registration-bookings",
-                async (HttpContext context, RegistrationService service, string? statuses, string? timeFilter) =>
+                async (HttpContext context, RegistrationService service, string? statuses, string? timeFilter, int? page, int? pageSize) =>
                 {
                     if (context.Items["UserId"] is not long userId)
                         return Results.Unauthorized();
@@ -184,8 +184,14 @@ public static class RegistrationEndpoints
                     if (timeFilter is not null && timeFilter is not "upcoming" and not "history")
                         return Results.BadRequest(new { message = "Invalid timeFilter. Valid values: upcoming, history." });
 
-                    var bookings = await service.GetUserRegistrationBookingsAsync(userId, parsed, timeFilter);
-                    return Results.Ok(bookings);
+                    // Pagination defaults: page=1, pageSize=20, clamp pageSize to 1-100
+                    var pg = page ?? 1;
+                    var ps = Math.Clamp(pageSize ?? 20, 1, 100);
+                    if (pg < 1) pg = 1;
+
+                    var (bookings, totalCount) = await service.GetUserRegistrationBookingsPagedAsync(
+                        userId, parsed, pg, ps, timeFilter);
+                    return Results.Ok(new { items = bookings, totalCount, page = pg, pageSize = ps });
                 }
             )
             .WithName("GetMyRegistrationBookings")
