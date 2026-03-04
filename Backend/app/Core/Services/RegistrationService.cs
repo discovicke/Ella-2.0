@@ -65,28 +65,9 @@ public class RegistrationService(
     }
 
     /// <summary>
-    /// Unregister from a confirmed booking. Reverts status to Invited so
-    /// the user can re-accept later. If no row exists, this is a no-op.
-    /// </summary>
-    public async Task<bool> UnregisterAsync(long userId, long bookingId)
-    {
-        var booking =
-            await bookingReadModelRepo.GetDetailedBookingByIdAsync(bookingId)
-            ?? throw new KeyNotFoundException("Booking not found.");
-        if (booking.EndTime < DateTime.UtcNow)
-            throw new InvalidOperationException("Cannot unregister from an expired booking.");
-
-        var currentStatus = await repo.GetStatusAsync(userId, bookingId);
-        if (currentStatus is null)
-            return false; // nothing to unregister from
-
-        // Revert to invited so the user keeps the invitation and can re-accept
-        return await repo.UpdateStatusAsync(userId, bookingId, RegistrationStatus.Invited);
-    }
-
-    /// <summary>
-    /// Decline an invitation. Sets status to Declined so it remains visible
-    /// but the user is not counted as attending. Can be re-accepted later.
+    /// Decline an invitation or unregister from a booking.
+    /// Sets status to Declined from any current status (Invited or Registered).
+    /// The row stays visible so the user can re-accept later.
     /// </summary>
     public async Task<bool> DeclineInvitationAsync(long userId, long bookingId)
     {
@@ -98,7 +79,7 @@ public class RegistrationService(
 
         var currentStatus = await repo.GetStatusAsync(userId, bookingId);
         if (currentStatus is null)
-            throw new KeyNotFoundException("No invitation found for this booking.");
+            throw new KeyNotFoundException("No registration found for this booking.");
 
         if (currentStatus == RegistrationStatus.Declined)
             return true; // already declined

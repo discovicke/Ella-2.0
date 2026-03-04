@@ -24,9 +24,9 @@ export class RegistrationService {
     return this.http.post<{ message: string }>(`${this.apiUrl}/${bookingId}/register`, {});
   }
 
-  /** Unregister from a confirmed booking (reverts to invited status) */
-  unregister(bookingId: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${bookingId}/register`);
+  /** Unregister from a confirmed booking (reverts to declined status) */
+  unregister(bookingId: number): Observable<{ message: string }> {
+    return this.declineInvitation(bookingId);
   }
 
   /** Decline an invitation (sets status to declined, still visible) */

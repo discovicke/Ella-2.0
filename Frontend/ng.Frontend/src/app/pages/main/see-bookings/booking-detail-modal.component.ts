@@ -6,15 +6,19 @@ import { BookingDetailedReadModel, BookingStatus } from '../../../models/models'
 
 export interface BookingDetailModalConfig {
   booking: BookingDetailedReadModel;
-  onCancel: (bookingId: number) => Promise<void>;
+  onCancel?: (bookingId: number) => Promise<void>;
   /** Whether the current user is registered for this booking */
   isRegistered?: boolean;
   /** Whether the current user has declined this invitation */
   isDeclined?: boolean;
-  /** Called when user registers for this booking */
+  /** Whether this is a pending invitation (status = invited) */
+  isInvitation?: boolean;
+  /** Called when user registers / accepts invitation for this booking */
   onRegister?: (bookingId: number) => Promise<void>;
   /** Called when user unregisters from this booking */
   onUnregister?: (bookingId: number) => Promise<void>;
+  /** Called when user declines an invitation */
+  onDecline?: (bookingId: number) => Promise<void>;
 }
 
 @Component({
@@ -94,7 +98,19 @@ export interface BookingDetailModalConfig {
         <!-- Registration row — show participant count for attended bookings -->
         @if (hasRegistration) {
           <div class="detail-row">
-            @if (isDeclined()) {
+            @if (config.isInvitation) {
+              <div class="detail-icon detail-icon--invitation">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                </svg>
+              </div>
+              <div class="detail-content">
+                <span class="detail-primary detail-primary--invitation">Du är inbjuden</span>
+                <span class="detail-secondary">
+                  {{ registrationCountLabel() }}
+                </span>
+              </div>
+            } @else if (isDeclined()) {
               <div class="detail-icon detail-icon--declined">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="10" />
@@ -129,7 +145,14 @@ export interface BookingDetailModalConfig {
       <!-- Footer -->
       <div class="modal-footer">
         <app-button variant="tertiary" (clicked)="onClose()">Stäng</app-button>
-        @if (config.onRegister && isDeclined()) {
+        @if (config.isInvitation && config.onRegister && config.onDecline) {
+          <app-button variant="danger" [disabled]="isRegistering()" (clicked)="onDecline()">
+            {{ isRegistering() ? 'Avböjer...' : 'Avböj' }}
+          </app-button>
+          <app-button variant="primary" [disabled]="isRegistering()" (clicked)="onRegister()">
+            {{ isRegistering() ? 'Accepterar...' : 'Acceptera' }}
+          </app-button>
+        } @else if (config.onRegister && isDeclined()) {
           <app-button variant="primary" [disabled]="isRegistering()" (clicked)="onRegister()">
             {{ isRegistering() ? 'Accepterar...' : 'Acceptera inbjudan' }}
           </app-button>
@@ -137,7 +160,7 @@ export interface BookingDetailModalConfig {
           <app-button variant="danger" [disabled]="isRegistering()" (clicked)="onUnregister()">
             {{ isRegistering() ? 'Avregistrerar...' : 'Avregistrera' }}
           </app-button>
-        } @else if (booking.status === BookingStatus.Active && !isDeclined()) {
+        } @else if (config.onCancel && booking.status === BookingStatus.Active && !isDeclined()) {
           <app-button variant="danger" [disabled]="isCancelling()" (clicked)="onCancel()">
             {{ isCancelling() ? 'Avbokar...' : 'Avboka' }}
           </app-button>
@@ -396,7 +419,13 @@ export class BookingDetailModalComponent {
   protected assets = this.parseAssets(this.config.booking.roomAssets);
 
   /** Whether to show the registration row at all */
-  protected hasRegistration = !!(this.config.onRegister || this.config.onUnregister || this.config.isRegistered || this.config.isDeclined);
+  protected hasRegistration = !!(
+    this.config.onRegister ||
+    this.config.onUnregister ||
+    this.config.isRegistered ||
+    this.config.isDeclined ||
+    this.config.isInvitation
+  );
 
   readonly isCancelling = signal(false);
   readonly isRegistering = signal(false);
@@ -450,7 +479,7 @@ export class BookingDetailModalComponent {
   }
 
   async onCancel(): Promise<void> {
-    if (!this.booking.bookingId) return;
+    if (!this.booking.bookingId || !this.config.onCancel) return;
 
     this.isCancelling.set(true);
     try {
@@ -484,6 +513,19 @@ export class BookingDetailModalComponent {
       await this.config.onUnregister(this.booking.bookingId);
       this.isRegistered.set(false);
       this.registrationCount.update((c) => Math.max(0, c - 1));
+    } catch {
+      // keep current state
+    } finally {
+      this.isRegistering.set(false);
+    }
+  }
+
+  async onDecline(): Promise<void> {
+    if (!this.booking.bookingId || !this.config.onDecline) return;
+
+    this.isRegistering.set(true);
+    try {
+      await this.config.onDecline(this.booking.bookingId);
     } catch {
       // keep current state
     } finally {

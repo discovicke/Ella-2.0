@@ -385,7 +385,11 @@ export class SeeBookingsPage {
 
     const config: BookingDetailModalConfig = {
       booking,
-      onCancel: async (bookingId: number) => {
+    };
+
+    // Only owned bookings get the cancel action
+    if (booking.isOwned) {
+      config.onCancel = async (bookingId: number) => {
         const confirmed = await this.confirmService.show('Vill du avboka bokningen?', {
           title: 'Avboka bokning',
           icon: 'warning' as const,
@@ -398,8 +402,8 @@ export class SeeBookingsPage {
         await firstValueFrom(this.bookingService.cancelBooking(bookingId));
         this.modalService.close();
         this.loadBookings(true);
-      },
-    };
+      };
+    }
 
     // Mark attended bookings so the modal can show "Du deltar"
     if (
@@ -416,7 +420,7 @@ export class SeeBookingsPage {
       config.isDeclined = true;
     }
 
-    // Upcoming attended bookings: allow unregister (reverts to invited)
+    // Upcoming attended bookings: allow unregister (declines the registration)
     if (
       !isHistory &&
       !booking.isOwned &&
@@ -425,8 +429,8 @@ export class SeeBookingsPage {
       !booking.isInvitation
     ) {
       config.onUnregister = async (bookingId: number) => {
-        await firstValueFrom(this.registrationService.unregister(bookingId));
-        this.toastService.showSuccess('Du har avregistrerats. Inbjudan finns kvar.');
+        await firstValueFrom(this.registrationService.declineInvitation(bookingId));
+        this.toastService.showSuccess('Du har avregistrerats.');
         this.modalService.close();
         this.loadBookings(true);
       };
@@ -437,6 +441,23 @@ export class SeeBookingsPage {
       config.onRegister = async (bookingId: number) => {
         await firstValueFrom(this.registrationService.register(bookingId));
         this.toastService.showSuccess('Du är nu registrerad!');
+        this.modalService.close();
+        this.loadBookings(true);
+      };
+    }
+
+    // Upcoming invitation bookings: allow accept/decline from modal
+    if (!isHistory && booking.isInvitation) {
+      config.isInvitation = true;
+      config.onRegister = async (bookingId: number) => {
+        await firstValueFrom(this.registrationService.register(bookingId));
+        this.toastService.showSuccess('Du är nu registrerad!');
+        this.modalService.close();
+        this.loadBookings(true);
+      };
+      config.onDecline = async (bookingId: number) => {
+        await firstValueFrom(this.registrationService.declineInvitation(bookingId));
+        this.toastService.showSuccess('Inbjudan avböjd.');
         this.modalService.close();
         this.loadBookings(true);
       };

@@ -41,45 +41,13 @@ public static class RegistrationEndpoints
                 }
             )
             .WithName("RegisterForBooking")
-            .WithSummary("Register / RSVP for a booking")
+            .WithSummary("Register for a booking")
             .WithDescription(
-                "Accepts an invitation or self-registers the authenticated user for a booking.\n\n🔒 **Authentication Required**"
+                "Accepts a pending invitation or self-registers the authenticated user for a booking. "
+                    + "If already registered, returns success. If declined, changes status back to registered.\n\n"
+                    + "🔒 **Authentication Required**"
             )
             .Produces(StatusCodes.Status201Created)
-            .Produces(StatusCodes.Status401Unauthorized)
-            .Produces(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status400BadRequest);
-
-        // DELETE /api/bookings/{id}/register  — unregister / decline
-        group
-            .MapDelete(
-                "/{id}/register",
-                async (long id, HttpContext context, RegistrationService service) =>
-                {
-                    if (context.Items["UserId"] is not long userId)
-                        return Results.Unauthorized();
-
-                    try
-                    {
-                        await service.UnregisterAsync(userId, id);
-                        return Results.NoContent();
-                    }
-                    catch (KeyNotFoundException ex)
-                    {
-                        return Results.NotFound(new { message = ex.Message });
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        return Results.BadRequest(new { message = ex.Message });
-                    }
-                }
-            )
-            .WithName("UnregisterFromBooking")
-            .WithSummary("Unregister / decline invitation")
-            .WithDescription(
-                "Removes the authenticated user's registration from a booking.\n\n🔒 **Authentication Required**"
-            )
-            .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status400BadRequest);
@@ -111,9 +79,12 @@ public static class RegistrationEndpoints
                 }
             )
             .WithName("DeclineInvitation")
-            .WithSummary("Decline an invitation")
+            .WithSummary("Decline or unregister from a booking")
             .WithDescription(
-                "Sets the invitation status to 'declined'. The invitation remains visible but the user is not counted as attending. Can be re-accepted later.\n\n🔒 **Authentication Required**"
+                "Sets the user's registration status to 'declined'. Works from any current status "
+                    + "(invited or registered). The row stays visible so the user can re-accept later "
+                    + "via POST `/{id}/register`.\n\n"
+                    + "🔒 **Authentication Required**"
             )
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -152,7 +123,9 @@ public static class RegistrationEndpoints
             .WithName("RemoveInvitation")
             .WithSummary("Remove an invitation (owner only)")
             .WithDescription(
-                "Permanently removes an invitation for a specific user. Only the booking owner can perform this action.\n\n🔒 **Authentication Required** — **Owner Only**"
+                "Permanently deletes the invitation row for a specific user. Unlike declining, this cannot be undone — "
+                    + "the user would need to be re-invited. Only the booking owner can perform this action.\n\n"
+                    + "🔒 **Authentication Required** — **Owner Only**"
             )
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -280,7 +253,8 @@ public static class RegistrationEndpoints
             .WithName("GetBookingRegistrations")
             .WithSummary("Get confirmed participants for a booking")
             .WithDescription(
-                "Retrieves all users who have confirmed attendance for a specific booking.\n\n🔒 **Authentication Required**"
+                "Returns all users with status 'registered' for a specific booking (i.e. confirmed attendees).\n\n"
+                    + "🔒 **Authentication Required**"
             )
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
@@ -303,9 +277,10 @@ public static class RegistrationEndpoints
                 }
             )
             .WithName("GetBookingInvitations")
-            .WithSummary("Get invited (pending) users for a booking")
+            .WithSummary("Get pending invitations for a booking")
             .WithDescription(
-                "Retrieves all users who have been invited to a booking but haven't RSVP'd yet.\n\n🔒 **Authentication Required**"
+                "Returns all users with status 'invited' for a specific booking (i.e. haven't accepted or declined yet).\n\n"
+                    + "🔒 **Authentication Required**"
             )
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
@@ -346,7 +321,9 @@ public static class RegistrationEndpoints
             .WithName("InviteUsersToBooking")
             .WithSummary("Invite users to a booking")
             .WithDescription(
-                "Sends invitations to the specified users for a booking. Skips already invited/registered users.\n\n🔒 **Authentication Required**"
+                "Bulk-invites users by ID. Users who already have a registration row (invited, registered, or declined) are skipped. "
+                    + "Returns the count of newly created invitations.\n\n"
+                    + "🔒 **Authentication Required**"
             )
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
