@@ -485,72 +485,131 @@ SELECT setval(pg_get_serial_sequence('bookings', 'id'), (SELECT MAX(id) FROM boo
 --  REGISTRATIONS
 -- -------------------------------------------------------------
 
-INSERT INTO registrations (booking_id, user_id)
-VALUES (300, 50),
-       (300, 10),
-       (300, 11),
-       (300, 12),
-       (302, 50),
-       (302, 20),
-       (302, 21),
-       (302, 22),
-       (302, 23),
-       (110, 50),
-       (110, 10),
-       (110, 11),
-       (110, 20),
-       (304, 10),
-       (304, 11),
-       (304, 12),
-       (304, 66),
-       (304, 67),
-       (305, 13),
-       (305, 14),
-       (305, 15),
-       (306, 10),
-       (306, 11),
-       (306, 12),
-       (306, 13),
-       (306, 14),
-       (306, 15),
-       (306, 66),
-       (306, 67),
-       (306, 68),
-       (306, 69),
-       (308, 20),
-       (308, 21),
-       (308, 70),
-       (308, 71),
-       (309, 22),
-       (309, 23),
-       (309, 72),
-       (309, 73),
-       (311, 30),
-       (311, 31),
-       (311, 74),
-       (313, 32),
-       (313, 75),
-       (313, 76),
-       (314, 60),
-       (314, 61),
-       (314, 62),
-       (315, 63),
-       (315, 64),
-       (315, 65),
-       (316, 60),
-       (316, 61),
-       (316, 62),
-       (316, 63),
-       (316, 64),
-       (316, 65),
-       (317, 20),
-       (317, 21),
-       (317, 22),
-       (317, 23),
-       (317, 70),
-       (317, 71),
-       (420, 74),
-       (420, 75),
-       (420, 76),
-       (420, 77),
-       (420, 78);
+-- ═══════════════════════════════════════════════════════════════
+--  CONFIRMED REGISTRATIONS (status = 'registered')
+--  Users who have accepted / RSVP'd to someone else's booking.
+-- ═══════════════════════════════════════════════════════════════
+INSERT INTO registrations (booking_id, user_id, status)
+VALUES
+       -- Educators & admins cross-attending (past — visible in Historik)
+       (300, 1,  'registered'),  -- Admin      → Sven's C# lecture (Feb 20)
+       (303, 1,  'registered'),  -- Admin      → Anders' open house (Feb 28)
+       (301, 3,  'registered'),  -- Sven       → Karin's Gävle Tech Night (Feb 21)
+       (303, 3,  'registered'),  -- Sven       → Anders' open house (Feb 28)
+       (300, 4,  'registered'),  -- Karin      → Sven's C# lecture (Feb 20)
+       (302, 5,  'registered'),  -- Anders     → Karin's UX Workshop (Feb 24)
+       (303, 80, 'registered'),  -- Marie      → Anders' open house (Feb 28)
+       (314, 5,  'registered'),  -- Anders     → Marie's Systemdesign (Mar 2)
+
+       -- Educators & admins cross-attending (upcoming — visible in Kommande)
+       (308, 3,  'registered'),  -- Sven       → Karin's Figma dag 1 (Mar 4)
+       (311, 80, 'registered'),  -- Marie      → Anders' AI lecture (Mar 12)
+       (313, 81, 'registered'),  -- Thomas     → Anders' Hackathon (Mar 25)
+
+       -- Students at educator/admin events (original set — past events)
+       (300, 50, 'registered'),  (300, 10, 'registered'),  (300, 11, 'registered'),  (300, 12, 'registered'),
+       (302, 50, 'registered'),  (302, 20, 'registered'),  (302, 21, 'registered'),  (302, 22, 'registered'),  (302, 23, 'registered'),
+       (110, 50, 'registered'),  (110, 10, 'registered'),  (110, 11, 'registered'),  (110, 20, 'registered'),
+
+       -- Students at educator events (upcoming)
+       (304, 10, 'registered'),  (304, 11, 'registered'),  (304, 12, 'registered'),  (304, 66, 'registered'),  (304, 67, 'registered'),
+       (305, 13, 'registered'),  (305, 14, 'registered'),  (305, 15, 'registered'),
+       (306, 10, 'registered'),  (306, 11, 'registered'),  (306, 12, 'registered'),  (306, 13, 'registered'),
+       (306, 14, 'registered'),  (306, 15, 'registered'),  (306, 66, 'registered'),  (306, 67, 'registered'),
+       (306, 68, 'registered'),  (306, 69, 'registered'),
+       (308, 20, 'registered'),  (308, 21, 'registered'),  (308, 70, 'registered'),  (308, 71, 'registered'),
+       (309, 22, 'registered'),  (309, 23, 'registered'),  (309, 72, 'registered'),  (309, 73, 'registered'),
+       (311, 30, 'registered'),  (311, 31, 'registered'),  (311, 74, 'registered'),
+       (313, 32, 'registered'),  (313, 75, 'registered'),  (313, 76, 'registered'),
+       (314, 60, 'registered'),  (314, 61, 'registered'),  (314, 62, 'registered'),
+       (315, 63, 'registered'),  (315, 64, 'registered'),  (315, 65, 'registered'),
+       (316, 60, 'registered'),  (316, 61, 'registered'),  (316, 62, 'registered'),
+       (316, 63, 'registered'),  (316, 64, 'registered'),  (316, 65, 'registered'),
+       (317, 20, 'registered'),  (317, 21, 'registered'),  (317, 22, 'registered'),
+       (317, 23, 'registered'),  (317, 70, 'registered'),  (317, 71, 'registered'),
+       (420, 74, 'registered'),  (420, 75, 'registered'),  (420, 76, 'registered'),
+       (420, 77, 'registered'),  (420, 78, 'registered'),
+
+       -- Additional student cross-registrations (upcoming)
+       (310, 12, 'registered'),  -- Marcus  → Karin's Prototyp-labb (Mar 11)
+       (318, 22, 'registered'),  -- Anna    → Thomas' Studiebesök (Mar 14)
+       (312, 31, 'registered');  -- Elena   → Anders' Python lab (Mar 18)
+
+
+-- ═══════════════════════════════════════════════════════════════
+--  PENDING INVITATIONS (status = 'invited')
+--  Each key test user gets 1–3 upcoming invitations so the
+--  invitation banner is visible when logging in as any role.
+-- ═══════════════════════════════════════════════════════════════
+INSERT INTO registrations (booking_id, user_id, status)
+VALUES
+       -- Admin Testberg (1) — admin
+       (308, 1,  'invited'),     -- Figma workshop Mar 4 (Karin)
+       (318, 1,  'invited'),     -- Studiebesök Sandvik Mar 14 (Thomas)
+
+       -- Sven Svensson (3) — educator
+       (111, 3,  'invited'),     -- Campus-turné Sundsvall Mar 5 (Admin)
+       (317, 3,  'invited'),     -- Användbarhetstestning Mar 7 (Thomas)
+
+       -- Karin Karlsson (4) — educator
+       (311, 4,  'invited'),     -- AI i utbildning Mar 12 (Anders)
+       (315, 4,  'invited'),     -- Docker & Kubernetes Mar 9 (Marie)
+
+       -- Anders Andersson (5) — educator
+       (310, 5,  'invited'),     -- Prototyp-labb Mar 11 (Karin)
+       (116, 5,  'invited'),     -- Brandövning Mar 13 (Admin)
+
+       -- Elev Testlund (50) — student
+       (305, 50, 'invited'),     -- Kodgenomgång Mar 6 (Sven)
+       (306, 50, 'invited'),     -- Tentamen Mar 10 (Sven)
+       (315, 50, 'invited'),     -- Docker & Kubernetes Mar 9 (Marie)
+
+       -- André Pontén (10) — student
+       (308, 10, 'invited'),     -- Figma dag 1 Mar 4 (Karin)
+       (311, 10, 'invited'),     -- AI i utbildning Mar 12 (Anders)
+       (315, 10, 'invited'),     -- Docker & Kubernetes Mar 9 (Marie)
+
+       -- Christian Gennari (11) — student
+       (305, 11, 'invited'),     -- Kodgenomgång Mar 6 (Sven)
+       (317, 11, 'invited'),     -- Användbarhetstestning Mar 7 (Thomas)
+
+       -- Marcus Lööv (12) — student
+       (312, 12, 'invited'),     -- Python maskinlärning Mar 18 (Anders)
+
+       -- Linda Berg (20) — student
+       (311, 20, 'invited'),     -- AI i utbildning Mar 12 (Anders)
+       (313, 20, 'invited'),     -- Hackathon Mar 25 (Anders)
+
+       -- Johan Kvist (30) — student
+       (312, 30, 'invited'),     -- Python maskinlärning Mar 18 (Anders)
+       (313, 30, 'invited'),     -- Hackathon Mar 25 (Anders)
+
+       -- Lisa Franzén (60) — student
+       (315, 60, 'invited'),     -- Docker & Kubernetes Mar 9 (Marie)
+       (317, 60, 'invited'),     -- Användbarhetstestning Mar 7 (Thomas)
+
+       -- Marie Wallin (80) — educator
+       (111, 80, 'invited'),     -- Campus-turné Sundsvall Mar 5 (Admin)
+       (309, 80, 'invited'),     -- Figma dag 2 Mar 5 (Karin)
+
+       -- Thomas Berggren (81) — educator
+       (112, 81, 'invited'),     -- Campus-turné Gävle Mar 6 (Admin)
+       (315, 81, 'invited');     -- Docker & Kubernetes Mar 9 (Marie)
+
+
+-- ═══════════════════════════════════════════════════════════════
+--  DECLINED INVITATIONS (status = 'declined')
+--  Users who were invited but chose to decline.
+-- ═══════════════════════════════════════════════════════════════
+INSERT INTO registrations (booking_id, user_id, status)
+VALUES
+       -- Past declined (visible in Historik as read-only)
+       (301, 1,  'declined'),    -- Admin      declined Karin's Gävle Tech Night (Feb 21)
+       (302, 3,  'declined'),    -- Sven       declined Karin's UX Workshop (Feb 24)
+       (300, 5,  'declined'),    -- Anders     declined Sven's C# lecture (Feb 20)
+       (303, 4,  'declined'),    -- Karin      declined Anders' open house (Feb 28)
+
+       -- Upcoming declined (visible in Kommande as declined)
+       (304, 50, 'declined'),    -- Elev Testlund declined Sven's upcoming (Mar 3)
+       (311, 11, 'declined'),    -- Christian   declined Anders' AI (Mar 12)
+       (313, 10, 'declined');    -- André      declined Anders' Hackathon (Mar 25)
