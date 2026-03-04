@@ -71,7 +71,11 @@ export interface BookingDetailedReadModel {
   updatedAt?: string | null;
   /** @format int32 */
   registrationCount?: number;
+  /** @format int32 */
+  invitationCount?: number;
   roomAssets?: string | null;
+  /** Only populated by the unified registration endpoint. Values: 'invited' | 'registered' | 'declined' */
+  userRegistrationStatus?: string | null;
 }
 
 export interface CampusResponseDto {
@@ -182,6 +186,10 @@ export interface GroupedPagedResultOfBookingDetailedReadModel {
   page: number;
   /** @format int32 */
   groupsPerPage: number;
+}
+
+export interface InviteRequest {
+  userIds: number[];
 }
 
 export interface LoginDto {
