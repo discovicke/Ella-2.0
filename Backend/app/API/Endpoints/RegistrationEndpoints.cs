@@ -124,7 +124,12 @@ public static class RegistrationEndpoints
         group
             .MapDelete(
                 "/{id}/invitations/{targetUserId}",
-                async (long id, long targetUserId, HttpContext context, RegistrationService service) =>
+                async (
+                    long id,
+                    long targetUserId,
+                    HttpContext context,
+                    RegistrationService service
+                ) =>
                 {
                     if (context.Items["UserId"] is not long userId)
                         return Results.Unauthorized();
@@ -159,7 +164,14 @@ public static class RegistrationEndpoints
         group
             .MapGet(
                 "/my-registration-bookings",
-                async (HttpContext context, RegistrationService service, string? statuses, string? timeFilter, int? page, int? pageSize) =>
+                async (
+                    HttpContext context,
+                    RegistrationService service,
+                    string? statuses,
+                    string? timeFilter,
+                    int? page,
+                    int? pageSize
+                ) =>
                 {
                     if (context.Items["UserId"] is not long userId)
                         return Results.Unauthorized();
@@ -167,41 +179,81 @@ public static class RegistrationEndpoints
                     var parsed = new List<RegistrationStatus>();
                     if (!string.IsNullOrWhiteSpace(statuses))
                     {
-                        foreach (var s in statuses.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                        foreach (
+                            var s in statuses.Split(
+                                ',',
+                                StringSplitOptions.RemoveEmptyEntries
+                                    | StringSplitOptions.TrimEntries
+                            )
+                        )
                         {
-                            if (Enum.TryParse<RegistrationStatus>(s, ignoreCase: true, out var status))
+                            if (
+                                Enum.TryParse<RegistrationStatus>(
+                                    s,
+                                    ignoreCase: true,
+                                    out var status
+                                )
+                            )
                                 parsed.Add(status);
                             else
-                                return Results.BadRequest(new { message = $"Invalid status: '{s}'. Valid values: invited, registered, declined." });
+                                return Results.BadRequest(
+                                    new
+                                    {
+                                        message = $"Invalid status: '{s}'. Valid values: invited, registered, declined.",
+                                    }
+                                );
                         }
                     }
 
                     // Default to all statuses when none specified
                     if (parsed.Count == 0)
-                        parsed.AddRange([RegistrationStatus.Invited, RegistrationStatus.Registered, RegistrationStatus.Declined]);
+                        parsed.AddRange(
+                            [
+                                RegistrationStatus.Invited,
+                                RegistrationStatus.Registered,
+                                RegistrationStatus.Declined,
+                            ]
+                        );
 
                     // Validate timeFilter
                     if (timeFilter is not null && timeFilter is not "upcoming" and not "history")
-                        return Results.BadRequest(new { message = "Invalid timeFilter. Valid values: upcoming, history." });
+                        return Results.BadRequest(
+                            new { message = "Invalid timeFilter. Valid values: upcoming, history." }
+                        );
 
                     // Pagination defaults: page=1, pageSize=20, clamp pageSize to 1-100
                     var pg = page ?? 1;
                     var ps = Math.Clamp(pageSize ?? 20, 1, 100);
-                    if (pg < 1) pg = 1;
+                    if (pg < 1)
+                        pg = 1;
 
-                    var (bookings, totalCount) = await service.GetUserRegistrationBookingsPagedAsync(
-                        userId, parsed, pg, ps, timeFilter);
-                    return Results.Ok(new { items = bookings, totalCount, page = pg, pageSize = ps });
+                    var (bookings, totalCount) =
+                        await service.GetUserRegistrationBookingsPagedAsync(
+                            userId,
+                            parsed,
+                            pg,
+                            ps,
+                            timeFilter
+                        );
+                    return Results.Ok(
+                        new
+                        {
+                            items = bookings,
+                            totalCount,
+                            page = pg,
+                            pageSize = ps,
+                        }
+                    );
                 }
             )
             .WithName("GetMyRegistrationBookings")
             .WithSummary("Get bookings by user's registration status")
             .WithDescription(
                 "Retrieves bookings where the authenticated user has a registration with the specified status(es).\n\n"
-                + "**Query parameters:**\n"
-                + "- `statuses` — comma-separated list: `invited`, `registered`, `declined` (default: all)\n"
-                + "- `timeFilter` — `upcoming` (end_time >= now) or `history` (end_time < now) (default: all)\n\n"
-                + "🔒 **Authentication Required**"
+                    + "**Query parameters:**\n"
+                    + "- `statuses` — comma-separated list: `invited`, `registered`, `declined` (default: all)\n"
+                    + "- `timeFilter` — `upcoming` (end_time >= now) or `history` (end_time < now) (default: all)\n\n"
+                    + "🔒 **Authentication Required**"
             )
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -263,7 +315,12 @@ public static class RegistrationEndpoints
         group
             .MapPost(
                 "/{id}/invite",
-                async (long id, InviteRequest request, HttpContext context, RegistrationService service) =>
+                async (
+                    long id,
+                    InviteRequest request,
+                    HttpContext context,
+                    RegistrationService service
+                ) =>
                 {
                     if (context.Items["UserId"] is not long userId)
                         return Results.Unauthorized();

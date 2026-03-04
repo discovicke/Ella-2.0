@@ -291,12 +291,16 @@ public class PostgresUserRepo(
             throw;
         }
     }
-    public async Task<Dictionary<long, List<string>>> GetUserCampusNamesAsync(IEnumerable<long> userIds)
+
+    public async Task<Dictionary<long, List<string>>> GetUserCampusNamesAsync(
+        IEnumerable<long> userIds
+    )
     {
         try
         {
             var ids = userIds.ToArray();
-            if (ids.Length == 0) return new Dictionary<long, List<string>>();
+            if (ids.Length == 0)
+                return new Dictionary<long, List<string>>();
 
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
@@ -306,7 +310,10 @@ public class PostgresUserRepo(
                         JOIN campus c ON c.id = uc.campus_id
                         WHERE uc.user_id = ANY(@UserIds)
                         ORDER BY c.city;";
-            var rows = await conn.QueryAsync<(long UserId, string Name)>(sql, new { UserIds = ids });
+            var rows = await conn.QueryAsync<(long UserId, string Name)>(
+                sql,
+                new { UserIds = ids }
+            );
             var dict = new Dictionary<long, List<string>>();
             foreach (var row in rows)
             {
@@ -322,6 +329,7 @@ public class PostgresUserRepo(
             throw;
         }
     }
+
     // ── User ↔ Class ───────────────────────────────────────
 
     public async Task<IEnumerable<long>> GetClassIdsForUserAsync(long userId)
@@ -406,12 +414,15 @@ public class PostgresUserRepo(
         }
     }
 
-    public async Task<Dictionary<long, List<string>>> GetUserClassNamesAsync(IEnumerable<long> userIds)
+    public async Task<Dictionary<long, List<string>>> GetUserClassNamesAsync(
+        IEnumerable<long> userIds
+    )
     {
         try
         {
             var ids = userIds.ToArray();
-            if (ids.Length == 0) return new Dictionary<long, List<string>>();
+            if (ids.Length == 0)
+                return new Dictionary<long, List<string>>();
 
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
@@ -421,7 +432,10 @@ public class PostgresUserRepo(
                         JOIN class c ON c.id = uc.class_id
                         WHERE uc.user_id = ANY(@UserIds)
                         ORDER BY c.class_name;";
-            var rows = await conn.QueryAsync<(long UserId, string Name)>(sql, new { UserIds = ids });
+            var rows = await conn.QueryAsync<(long UserId, string Name)>(
+                sql,
+                new { UserIds = ids }
+            );
             var dict = new Dictionary<long, List<string>>();
             foreach (var row in rows)
             {

@@ -169,7 +169,8 @@ public class SqliteBookingReadModelRepo(
     > GetDetailedBookingsByUserRegistrationAsync(
         long userId,
         IEnumerable<RegistrationStatus> statuses,
-        string? timeFilter = null)
+        string? timeFilter = null
+    )
     {
         try
         {
@@ -183,12 +184,13 @@ public class SqliteBookingReadModelRepo(
             {
                 "upcoming" => "AND v.end_time >= datetime('now')",
                 "history" => "AND v.end_time < datetime('now')",
-                _ => ""
+                _ => "",
             };
 
             var orderDir = timeFilter == "upcoming" ? "ASC" : "DESC";
 
-            var sql = $@"
+            var sql =
+                $@"
                 SELECT v.*,
                        CASE r.status
                          WHEN 0 THEN 'invited'
@@ -226,7 +228,8 @@ public class SqliteBookingReadModelRepo(
         IEnumerable<RegistrationStatus> statuses,
         int page,
         int pageSize,
-        string? timeFilter = null)
+        string? timeFilter = null
+    )
     {
         try
         {
@@ -239,13 +242,14 @@ public class SqliteBookingReadModelRepo(
             {
                 "upcoming" => "AND v.end_time >= datetime('now')",
                 "history" => "AND v.end_time < datetime('now')",
-                _ => ""
+                _ => "",
             };
 
             var orderDir = timeFilter == "upcoming" ? "ASC" : "DESC";
             var offset = (page - 1) * pageSize;
 
-            var countSql = $@"
+            var countSql =
+                $@"
                 SELECT COUNT(*)
                 FROM v_bookings_detailed v
                 INNER JOIN registrations r ON v.booking_id = r.booking_id
@@ -253,7 +257,8 @@ public class SqliteBookingReadModelRepo(
                   AND r.status IN @Statuses
                   {timeClause};";
 
-            var dataSql = $@"
+            var dataSql =
+                $@"
                 SELECT v.*,
                        CASE r.status
                          WHEN 0 THEN 'invited'
@@ -268,7 +273,13 @@ public class SqliteBookingReadModelRepo(
                 ORDER BY v.start_time {orderDir}
                 LIMIT @PageSize OFFSET @Offset;";
 
-            var parameters = new { UserId = userId, Statuses = intStatuses, PageSize = pageSize, Offset = offset };
+            var parameters = new
+            {
+                UserId = userId,
+                Statuses = intStatuses,
+                PageSize = pageSize,
+                Offset = offset,
+            };
 
             var totalCount = await conn.ExecuteScalarAsync<int>(countSql, parameters);
             var bookings = await conn.QueryAsync<BookingDetailedReadModel>(dataSql, parameters);
