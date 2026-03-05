@@ -138,7 +138,8 @@ public static class AuthEndpoints
             )
             .Accepts<LoginDto>("application/json")
             .Produces<AuthResponseDto>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status401Unauthorized);
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         // POST /auth/logout
         group
@@ -197,7 +198,9 @@ public static class AuthEndpoints
             .RequireAuth()
             .WithName("GetCurrentUser")
             .WithSummary("Get current user")
-            .WithDescription("Retrieves the details of the currently authenticated user.")
+            .WithDescription(
+                "Retrieves the details of the currently authenticated user.\n\n🔒 **Authentication Required**"
+            )
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
 

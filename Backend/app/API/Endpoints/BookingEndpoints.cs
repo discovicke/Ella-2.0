@@ -89,6 +89,7 @@ public static class BookingEndpoints
             )
             .Produces<PagedResult<BookingDetailedReadModel>>(StatusCodes.Status200OK)
             .Produces<GroupedPagedResult<BookingDetailedReadModel>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
 
@@ -141,7 +142,8 @@ public static class BookingEndpoints
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status409Conflict)
-            .Produces(StatusCodes.Status401Unauthorized);
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         // PUT /api/bookings/{id}
         group
@@ -195,6 +197,7 @@ public static class BookingEndpoints
                 "Updates the status of a specific booking. Users can cancel their own bookings; managers can update any booking.\n\n🔒 **Authentication Required**"
             )
             .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
@@ -258,7 +261,9 @@ public static class BookingEndpoints
             .WithDescription(
                 "Returns whether the public booking form is enabled (system user not banned), plus the system user ID.\n\n🔒 **Authentication Required**\n🔑 **Requires manageBookings permission**"
             )
-            .Produces(StatusCodes.Status200OK);
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         // POST /api/bookings/form-toggle – admin toggle public booking form on/off
         group
@@ -287,7 +292,9 @@ public static class BookingEndpoints
                 "Toggles the public booking form by banning/unbanning the system user.\n\n🔒 **Authentication Required**\n🔑 **Requires manageBookings permission**"
             )
             .Produces(StatusCodes.Status200OK)
-            .Produces<string>(StatusCodes.Status404NotFound);
+            .Produces<string>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         return group;
     }

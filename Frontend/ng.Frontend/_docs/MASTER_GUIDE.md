@@ -203,7 +203,7 @@ All protected routes use **`MainLayout`** as the shell. Access to specific sub-p
   - `/manage-rooms`: Room inventory (`ManageRooms`)
   - `/manage-bookings`: Booking oversight (`ManageBookings`)
   - `/manage-roles`: Role configuration (`ManageRoles`)
-  - `/see-bookings`: My bookings (`MyBookings`)
+  - `/see-bookings`: My bookings (any authenticated user)
   - `/book-room`: New booking (`BookRoom`)
 
 ### ⚠️ Fallback Strategy
