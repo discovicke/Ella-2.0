@@ -46,7 +46,7 @@ public static class PermissionTemplateEndpoints
             .WithDescription(
                 "Replaces the full set of named permission templates. "
                     + "The server will auto-sync with the DB columns before persisting.\n\n"
-                    + "🔒 **Requires manageRoles permission**"
+                    + "🔒 **Authentication Required**\n🔑 **Requires manageRoles permission**"
             )
             .Produces<List<PermissionTemplateDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)

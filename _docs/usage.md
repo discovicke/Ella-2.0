@@ -15,6 +15,7 @@ users ──> permission_templates ──< permission_template_flags >── sys
 users ──< user_permission_overrides >── system_permissions
 
 users ──< bookings >── rooms
+bookings ──< booking_class >── class
 bookings ──< registrations (status: invited/registered/declined) >── users
 ```
 

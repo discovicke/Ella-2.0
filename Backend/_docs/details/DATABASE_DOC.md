@@ -221,6 +221,14 @@ CREATE INDEX IF NOT EXISTS idx_registrations_user_status
     ON registrations (user_id, status);
 ```
 
+```sql
+CREATE TABLE IF NOT EXISTS booking_class (
+    booking_id INTEGER NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+    class_id   INTEGER NOT NULL REFERENCES class(id) ON DELETE CASCADE,
+    PRIMARY KEY (booking_id, class_id)
+);
+```
+
 ### 6. Views
 
 #### `v_user_effective_permissions`
@@ -261,9 +269,12 @@ SELECT
     b.notes, b.booker_name, b.created_at, b.updated_at,
     COALESCE(SUM(CASE WHEN reg.status = 1 THEN 1 ELSE 0 END), 0) AS registration_count,
     COALESCE(SUM(CASE WHEN reg.status = 0 THEN 1 ELSE 0 END), 0) AS invitation_count,
-    (SELECT GROUP_CONCAT(at.description, '|||')
+    (SELECT CASE WHEN COUNT(*) > 0 THEN json_group_array(at.description) ELSE NULL END
      FROM room_assets ra JOIN asset_types at ON ra.asset_type_id = at.id
-     WHERE ra.room_id = b.room_id) AS room_assets
+     WHERE ra.room_id = b.room_id) AS room_assets,
+    (SELECT CASE WHEN COUNT(*) > 0 THEN json_group_array(cl.class_name) ELSE NULL END
+     FROM booking_class bc JOIN class cl ON bc.class_id = cl.id
+     WHERE bc.booking_id = b.id) AS class_names
 FROM bookings b
 LEFT JOIN users u ON b.user_id = u.id
 LEFT JOIN rooms r ON b.room_id = r.id
@@ -275,7 +286,7 @@ GROUP BY b.id;
 
 #### `v_room_details`
 
-Room read-model with campus city, room type, and concatenated asset descriptions.
+Room read-model with campus city, room type, and JSON array of asset descriptions.
 
 ```sql
 CREATE VIEW v_room_details AS
@@ -284,7 +295,9 @@ SELECT
     c.city AS CampusCity, r.capacity AS Capacity,
     r.room_type_id AS RoomTypeId, rt.name AS RoomTypeName,
     r.floor AS Floor, r.notes AS Notes,
-    GROUP_CONCAT(at.description, '|||') AS AssetsString
+    CASE WHEN COUNT(at.description) > 0
+         THEN json_group_array(at.description)
+         ELSE NULL END AS AssetsString
 FROM rooms r
 LEFT JOIN campus c ON r.campus_id = c.id
 LEFT JOIN room_types rt ON r.room_type_id = rt.id

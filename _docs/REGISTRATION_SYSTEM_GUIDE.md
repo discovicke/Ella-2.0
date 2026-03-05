@@ -142,14 +142,17 @@ GET /api/bookings/my-registration-bookings?statuses=registered,invited,declined&
 
 **Other registration endpoints** (unchanged):
 
-| Method | Path                                      | Description                        |
-| ------ | ----------------------------------------- | ---------------------------------- |
-| POST   | `/api/bookings/{id}/register`             | Accept invite / RSVP               |
-| POST   | `/api/bookings/{id}/decline`              | Decline or unregister (→ declined) |
-| POST   | `/api/bookings/{id}/invite`               | Invite users (body: `{ userIds }`) |
-| DELETE | `/api/bookings/{id}/invitations/{userId}` | Remove invitation (owner only)     |
-| GET    | `/api/bookings/{id}/registrations`        | List confirmed participants        |
-| GET    | `/api/bookings/{id}/invitations`          | List pending invitations           |
+| Method | Path                                        | Description                                    |
+| ------ | ------------------------------------------- | ---------------------------------------------- |
+| POST   | `/api/bookings/{id}/register`               | Accept invite / RSVP                           |
+| POST   | `/api/bookings/{id}/decline`                | Decline or unregister (→ declined)             |
+| POST   | `/api/bookings/{id}/invite`                 | Invite users (body: `{ userIds }`)             |
+| POST   | `/api/bookings/{id}/invite-class`           | Mass-invite all members of a class             |
+| POST   | `/api/bookings/{id}/sync-class-invitations` | Sync invitations with current class membership |
+| GET    | `/api/bookings/{id}/class-members`          | List class members and their invitation status |
+| DELETE | `/api/bookings/{id}/invitations/{userId}`   | Remove invitation (owner only)                 |
+| GET    | `/api/bookings/{id}/registrations`          | List confirmed participants                    |
+| GET    | `/api/bookings/{id}/invitations`            | List pending invitations                       |
 
 ---
 
