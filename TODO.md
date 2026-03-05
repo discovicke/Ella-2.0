@@ -28,6 +28,8 @@
 
 ### Priority: FUTURE CONSIDERATIONS
 
+- [ ] **Escalation guard for permissions**: Users with `ManageUsers` should not be able to assign a permission template that grants permissions they don't hold themselves. Similarly, users with `ManageRoles` should not be able to grant individual permissions they don't have. This prevents privilege escalation (e.g. a teacher promoting someone to admin).
+
 - [ ] **Big Feature**: SMTP integrering för att skicka ut mail (exempelvis vid bokningsbekräftelser, påminnelser etc) behöver planeras och diskuteras mer
 - [ ] **Big Feature**: Notifikationer i appen (exempelvis för att påminna om bokningar, informera om ändringar etc) behöver planeras och diskuteras mer
 

@@ -1,6 +1,5 @@
 /**
  * Auto-generated from the OpenAPI spec — DO NOT EDIT manually.
- * Generated: 2026-03-05 14:26:30
  *
  * Source of truth: [MaxLength] attributes on C# DTOs →
  *   Backend/app/Core/Models/DTO/*.cs
@@ -28,4 +27,3 @@ export const INPUT_LIMITS = {
 
 /** Helper: extract the limits object for a given DTO name. */
 export type LimitsFor<T extends keyof typeof INPUT_LIMITS> = (typeof INPUT_LIMITS)[T];
- 
