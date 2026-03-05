@@ -50,9 +50,6 @@ public class PostgresPermissionRepo(
                     case "BookRoom":
                         permissions.BookRoom = granted;
                         break;
-                    case "MyBookings":
-                        permissions.MyBookings = granted;
-                        break;
                     case "ManageUsers":
                         permissions.ManageUsers = granted;
                         break;
@@ -61,9 +58,6 @@ public class PostgresPermissionRepo(
                         break;
                     case "ManageRooms":
                         permissions.ManageRooms = granted;
-                        break;
-                    case "ManageAssets":
-                        permissions.ManageAssets = granted;
                         break;
                     case "ManageBookings":
                         permissions.ManageBookings = granted;
@@ -128,9 +122,6 @@ public class PostgresPermissionRepo(
                     case "BookRoom":
                         perms.BookRoom = granted;
                         break;
-                    case "MyBookings":
-                        perms.MyBookings = granted;
-                        break;
                     case "ManageUsers":
                         perms.ManageUsers = granted;
                         break;
@@ -139,9 +130,6 @@ public class PostgresPermissionRepo(
                         break;
                     case "ManageRooms":
                         perms.ManageRooms = granted;
-                        break;
-                    case "ManageAssets":
-                        perms.ManageAssets = granted;
                         break;
                     case "ManageBookings":
                         perms.ManageBookings = granted;
@@ -339,9 +327,6 @@ public class PostgresPermissionRepo(
                     case "BookRoom":
                         permissions.BookRoom = granted;
                         break;
-                    case "MyBookings":
-                        permissions.MyBookings = granted;
-                        break;
                     case "ManageUsers":
                         permissions.ManageUsers = granted;
                         break;
@@ -350,9 +335,6 @@ public class PostgresPermissionRepo(
                         break;
                     case "ManageRooms":
                         permissions.ManageRooms = granted;
-                        break;
-                    case "ManageAssets":
-                        permissions.ManageAssets = granted;
                         break;
                     case "ManageBookings":
                         permissions.ManageBookings = granted;

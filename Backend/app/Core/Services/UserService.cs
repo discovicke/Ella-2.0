@@ -261,11 +261,9 @@ public class UserService(
             new Dictionary<string, bool>
             {
                 ["BookRoom"] = dto.BookRoom,
-                ["MyBookings"] = dto.MyBookings,
                 ["ManageUsers"] = dto.ManageUsers,
                 ["ManageClasses"] = dto.ManageClasses,
                 ["ManageRooms"] = dto.ManageRooms,
-                ["ManageAssets"] = dto.ManageAssets,
                 ["ManageBookings"] = dto.ManageBookings,
                 ["ManageCampuses"] = dto.ManageCampuses,
                 ["ManageRoles"] = dto.ManageRoles,

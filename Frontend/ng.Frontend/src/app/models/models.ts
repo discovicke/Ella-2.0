@@ -313,11 +313,9 @@ export interface UpdatePermissionDto {
   /** @format int64 */
   templateId: number | null;
   bookRoom: boolean;
-  myBookings: boolean;
   manageUsers: boolean;
   manageClasses: boolean;
   manageRooms: boolean;
-  manageAssets: boolean;
   manageBookings: boolean;
   manageCampuses: boolean;
   manageRoles: boolean;
@@ -357,11 +355,9 @@ export type UserPermissions = {
   /** @format int64 */
   permissionTemplateId?: number | null;
   bookRoom?: boolean;
-  myBookings?: boolean;
   manageUsers?: boolean;
   manageClasses?: boolean;
   manageRooms?: boolean;
-  manageAssets?: boolean;
   manageBookings?: boolean;
   manageCampuses?: boolean;
   manageRoles?: boolean;
@@ -373,11 +369,9 @@ export interface UserPermissions2 {
   /** @format int64 */
   permissionTemplateId?: number | null;
   bookRoom?: boolean;
-  myBookings?: boolean;
   manageUsers?: boolean;
   manageClasses?: boolean;
   manageRooms?: boolean;
-  manageAssets?: boolean;
   manageBookings?: boolean;
   manageCampuses?: boolean;
   manageRoles?: boolean;
