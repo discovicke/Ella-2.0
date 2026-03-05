@@ -42,9 +42,9 @@ export interface BookingEditModalConfig {
             <span class="hero-detail">{{ booking.campusCity }}</span>
           }
         </div>
-        @if (parseAssets(booking.roomAssets).length) {
+        @if (booking.roomAssets?.length) {
           <div class="hero-assets">
-            @for (asset of parseAssets(booking.roomAssets); track asset) {
+            @for (asset of booking.roomAssets!; track asset) {
               <span class="asset-chip">{{ asset }}</span>
             }
           </div>
@@ -264,7 +264,7 @@ export interface BookingEditModalConfig {
         align-items: center;
         padding: 2px 10px;
         background: var(--color-primary-surface);
-        color: var(--color-primary);
+        color: var(--color-primary-on-surface);
         border-radius: 999px;
         font-size: 0.7rem;
         font-weight: 600;
@@ -530,11 +530,6 @@ export class BookingEditModalComponent {
   readonly showParticipants = signal(false);
   readonly isLoadingParticipants = signal(false);
   readonly participants = signal<RegistrationParticipant[]>([]);
-
-  parseAssets(assetsStr: string | null | undefined): string[] {
-    if (!assetsStr) return [];
-    return assetsStr.split('|||').filter((a) => a.trim().length > 0);
-  }
 
   statusLabel(status?: BookingStatus): string {
     switch (status) {

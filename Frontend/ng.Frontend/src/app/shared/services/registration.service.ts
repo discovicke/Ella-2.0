@@ -77,4 +77,41 @@ export class RegistrationService {
   removeInvitation(bookingId: number, targetUserId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${bookingId}/invitations/${targetUserId}`);
   }
+
+  /** Invite all members of the given class(es) to a booking */
+  inviteClass(bookingId: number, classIds: number[]): Observable<{ invited: number }> {
+    return this.http.post<{ invited: number }>(`${this.apiUrl}/${bookingId}/invite-class`, {
+      classIds,
+    });
+  }
+
+  /** Re-sync class invitations for a booking (invites new class members) */
+  syncClassInvitations(bookingId: number): Observable<{ invited: number }> {
+    return this.http.post<{ invited: number }>(
+      `${this.apiUrl}/${bookingId}/sync-class-invitations`,
+      {},
+    );
+  }
+
+  /** Get members of the given class(es) for invitation preview */
+  getClassMembers(
+    classIds: number[],
+  ): Observable<{ userId: number; displayName: string; email: string }[]> {
+    const params = { classIds: classIds.join(',') };
+    return this.http.get<{ userId: number; displayName: string; email: string }[]>(
+      `${this.apiUrl}/class-members`,
+      { params },
+    );
+  }
+
+  /** Lightweight user search for invite autocomplete */
+  searchUsers(
+    query: string,
+    limit: number = 10,
+  ): Observable<{ userId: number; displayName: string; email: string }[]> {
+    return this.http.get<{ userId: number; displayName: string; email: string }[]>(
+      '/api/users/search',
+      { params: { q: query, limit: limit.toString() } },
+    );
+  }
 }

@@ -10,7 +10,8 @@ public record CreateBookingDto(
     DateTime EndTime,
     [property: MaxLength(500)] string? Notes,
     BookingStatus Status,
-    [property: MaxLength(100)] string? BookerName = null
+    [property: MaxLength(100)] string? BookerName = null,
+    long[]? ClassIds = null
 );
 
 /// <summary>

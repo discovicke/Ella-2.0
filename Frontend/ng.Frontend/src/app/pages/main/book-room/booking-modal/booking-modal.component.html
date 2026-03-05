@@ -46,6 +46,115 @@
       ></textarea>
     </div>
 
+    <!-- ─── Invite section ─── -->
+    <div class="invite-section">
+      <p class="invite-heading">Bjud in</p>
+
+      <!-- Individual user search -->
+      <div class="user-search">
+        <label for="userSearch">Sök användare</label>
+        <div class="search-wrapper">
+          <input
+            type="text"
+            id="userSearch"
+            [value]="searchQuery()"
+            (input)="onSearchInput($event)"
+            (focus)="searchResults().length ? showSearchResults.set(true) : null"
+            (blur)="hideSearchResults()"
+            placeholder="Namn eller e-post..."
+            autocomplete="off"
+          />
+          @if (isSearching()) {
+            <span class="search-spinner"></span>
+          }
+          @if (showSearchResults()) {
+            <ul class="search-dropdown">
+              @for (user of searchResults(); track user.userId) {
+                <li (mousedown)="selectUser(user)">
+                  <span class="dropdown-name">{{ user.displayName }}</span>
+                  <span class="dropdown-email">{{ user.email }}</span>
+                </li>
+              }
+            </ul>
+          }
+          @if (noSearchResults() && !isSearching()) {
+            <p class="no-results-hint">Inga resultat</p>
+          }
+        </div>
+      </div>
+
+      <!-- Selected users chips -->
+      @if (selectedUsers().length) {
+        <div class="selected-users">
+          @for (user of selectedUsers(); track user.userId) {
+            <span class="user-chip">
+              {{ user.displayName }}
+              <button type="button" class="chip-remove" (click)="removeUser(user.userId)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </span>
+          }
+        </div>
+      }
+
+      <!-- Class picker (ManageClasses only) -->
+      @if (canManageClasses && classes().length) {
+        <div class="class-section">
+          <button type="button" class="class-toggle" (click)="showClassPicker.set(!showClassPicker())">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 00-3-3.87" />
+              <path d="M16 3.13a4 4 0 010 7.75" />
+            </svg>
+            Bjud in klass
+            <svg class="chevron" [class.open]="showClassPicker()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          @if (showClassPicker()) {
+            <div class="class-picker">
+              <p class="picker-hint">Välj klasser att bjuda in till bokningen.</p>
+              <div class="pill-grid">
+                @for (cls of classes(); track cls.id) {
+                  <button
+                    type="button"
+                    class="pill"
+                    [class.on]="isClassSelected(cls.id)"
+                    (click)="toggleClass(cls.id)"
+                  >
+                    @if (isClassSelected(cls.id)) {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    }
+                    {{ cls.className }}
+                  </button>
+                }
+              </div>
+
+              <!-- Member preview -->
+              @if (isLoadingMembers()) {
+                <p class="member-hint">Laddar medlemmar...</p>
+              } @else if (classMembers().length) {
+                <div class="member-preview">
+                  <p class="member-hint">{{ classMembers().length }} medlem{{ classMembers().length !== 1 ? 'mar' : '' }} kommer bjudas in</p>
+                  <div class="member-list">
+                    @for (member of classMembers(); track member.userId) {
+                      <span class="member-chip">{{ member.displayName }}</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
     <div class="modal-actions">
       <app-button type="button" variant="tertiary" (clicked)="modalService.close()">
         Avbryt

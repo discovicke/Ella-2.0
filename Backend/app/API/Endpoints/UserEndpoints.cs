@@ -17,6 +17,39 @@ public static class UserEndpoints
     {
         var group = app.MapGroup("/users").WithTags("Users").RequireAuth(); // Lock down entire group to authenticated users
 
+        // GET /api/users/search?q=erik&limit=10  — lightweight autocomplete (any authenticated user)
+        group
+            .MapGet(
+                "/search",
+                async (
+                    [FromQuery] string q,
+                    [FromQuery] int? limit,
+                    HttpContext context,
+                    IUserRepository userRepo
+                ) =>
+                {
+                    if (string.IsNullOrWhiteSpace(q) || q.Trim().Length < 2)
+                        return Results.BadRequest(new { message = "Query must be at least 2 characters." });
+
+                    if (context.Items["UserId"] is not long userId)
+                        return Results.Unauthorized();
+
+                    var cap = Math.Clamp(limit ?? 10, 1, 25);
+                    var results = await userRepo.SearchUsersLightAsync(q.Trim(), cap, userId);
+                    return Results.Ok(results.Select(u => new { userId = u.Id, displayName = u.DisplayName, email = u.Email }));
+                }
+            )
+            .WithName("SearchUsersLight")
+            .WithSummary("Lightweight user search for invite autocomplete")
+            .WithDescription(
+                "Searches users by display name or email. Returns minimal data (id, name, email). "
+                    + "Excludes banned users and the requesting user. No ManageUsers permission required.\n\n"
+                    + "🔒 **Authentication Required**"
+            )
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized);
+
         // GET /api/users
         group
             .MapGet(

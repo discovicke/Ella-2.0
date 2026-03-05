@@ -305,12 +305,16 @@ public static class RegistrationEndpoints
 
                     try
                     {
-                        var count = await service.InviteUsersAsync(id, request.UserIds);
+                        var count = await service.InviteUsersAsync(userId, id, request.UserIds);
                         return Results.Ok(new { invited = count });
                     }
                     catch (KeyNotFoundException ex)
                     {
                         return Results.NotFound(new { message = ex.Message });
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        return Results.Forbid();
                     }
                     catch (InvalidOperationException ex)
                     {
@@ -330,8 +334,149 @@ public static class RegistrationEndpoints
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status400BadRequest);
 
+        // ─── Class-based invitations ────────────────────────
+        // POST /api/bookings/{id}/invite-class
+        group
+            .MapPost(
+                "/{id}/invite-class",
+                async (
+                    long id,
+                    InviteClassRequest request,
+                    HttpContext context,
+                    RegistrationService service
+                ) =>
+                {
+                    if (context.Items["UserId"] is not long userId)
+                        return Results.Unauthorized();
+
+                    if (request.ClassIds is null || !request.ClassIds.Any())
+                        return Results.BadRequest(new { message = "classIds is required." });
+
+                    try
+                    {
+                        var count = await service.InviteClassAsync(userId, id, request.ClassIds);
+                        return Results.Ok(new { invited = count });
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        return Results.NotFound(new { message = ex.Message });
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        return Results.Forbid();
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        return Results.BadRequest(new { message = ex.Message });
+                    }
+                }
+            )
+            .RequirePermission("BookRoom")
+            .WithName("InviteClassToBooking")
+            .WithSummary("Invite all members of class(es) to a booking")
+            .WithDescription(
+                "Resolves all users in the given class(es) and bulk-invites them. "
+                    + "Users who already have a registration row are skipped. The booking owner is excluded.\n\n"
+                    + "🔒 **Authentication Required**"
+            )
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status400BadRequest);
+
+        // POST /api/bookings/{id}/sync-class-invitations
+        group
+            .MapPost(
+                "/{id}/sync-class-invitations",
+                async (long id, HttpContext context, RegistrationService service) =>
+                {
+                    if (context.Items["UserId"] is not long userId)
+                        return Results.Unauthorized();
+
+                    try
+                    {
+                        var count = await service.SyncClassInvitationsAsync(userId, id);
+                        return Results.Ok(new { invited = count });
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        return Results.NotFound(new { message = ex.Message });
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        return Results.Forbid();
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        return Results.BadRequest(new { message = ex.Message });
+                    }
+                }
+            )
+            .RequirePermission("BookRoom")
+            .WithName("SyncClassInvitations")
+            .WithSummary("Re-sync class invitations for a booking")
+            .WithDescription(
+                "Re-invites any new members of the booking's linked class(es) who don't yet have a registration row. "
+                    + "Useful when class membership has changed after the initial invitation.\n\n"
+                    + "🔒 **Authentication Required**"
+            )
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status400BadRequest);
+
+        // GET /api/bookings/class-members?classIds=1,2,3
+        group
+            .MapGet(
+                "/class-members",
+                async (string classIds, RegistrationService service) =>
+                {
+                    var parsed = new List<long>();
+                    foreach (
+                        var s in classIds.Split(
+                            ',',
+                            StringSplitOptions.RemoveEmptyEntries
+                                | StringSplitOptions.TrimEntries
+                        )
+                    )
+                    {
+                        if (long.TryParse(s, out var id))
+                            parsed.Add(id);
+                        else
+                            return Results.BadRequest(
+                                new { message = $"Invalid class ID: '{s}'." }
+                            );
+                    }
+
+                    if (parsed.Count == 0)
+                        return Results.BadRequest(new { message = "classIds is required." });
+
+                    var members = await service.GetClassMembersAsync(parsed);
+                    return Results.Ok(
+                        members.Select(m => new
+                        {
+                            userId = m.UserId,
+                            displayName = m.DisplayName,
+                            email = m.Email,
+                        })
+                    );
+                }
+            )
+            .RequirePermission("BookRoom")
+            .WithName("GetClassMembers")
+            .WithSummary("Preview class members for invitation")
+            .WithDescription(
+                "Returns all users belonging to the given class(es). Used to preview who will be invited "
+                    + "before sending invitations, allowing the teacher to exclude specific users.\n\n"
+                    + "🔒 **Authentication Required**"
+            )
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized);
+
         return group;
     }
 
     private record InviteRequest(IEnumerable<long> UserIds);
+    private record InviteClassRequest(IEnumerable<long> ClassIds);
 }

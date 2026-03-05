@@ -7,6 +7,7 @@ namespace Backend.app.Core.Services;
 public class RegistrationService(
     IRegistrationRepository repo,
     IBookingReadModelRepository bookingReadModelRepo,
+    IClassRepository classRepo,
     ILogger<RegistrationService> logger
 )
 {
@@ -16,11 +17,13 @@ public class RegistrationService(
     /// Bulk-invite users to a booking. Only the booking owner should call this.
     /// Skips users who already have a row (invited or registered).
     /// </summary>
-    public async Task<int> InviteUsersAsync(long bookingId, IEnumerable<long> userIds)
+    public async Task<int> InviteUsersAsync(long callerUserId, long bookingId, IEnumerable<long> userIds)
     {
         var booking =
             await bookingReadModelRepo.GetDetailedBookingByIdAsync(bookingId)
             ?? throw new KeyNotFoundException("Booking not found.");
+        if (booking.UserId != callerUserId)
+            throw new UnauthorizedAccessException("Only the booking owner can invite users.");
         if (booking.Status == BookingStatus.Cancelled)
             throw new InvalidOperationException("Cannot invite to a cancelled booking.");
         if (booking.EndTime < DateTime.UtcNow)
@@ -168,5 +171,65 @@ public class RegistrationService(
     public async Task<RegistrationStatus?> GetStatusAsync(long userId, long bookingId)
     {
         return await repo.GetStatusAsync(userId, bookingId);
+    }
+
+    // ─── Class-based invitations ────────────────────────────
+
+    /// <summary>
+    /// Invite all members of the given class(es) to a booking.
+    /// Skips users who already have a registration row.
+    /// </summary>
+    public async Task<int> InviteClassAsync(long callerUserId, long bookingId, IEnumerable<long> classIds)
+    {
+        var booking =
+            await bookingReadModelRepo.GetDetailedBookingByIdAsync(bookingId)
+            ?? throw new KeyNotFoundException("Booking not found.");
+        if (booking.UserId != callerUserId)
+            throw new UnauthorizedAccessException("Only the booking owner can invite classes.");
+        if (booking.Status == BookingStatus.Cancelled)
+            throw new InvalidOperationException("Cannot invite to a cancelled booking.");
+        if (booking.EndTime < DateTime.UtcNow)
+            throw new InvalidOperationException("Cannot invite to an expired booking.");
+
+        var userIds = await classRepo.GetUserIdsByClassIdsAsync(classIds);
+        var inviteIds = userIds.Where(uid => uid != booking.UserId);
+        return await repo.BulkInviteAsync(bookingId, inviteIds);
+    }
+
+    /// <summary>
+    /// Re-sync invitations for a booking's linked classes.
+    /// Invites any new class members who don't yet have a registration row.
+    /// </summary>
+    public async Task<int> SyncClassInvitationsAsync(long callerUserId, long bookingId)
+    {
+        var booking =
+            await bookingReadModelRepo.GetDetailedBookingByIdAsync(bookingId)
+            ?? throw new KeyNotFoundException("Booking not found.");
+        if (booking.UserId != callerUserId)
+            throw new UnauthorizedAccessException("Only the booking owner can sync class invitations.");
+        if (booking.Status == BookingStatus.Cancelled)
+            throw new InvalidOperationException("Cannot sync invitations for a cancelled booking.");
+        if (booking.EndTime < DateTime.UtcNow)
+            throw new InvalidOperationException("Cannot sync invitations for an expired booking.");
+
+        var classIds = await classRepo.GetClassIdsForBookingAsync(bookingId);
+        var classIdsList = classIds.ToList();
+        if (classIdsList.Count == 0)
+            return 0;
+
+        var userIds = await classRepo.GetUserIdsByClassIdsAsync(classIdsList);
+        var inviteIds = userIds.Where(uid => uid != booking.UserId);
+        return await repo.BulkInviteAsync(bookingId, inviteIds);
+    }
+
+    /// <summary>
+    /// Get all members of the given class(es) with their details.
+    /// Used by the frontend to preview who will be invited.
+    /// </summary>
+    public async Task<IEnumerable<(long UserId, string DisplayName, string Email)>> GetClassMembersAsync(
+        IEnumerable<long> classIds
+    )
+    {
+        return await classRepo.GetUsersByClassIdsAsync(classIds);
     }
 }

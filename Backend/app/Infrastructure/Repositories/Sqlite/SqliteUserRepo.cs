@@ -115,6 +115,34 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         }
     }
 
+    public async Task<IEnumerable<(long Id, string DisplayName, string Email)>> SearchUsersLightAsync(
+        string query, int limit, long excludeUserId)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            var escaped = query.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_");
+            var sql = """
+                SELECT id AS Id, display_name AS DisplayName, email AS Email
+                FROM users
+                WHERE (display_name LIKE @Search ESCAPE '\' OR email LIKE @Search ESCAPE '\')
+                  AND is_banned = 0
+                  AND id != @ExcludeUserId
+                ORDER BY display_name
+                LIMIT @Limit;
+                """;
+            var rows = await conn.QueryAsync<(long Id, string DisplayName, string Email)>(
+                sql, new { Search = $"%{escaped}%", Limit = limit, ExcludeUserId = excludeUserId });
+            return rows;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while searching users (light)");
+            throw;
+        }
+    }
+
     public async Task<bool> CreateUserAsync(User user)
     {
         try

@@ -59,6 +59,19 @@ export interface BookingDetailModalConfig {
             }
           </div>
         }
+        @if (classNames.length) {
+          <div class="hero-classes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 00-3-3.87" />
+              <path d="M16 3.13a4 4 0 010 7.75" />
+            </svg>
+            @for (cls of classNames; track cls) {
+              <span class="class-chip">{{ cls }}</span>
+            }
+          </div>
+        }
       </div>
 
       <!-- Details -->
@@ -239,7 +252,34 @@ export interface BookingDetailModalConfig {
         align-items: center;
         padding: 2px 10px;
         background: var(--color-primary-surface);
-        color: var(--color-primary);
+        color: var(--color-primary-on-surface);
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+
+      .hero-classes {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 2px;
+
+        > svg:first-child {
+          width: 16px;
+          height: 16px;
+          stroke: var(--color-text-muted);
+          flex-shrink: 0;
+        }
+      }
+
+      .class-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 10px;
+        background: var(--color-primary-surface);
+        color: var(--color-primary-on-surface);
         border-radius: 999px;
         font-size: 0.7rem;
         font-weight: 600;
@@ -416,7 +456,8 @@ export class BookingDetailModalComponent {
 
   protected config: BookingDetailModalConfig = this.modalService.modalData();
   protected booking = this.config.booking;
-  protected assets = this.parseAssets(this.config.booking.roomAssets);
+  protected assets = this.config.booking.roomAssets ?? [];
+  protected classNames = this.config.booking.classNames ?? [];
 
   /** Whether to show the registration row at all */
   protected hasRegistration = !!(
@@ -439,11 +480,6 @@ export class BookingDetailModalComponent {
     if (count === 0) return 'Inga registrerade ännu';
     return `${count} registrerad${count !== 1 ? 'e' : ''}`;
   });
-
-  private parseAssets(assetsStr: string | null | undefined): string[] {
-    if (!assetsStr) return [];
-    return assetsStr.split('|||').filter((a) => a.trim().length > 0);
-  }
 
   getCountdownLabel(): string {
     const now = new Date();
