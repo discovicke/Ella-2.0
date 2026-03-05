@@ -185,4 +185,103 @@ public class PostgresClassRepo(
             throw;
         }
     }
+
+    // ── Class ↔ User ───────────────────────────────────────
+
+    public async Task<IEnumerable<long>> GetUserIdsByClassIdsAsync(IEnumerable<long> classIds)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            return await conn.QueryAsync<long>(
+                "SELECT DISTINCT user_id FROM user_class WHERE class_id = ANY(@classIds);",
+                new { classIds = classIds.ToArray() }
+            );
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while fetching user IDs by class IDs");
+            throw;
+        }
+    }
+
+    public async Task<IEnumerable<(long UserId, string DisplayName, string Email)>> GetUsersByClassIdsAsync(
+        IEnumerable<long> classIds
+    )
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            const string sql = """
+                SELECT DISTINCT u.id AS UserId, u.display_name AS DisplayName, u.email AS Email
+                FROM user_class uc
+                JOIN users u ON uc.user_id = u.id
+                WHERE uc.class_id = ANY(@classIds)
+                ORDER BY u.display_name;
+                """;
+            return await conn.QueryAsync<(long UserId, string DisplayName, string Email)>(
+                sql,
+                new { classIds = classIds.ToArray() }
+            );
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while fetching users by class IDs");
+            throw;
+        }
+    }
+
+    // ── Booking ↔ Class ─────────────────────────────────────
+
+    public async Task<IEnumerable<long>> GetClassIdsForBookingAsync(long bookingId)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            return await conn.QueryAsync<long>(
+                "SELECT class_id FROM booking_class WHERE booking_id = @bookingId;",
+                new { bookingId }
+            );
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while fetching class IDs for booking {BookingId}", bookingId);
+            throw;
+        }
+    }
+
+    public async Task SetClassesForBookingAsync(long bookingId, IEnumerable<long> classIds)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            using var tx = await conn.BeginTransactionAsync();
+
+            await conn.ExecuteAsync(
+                "DELETE FROM booking_class WHERE booking_id = @bookingId;",
+                new { bookingId },
+                tx
+            );
+
+            foreach (var classId in classIds)
+            {
+                await conn.ExecuteAsync(
+                    "INSERT INTO booking_class (booking_id, class_id) VALUES (@bookingId, @classId);",
+                    new { bookingId, classId },
+                    tx
+                );
+            }
+
+            await tx.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while setting classes for booking {BookingId}", bookingId);
+            throw;
+        }
+    }
 }

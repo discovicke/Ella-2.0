@@ -81,9 +81,9 @@
               }
             </div>
 
-            @if (parseAssets(next.roomAssets).length > 0) {
+            @if (next.roomAssets?.length) {
               <div class="hero-assets">
-                @for (asset of parseAssets(next.roomAssets); track asset) {
+                @for (asset of next.roomAssets!; track asset) {
                   <span class="asset-chip">{{ asset }}</span>
                 }
               </div>
@@ -188,6 +188,15 @@
                     }
                   </div>
                 </div>
+
+                <!-- Class chips -->
+                @if (booking.classNames?.length) {
+                  <div class="row-classes">
+                    @for (cls of booking.classNames!; track cls) {
+                      <span class="class-chip">{{ cls }}</span>
+                    }
+                  </div>
+                }
 
                 <!-- Notes pill -->
                 @if (booking.notes && !booking.isInvitation) {

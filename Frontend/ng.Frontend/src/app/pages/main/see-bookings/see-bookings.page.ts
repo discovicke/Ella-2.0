@@ -106,11 +106,6 @@ export class SeeBookingsPage {
 
   // --- HELPERS ---
 
-  parseAssets(assetsStr: string | null | undefined): string[] {
-    if (!assetsStr) return [];
-    return assetsStr.split('|||').filter((a) => a.trim().length > 0);
-  }
-
   getCountdownLabel(booking: BookingDetailedReadModel): string {
     const now = new Date();
     const start = new Date(booking.startTime ?? 0);

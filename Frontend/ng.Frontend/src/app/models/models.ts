@@ -73,8 +73,9 @@ export interface BookingDetailedReadModel {
   registrationCount?: number;
   /** @format int32 */
   invitationCount?: number;
-  roomAssets?: string | null;
+  roomAssets?: string[] | null;
   userRegistrationStatus?: string | null;
+  classNames?: string[] | null;
 }
 
 export interface CampusResponseDto {
@@ -117,6 +118,8 @@ export interface CreateBookingDto {
    * @default null
    */
   bookerName?: string | null;
+  /** @default null */
+  classIds?: number[] | null;
 }
 
 export interface CreateCampusDto {
@@ -185,6 +188,10 @@ export interface GroupedPagedResultOfBookingDetailedReadModel {
   page: number;
   /** @format int32 */
   groupsPerPage: number;
+}
+
+export interface InviteClassRequest {
+  classIds: number[];
 }
 
 export interface InviteRequest {

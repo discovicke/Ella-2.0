@@ -25,6 +25,10 @@ public interface IUserRepository
     Task<bool> UpdateUserAsync(long id, User user);
     Task<bool> DeleteUserAsync(long id);
 
+    // Lightweight search (for invite autocomplete — no permission gate needed)
+    Task<IEnumerable<(long Id, string DisplayName, string Email)>> SearchUsersLightAsync(
+        string query, int limit, long excludeUserId);
+
     // User ↔ Campus associations
     Task<IEnumerable<long>> GetCampusIdsForUserAsync(long userId);
     Task SetCampusesForUserAsync(long userId, IEnumerable<long> campusIds);

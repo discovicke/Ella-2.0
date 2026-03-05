@@ -10,7 +10,8 @@ public record CreateBookingDto(
     DateTime EndTime,
     [property: MaxLength(500)] string? Notes,
     BookingStatus Status,
-    bool IsLesson = false
+    bool IsLesson = false,
+    long[]? ClassIds = null
 );
 
 public record CancelBookingDto(long Id);

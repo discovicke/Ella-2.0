@@ -14,4 +14,12 @@ public interface IClassRepository
     Task<IEnumerable<long>> GetCampusIdsForClassAsync(long classId);
     Task SetCampusesForClassAsync(long classId, IEnumerable<long> campusIds);
     Task<Dictionary<long, List<string>>> GetAllClassCampusNamesAsync();
+
+    // Class ↔ User associations
+    Task<IEnumerable<long>> GetUserIdsByClassIdsAsync(IEnumerable<long> classIds);
+    Task<IEnumerable<(long UserId, string DisplayName, string Email)>> GetUsersByClassIdsAsync(IEnumerable<long> classIds);
+
+    // Booking ↔ Class associations
+    Task<IEnumerable<long>> GetClassIdsForBookingAsync(long bookingId);
+    Task SetClassesForBookingAsync(long bookingId, IEnumerable<long> classIds);
 }
