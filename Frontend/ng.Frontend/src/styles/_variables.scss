@@ -154,6 +154,7 @@ $sidebar-collapsed: 80px;
   --color-primary-hover: #a34adc;
   --color-primary-active: #7326a3;
   --color-primary-surface: #f4eafb;
+  --color-primary-on-surface: var(--color-primary);
 
   // Colors - Semantic
   --color-success: #10b981;
@@ -231,7 +232,8 @@ $sidebar-collapsed: 80px;
 // ---------------------------------------------
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-primary-surface: #432452;
+    --color-primary-surface: #2d1b3d;
+    --color-primary-on-surface: #c084fc;
 
     --color-success-surface: #064e3b;
     --color-warning-surface: #78350f;
@@ -267,6 +269,8 @@ $sidebar-collapsed: 80px;
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.2);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.2);
     --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+
+    --focus-ring: 0 0 0 3px rgba(145, 54, 203, 0.4);
   }
 }
 

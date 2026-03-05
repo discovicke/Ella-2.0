@@ -318,7 +318,7 @@
 // ---------------------------------------------
 // BADGES & TAGS
 // ---------------------------------------------
-@mixin badge($bg: var(--color-primary-surface), $color: var(--color-primary)) {
+@mixin badge($bg: var(--color-primary-surface), $color: var(--color-primary-on-surface)) {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
