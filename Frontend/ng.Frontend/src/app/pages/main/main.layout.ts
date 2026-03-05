@@ -30,7 +30,6 @@ export class MainLayout {
       perms.manageRooms ||
       perms.manageBookings ||
       perms.manageRoles ||
-      perms.manageAssets ||
       perms.manageClasses ||
       perms.manageCampuses
     );

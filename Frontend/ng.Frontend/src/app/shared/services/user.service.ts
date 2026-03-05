@@ -12,11 +12,9 @@ import {
 export interface UpdatePermissionsRequest {
   templateId: number | null;
   bookRoom: boolean;
-  myBookings: boolean;
   manageUsers: boolean;
   manageClasses: boolean;
   manageRooms: boolean;
-  manageAssets: boolean;
   manageBookings: boolean;
   manageCampuses: boolean;
   manageRoles: boolean;

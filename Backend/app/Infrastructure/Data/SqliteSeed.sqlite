@@ -11,11 +11,9 @@ INSERT INTO system_permissions
     (key, description)
 VALUES
     ('BookRoom', 'Can book rooms'),
-    ('MyBookings', 'Can view own bookings'),
     ('ManageUsers', 'Can manage users'),
     ('ManageClasses', 'Can manage classes'),
     ('ManageRooms', 'Can manage rooms'),
-    ('ManageAssets', 'Can manage assets'),
     ('ManageBookings', 'Can manage all bookings'),
     ('ManageCampuses', 'Can manage campuses'),
     ('ManageRoles', 'Can manage roles/permissions');
@@ -30,21 +28,17 @@ VALUES
     (3, 'admin', 'Admin', 'orange', 2);
 
 -- 3. Permission Flags
--- Student (1): BookRoom, MyBookings
+-- Student (1): BookRoom
 INSERT INTO permission_template_flags
     (template_id, permission_key, value)
 VALUES
-    (1, 'BookRoom', 1),
-    (1, 'MyBookings', 1);
+    (1, 'BookRoom', 1);
 
--- Educator (2): Basic + ManageClasses, ManageBookings
+-- Educator (2): BookRoom
 INSERT INTO permission_template_flags
     (template_id, permission_key, value)
 VALUES
-    (2, 'BookRoom', 1),
-    (2, 'MyBookings', 1),
-    (2, 'ManageClasses', 1),
-    (2, 'ManageBookings', 1);
+    (2, 'BookRoom', 1);
 
 -- Admin (3): All
 INSERT INTO permission_template_flags

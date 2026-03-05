@@ -21,11 +21,9 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
 
 export interface CustomPermissionsPayload {
   bookRoom: boolean;
-  myBookings: boolean;
   manageUsers: boolean;
   manageClasses: boolean;
   manageRooms: boolean;
-  manageAssets: boolean;
   manageBookings: boolean;
   manageCampuses: boolean;
   manageRoles: boolean;
@@ -478,11 +476,9 @@ export class UserFormModalComponent {
     label: string;
   }> = [
     { key: 'bookRoom', label: 'Boka rum' },
-    { key: 'myBookings', label: 'Mina bokningar' },
     { key: 'manageUsers', label: 'Hantera användare' },
     { key: 'manageClasses', label: 'Hantera klasser' },
     { key: 'manageRooms', label: 'Hantera rum' },
-    { key: 'manageAssets', label: 'Hantera tillgångar' },
     { key: 'manageBookings', label: 'Hantera bokningar' },
     { key: 'manageCampuses', label: 'Hantera campus' },
     { key: 'manageRoles', label: 'Hantera roller' },
@@ -504,9 +500,6 @@ export class UserFormModalComponent {
       bookRoom: new FormControl<boolean>(this.initialPermissions?.bookRoom ?? true, {
         nonNullable: true,
       }),
-      myBookings: new FormControl<boolean>(this.initialPermissions?.myBookings ?? true, {
-        nonNullable: true,
-      }),
       manageUsers: new FormControl<boolean>(this.initialPermissions?.manageUsers ?? false, {
         nonNullable: true,
       }),
@@ -514,9 +507,6 @@ export class UserFormModalComponent {
         nonNullable: true,
       }),
       manageRooms: new FormControl<boolean>(this.initialPermissions?.manageRooms ?? false, {
-        nonNullable: true,
-      }),
-      manageAssets: new FormControl<boolean>(this.initialPermissions?.manageAssets ?? false, {
         nonNullable: true,
       }),
       manageBookings: new FormControl<boolean>(this.initialPermissions?.manageBookings ?? false, {
@@ -600,11 +590,9 @@ export class UserFormModalComponent {
       confirmPassword,
       templateId,
       bookRoom,
-      myBookings,
       manageUsers,
       manageClasses,
       manageRooms,
-      manageAssets,
       manageBookings,
       manageCampuses,
       manageRoles,
@@ -617,11 +605,9 @@ export class UserFormModalComponent {
       selectedTemplateId: templateId ?? null,
       customPermissions: {
         bookRoom,
-        myBookings,
         manageUsers,
         manageClasses,
         manageRooms,
-        manageAssets,
         manageBookings,
         manageCampuses,
         manageRoles,

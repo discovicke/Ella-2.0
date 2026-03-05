@@ -104,8 +104,7 @@
         <h3 class="nav-header">Bokning</h3>
         <nav>
           <ul>
-            @if (sessionService.hasPermission('myBookings')) {
-              <li>
+            <li>
                 <a
                   routerLink="/see-bookings"
                   routerLinkActive="active"
@@ -128,7 +127,6 @@
                   <span class="text">Mina Bokningar</span>
                 </a>
               </li>
-            }
             @if (sessionService.hasPermission('bookRoom')) {
               <li>
                 <a

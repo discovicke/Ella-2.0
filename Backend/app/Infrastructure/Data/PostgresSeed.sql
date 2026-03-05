@@ -23,11 +23,9 @@ VALUES (1, 'Simulation data v1.2 - Normalized tables');
 
 INSERT INTO system_permissions (key, description)
 VALUES ('BookRoom', 'Can book rooms'),
-       ('MyBookings', 'Can view own bookings'),
        ('ManageUsers', 'Can manage users'),
        ('ManageClasses', 'Can manage classes'),
        ('ManageRooms', 'Can manage rooms'),
-       ('ManageAssets', 'Can manage assets'),
        ('ManageBookings', 'Can manage all bookings'),
        ('ManageCampuses', 'Can manage campuses'),
        ('ManageRoles', 'Can manage roles/permissions');
@@ -49,20 +47,16 @@ SELECT setval(pg_get_serial_sequence('permission_templates', 'id'), (SELECT MAX(
 
 -- -------------------------------------------------------------
 --  PERMISSION FLAGS
---  Student (1):  BookRoom, MyBookings
---  Educator (2): BookRoom, MyBookings, ManageClasses, ManageBookings
+--  Student (1):  BookRoom
+--  Educator (2): BookRoom
 --  Admin (3):    Alla behörigheter
 -- -------------------------------------------------------------
 
 INSERT INTO permission_template_flags (template_id, permission_key, value)
-VALUES (1, 'BookRoom', TRUE),
-       (1, 'MyBookings', TRUE);
+VALUES (1, 'BookRoom', TRUE);
 
 INSERT INTO permission_template_flags (template_id, permission_key, value)
-VALUES (2, 'BookRoom', TRUE),
-       (2, 'MyBookings', TRUE),
-       (2, 'ManageClasses', TRUE),
-       (2, 'ManageBookings', TRUE);
+VALUES (2, 'BookRoom', TRUE);
 
 -- Admin får alla behörigheter dynamiskt från system_permissions
 INSERT INTO permission_template_flags (template_id, permission_key, value)
