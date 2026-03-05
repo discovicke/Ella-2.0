@@ -17,7 +17,9 @@ public interface IClassRepository
 
     // Class ↔ User associations
     Task<IEnumerable<long>> GetUserIdsByClassIdsAsync(IEnumerable<long> classIds);
-    Task<IEnumerable<(long UserId, string DisplayName, string Email)>> GetUsersByClassIdsAsync(IEnumerable<long> classIds);
+    Task<IEnumerable<(long UserId, string DisplayName, string Email)>> GetUsersByClassIdsAsync(
+        IEnumerable<long> classIds
+    );
 
     // Booking ↔ Class associations
     Task<IEnumerable<long>> GetClassIdsForBookingAsync(long bookingId);

@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BookingService } from '../../../../shared/services/booking.service';
 import { ModalService } from '../../../../shared/services/modal.service';
@@ -89,7 +96,9 @@ export class BookingModalComponent implements OnInit, OnDestroy {
           const selectedIds = new Set(this.selectedUsers().map((u) => u.userId));
           this.searchResults.set(results.filter((r) => !selectedIds.has(r.userId)));
           this.showSearchResults.set(this.searchResults().length > 0);
-          this.noSearchResults.set(this.searchResults().length === 0 && this.searchQuery().length >= 2);
+          this.noSearchResults.set(
+            this.searchResults().length === 0 && this.searchQuery().length >= 2,
+          );
           this.isSearching.set(false);
         },
         error: () => this.isSearching.set(false),

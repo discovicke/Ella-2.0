@@ -206,9 +206,9 @@ public class PostgresClassRepo(
         }
     }
 
-    public async Task<IEnumerable<(long UserId, string DisplayName, string Email)>> GetUsersByClassIdsAsync(
-        IEnumerable<long> classIds
-    )
+    public async Task<
+        IEnumerable<(long UserId, string DisplayName, string Email)>
+    > GetUsersByClassIdsAsync(IEnumerable<long> classIds)
     {
         try
         {
@@ -248,7 +248,11 @@ public class PostgresClassRepo(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching class IDs for booking {BookingId}", bookingId);
+            logger.LogError(
+                ex,
+                "Database error while fetching class IDs for booking {BookingId}",
+                bookingId
+            );
             throw;
         }
     }
@@ -280,7 +284,11 @@ public class PostgresClassRepo(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while setting classes for booking {BookingId}", bookingId);
+            logger.LogError(
+                ex,
+                "Database error while setting classes for booking {BookingId}",
+                bookingId
+            );
             throw;
         }
     }

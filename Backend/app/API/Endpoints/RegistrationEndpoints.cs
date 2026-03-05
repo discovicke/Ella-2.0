@@ -435,8 +435,7 @@ public static class RegistrationEndpoints
                     foreach (
                         var s in classIds.Split(
                             ',',
-                            StringSplitOptions.RemoveEmptyEntries
-                                | StringSplitOptions.TrimEntries
+                            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
                         )
                     )
                     {
@@ -478,5 +477,6 @@ public static class RegistrationEndpoints
     }
 
     private record InviteRequest(IEnumerable<long> UserIds);
+
     private record InviteClassRequest(IEnumerable<long> ClassIds);
 }

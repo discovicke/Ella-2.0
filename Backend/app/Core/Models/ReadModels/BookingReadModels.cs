@@ -55,7 +55,8 @@ public record BookingDetailedReadModel
 
     private static string[]? DeserializeJsonArray(string? json)
     {
-        if (string.IsNullOrEmpty(json)) return null;
+        if (string.IsNullOrEmpty(json))
+            return null;
         return JsonSerializer.Deserialize<string[]>(json);
     }
 }

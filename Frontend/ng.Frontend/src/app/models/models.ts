@@ -11,15 +11,15 @@
  */
 
 export enum BookingStatus {
-  Active = "Active",
-  Cancelled = "Cancelled",
-  Expired = "Expired",
-  Pending = "Pending",
+  Active = 'Active',
+  Cancelled = 'Cancelled',
+  Expired = 'Expired',
+  Pending = 'Pending',
 }
 
 export enum BannedStatus {
-  NotBanned = "NotBanned",
-  Banned = "Banned",
+  NotBanned = 'NotBanned',
+  Banned = 'Banned',
 }
 
 export interface AssetTypeResponseDto {

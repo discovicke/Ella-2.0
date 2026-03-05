@@ -17,7 +17,11 @@ public class RegistrationService(
     /// Bulk-invite users to a booking. Only the booking owner should call this.
     /// Skips users who already have a row (invited or registered).
     /// </summary>
-    public async Task<int> InviteUsersAsync(long callerUserId, long bookingId, IEnumerable<long> userIds)
+    public async Task<int> InviteUsersAsync(
+        long callerUserId,
+        long bookingId,
+        IEnumerable<long> userIds
+    )
     {
         var booking =
             await bookingReadModelRepo.GetDetailedBookingByIdAsync(bookingId)
@@ -179,7 +183,11 @@ public class RegistrationService(
     /// Invite all members of the given class(es) to a booking.
     /// Skips users who already have a registration row.
     /// </summary>
-    public async Task<int> InviteClassAsync(long callerUserId, long bookingId, IEnumerable<long> classIds)
+    public async Task<int> InviteClassAsync(
+        long callerUserId,
+        long bookingId,
+        IEnumerable<long> classIds
+    )
     {
         var booking =
             await bookingReadModelRepo.GetDetailedBookingByIdAsync(bookingId)
@@ -206,7 +214,9 @@ public class RegistrationService(
             await bookingReadModelRepo.GetDetailedBookingByIdAsync(bookingId)
             ?? throw new KeyNotFoundException("Booking not found.");
         if (booking.UserId != callerUserId)
-            throw new UnauthorizedAccessException("Only the booking owner can sync class invitations.");
+            throw new UnauthorizedAccessException(
+                "Only the booking owner can sync class invitations."
+            );
         if (booking.Status == BookingStatus.Cancelled)
             throw new InvalidOperationException("Cannot sync invitations for a cancelled booking.");
         if (booking.EndTime < DateTime.UtcNow)
@@ -226,9 +236,9 @@ public class RegistrationService(
     /// Get all members of the given class(es) with their details.
     /// Used by the frontend to preview who will be invited.
     /// </summary>
-    public async Task<IEnumerable<(long UserId, string DisplayName, string Email)>> GetClassMembersAsync(
-        IEnumerable<long> classIds
-    )
+    public async Task<
+        IEnumerable<(long UserId, string DisplayName, string Email)>
+    > GetClassMembersAsync(IEnumerable<long> classIds)
     {
         return await classRepo.GetUsersByClassIdsAsync(classIds);
     }

@@ -192,7 +192,8 @@ public class SqliteClassRepo(
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
             var ids = classIds.ToList();
-            if (ids.Count == 0) return Enumerable.Empty<long>();
+            if (ids.Count == 0)
+                return Enumerable.Empty<long>();
             var paramNames = string.Join(",", ids.Select((_, i) => $"@p{i}"));
             var parameters = new DynamicParameters();
             for (var i = 0; i < ids.Count; i++)
@@ -209,9 +210,9 @@ public class SqliteClassRepo(
         }
     }
 
-    public async Task<IEnumerable<(long UserId, string DisplayName, string Email)>> GetUsersByClassIdsAsync(
-        IEnumerable<long> classIds
-    )
+    public async Task<
+        IEnumerable<(long UserId, string DisplayName, string Email)>
+    > GetUsersByClassIdsAsync(IEnumerable<long> classIds)
     {
         try
         {
@@ -258,7 +259,11 @@ public class SqliteClassRepo(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while fetching class IDs for booking {BookingId}", bookingId);
+            logger.LogError(
+                ex,
+                "Database error while fetching class IDs for booking {BookingId}",
+                bookingId
+            );
             throw;
         }
     }
@@ -290,7 +295,11 @@ public class SqliteClassRepo(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Database error while setting classes for booking {BookingId}", bookingId);
+            logger.LogError(
+                ex,
+                "Database error while setting classes for booking {BookingId}",
+                bookingId
+            );
             throw;
         }
     }

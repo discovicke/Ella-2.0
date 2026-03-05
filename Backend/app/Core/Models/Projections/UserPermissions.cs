@@ -33,7 +33,7 @@ public class UserPermissions
             "ManageBookings" => ManageBookings,
             "ManageCampuses" => ManageCampuses,
             "ManageRoles" => ManageRoles,
-            _ => false
+            _ => false,
         };
     }
 }
