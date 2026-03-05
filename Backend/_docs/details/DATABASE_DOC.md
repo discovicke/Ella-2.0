@@ -2,9 +2,9 @@
 
 > **Source of truth:** [`SqliteSchema.sqlite`](../../app/Infrastructure/Data/SqliteSchema.sqlite) (SQLite) and [`PostgresSchema.sql`](../../app/Infrastructure/Data/PostgresSchema.sql) (PostgreSQL).
 
-<img alt="image" src="../images/ELLA2-permissions-based-managment-v5.png" />
+[View the ELLA2.0 Postgres Design (PDF)](../images/ELLA2.0%20-%20Postgres.pdf)
 
-Link to diagram: [www.drawdb.app](https://www.drawdb.app/editor?shareId=72fdc3d4c7d38eea84083467078929c3)
+Link to diagram: [www.dbdiagram.io](https://dbdiagram.io/d/ELLA2-0-Postgres-69a9a253a3f0aa31e1f2e2a0)
 
 ---
 
