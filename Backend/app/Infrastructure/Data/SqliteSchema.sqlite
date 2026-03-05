@@ -195,9 +195,9 @@ CREATE TABLE IF NOT EXISTS "registrations" (
     "created_at" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY("user_id", "booking_id"),
     FOREIGN KEY ("user_id") REFERENCES "users"("id")
-    ON UPDATE NO ACTION ON DELETE NO ACTION,
+    ON UPDATE NO ACTION ON DELETE CASCADE,
     FOREIGN KEY ("booking_id") REFERENCES "bookings"("id")
-    ON UPDATE NO ACTION ON DELETE NO ACTION
+    ON UPDATE NO ACTION ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_registrations_user_status
@@ -233,11 +233,11 @@ SELECT
     b.updated_at AS updated_at,
     COALESCE(SUM(CASE WHEN reg.status = 1 THEN 1 ELSE 0 END), 0) AS registration_count,
     COALESCE(SUM(CASE WHEN reg.status = 0 THEN 1 ELSE 0 END), 0) AS invitation_count,
-    (SELECT json_group_array(at.description)
+    (SELECT CASE WHEN COUNT(*) > 0 THEN json_group_array(at.description) ELSE NULL END
      FROM room_assets ra
      JOIN asset_types at ON ra.asset_type_id = at.id
      WHERE ra.room_id = b.room_id) AS room_assets,
-    (SELECT json_group_array(cl.class_name)
+    (SELECT CASE WHEN COUNT(*) > 0 THEN json_group_array(cl.class_name) ELSE NULL END
      FROM booking_class bc
      JOIN class cl ON bc.class_id = cl.id
      WHERE bc.booking_id = b.id) AS class_names

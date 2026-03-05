@@ -84,11 +84,9 @@ public class UserPermissions
 
     // Permission Flags
     public bool BookRoom { get; set; }
-    public bool MyBookings { get; set; }
     public bool ManageUsers { get; set; }
     public bool ManageClasses { get; set; }
     public bool ManageRooms { get; set; }
-    public bool ManageAssets { get; set; }
     public bool ManageBookings { get; set; }
     public bool ManageCampuses { get; set; }
     public bool ManageRoles { get; set; }
@@ -101,11 +99,9 @@ public class UserPermissions
         return key switch
         {
             "BookRoom" => BookRoom,
-            "MyBookings" => MyBookings,
             "ManageUsers" => ManageUsers,
             "ManageClasses" => ManageClasses,
             "ManageRooms" => ManageRooms,
-            "ManageAssets" => ManageAssets,
             "ManageBookings" => ManageBookings,
             "ManageCampuses" => ManageCampuses,
             "ManageRoles" => ManageRoles,
@@ -119,14 +115,14 @@ public class UserPermissions
 
 ## 4. Behaviors & Edge Cases
 
-| Action                         | Result                                                                                                            | Reasoning                                                        |
-| :----------------------------- | :---------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------- |
-| **Editing a Role**             | **Global Update.** All users with that role see the change immediately.                                           | Users reference the Role ID; they do not copy the data.          |
-| **Switching Role to "Custom"** | **Snapshot.** The user is detached from the template. Their desired permissions are saved as explicit overrides. | "Custom" implies manual management isolated from global updates. |
-| **Switching "Custom" to Role** | **Reset.** All manual overrides are wiped. The user is linked to the Role and inherits its permissions.           | Ensures a clean state when re-joining a standardized group.      |
-| **Custom User Persistence**    | **Stable Configuration.** A custom user retains their specific set of permissions indefinitely.                   | No automated system changes their access unless an admin intervenes. |
-| **Deleting a Role** | **Safe Block.** The system prevents deletion if any users are assigned to the role. Admin must reassign users first. | Prevents accidental mass-revocation of access (referential integrity + UX safety). |
-| **Login/Auth**                 | **Live Check.** Permissions are checked against the database on every request/login.                              | Security; bans or revocations apply instantly.                   |
+| Action                         | Result                                                                                                               | Reasoning                                                                          |
+| :----------------------------- | :------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------- |
+| **Editing a Role**             | **Global Update.** All users with that role see the change immediately.                                              | Users reference the Role ID; they do not copy the data.                            |
+| **Switching Role to "Custom"** | **Snapshot.** The user is detached from the template. Their desired permissions are saved as explicit overrides.     | "Custom" implies manual management isolated from global updates.                   |
+| **Switching "Custom" to Role** | **Reset.** All manual overrides are wiped. The user is linked to the Role and inherits its permissions.              | Ensures a clean state when re-joining a standardized group.                        |
+| **Custom User Persistence**    | **Stable Configuration.** A custom user retains their specific set of permissions indefinitely.                      | No automated system changes their access unless an admin intervenes.               |
+| **Deleting a Role**            | **Safe Block.** The system prevents deletion if any users are assigned to the role. Admin must reassign users first. | Prevents accidental mass-revocation of access (referential integrity + UX safety). |
+| **Login/Auth**                 | **Live Check.** Permissions are checked against the database on every request/login.                                 | Security; bans or revocations apply instantly.                                     |
 
 ---
 
