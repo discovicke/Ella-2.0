@@ -59,7 +59,6 @@ if (Object.keys(limits).length === 0) {
 const lines = [
   '/**',
   ' * Auto-generated from the OpenAPI spec — DO NOT EDIT manually.',
-  ` * Generated: ${new Date().toISOString().slice(0, 19).replace('T', ' ')}`,
   ' *',
   ' * Source of truth: [MaxLength] attributes on C# DTOs →',
   ' *   Backend/app/Core/Models/DTO/*.cs',
