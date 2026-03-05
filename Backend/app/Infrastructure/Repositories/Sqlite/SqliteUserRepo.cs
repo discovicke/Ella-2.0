@@ -115,8 +115,9 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         }
     }
 
-    public async Task<IEnumerable<(long Id, string DisplayName, string Email)>> SearchUsersLightAsync(
-        string query, int limit, long excludeUserId)
+    public async Task<
+        IEnumerable<(long Id, string DisplayName, string Email)>
+    > SearchUsersLightAsync(string query, int limit, long excludeUserId)
     {
         try
         {
@@ -133,7 +134,14 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
                 LIMIT @Limit;
                 """;
             var rows = await conn.QueryAsync<(long Id, string DisplayName, string Email)>(
-                sql, new { Search = $"%{escaped}%", Limit = limit, ExcludeUserId = excludeUserId });
+                sql,
+                new
+                {
+                    Search = $"%{escaped}%",
+                    Limit = limit,
+                    ExcludeUserId = excludeUserId,
+                }
+            );
             return rows;
         }
         catch (Exception ex)

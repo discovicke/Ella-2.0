@@ -35,7 +35,11 @@
     @if (activeTab() === 'upcoming' && nextBooking(); as next) {
       <section class="hero-section">
         <h2 class="section-label">Nästa bokning</h2>
-        <div class="hero-card" [class.hero-card--attending]="!next.isOwned && !next.isDeclined" [class.hero-card--declined]="next.isDeclined">
+        <div
+          class="hero-card"
+          [class.hero-card--attending]="!next.isOwned && !next.isDeclined"
+          [class.hero-card--declined]="next.isDeclined"
+        >
           <div class="hero-body">
             <div class="hero-top">
               <div class="hero-countdown">
@@ -131,15 +135,26 @@
               <article
                 class="booking-row clickable"
                 [class.cancelled]="booking.status === BookingStatus.Cancelled"
-                [class.attending]="!booking.isOwned && !booking.isDeclined && !booking.isExpiredInvitation && !booking.isInvitation"
+                [class.attending]="
+                  !booking.isOwned &&
+                  !booking.isDeclined &&
+                  !booking.isExpiredInvitation &&
+                  !booking.isInvitation
+                "
                 [class.declined]="booking.isDeclined"
                 [class.expired-invitation]="booking.isExpiredInvitation"
                 [class.invitation]="booking.isInvitation"
                 [class.busy]="booking.isInvitation && isInvitationBusy(booking.bookingId)"
                 (click)="openBookingDetail(booking)"
               >
-                <div class="row-accent"
-                  [class.row-accent--attending]="!booking.isOwned && !booking.isDeclined && !booking.isExpiredInvitation && !booking.isInvitation"
+                <div
+                  class="row-accent"
+                  [class.row-accent--attending]="
+                    !booking.isOwned &&
+                    !booking.isDeclined &&
+                    !booking.isExpiredInvitation &&
+                    !booking.isInvitation
+                  "
                   [class.row-accent--declined]="booking.isDeclined || booking.isExpiredInvitation"
                   [class.row-accent--invitation]="booking.isInvitation"
                 ></div>

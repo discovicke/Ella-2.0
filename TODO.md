@@ -8,7 +8,6 @@
 - [ ] Se över möjligheten för att skapa en kalender med ett library (hitta alternativ och jämför)
   - **MÖTE MED GÄNGET OM DETTA TORSDAG 2026-03-05**
 
-
 #### Priority: MEDIUM
 
 - [ ] Bokningsformuläret behöver ses över och planeras mer
@@ -257,8 +256,8 @@
 - [x] Status: aktiv, cancelled, historik
 - [x] Tidsfilter: upcoming/past
 - [x] Enhetligt API-anrop med `statuses` och `timeFilter` parametrar
-    - [x] Status
-    - [x] Klass
+  - [x] Status
+  - [x] Klass
   - [x] Skapa/Redigera användare
   - [x] Hantera behörigheter (RBAC/Custom)
 

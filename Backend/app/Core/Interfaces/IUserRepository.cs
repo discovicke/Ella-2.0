@@ -27,7 +27,10 @@ public interface IUserRepository
 
     // Lightweight search (for invite autocomplete — no permission gate needed)
     Task<IEnumerable<(long Id, string DisplayName, string Email)>> SearchUsersLightAsync(
-        string query, int limit, long excludeUserId);
+        string query,
+        int limit,
+        long excludeUserId
+    );
 
     // User ↔ Campus associations
     Task<IEnumerable<long>> GetCampusIdsForUserAsync(long userId);

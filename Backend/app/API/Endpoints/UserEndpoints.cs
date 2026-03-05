@@ -29,14 +29,23 @@ public static class UserEndpoints
                 ) =>
                 {
                     if (string.IsNullOrWhiteSpace(q) || q.Trim().Length < 2)
-                        return Results.BadRequest(new { message = "Query must be at least 2 characters." });
+                        return Results.BadRequest(
+                            new { message = "Query must be at least 2 characters." }
+                        );
 
                     if (context.Items["UserId"] is not long userId)
                         return Results.Unauthorized();
 
                     var cap = Math.Clamp(limit ?? 10, 1, 25);
                     var results = await userRepo.SearchUsersLightAsync(q.Trim(), cap, userId);
-                    return Results.Ok(results.Select(u => new { userId = u.Id, displayName = u.DisplayName, email = u.Email }));
+                    return Results.Ok(
+                        results.Select(u => new
+                        {
+                            userId = u.Id,
+                            displayName = u.DisplayName,
+                            email = u.Email,
+                        })
+                    );
                 }
             )
             .WithName("SearchUsersLight")
