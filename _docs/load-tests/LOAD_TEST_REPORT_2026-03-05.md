@@ -35,6 +35,12 @@ Initial load testing of the ELLA Booking API to establish a performance baseline
 
 Tests JWT auth → DB query (Dapper) → JSON serialization of `GroupedPagedResult<BookingDetailedReadModel>`.
 
+### Command
+
+```bash
+wrk -t4 -c100 -d30s -s stress_test.lua http://172.24.48.1:5269/api/bookings
+```
+
 ### Script
 
 ```lua
@@ -83,6 +89,12 @@ end
 **Endpoint:** `POST /api/bookings`
 
 Tests DB locking, transaction handling, and business-logic validation (overlap detection) under concurrent `INSERT` load. Each request generates a unique time slot to avoid 409 conflicts.
+
+### Command
+
+```bash
+wrk -t4 -c100 -d30s -s post_stress_test.lua http://172.24.48.1:5269/api/bookings
+```
 
 ### Script
 
