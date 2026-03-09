@@ -50,9 +50,12 @@ public class PostgresDbInitializer(
 
         // Post-schema migration: ensure new columns exist (for databases created before these were added)
         
-        // 1. Bookings lesson flag
+        // 1. Bookings lesson flag and recurring group id
         await conn.ExecuteAsync(
             "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS is_lesson BOOLEAN NOT NULL DEFAULT FALSE;"
+        );
+        await conn.ExecuteAsync(
+            "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS recurring_group_id UUID;"
         );
 
         // 2. Account activation and password reset columns
@@ -103,13 +106,6 @@ public class PostgresDbInitializer(
             );
             CREATE INDEX IF NOT EXISTS idx_resource_bookings_time ON resource_bookings(start_time, end_time);
             CREATE INDEX IF NOT EXISTS idx_resource_bookings_resource ON resource_bookings(resource_id);
-        ");
-
-        // 5. Ensure manageResources permission exists
-        await conn.ExecuteAsync(@"
-            INSERT INTO system_permissions (key, description)
-            VALUES ('manageResources', 'Manage and book movable resources like vehicles')
-            ON CONFLICT (key) DO NOTHING;
         ");
 
         logger.LogInformation("Schema applied.");

@@ -65,6 +65,8 @@ export interface BookingDetailedReadModel {
   status?: BookingStatus;
   notes?: string | null;
   bookerName?: string | null;
+  /** @format uuid */
+  recurringGroupId?: string | null;
   /** @format date-time */
   createdAt?: string;
   /** @format date-time */
@@ -138,6 +140,13 @@ export interface CreateBookingDto {
   classIds?: number[] | null;
   /** @default null */
   bookerName?: string | null;
+  /** @default null */
+  recurrencePattern?: string | null;
+  /**
+   * @format date-time
+   * @default null
+   */
+  recurrenceEnd?: string | null;
 }
 
 export interface CreateBookingSlugDto {

@@ -255,6 +255,7 @@ CREATE TABLE IF NOT EXISTS bookings
     is_lesson  BOOLEAN        NOT NULL DEFAULT FALSE,
     notes      TEXT,
     booker_name TEXT,
+    recurring_group_id UUID,
     created_at TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ,
 

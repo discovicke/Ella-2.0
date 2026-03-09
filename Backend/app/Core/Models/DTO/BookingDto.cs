@@ -12,7 +12,9 @@ public record CreateBookingDto(
     BookingStatus Status,
     bool IsLesson = false,
     long[]? ClassIds = null,
-    string? BookerName = null
+    string? BookerName = null,
+    string? RecurrencePattern = null, // "daily", "weekly", "biweekly"
+    DateTime? RecurrenceEnd = null
 );
 
 public record CreatePublicBookingDto(
