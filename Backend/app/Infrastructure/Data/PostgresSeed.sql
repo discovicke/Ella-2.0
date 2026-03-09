@@ -28,7 +28,8 @@ VALUES ('BookRoom', 'Can book rooms'),
        ('ManageRooms', 'Can manage rooms'),
        ('ManageBookings', 'Can manage all bookings'),
        ('ManageCampuses', 'Can manage campuses'),
-       ('ManageRoles', 'Can manage roles/permissions');
+       ('ManageRoles', 'Can manage roles/permissions'),
+       ('ManageResources', 'Manage and book movable resources like vehicles');
 
 
 -- -------------------------------------------------------------

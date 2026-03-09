@@ -8,5 +8,6 @@ public record UpdatePermissionDto(
     bool ManageRooms,
     bool ManageBookings,
     bool ManageCampuses,
-    bool ManageRoles
+    bool ManageRoles,
+    bool ManageResources
 );
