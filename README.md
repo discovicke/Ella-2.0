@@ -39,7 +39,7 @@ Se [USAGE.md](./_docs/usage.md) för en detaljerad genomgång av systemets funkt
 ## Databasschema
 
 <!-- dbdocs-link:start -->
-> Schema diagram not yet published. Run `dbdocs login` then `npm start` to auto-publish.
+> Schema diagram is auto-published via GitHub Actions when schema changes are pushed to main.
 <!-- dbdocs-link:end -->
 
 ## Databasmigrering

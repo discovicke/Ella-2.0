@@ -3,7 +3,7 @@
 > **Source of truth:** [`SqliteSchema.sqlite`](../../app/Infrastructure/Data/SqliteSchema.sqlite) (SQLite) and [`PostgresSchema.sql`](../../app/Infrastructure/Data/PostgresSchema.sql) (PostgreSQL).
 
 <!-- dbdocs-link:start -->
-> Schema diagram not yet published. Run `dbdocs login` then `npm start` to auto-publish.
+> Schema diagram is auto-published via GitHub Actions when schema changes are pushed to main.
 <!-- dbdocs-link:end -->
 
 ---
