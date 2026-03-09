@@ -63,11 +63,13 @@ public class PostgresDbInitializer(
 
         var schemaSql = await File.ReadAllTextAsync(schemaPath);
 
-        // Simple migration: ensure is_lesson exists before running the full schema (which might update views)
-        await conn.ExecuteAsync("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS is_lesson BOOLEAN NOT NULL DEFAULT FALSE;");
-
-        // Apply schema
+        // Apply schema (creates tables if they don't exist)
         await conn.ExecuteAsync(schemaSql);
+
+        // Post-schema migration: ensure is_lesson exists (for databases created before this column was added)
+        await conn.ExecuteAsync(
+            "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS is_lesson BOOLEAN NOT NULL DEFAULT FALSE;"
+        );
 
         logger.LogInformation("Schema applied.");
     }
