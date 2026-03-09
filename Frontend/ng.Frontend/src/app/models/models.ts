@@ -164,6 +164,10 @@ export interface CreateUserDto {
   password: string;
 }
 
+export interface ForgotPasswordDto {
+  email: string;
+}
+
 export interface GroupedPagedResultOfBookingDetailedReadModel {
   items: BookingDetailedReadModel[];
   /** @format int32 */
@@ -243,6 +247,12 @@ export interface RegisterDto {
   password: string;
   /** @maxLength 100 */
   displayName?: string | null;
+}
+
+export interface ResetPasswordDto {
+  email: string;
+  token: string;
+  newPassword: string;
 }
 
 export interface RoomDetailModel {
