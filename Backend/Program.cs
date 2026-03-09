@@ -287,7 +287,7 @@ static void ConfigureCoreServices(IServiceCollection services)
     services.AddScoped<PermissionTemplateService>();
     services.AddScoped<CampusService>();
     services.AddScoped<ClassService>();
-    services.AddScoped<IParser<StudentImportDto>, ExcelContactsCsvParser>();
+    services.AddScoped<UserImportService>();
 }
 
 static void ConfigureRateLimiting(IServiceCollection services)
