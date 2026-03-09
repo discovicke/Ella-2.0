@@ -74,10 +74,10 @@ public class UserImportService(
                 
                 await userRepository.SetClassesForUserAsync(createdUser.Id, new[] { classId });
                 
-                if (!string.IsNullOrWhiteSpace(student.City))
+                if (!string.IsNullOrWhiteSpace(student.CampusName))
                 {
                     var matchedCampus = campuses.FirstOrDefault(c => 
-                        string.Equals(c.City, student.City.Trim(), StringComparison.OrdinalIgnoreCase));
+                        string.Equals(c.City, student.CampusName.Trim(), StringComparison.OrdinalIgnoreCase));
                     
                     if (matchedCampus != null)
                     {
