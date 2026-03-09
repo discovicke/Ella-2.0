@@ -11,11 +11,9 @@ INSERT INTO system_permissions
     (key, description)
 VALUES
     ('BookRoom', 'Can book rooms'),
-    ('MyBookings', 'Can view own bookings'),
     ('ManageUsers', 'Can manage users'),
     ('ManageClasses', 'Can manage classes'),
     ('ManageRooms', 'Can manage rooms'),
-    ('ManageAssets', 'Can manage assets'),
     ('ManageBookings', 'Can manage all bookings'),
     ('ManageCampuses', 'Can manage campuses'),
     ('ManageRoles', 'Can manage roles/permissions');
@@ -30,21 +28,17 @@ VALUES
     (3, 'admin', 'Admin', 'orange', 2);
 
 -- 3. Permission Flags
--- Student (1): BookRoom, MyBookings
+-- Student (1): BookRoom
 INSERT INTO permission_template_flags
     (template_id, permission_key, value)
 VALUES
-    (1, 'BookRoom', 1),
-    (1, 'MyBookings', 1);
+    (1, 'BookRoom', 1);
 
--- Educator (2): Basic + ManageClasses, ManageBookings
+-- Educator (2): BookRoom
 INSERT INTO permission_template_flags
     (template_id, permission_key, value)
 VALUES
-    (2, 'BookRoom', 1),
-    (2, 'MyBookings', 1),
-    (2, 'ManageClasses', 1),
-    (2, 'ManageBookings', 1);
+    (2, 'BookRoom', 1);
 
 -- Admin (3): All
 INSERT INTO permission_template_flags
@@ -408,75 +402,131 @@ VALUES
     (420, 20, 74, '2026-03-12 09:00:00', '2026-03-12 16:00:00', 0, 'Kodmaraton: Game jam'),
     (421, 21, 75, '2026-03-13 13:00:00', '2026-03-13 16:00:00', 1, 'AVBOKAT: Tågförsenad');
 
--- 11. Registrations
-INSERT INTO registrations
-    (booking_id, user_id)
+-- ═══════════════════════════════════════════════════════════════
+-- 11. CONFIRMED REGISTRATIONS (status: 1 = Registered)
+--     Users who have accepted / RSVP'd to someone else's booking.
+-- ═══════════════════════════════════════════════════════════════
+INSERT INTO registrations (booking_id, user_id, status)
 VALUES
-    (300, 50),
-    (302, 50),
-    (300, 10),
-    (300, 11),
-    (300, 12),
-    (302, 20),
-    (302, 21),
-    (302, 22),
-    (302, 23),
-    (110, 50),
-    (110, 10),
-    (110, 11),
-    (110, 20),
-    (304, 10),
-    (304, 11),
-    (304, 12),
-    (304, 66),
-    (304, 67),
-    (305, 13),
-    (305, 14),
-    (305, 15),
-    (306, 10),
-    (306, 11),
-    (306, 12),
-    (306, 13),
-    (306, 14),
-    (306, 15),
-    (306, 66),
-    (306, 67),
-    (306, 68),
-    (306, 69),
-    (308, 20),
-    (308, 21),
-    (308, 70),
-    (308, 71),
-    (309, 22),
-    (309, 23),
-    (309, 72),
-    (309, 73),
-    (311, 30),
-    (311, 31),
-    (311, 74),
-    (313, 32),
-    (313, 75),
-    (313, 76),
-    (314, 60),
-    (314, 61),
-    (314, 62),
-    (315, 63),
-    (315, 64),
-    (315, 65),
-    (316, 60),
-    (316, 61),
-    (316, 62),
-    (316, 63),
-    (316, 64),
-    (316, 65),
-    (317, 20),
-    (317, 21),
-    (317, 22),
-    (317, 23),
-    (317, 70),
-    (317, 71),
-    (420, 74),
-    (420, 75),
-    (420, 76),
-    (420, 77),
-    (420, 78);
+    -- Educators & admins cross-attending (past — visible in Historik)
+    (300, 1,  1),   -- Admin      → Sven's C# lecture (Feb 20)
+    (303, 1,  1),   -- Admin      → Anders' open house (Feb 28)
+    (301, 3,  1),   -- Sven       → Karin's Gävle Tech Night (Feb 21)
+    (303, 3,  1),   -- Sven       → Anders' open house (Feb 28)
+    (300, 4,  1),   -- Karin      → Sven's C# lecture (Feb 20)
+    (302, 5,  1),   -- Anders     → Karin's UX Workshop (Feb 24)
+    (303, 80, 1),   -- Marie      → Anders' open house (Feb 28)
+    (314, 5,  1),   -- Anders     → Marie's Systemdesign (Mar 2)
+
+    -- Educators & admins cross-attending (upcoming — visible in Kommande)
+    (308, 3,  1),   -- Sven       → Karin's Figma dag 1 (Mar 4)
+    (311, 80, 1),   -- Marie      → Anders' AI lecture (Mar 12)
+    (313, 81, 1),   -- Thomas     → Anders' Hackathon (Mar 25)
+
+    -- Students at educator/admin events (past)
+    (300, 50, 1), (300, 10, 1), (300, 11, 1), (300, 12, 1),
+    (302, 50, 1), (302, 20, 1), (302, 21, 1), (302, 22, 1), (302, 23, 1),
+    (110, 50, 1), (110, 10, 1), (110, 11, 1), (110, 20, 1),
+
+    -- Students at educator events (upcoming)
+    (304, 10, 1), (304, 11, 1), (304, 12, 1), (304, 66, 1), (304, 67, 1),
+    (305, 13, 1), (305, 14, 1), (305, 15, 1),
+    (306, 10, 1), (306, 11, 1), (306, 12, 1), (306, 13, 1),
+    (306, 14, 1), (306, 15, 1), (306, 66, 1), (306, 67, 1),
+    (306, 68, 1), (306, 69, 1),
+    (308, 20, 1), (308, 21, 1), (308, 70, 1), (308, 71, 1),
+    (309, 22, 1), (309, 23, 1), (309, 72, 1), (309, 73, 1),
+    (311, 30, 1), (311, 31, 1), (311, 74, 1),
+    (313, 32, 1), (313, 75, 1), (313, 76, 1),
+    (314, 60, 1), (314, 61, 1), (314, 62, 1),
+    (315, 63, 1), (315, 64, 1), (315, 65, 1),
+    (316, 60, 1), (316, 61, 1), (316, 62, 1),
+    (316, 63, 1), (316, 64, 1), (316, 65, 1),
+    (317, 20, 1), (317, 21, 1), (317, 22, 1),
+    (317, 23, 1), (317, 70, 1), (317, 71, 1),
+    (420, 74, 1), (420, 75, 1), (420, 76, 1),
+    (420, 77, 1), (420, 78, 1),
+
+    -- Additional student cross-registrations (upcoming)
+    (310, 12, 1),   -- Marcus  → Karin's Prototyp-labb (Mar 11)
+    (318, 22, 1),   -- Anna    → Thomas' Studiebesök (Mar 14)
+    (312, 31, 1);   -- Elena   → Anders' Python lab (Mar 18)
+
+
+-- ═══════════════════════════════════════════════════════════════
+-- 12. PENDING INVITATIONS (status: 0 = Invited)
+--     Each key test user gets 1–3 upcoming invitations so the
+--     invitation banner is visible when logging in as any role.
+-- ═══════════════════════════════════════════════════════════════
+INSERT INTO registrations (booking_id, user_id, status)
+VALUES
+    -- Admin Testberg (1) — admin
+    (308, 1,  0),   -- Figma workshop Mar 4 (Karin)
+    (318, 1,  0),   -- Studiebesök Sandvik Mar 14 (Thomas)
+
+    -- Sven Svensson (3) — educator
+    (111, 3,  0),   -- Campus-turné Sundsvall Mar 5 (Admin)
+    (317, 3,  0),   -- Användbarhetstestning Mar 7 (Thomas)
+
+    -- Karin Karlsson (4) — educator
+    (311, 4,  0),   -- AI i utbildning Mar 12 (Anders)
+    (315, 4,  0),   -- Docker & Kubernetes Mar 9 (Marie)
+
+    -- Anders Andersson (5) — educator
+    (310, 5,  0),   -- Prototyp-labb Mar 11 (Karin)
+    (116, 5,  0),   -- Brandövning Mar 13 (Admin)
+
+    -- Elev Testlund (50) — student
+    (305, 50, 0),   -- Kodgenomgång Mar 6 (Sven)
+    (306, 50, 0),   -- Tentamen Mar 10 (Sven)
+    (315, 50, 0),   -- Docker & Kubernetes Mar 9 (Marie)
+
+    -- André Pontén (10) — student
+    (308, 10, 0),   -- Figma dag 1 Mar 4 (Karin)
+    (311, 10, 0),   -- AI i utbildning Mar 12 (Anders)
+    (315, 10, 0),   -- Docker & Kubernetes Mar 9 (Marie)
+
+    -- Christian Gennari (11) — student
+    (305, 11, 0),   -- Kodgenomgång Mar 6 (Sven)
+    (317, 11, 0),   -- Användbarhetstestning Mar 7 (Thomas)
+
+    -- Marcus Lööv (12) — student
+    (312, 12, 0),   -- Python maskinlärning Mar 18 (Anders)
+
+    -- Linda Berg (20) — student
+    (311, 20, 0),   -- AI i utbildning Mar 12 (Anders)
+    (313, 20, 0),   -- Hackathon Mar 25 (Anders)
+
+    -- Johan Kvist (30) — student
+    (312, 30, 0),   -- Python maskinlärning Mar 18 (Anders)
+    (313, 30, 0),   -- Hackathon Mar 25 (Anders)
+
+    -- Lisa Franzén (60) — student
+    (315, 60, 0),   -- Docker & Kubernetes Mar 9 (Marie)
+    (317, 60, 0),   -- Användbarhetstestning Mar 7 (Thomas)
+
+    -- Marie Wallin (80) — educator
+    (111, 80, 0),   -- Campus-turné Sundsvall Mar 5 (Admin)
+    (309, 80, 0),   -- Figma dag 2 Mar 5 (Karin)
+
+    -- Thomas Berggren (81) — educator
+    (112, 81, 0),   -- Campus-turné Gävle Mar 6 (Admin)
+    (315, 81, 0);   -- Docker & Kubernetes Mar 9 (Marie)
+
+
+-- ═══════════════════════════════════════════════════════════════
+-- 13. DECLINED INVITATIONS (status: 2 = Declined)
+--     Users who were invited but chose to decline.
+-- ═══════════════════════════════════════════════════════════════
+INSERT INTO registrations (booking_id, user_id, status)
+VALUES
+    -- Past declined (visible in Historik as read-only)
+    (301, 1,  2),   -- Admin      declined Karin's Gävle Tech Night (Feb 21)
+    (302, 3,  2),   -- Sven       declined Karin's UX Workshop (Feb 24)
+    (300, 5,  2),   -- Anders     declined Sven's C# lecture (Feb 20)
+    (303, 4,  2),   -- Karin      declined Anders' open house (Feb 28)
+
+    -- Upcoming declined (visible in Kommande as declined)
+    (304, 50, 2),   -- Elev Testlund declined Sven's upcoming (Mar 3)
+    (311, 11, 2),   -- Christian   declined Anders' AI (Mar 12)
+    (313, 10, 2);   -- André      declined Anders' Hackathon (Mar 25)

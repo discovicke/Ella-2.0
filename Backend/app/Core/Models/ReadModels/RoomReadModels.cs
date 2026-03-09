@@ -1,4 +1,4 @@
-using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Backend.app.Core.Models.Enums;
 
@@ -27,5 +27,5 @@ public record RoomDetailModel(
     public List<string>? Assets =>
         string.IsNullOrEmpty(AssetsString)
             ? null
-            : AssetsString.Split("|||", StringSplitOptions.RemoveEmptyEntries).ToList();
+            : JsonSerializer.Deserialize<List<string>>(AssetsString);
 }

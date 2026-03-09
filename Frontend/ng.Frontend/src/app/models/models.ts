@@ -71,7 +71,11 @@ export interface BookingDetailedReadModel {
   updatedAt?: string | null;
   /** @format int32 */
   registrationCount?: number;
-  roomAssets?: string | null;
+  /** @format int32 */
+  invitationCount?: number;
+  roomAssets?: string[] | null;
+  userRegistrationStatus?: string | null;
+  classNames?: string[] | null;
 }
 
 export interface CampusResponseDto {
@@ -114,6 +118,8 @@ export interface CreateBookingDto {
    * @default null
    */
   bookerName?: string | null;
+  /** @default null */
+  classIds?: number[] | null;
 }
 
 export interface CreateCampusDto {
@@ -182,6 +188,14 @@ export interface GroupedPagedResultOfBookingDetailedReadModel {
   page: number;
   /** @format int32 */
   groupsPerPage: number;
+}
+
+export interface InviteClassRequest {
+  classIds: number[];
+}
+
+export interface InviteRequest {
+  userIds: number[];
 }
 
 export interface LoginDto {
@@ -299,11 +313,9 @@ export interface UpdatePermissionDto {
   /** @format int64 */
   templateId: number | null;
   bookRoom: boolean;
-  myBookings: boolean;
   manageUsers: boolean;
   manageClasses: boolean;
   manageRooms: boolean;
-  manageAssets: boolean;
   manageBookings: boolean;
   manageCampuses: boolean;
   manageRoles: boolean;
@@ -343,11 +355,9 @@ export type UserPermissions = {
   /** @format int64 */
   permissionTemplateId?: number | null;
   bookRoom?: boolean;
-  myBookings?: boolean;
   manageUsers?: boolean;
   manageClasses?: boolean;
   manageRooms?: boolean;
-  manageAssets?: boolean;
   manageBookings?: boolean;
   manageCampuses?: boolean;
   manageRoles?: boolean;
@@ -359,11 +369,9 @@ export interface UserPermissions2 {
   /** @format int64 */
   permissionTemplateId?: number | null;
   bookRoom?: boolean;
-  myBookings?: boolean;
   manageUsers?: boolean;
   manageClasses?: boolean;
   manageRooms?: boolean;
-  manageAssets?: boolean;
   manageBookings?: boolean;
   manageCampuses?: boolean;
   manageRoles?: boolean;

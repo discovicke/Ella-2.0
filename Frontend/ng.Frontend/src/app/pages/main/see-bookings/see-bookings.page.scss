@@ -355,6 +355,163 @@
 }
 
 // ============================================================================
+// INLINE INVITATION ACTIONS (inside booking rows)
+// ============================================================================
+.row-inv-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
+
+  @include breakpoint-down('sm') {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+.inv-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 16px;
+  border-radius: 7px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &--accept {
+    background: var(--color-success-surface);
+    color: var(--color-success-hover);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+
+    &:hover:not(:disabled) {
+      background: var(--color-success);
+      color: white;
+    }
+  }
+
+  &--decline {
+    background: var(--color-bg-panel);
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+
+    &:hover:not(:disabled) {
+      background: var(--color-danger-surface);
+      color: var(--color-danger-hover);
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+  }
+}
+
+// Invitation row — highlighted border
+.booking-row.invitation {
+  border-color: rgba(16, 185, 129, 0.25);
+
+  &:hover {
+    border-color: rgba(16, 185, 129, 0.4);
+  }
+
+  &.busy {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+// ============================================================================
+// ORIGIN TAG (own vs invited)
+// ============================================================================
+.origin-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &--attending {
+    background: rgba(59, 130, 246, 0.1);
+    color: rgb(59, 130, 246);
+    border: 1px solid rgba(59, 130, 246, 0.15);
+  }
+
+  &--declined {
+    background: rgba(220, 38, 38, 0.08);
+    color: rgb(220, 38, 38);
+    border: 1px solid rgba(220, 38, 38, 0.15);
+  }
+
+  &--muted {
+    background: rgba(156, 163, 175, 0.1);
+    color: var(--color-text-muted, #6b7280);
+    border: 1px solid rgba(156, 163, 175, 0.2);
+  }
+
+  &--invitation {
+    background: rgba(16, 185, 129, 0.1);
+    color: rgb(16, 185, 129);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+}
+
+// Hero card variant for attending
+.hero-card--attending {
+  background: linear-gradient(135deg, rgb(37, 99, 235) 0%, rgb(29, 78, 216) 100%);
+  box-shadow:
+    var(--shadow-lg),
+    0 4px 20px rgba(37, 99, 235, 0.2);
+
+  .origin-tag--attending {
+    background: rgba(255, 255, 255, 0.18);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+}
+
+// Hero card variant for declined
+.hero-card--declined {
+  opacity: 0.75;
+}
+
+// Row inviter text
+.row-inviter {
+  font-style: italic;
+  color: rgb(59, 130, 246);
+}
+
+// Attending row slight tint
+.booking-row.attending {
+  .row-date-day {
+    color: rgb(59, 130, 246);
+  }
+}
+
+// Declined row — slightly muted
+.booking-row.declined,
+.booking-row.expired-invitation {
+  opacity: 0.7;
+
+  .row-date-day {
+    color: var(--color-text-muted, #9ca3af);
+  }
+}
+
+// ============================================================================
 // BOOKINGS LIST
 // ============================================================================
 .bookings-list {
@@ -469,6 +626,18 @@
   .booking-row:hover & {
     width: 5px;
   }
+
+  &--attending {
+    background: rgb(59, 130, 246);
+  }
+
+  &--declined {
+    background: var(--color-text-muted, #9ca3af);
+  }
+
+  &--invitation {
+    background: rgb(16, 185, 129);
+  }
 }
 
 // Date badge
@@ -560,6 +729,28 @@
   border-radius: 50%;
   background: var(--color-text-muted);
   flex-shrink: 0;
+}
+
+// Class chips
+.row-classes {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.class-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: var(--color-primary-surface);
+  color: var(--color-primary-on-surface);
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 // Notes pill

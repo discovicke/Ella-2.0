@@ -4,11 +4,12 @@ Welcome to the core documentation for the project. This document serves as the "
 
 ## 📌 Table of Contents
 
-1. **[System Overview](/Backend/_docs/details/DATA_FLOW_GUIDE.md)** - High-level data flow and layering.
-2. **[Data Modeling & Repo Ops](/Backend/_docs/details/MODELS_AND_QUERIES_GUIDE.md)** - Understanding Entities, DTOs, and Read Models. Contains an in depth chapter on how to use and implement Read Model Repositories
-3. **[Database Schema](/Backend/_docs/details/DATABASE_DOC.md)** - Storage rules and SQLite specifics.
-4. **[Validation Strategy](/Backend/_docs/details/VALIDATION_GUIDE.md)** - Our "Fail-Fast" approach.
-5. **[Permission System](/Backend/_docs/details/PERMISSION_SYSTEM_GUIDE.md)** - Templates, Overrides, and logic.
+1. **[System Overview](./details/DATA_FLOW_GUIDE.md)** - High-level data flow and layering.
+2. **[Data Modeling & Repo Ops](./details/MODELS_AND_QUERIES_GUIDE.md)** - Understanding Entities, DTOs, and Read Models. Contains an in depth chapter on how to use and implement Read Model Repositories
+3. **[Database Schema](./details/DATABASE_DOC.md)** - Storage rules and SQLite specifics.
+4. **[Validation Strategy](./details/VALIDATION_GUIDE.md)** - Our "Fail-Fast" approach.
+5. **[Permission System](./details/PERMISSION_SYSTEM_GUIDE.md)** - Templates, Overrides, and logic.
+6. **[Input Length Validation](./details/INPUT_LENGTH_VALIDATION.md)** - MaxLength enforcement pipeline.
 
 ## Future Improvements / Backlog
 
@@ -19,7 +20,7 @@ Welcome to the core documentation for the project. This document serves as the "
 We follow a strict layered architecture to ensure separation of concerns. Data moves from the Frontend through the API and Service layers before hitting the Database.
 
 - **Key Concept:** Data is transformed at each layer to protect internal structures and optimize for the client.
-- **Documentation:** See **[DATA_FLOW_GUIDE.md](/_docs/details/DATA_FLOW_GUIDE.md)** for detailed diagrams and step-by-step examples of a request lifecycle.
+- **Documentation:** See **[DATA_FLOW_GUIDE.md](./details/DATA_FLOW_GUIDE.md)** for detailed diagrams and step-by-step examples of a request lifecycle.
 
 ## 2. Data Modeling
 
@@ -41,7 +42,7 @@ The project supports **SQLite** and **PostgreSQL** (selected during setup). SQL 
 
 - **Auth:** Users have permission templates and stateless JWT session revocation.
 - **Dates:** Stored as ISO-8601 strings in SQLite (`"YYYY-MM-DD HH:MM:SS"`) and as native `TIMESTAMPTZ` in PostgreSQL.
-- **Schema:** Full SQL definitions for `users`, `rooms`, `bookings`, and `assets` can be found in **[DATABASE_DOC.md](/_docs/details/DATABASE_DOC.md)**.
+- **Schema:** Full SQL definitions for `users`, `rooms`, `bookings`, `registrations`, and `assets` can be found in **[DATABASE_DOC.md](./details/DATABASE_DOC.md)**.
 
 ## 4. Validation Strategy
 
@@ -58,4 +59,4 @@ To keep the codebase clean, we separate standard CRUD from complex queries:
 
 - **Standard Repositories:** Handle simple state changes (Insert/Update/Delete) using Entities.
 - **Read Model Repositories:** Optimized for UI display. They use **Dapper** to run complex joins and return specialized "Read Models".
-- **Implementation Guide:** See **[MODELS_AND_QUERIES_GUIDE.md](/_docs/details/MODELS_AND_QUERIES_GUIDE.md)** for choosing the right model and implementation.
+- **Implementation Guide:** See **[MODELS_AND_QUERIES_GUIDE.md](./details/MODELS_AND_QUERIES_GUIDE.md)** for choosing the right model and implementation.

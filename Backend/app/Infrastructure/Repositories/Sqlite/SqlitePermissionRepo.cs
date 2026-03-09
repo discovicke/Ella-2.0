@@ -52,9 +52,6 @@ public class SqlitePermissionRepo(
                     case "BookRoom":
                         permissions.BookRoom = val;
                         break;
-                    case "MyBookings":
-                        permissions.MyBookings = val;
-                        break;
                     case "ManageUsers":
                         permissions.ManageUsers = val;
                         break;
@@ -63,9 +60,6 @@ public class SqlitePermissionRepo(
                         break;
                     case "ManageRooms":
                         permissions.ManageRooms = val;
-                        break;
-                    case "ManageAssets":
-                        permissions.ManageAssets = val;
                         break;
                     case "ManageBookings":
                         permissions.ManageBookings = val;
@@ -131,9 +125,6 @@ public class SqlitePermissionRepo(
                     case "BookRoom":
                         perms.BookRoom = val;
                         break;
-                    case "MyBookings":
-                        perms.MyBookings = val;
-                        break;
                     case "ManageUsers":
                         perms.ManageUsers = val;
                         break;
@@ -142,9 +133,6 @@ public class SqlitePermissionRepo(
                         break;
                     case "ManageRooms":
                         perms.ManageRooms = val;
-                        break;
-                    case "ManageAssets":
-                        perms.ManageAssets = val;
                         break;
                     case "ManageBookings":
                         perms.ManageBookings = val;
@@ -340,9 +328,6 @@ public class SqlitePermissionRepo(
                     case "BookRoom":
                         permissions.BookRoom = val;
                         break;
-                    case "MyBookings":
-                        permissions.MyBookings = val;
-                        break;
                     case "ManageUsers":
                         permissions.ManageUsers = val;
                         break;
@@ -351,9 +336,6 @@ public class SqlitePermissionRepo(
                         break;
                     case "ManageRooms":
                         permissions.ManageRooms = val;
-                        break;
-                    case "ManageAssets":
-                        permissions.ManageAssets = val;
                         break;
                     case "ManageBookings":
                         permissions.ManageBookings = val;

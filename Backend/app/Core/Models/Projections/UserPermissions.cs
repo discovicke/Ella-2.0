@@ -12,11 +12,9 @@ public class UserPermissions
 
     // Permission Flags
     public bool BookRoom { get; set; }
-    public bool MyBookings { get; set; }
     public bool ManageUsers { get; set; }
     public bool ManageClasses { get; set; }
     public bool ManageRooms { get; set; }
-    public bool ManageAssets { get; set; }
     public bool ManageBookings { get; set; }
     public bool ManageCampuses { get; set; }
     public bool ManageRoles { get; set; }
@@ -29,15 +27,13 @@ public class UserPermissions
         return key switch
         {
             "BookRoom" => BookRoom,
-            "MyBookings" => MyBookings,
             "ManageUsers" => ManageUsers,
             "ManageClasses" => ManageClasses,
             "ManageRooms" => ManageRooms,
-            "ManageAssets" => ManageAssets,
             "ManageBookings" => ManageBookings,
             "ManageCampuses" => ManageCampuses,
             "ManageRoles" => ManageRoles,
-            _ => false
+            _ => false,
         };
     }
 }

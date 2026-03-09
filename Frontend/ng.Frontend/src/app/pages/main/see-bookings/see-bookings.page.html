@@ -35,13 +35,22 @@
     @if (activeTab() === 'upcoming' && nextBooking(); as next) {
       <section class="hero-section">
         <h2 class="section-label">Nästa bokning</h2>
-        <div class="hero-card">
+        <div
+          class="hero-card"
+          [class.hero-card--attending]="!next.isOwned && !next.isDeclined"
+          [class.hero-card--declined]="next.isDeclined"
+        >
           <div class="hero-body">
             <div class="hero-top">
               <div class="hero-countdown">
                 <span class="countdown-dot"></span>
                 {{ getCountdownLabel(next) }}
               </div>
+              @if (next.isDeclined) {
+                <span class="origin-tag origin-tag--declined">Avböjd</span>
+              } @else if (!next.isOwned) {
+                <span class="origin-tag origin-tag--attending">Inbjuden</span>
+              }
             </div>
 
             <h3 class="hero-room">{{ next.roomName ?? 'Okänt rum' }}</h3>
@@ -68,25 +77,33 @@
                   <span class="hero-detail-value">{{ next.notes }}</span>
                 </div>
               }
+              @if (next.inviterName) {
+                <div class="hero-detail">
+                  <span class="hero-detail-label">Inbjuden av</span>
+                  <span class="hero-detail-value">{{ next.inviterName }}</span>
+                </div>
+              }
             </div>
 
-            @if (parseAssets(next.roomAssets).length > 0) {
+            @if (next.roomAssets?.length) {
               <div class="hero-assets">
-                @for (asset of parseAssets(next.roomAssets); track asset) {
+                @for (asset of next.roomAssets!; track asset) {
                   <span class="asset-chip">{{ asset }}</span>
                 }
               </div>
             }
 
             <div class="hero-actions">
-              <button class="hero-btn hero-btn--cancel" (click)="onCancelBooking(next, $event)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="15" y1="9" x2="9" y2="15" />
-                  <line x1="9" y1="9" x2="15" y2="15" />
-                </svg>
-                Avboka
-              </button>
+              @if (next.isOwned) {
+                <button class="hero-btn hero-btn--cancel" (click)="onCancelBooking(next, $event)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="15" y1="9" x2="9" y2="15" />
+                    <line x1="9" y1="9" x2="15" y2="15" />
+                  </svg>
+                  Avboka
+                </button>
+              }
             </div>
           </div>
 
@@ -118,9 +135,29 @@
               <article
                 class="booking-row clickable"
                 [class.cancelled]="booking.status === BookingStatus.Cancelled"
+                [class.attending]="
+                  !booking.isOwned &&
+                  !booking.isDeclined &&
+                  !booking.isExpiredInvitation &&
+                  !booking.isInvitation
+                "
+                [class.declined]="booking.isDeclined"
+                [class.expired-invitation]="booking.isExpiredInvitation"
+                [class.invitation]="booking.isInvitation"
+                [class.busy]="booking.isInvitation && isInvitationBusy(booking.bookingId)"
                 (click)="openBookingDetail(booking)"
               >
-                <div class="row-accent"></div>
+                <div
+                  class="row-accent"
+                  [class.row-accent--attending]="
+                    !booking.isOwned &&
+                    !booking.isDeclined &&
+                    !booking.isExpiredInvitation &&
+                    !booking.isInvitation
+                  "
+                  [class.row-accent--declined]="booking.isDeclined || booking.isExpiredInvitation"
+                  [class.row-accent--invitation]="booking.isInvitation"
+                ></div>
 
                 <!-- Date badge -->
                 <div class="row-date">
@@ -134,9 +171,20 @@
                 <div class="row-main">
                   <div class="row-top">
                     <h3 class="row-room">{{ booking.roomName ?? '—' }}</h3>
-                    <span class="status-badge" [attr.data-status]="booking.status">
-                      {{ statusLabel(booking.status) }}
-                    </span>
+                    @if (booking.isDeclined) {
+                      <span class="origin-tag origin-tag--declined">Avböjd</span>
+                    } @else if (booking.isExpiredInvitation) {
+                      <span class="origin-tag origin-tag--muted">Ej svarad</span>
+                    } @else if (booking.isInvitation) {
+                      <span class="origin-tag origin-tag--invitation">Ny inbjudan</span>
+                    } @else if (!booking.isOwned) {
+                      <span class="origin-tag origin-tag--attending">Inbjuden</span>
+                    }
+                    @if (statusLabel(booking.status)) {
+                      <span class="status-badge" [attr.data-status]="booking.status">
+                        {{ statusLabel(booking.status) }}
+                      </span>
+                    }
                   </div>
                   <div class="row-sub">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -149,16 +197,56 @@
                     >
                     <span class="sub-dot"></span>
                     <span>{{ booking.startTime | date: 'EEEE' : '' : 'sv' | titlecase }}</span>
+                    @if (booking.inviterName) {
+                      <span class="sub-dot"></span>
+                      <span class="row-inviter">av {{ booking.inviterName }}</span>
+                    }
                   </div>
                 </div>
 
+                <!-- Class chips -->
+                @if (booking.classNames?.length) {
+                  <div class="row-classes">
+                    @for (cls of booking.classNames!; track cls) {
+                      <span class="class-chip">{{ cls }}</span>
+                    }
+                  </div>
+                }
+
                 <!-- Notes pill -->
-                @if (booking.notes) {
+                @if (booking.notes && !booking.isInvitation) {
                   <div class="row-notes">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
                     </svg>
                     <p>{{ booking.notes }}</p>
+                  </div>
+                }
+
+                <!-- Invitation actions -->
+                @if (booking.isInvitation) {
+                  <div class="row-inv-actions">
+                    <button
+                      class="inv-btn inv-btn--accept"
+                      [disabled]="isInvitationBusy(booking.bookingId)"
+                      (click)="acceptInvitation(booking, $event)"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      Acceptera
+                    </button>
+                    <button
+                      class="inv-btn inv-btn--decline"
+                      [disabled]="isInvitationBusy(booking.bookingId)"
+                      (click)="declineInvitation(booking, $event)"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                      Avböj
+                    </button>
                   </div>
                 }
               </article>
@@ -187,14 +275,24 @@
                 <line x1="3" y1="10" x2="21" y2="10" />
               </svg>
               <h2>
-                {{ activeTab() === 'upcoming' ? 'Inga kommande bokningar' : 'Ingen historik' }}
+                @switch (activeTab()) {
+                  @case ('upcoming') {
+                    Inga kommande bokningar
+                  }
+                  @case ('history') {
+                    Ingen historik
+                  }
+                }
               </h2>
               <p>
-                {{
-                  activeTab() === 'upcoming'
-                    ? 'Du har inga aktiva bokningar just nu.'
-                    : 'Inga tidigare bokningar hittades.'
-                }}
+                @switch (activeTab()) {
+                  @case ('upcoming') {
+                    Du har inga aktiva bokningar just nu.
+                  }
+                  @case ('history') {
+                    Inga tidigare bokningar hittades.
+                  }
+                }
               </p>
               @if (activeTab() === 'upcoming') {
                 <a class="btn-primary" routerLink="/book-room">Boka ett rum</a>

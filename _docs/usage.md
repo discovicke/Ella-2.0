@@ -7,13 +7,16 @@ campus ──< rooms >── room_types
               │
          room_assets >── asset_types
 
+class ──< class_campus >── campus
+
 users >── user_campus >── campus
 users >── user_class  >── class
 users ──> permission_templates ──< permission_template_flags >── system_permissions
 users ──< user_permission_overrides >── system_permissions
 
 users ──< bookings >── rooms
-bookings ──< registrations >── users
+bookings ──< booking_class >── class
+bookings ──< registrations (status: invited/registered/declined) >── users
 ```
 
 ### Användarhantering
@@ -46,12 +49,28 @@ Det innebär att en administratör kan ge en enskild elev en specifik behörighe
 
 - Inloggade användare kan söka efter lediga rum och boka dem för ett givet tidsintervall.
 - En bokning har status `active`, `cancelled` eller `expired` (expired beräknas dynamiskt baserat på sluttid).
-- Utöver bokaren själv kan ytterligare deltagare registreras på en bokning via registreringstabellen.
 - Överlappande bokningar för samma rum förhindras.
 
-### Närvaroregistrering
+### Registreringar och inbjudningar
 
-- Registrerade deltagare på en bokning kan markeras som närvarande.
-- Närvaron kopplas till bokning via `registrations`-tabellen.
+Varje bokning kan ha **registreringar** — kopplingar mellan en användare och en bokning med en av tre statusar:
+
+| Status       | Betydelse                                      |
+| ------------ | ---------------------------------------------- |
+| `Invited`    | Inbjuden — väntar på svar                      |
+| `Registered` | Bekräftad — användaren deltar                  |
+| `Declined`   | Avböjd — synlig men räknas inte som deltagande |
+
+Flödet fungerar så här:
+
+- En bokningsägare kan **bjuda in** andra användare till sin bokning.
+- Den inbjudne kan **acceptera** (→ Registered), **avböja** (→ Declined), eller låta inbjudan vara (förblir Invited).
+- En registrerad användare kan **avregistrera** sig (→ återgår till Invited).
+- En avböjd inbjudan kan **accepteras i efterhand** (→ Registered).
+- Bokningsägaren kan **ta bort** en inbjudan helt (raderar registreringsraden).
+
+Registreringar visas i "Mina bokningar"-vyn, där inbjudningar, bekräftade och avböjda bokningar hämtas via ett enda API-anrop med server-side tidsfiltrering.
+
+Se [REGISTRATION_SYSTEM_GUIDE.md](./REGISTRATION_SYSTEM_GUIDE.md) för fullständig teknisk dokumentation.
 
 ---

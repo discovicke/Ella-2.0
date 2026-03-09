@@ -88,22 +88,24 @@ The implementation in `Infrastructure/Repositories/Sqlite` uses **Dapper** to ex
 
 **Handling One-to-Many Relationships (e.g., Room -> Assets):**
 
-Since SQL returns flat rows (one row per asset), we use a helper private class (e.g., `RoomDetailRow`) to capture the raw database output and then **Group** the results in memory.
+SQL views use JSON aggregation (`json_group_array` in SQLite, `json_agg` in Postgres) to return arrays as JSON strings. The C# read model deserializes them:
 
 ```csharp
-// Inside SqliteRoomReadModelRepo.cs
-
-// 1. Fetch raw flat data
-var rawData = await conn.QueryAsync<RoomDetailRow>(sql);
-
-// 2. Group by ID to merge the 'Many' side (Assets)
-var result = rawData
-    .GroupBy(r => r.RoomId)
-    .Select(g => new RoomDetailModel(
-        ...,
-        Assets: g.Select(x => x.AssetDescription).ToList()
-    ));
+// RoomDetailModel.cs
+public record RoomDetailModel(
+    ...,
+    [property: JsonIgnore] string? AssetsString  // Raw JSON from SQL view
+)
+{
+    // Frontend sees this clean list
+    public List<string>? Assets =>
+        string.IsNullOrEmpty(AssetsString)
+            ? null
+            : JsonSerializer.Deserialize<List<string>>(AssetsString);
+}
 ```
+
+Dapper maps directly to the read model — no intermediate row class or in-memory grouping needed.
 
 ### 3. Registration
 

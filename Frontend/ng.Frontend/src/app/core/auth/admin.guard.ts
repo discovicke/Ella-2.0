@@ -17,7 +17,7 @@ import { SessionService } from '../session.service';
  *
  * This guard ensures the user has AT LEAST ONE admin-level
  * permission (manageUsers, manageRooms, manageBookings, manageRoles,
- * manageAssets, manageClasses, manageCampuses).
+ * manageClasses, manageCampuses).
  *
  * Useful for "System" menu items that don't map to a single
  * permission but should be hidden from regular students.
@@ -37,7 +37,6 @@ export const adminGuard: CanActivateFn = () => {
     perms.manageRooms ||
     perms.manageBookings ||
     perms.manageRoles ||
-    perms.manageAssets ||
     perms.manageClasses ||
     perms.manageCampuses;
 

@@ -4,10 +4,9 @@
 
 #### Priority: HIGH
 
-- [ ] Fixa de sista sakerna för att booking-form ska fungera fullt ut (@christiangennari)
+- [x] Fixa de sista sakerna för att booking-form ska fungera fullt ut (@christiangennari)
 - [ ] Se över möjligheten för att skapa en kalender med ett library (hitta alternativ och jämför)
   - **MÖTE MED GÄNGET OM DETTA TORSDAG 2026-03-05**
-
 
 #### Priority: MEDIUM
 
@@ -28,6 +27,8 @@
 
 ### Priority: FUTURE CONSIDERATIONS
 
+- [ ] **Escalation guard for permissions**: Users with `ManageUsers` should not be able to assign a permission template that grants permissions they don't hold themselves. Similarly, users with `ManageRoles` should not be able to grant individual permissions they don't have. This prevents privilege escalation (e.g. a teacher promoting someone to admin).
+
 - [ ] **Big Feature**: SMTP integrering för att skicka ut mail (exempelvis vid bokningsbekräftelser, påminnelser etc) behöver planeras och diskuteras mer
 - [ ] **Big Feature**: Notifikationer i appen (exempelvis för att påminna om bokningar, informera om ändringar etc) behöver planeras och diskuteras mer
 
@@ -41,7 +42,7 @@
   - [ ] Full CRUD för bokningar
   - [ ] Möjlighet att se vilka elever som är anmälda
 - [ ] Lägg till Permission_level logik. Samt all logik kring "overwriting" om typ en admin vill boka över en students redan bokade tid etc.
-- [ ] Diskutera och planera hur vi ska få "implicit bookings" vs "personal bookings" att fungera. Dvs. typ bookings som en lärare bjuder in en student till, eller som en admin bjuder in en lärare till, eller som en student bjuder in andra studenter till etc vs bara vanliga personliga bokningar.
+- [x] ~~Diskutera och planera hur vi ska få "implicit bookings" vs "personal bookings" att fungera.~~ → _Löst via inbjudningssystemet (registrations med status Invited/Registered/Declined)._
 
 ### Arkitektur & struktur
 
@@ -84,11 +85,6 @@
 
 ## Backend ↔ Frontend
 
-### Närvaro-flöde
-
-- [ ] Backend: Exponera klassens bokningar med registrations per användare
-- [ ] Frontend: Mappa bokning → registration-status för inloggad elev
-
 ### Formuläret
 
 - [ ] Se över registrering i databas för det fristående formuläret
@@ -114,8 +110,7 @@
 
 #### Funktionalitet
 
-- [ ] Filtrering av bokningar
-  - Status: aktiv, cancelled, historik
+- [x] ~~Filtrering av bokningar~~ → _Implementerat i see-bookings med aktiv/cancelled/historik + tidsfilter (upcoming/past)._
 - [ ] Skapa bokningsmodal som öppnas vid `"Boka"`-knappen
 
 #### UI
@@ -155,14 +150,6 @@
   - Kalender?
 
 #### Manage Users
-
-- [ ] Server-side paginering för användarlistan
-  - Backend: `PagedResult<T>` DTO, `UserQueryParams` (page, pageSize, search, templateId, bannedStatus)
-  - Backend: `GetUsersPagedAsync` i `IUserRepository` + båda providers (Postgres/SQLite med LIMIT/OFFSET)
-  - Backend: `GetEffectivePermissionsForUsersAsync(IEnumerable<long>)` i `IPermissionRepository` (batch för en sida)
-  - Backend: `GetPagedAsync` i `UserService`, nytt GET endpoint med query params
-  - Frontend: Uppdatera `UserService.getAllUsers()` → `getUsers(params)` som returnerar `PagedResult`
-  - Frontend: Skriv om `manage-users.page.ts` från client-side slice till server-driven (fetch vid page/filter-ändring)
 
 ### Banned / Access Control
 
@@ -248,8 +235,29 @@
   - [x] Filtrering
     - [x] Namn
     - [x] Roll
-    - [x] Status
-    - [x] Klass
+
+#### Närvaro-flöde (Backend ↔ Frontend)
+
+- [x] Backend: Exponera klassens bokningar med registrations per användare
+- [x] Frontend: Mappa bokning → registration-status för inloggad elev
+- [x] Inbjudningssystem implementerat (Invited/Registered/Declined)
+
+#### Server-side paginering för användarlistan
+
+- [x] Backend: `PagedResult<T>` DTO, `UserQueryParams` (page, pageSize, search, templateId, bannedStatus)
+- [x] Backend: `GetUsersPagedAsync` i `IUserRepository` + båda providers (Postgres/SQLite med LIMIT/OFFSET)
+- [x] Backend: `GetEffectivePermissionsForUsersAsync(IEnumerable<long>)` i `IPermissionRepository` (batch för en sida)
+- [x] Backend: `GetPagedAsync` i `UserService`, nytt GET endpoint med query params
+- [x] Frontend: Uppdatera `UserService.getAllUsers()` → `getUsers(params)` som returnerar `PagedResult`
+- [x] Frontend: Skriv om `manage-users.page.ts` från client-side slice till server-driven (fetch vid page/filter-ändring)
+
+#### Filtrering av bokningar (Student)
+
+- [x] Status: aktiv, cancelled, historik
+- [x] Tidsfilter: upcoming/past
+- [x] Enhetligt API-anrop med `statuses` och `timeFilter` parametrar
+  - [x] Status
+  - [x] Klass
   - [x] Skapa/Redigera användare
   - [x] Hantera behörigheter (RBAC/Custom)
 

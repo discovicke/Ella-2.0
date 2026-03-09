@@ -165,6 +165,9 @@ public static class RoomEndpoints
             )
             .WithName("GetRoomTypes")
             .WithSummary("Get all room types")
+            .WithDescription(
+                "Retrieves all available room types.\n\n🔒 **Authentication Required**"
+            )
             .Produces<IEnumerable<RoomTypeResponseDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
 
@@ -180,6 +183,9 @@ public static class RoomEndpoints
             )
             .WithName("GetRoomTypeById")
             .WithSummary("Get room type by ID")
+            .WithDescription(
+                "Retrieves a specific room type by its unique identifier.\n\n🔒 **Authentication Required**"
+            )
             .Produces<RoomTypeResponseDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
@@ -200,6 +206,9 @@ public static class RoomEndpoints
             .RequirePermission("ManageRooms")
             .WithName("CreateRoomType")
             .WithSummary("Create a new room type")
+            .WithDescription(
+                "Creates a new room type.\n\n🔒 **Authentication Required**\n🔑 **Requires manageRooms permission**"
+            )
             .Produces<RoomTypeResponseDto>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status401Unauthorized)

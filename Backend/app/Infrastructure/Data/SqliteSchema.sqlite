@@ -176,15 +176,32 @@ CREATE TABLE IF NOT EXISTS "bookings" (
     ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+-- Kopplingstabell bokning ↔ klass
+CREATE TABLE IF NOT EXISTS "booking_class" (
+    "booking_id" INTEGER NOT NULL,
+    "class_id" INTEGER NOT NULL,
+    PRIMARY KEY("booking_id", "class_id"),
+    FOREIGN KEY ("booking_id") REFERENCES "bookings"("id")
+    ON UPDATE NO ACTION ON DELETE CASCADE,
+    FOREIGN KEY ("class_id") REFERENCES "class"("id")
+    ON UPDATE NO ACTION ON DELETE CASCADE
+);
+
+-- status: 0 = Invited, 1 = Registered, 2 = Declined
 CREATE TABLE IF NOT EXISTS "registrations" (
     "user_id" INTEGER NOT NULL,
     "booking_id" INTEGER NOT NULL,
+    "status" INTEGER NOT NULL DEFAULT 0,
+    "created_at" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY("user_id", "booking_id"),
     FOREIGN KEY ("user_id") REFERENCES "users"("id")
-    ON UPDATE NO ACTION ON DELETE NO ACTION,
+    ON UPDATE NO ACTION ON DELETE CASCADE,
     FOREIGN KEY ("booking_id") REFERENCES "bookings"("id")
-    ON UPDATE NO ACTION ON DELETE NO ACTION
+    ON UPDATE NO ACTION ON DELETE CASCADE
 );
+
+CREATE INDEX IF NOT EXISTS idx_registrations_user_status
+    ON registrations (user_id, status);
 
 
 -- 4. Views for Read Models
@@ -214,11 +231,16 @@ SELECT
     b.booker_name AS booker_name,
     b.created_at AS created_at,
     b.updated_at AS updated_at,
-    COALESCE(COUNT(reg.user_id), 0) AS registration_count,
-    (SELECT GROUP_CONCAT(at.description, '|||')
+    COALESCE(SUM(CASE WHEN reg.status = 1 THEN 1 ELSE 0 END), 0) AS registration_count,
+    COALESCE(SUM(CASE WHEN reg.status = 0 THEN 1 ELSE 0 END), 0) AS invitation_count,
+    (SELECT CASE WHEN COUNT(*) > 0 THEN json_group_array(at.description) ELSE NULL END
      FROM room_assets ra
      JOIN asset_types at ON ra.asset_type_id = at.id
-     WHERE ra.room_id = b.room_id) AS room_assets
+     WHERE ra.room_id = b.room_id) AS room_assets,
+    (SELECT CASE WHEN COUNT(*) > 0 THEN json_group_array(cl.class_name) ELSE NULL END
+     FROM booking_class bc
+     JOIN class cl ON bc.class_id = cl.id
+     WHERE bc.booking_id = b.id) AS class_names
 FROM bookings b
 LEFT JOIN users u ON b.user_id = u.id
 LEFT JOIN rooms r ON b.room_id = r.id
@@ -227,7 +249,7 @@ LEFT JOIN campus c ON r.campus_id = c.id
 LEFT JOIN registrations reg ON b.id = reg.booking_id
 GROUP BY b.id, b.user_id, u.display_name, u.email, b.room_id, r.name, r.capacity, rt.name, r.floor, c.city, b.start_time, b.end_time, b.status, b.notes, b.booker_name, b.created_at, b.updated_at;
 
--- View: Room Details with concatenated assets
+-- View: Room Details with JSON array assets
 DROP VIEW IF EXISTS "v_room_details";
 CREATE VIEW "v_room_details" AS
 SELECT
@@ -240,7 +262,9 @@ SELECT
     rt.name AS RoomTypeName,
     r.floor AS Floor,
     r.notes AS Notes,
-    GROUP_CONCAT(at.description, '|||') AS AssetsString
+    CASE WHEN COUNT(at.description) > 0
+         THEN json_group_array(at.description)
+         ELSE NULL END AS AssetsString
 FROM rooms r
 LEFT JOIN campus c ON r.campus_id = c.id
 LEFT JOIN room_types rt ON r.room_type_id = rt.id

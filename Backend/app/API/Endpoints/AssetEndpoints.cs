@@ -61,11 +61,11 @@ public static class AssetEndpoints
                     return Results.Created($"/api/assets/{created.Id}", created);
                 }
             )
-            .RequirePermission("ManageAssets")
+            .RequirePermission("ManageRooms")
             .WithName("CreateAssetType")
             .WithSummary("Create a new asset type")
             .WithDescription(
-                "Creates a new asset type.\n\n🔒 **Authentication Required**\n🔑 **Requires manageAssets permission**"
+                "Creates a new asset type.\n\n🔒 **Authentication Required**\n🔑 **Requires manageRooms permission**"
             )
             .Accepts<CreateAssetTypeDto>("application/json")
             .Produces<AssetTypeResponseDto>(StatusCodes.Status201Created)
@@ -86,11 +86,11 @@ public static class AssetEndpoints
                     return Results.NoContent();
                 }
             )
-            .RequirePermission("ManageAssets")
+            .RequirePermission("ManageRooms")
             .WithName("UpdateAssetType")
             .WithSummary("Update an asset type")
             .WithDescription(
-                "Updates an existing asset type.\n\n🔒 **Authentication Required**\n🔑 **Requires manageAssets permission**"
+                "Updates an existing asset type.\n\n🔒 **Authentication Required**\n🔑 **Requires manageRooms permission**"
             )
             .Accepts<UpdateAssetTypeDto>("application/json")
             .Produces(StatusCodes.Status204NoContent)
@@ -109,11 +109,11 @@ public static class AssetEndpoints
                     return Results.NoContent();
                 }
             )
-            .RequirePermission("ManageAssets")
+            .RequirePermission("ManageRooms")
             .WithName("DeleteAssetType")
             .WithSummary("Delete an asset type")
             .WithDescription(
-                "Permanently deletes an asset type.\n\n🔒 **Authentication Required**\n🔑 **Requires manageAssets permission**"
+                "Permanently deletes an asset type.\n\n🔒 **Authentication Required**\n🔑 **Requires manageRooms permission**"
             )
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)

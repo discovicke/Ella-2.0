@@ -68,9 +68,10 @@ public class UserService(
         );
         var userList = users.ToList();
 
-        // Bulk queries for display data
-        var allCampusNames = await repo.GetAllUserCampusNamesAsync();
-        var allClassNames = await repo.GetAllUserClassNamesAsync();
+        // Scoped queries — only fetch associations for the current page of users
+        var userIds = userList.Select(u => u.Id).ToList();
+        var campusNames = await repo.GetUserCampusNamesAsync(userIds);
+        var classNames = await repo.GetUserClassNamesAsync(userIds);
 
         var items = userList
             .Select(user =>
@@ -80,8 +81,8 @@ public class UserService(
                     UserId = user.Id,
                     PermissionTemplateId = user.PermissionTemplateId,
                 };
-                allCampusNames.TryGetValue(user.Id, out var campuses);
-                allClassNames.TryGetValue(user.Id, out var classes);
+                campusNames.TryGetValue(user.Id, out var campuses);
+                classNames.TryGetValue(user.Id, out var classes);
                 return MapToDto(user, minimalPerms, campuses, classes);
             })
             .ToList();
@@ -260,11 +261,9 @@ public class UserService(
             new Dictionary<string, bool>
             {
                 ["BookRoom"] = dto.BookRoom,
-                ["MyBookings"] = dto.MyBookings,
                 ["ManageUsers"] = dto.ManageUsers,
                 ["ManageClasses"] = dto.ManageClasses,
                 ["ManageRooms"] = dto.ManageRooms,
-                ["ManageAssets"] = dto.ManageAssets,
                 ["ManageBookings"] = dto.ManageBookings,
                 ["ManageCampuses"] = dto.ManageCampuses,
                 ["ManageRoles"] = dto.ManageRoles,

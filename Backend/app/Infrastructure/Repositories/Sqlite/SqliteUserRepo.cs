@@ -115,6 +115,42 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         }
     }
 
+    public async Task<
+        IEnumerable<(long Id, string DisplayName, string Email)>
+    > SearchUsersLightAsync(string query, int limit, long excludeUserId)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            var escaped = query.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_");
+            var sql = """
+                SELECT id AS Id, display_name AS DisplayName, email AS Email
+                FROM users
+                WHERE (display_name LIKE @Search ESCAPE '\' OR email LIKE @Search ESCAPE '\')
+                  AND is_banned = 0
+                  AND id != @ExcludeUserId
+                ORDER BY display_name
+                LIMIT @Limit;
+                """;
+            var rows = await conn.QueryAsync<(long Id, string DisplayName, string Email)>(
+                sql,
+                new
+                {
+                    Search = $"%{escaped}%",
+                    Limit = limit,
+                    ExcludeUserId = excludeUserId,
+                }
+            );
+            return rows;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while searching users (light)");
+            throw;
+        }
+    }
+
     public async Task<bool> CreateUserAsync(User user)
     {
         try
@@ -290,6 +326,44 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         }
     }
 
+    public async Task<Dictionary<long, List<string>>> GetUserCampusNamesAsync(
+        IEnumerable<long> userIds
+    )
+    {
+        try
+        {
+            var ids = userIds.ToArray();
+            if (ids.Length == 0)
+                return new Dictionary<long, List<string>>();
+
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            var sql =
+                @"SELECT uc.user_id AS UserId, c.city AS Name
+                        FROM user_campus uc
+                        JOIN campus c ON c.id = uc.campus_id
+                        WHERE uc.user_id IN @UserIds
+                        ORDER BY c.city;";
+            var rows = await conn.QueryAsync<(long UserId, string Name)>(
+                sql,
+                new { UserIds = ids }
+            );
+            var dict = new Dictionary<long, List<string>>();
+            foreach (var row in rows)
+            {
+                if (!dict.ContainsKey(row.UserId))
+                    dict[row.UserId] = new List<string>();
+                dict[row.UserId].Add(row.Name);
+            }
+            return dict;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while fetching scoped user-campus associations");
+            throw;
+        }
+    }
+
     // ── User ↔ Class ───────────────────────────────────────
 
     public async Task<IEnumerable<long>> GetClassIdsForUserAsync(long userId)
@@ -370,6 +444,44 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         catch (Exception ex)
         {
             logger.LogError(ex, "Database error while fetching all user-class associations");
+            throw;
+        }
+    }
+
+    public async Task<Dictionary<long, List<string>>> GetUserClassNamesAsync(
+        IEnumerable<long> userIds
+    )
+    {
+        try
+        {
+            var ids = userIds.ToArray();
+            if (ids.Length == 0)
+                return new Dictionary<long, List<string>>();
+
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            var sql =
+                @"SELECT uc.user_id AS UserId, c.class_name AS Name
+                        FROM user_class uc
+                        JOIN class c ON c.id = uc.class_id
+                        WHERE uc.user_id IN @UserIds
+                        ORDER BY c.class_name;";
+            var rows = await conn.QueryAsync<(long UserId, string Name)>(
+                sql,
+                new { UserIds = ids }
+            );
+            var dict = new Dictionary<long, List<string>>();
+            foreach (var row in rows)
+            {
+                if (!dict.ContainsKey(row.UserId))
+                    dict[row.UserId] = new List<string>();
+                dict[row.UserId].Add(row.Name);
+            }
+            return dict;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while fetching scoped user-class associations");
             throw;
         }
     }

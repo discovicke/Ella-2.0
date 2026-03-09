@@ -238,7 +238,7 @@
   }
 
   &.purple {
-    @include badge(var(--color-primary-surface), var(--color-primary));
+    @include badge(var(--color-primary-surface), var(--color-primary-on-surface));
   }
 
   &.red {

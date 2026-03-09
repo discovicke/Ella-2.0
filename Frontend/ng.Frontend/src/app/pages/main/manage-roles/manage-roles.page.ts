@@ -62,11 +62,9 @@ export class ManageRolesPage implements OnInit {
 
   private readonly permissionLabelMap: Record<string, string> = {
     BookRoom: 'Boka rum',
-    MyBookings: 'Mina bokningar',
     ManageUsers: 'Hantera användare',
     ManageClasses: 'Hantera klasser',
     ManageRooms: 'Hantera rum',
-    ManageAssets: 'Hantera tillgångar',
     ManageBookings: 'Hantera bokningar',
     ManageCampuses: 'Hantera campus',
     ManageRoles: 'Hantera roller',

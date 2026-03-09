@@ -130,8 +130,12 @@ public static class ClassEndpoints
             )
             .WithName("GetClassCampuses")
             .WithSummary("Get campus IDs for a class")
+            .WithDescription(
+                "Retrieves the list of campus IDs associated with a class.\n\n🔒 **Authentication Required**"
+            )
             .Produces<IEnumerable<long>>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status404NotFound);
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized);
 
         // PUT /api/classes/{id}/campuses
         group
@@ -146,8 +150,12 @@ public static class ClassEndpoints
             .RequirePermission("ManageClasses")
             .WithName("SetClassCampuses")
             .WithSummary("Set campus associations for a class")
+            .WithDescription(
+                "Replaces all campus associations for a class.\n\n🔒 **Authentication Required**\n🔑 **Requires manageClasses permission**"
+            )
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
 
         return group;

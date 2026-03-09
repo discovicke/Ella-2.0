@@ -10,7 +10,9 @@ public class BookingService(
     IBookingRepository repo,
     IBookingReadModelRepository readModelRepo,
     IUserRepository userRepo,
-    IRoomRepository roomRepo
+    IRoomRepository roomRepo,
+    IClassRepository classRepo,
+    IRegistrationRepository registrationRepo
 )
 {
     // Business logic for bookings
@@ -180,6 +182,16 @@ public class BookingService(
 
         var id = await repo.CreateBookingAsync(booking);
         booking.Id = id;
+
+        // Link classes and auto-invite class members if classIds provided
+        if (dto.ClassIds is { Length: > 0 })
+        {
+            await classRepo.SetClassesForBookingAsync(id, dto.ClassIds);
+            var userIds = await classRepo.GetUserIdsByClassIdsAsync(dto.ClassIds);
+            // Exclude the booking owner from auto-invites
+            var inviteIds = userIds.Where(uid => uid != dto.UserId);
+            await registrationRepo.BulkInviteAsync(id, inviteIds);
+        }
 
         return booking;
     }

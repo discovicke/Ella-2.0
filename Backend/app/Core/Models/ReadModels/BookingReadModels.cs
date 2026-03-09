@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Backend.app.Core.Models.Enums;
 
 namespace Backend.app.Core.Models.ReadModels;
@@ -26,5 +28,35 @@ public record BookingDetailedReadModel
     public DateTime CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; init; }
     public int RegistrationCount { get; init; }
+    public int InvitationCount { get; init; }
+
+    /// <summary>Dapper-mapped JSON array string from the SQL view. Hidden from API output.</summary>
+    [JsonIgnore]
     public string? RoomAssets { get; init; }
+
+    /// <summary>Clean typed array for API consumers.</summary>
+    [JsonPropertyName("roomAssets")]
+    public string[]? RoomAssetsList => DeserializeJsonArray(RoomAssets);
+
+    /// <summary>
+    /// The current user's registration status for this booking.
+    /// Only populated by the unified registration query endpoint.
+    /// Values: "invited", "registered", "declined", or null.
+    /// </summary>
+    public string? UserRegistrationStatus { get; init; }
+
+    /// <summary>Dapper-mapped JSON array string from the SQL view. Hidden from API output.</summary>
+    [JsonIgnore]
+    public string? ClassNames { get; init; }
+
+    /// <summary>Clean typed array for API consumers.</summary>
+    [JsonPropertyName("classNames")]
+    public string[]? ClassNamesList => DeserializeJsonArray(ClassNames);
+
+    private static string[]? DeserializeJsonArray(string? json)
+    {
+        if (string.IsNullOrEmpty(json))
+            return null;
+        return JsonSerializer.Deserialize<string[]>(json);
+    }
 }

@@ -1,8 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { firstValueFrom } from 'rxjs';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { BookingDetailedReadModel, BookingStatus } from '../../../models/models';
+import {
+  RegistrationService,
+  RegistrationParticipant,
+} from '../../../shared/services/registration.service';
 
 export interface BookingEditModalConfig {
   booking: BookingDetailedReadModel;
@@ -37,9 +42,9 @@ export interface BookingEditModalConfig {
             <span class="hero-detail">{{ booking.campusCity }}</span>
           }
         </div>
-        @if (parseAssets(booking.roomAssets).length) {
+        @if (booking.roomAssets?.length) {
           <div class="hero-assets">
-            @for (asset of parseAssets(booking.roomAssets); track asset) {
+            @for (asset of booking.roomAssets!; track asset) {
               <span class="asset-chip">{{ asset }}</span>
             }
           </div>
@@ -86,7 +91,11 @@ export interface BookingEditModalConfig {
         </div>
 
         @if (booking.registrationCount) {
-          <div class="info-row">
+          <div
+            class="info-row clickable"
+            (click)="toggleParticipants()"
+            title="Klicka för att visa deltagare"
+          >
             <div class="info-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -101,8 +110,36 @@ export interface BookingEditModalConfig {
                   booking.registrationCount !== 1 ? 'ar' : ''
                 }}</span
               >
+              <span class="info-secondary">Klicka för att visa</span>
+            </div>
+            <div class="expand-icon" [class.expanded]="showParticipants()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
             </div>
           </div>
+
+          @if (showParticipants()) {
+            <div class="participants-list">
+              @if (isLoadingParticipants()) {
+                <div class="participants-loading">Laddar deltagare...</div>
+              } @else {
+                @for (p of participants(); track p.userId) {
+                  <div class="participant-row">
+                    <div class="participant-avatar">
+                      {{ p.displayName.charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="participant-info">
+                      <span class="participant-name">{{ p.displayName || '—' }}</span>
+                      <span class="participant-email">{{ p.email }}</span>
+                    </div>
+                  </div>
+                } @empty {
+                  <div class="participants-empty">Inga registrerade deltagare.</div>
+                }
+              }
+            </div>
+          }
         }
       </div>
 
@@ -227,7 +264,7 @@ export interface BookingEditModalConfig {
         align-items: center;
         padding: 2px 10px;
         background: var(--color-primary-surface);
-        color: var(--color-primary);
+        color: var(--color-primary-on-surface);
         border-radius: 999px;
         font-size: 0.7rem;
         font-weight: 600;
@@ -354,6 +391,108 @@ export interface BookingEditModalConfig {
         line-height: 1.5;
       }
 
+      /* ── Clickable info row ── */
+      .info-row.clickable {
+        cursor: pointer;
+        border-radius: 8px;
+        margin: 0 -8px;
+        padding: 10px 8px;
+        transition: background 0.15s ease;
+
+        &:hover {
+          background: var(--color-bg-panel);
+        }
+      }
+
+      .expand-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        margin-left: auto;
+        transition: transform 0.2s ease;
+
+        svg {
+          width: 16px;
+          height: 16px;
+          stroke: var(--color-text-muted);
+        }
+
+        &.expanded {
+          transform: rotate(180deg);
+        }
+      }
+
+      /* ── Participants List ── */
+      .participants-list {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 8px 12px 12px;
+        margin: -4px 0 0;
+        background: var(--color-bg-panel);
+        border-radius: 0 0 8px 8px;
+        border: 1px solid var(--color-border);
+        border-top: none;
+        max-height: 240px;
+        overflow-y: auto;
+      }
+
+      .participant-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 4px;
+
+        & + .participant-row {
+          border-top: 1px solid var(--color-border);
+        }
+      }
+
+      .participant-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        background: var(--color-primary-surface);
+        color: var(--color-primary);
+        border-radius: 50%;
+        font-size: 0.75rem;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+
+      .participant-info {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        min-width: 0;
+      }
+
+      .participant-name {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--color-text-primary);
+      }
+
+      .participant-email {
+        font-size: 0.72rem;
+        color: var(--color-text-muted);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .participants-loading,
+      .participants-empty {
+        padding: 12px 4px;
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+        text-align: center;
+      }
+
       /* ── Footer ── */
       .modal-footer {
         display: flex;
@@ -382,16 +521,15 @@ export interface BookingEditModalConfig {
 export class BookingEditModalComponent {
   protected readonly BookingStatus = BookingStatus;
   private readonly modalService = inject(ModalService);
+  private readonly registrationService = inject(RegistrationService);
 
   private config: BookingEditModalConfig = this.modalService.modalData();
   protected booking = this.config.booking;
 
   readonly isSubmitting = signal(false);
-
-  parseAssets(assetsStr: string | null | undefined): string[] {
-    if (!assetsStr) return [];
-    return assetsStr.split('|||').filter((a) => a.trim().length > 0);
-  }
+  readonly showParticipants = signal(false);
+  readonly isLoadingParticipants = signal(false);
+  readonly participants = signal<RegistrationParticipant[]>([]);
 
   statusLabel(status?: BookingStatus): string {
     switch (status) {
@@ -411,6 +549,25 @@ export class BookingEditModalComponent {
   hasEnded(): boolean {
     const end = new Date(this.booking.endTime ?? 0);
     return end < new Date();
+  }
+
+  async toggleParticipants(): Promise<void> {
+    const next = !this.showParticipants();
+    this.showParticipants.set(next);
+
+    if (next && this.participants().length === 0 && this.booking.bookingId) {
+      this.isLoadingParticipants.set(true);
+      try {
+        const list = await firstValueFrom(
+          this.registrationService.getParticipants(this.booking.bookingId),
+        );
+        this.participants.set(list);
+      } catch {
+        this.participants.set([]);
+      } finally {
+        this.isLoadingParticipants.set(false);
+      }
+    }
   }
 
   async onSetStatus(status: BookingStatus): Promise<void> {

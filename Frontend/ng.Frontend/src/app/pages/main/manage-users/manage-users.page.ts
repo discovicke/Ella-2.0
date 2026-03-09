@@ -232,11 +232,9 @@ export class ManageUsersPage implements OnInit {
         initialTemplateId: initialTemplateId,
         initialPermissions: {
           bookRoom: true,
-          myBookings: true,
           manageUsers: false,
           manageClasses: false,
           manageRooms: false,
-          manageAssets: false,
           manageBookings: false,
           manageCampuses: false,
           manageRoles: false,
@@ -404,11 +402,9 @@ export class ManageUsersPage implements OnInit {
 
     return (
       !!existingPermissions.bookRoom !== next.bookRoom ||
-      !!existingPermissions.myBookings !== next.myBookings ||
       !!existingPermissions.manageUsers !== next.manageUsers ||
       !!existingPermissions.manageClasses !== next.manageClasses ||
       !!existingPermissions.manageRooms !== next.manageRooms ||
-      !!existingPermissions.manageAssets !== next.manageAssets ||
       !!existingPermissions.manageBookings !== next.manageBookings ||
       !!existingPermissions.manageCampuses !== next.manageCampuses ||
       !!existingPermissions.manageRoles !== next.manageRoles

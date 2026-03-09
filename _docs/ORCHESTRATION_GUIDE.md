@@ -103,6 +103,12 @@ This project uses a **Hosted** deployment model. We do not host the Frontend and
 2. Copy the contents of the **`dist/final_app`** folder to your server.
 3. Run the executable (`Backend.exe` or `dotnet Backend.dll`).
 4. Set `ASPNETCORE_ENVIRONMENT` to `Production` on the server.
+5. Set secrets via environment variables or a `.env` file on the server:
+   - `DatabaseSettings__Provider` / `DatabaseSettings__ConnectionString`
+   - `JwtSettings__SecretKey` (must be a real key, **not** the placeholder — min 32 chars)
+   - `JwtSettings__Issuer` / `JwtSettings__Audience` / `JwtSettings__AccessTokenExpirationMinutes`
+
+> **Note:** In Production, the app refuses to load `.env-example`. You must provide a real `.env` or set environment variables directly.
 
 ---
 

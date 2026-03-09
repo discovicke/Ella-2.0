@@ -21,6 +21,17 @@ TYPE booking_status AS ENUM ('active', 'cancelled', 'expired', 'pending');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
+DO $$
+BEGIN
+CREATE
+TYPE registration_status AS ENUM ('invited', 'registered', 'declined');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- Migration: add 'declined' to existing registration_status enum
+-- (ADD VALUE IF NOT EXISTS is safe and idempotent since PG 9.3)
+ALTER TYPE registration_status ADD VALUE IF NOT EXISTS 'declined';
+
 
 -- =============================================================
 --  MIGRATIONSHISTORIK
@@ -236,14 +247,44 @@ CREATE TABLE IF NOT EXISTS bookings
 );
 
 
+-- Kopplingstabell bokning ↔ klass.
+-- Spårar vilka klasser en bokning riktar sig till.
+CREATE TABLE IF NOT EXISTS booking_class
+(
+    booking_id BIGINT NOT NULL REFERENCES bookings (id) ON DELETE CASCADE,
+    class_id   BIGINT NOT NULL REFERENCES class (id) ON DELETE CASCADE,
+    PRIMARY KEY (booking_id, class_id)
+);
+
 -- Kopplingstabell användare ↔ bokning.
--- Används för bokningar med flera deltagare utöver bokaren själv.
+-- Används både för inbjudningar och bekräftade registreringar.
+-- status: 'invited' = väntar på svar, 'registered' = bekräftad närvaro.
 CREATE TABLE IF NOT EXISTS registrations
 (
-    user_id    BIGINT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    booking_id BIGINT NOT NULL REFERENCES bookings (id) ON DELETE CASCADE,
+    user_id    BIGINT              NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    booking_id BIGINT              NOT NULL REFERENCES bookings (id) ON DELETE CASCADE,
+    status     registration_status NOT NULL DEFAULT 'invited',
+    created_at TIMESTAMPTZ         NOT NULL DEFAULT NOW(),
     PRIMARY KEY (user_id, booking_id)
 );
+
+-- Migration: add status + created_at to existing registrations table
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'registrations' AND column_name = 'status'
+    ) THEN
+        ALTER TABLE registrations ADD COLUMN status registration_status NOT NULL DEFAULT 'invited';
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'registrations' AND column_name = 'created_at'
+    ) THEN
+        ALTER TABLE registrations ADD COLUMN created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+    END IF;
+END $$;
 
 
 -- =============================================================
@@ -294,12 +335,17 @@ SELECT b.id               AS booking_id,
        b.booker_name,
        b.created_at,
        b.updated_at,
-       COUNT(reg.user_id) AS registration_count,
+       COUNT(reg.user_id) FILTER (WHERE reg.status = 'registered') AS registration_count,
+       COUNT(reg.user_id) FILTER (WHERE reg.status = 'invited')    AS invitation_count,
        c.city             AS campus_city,
-       (SELECT STRING_AGG(at.description, '|||')
+       (SELECT json_agg(at.description)::text
         FROM room_assets ra
         JOIN asset_types at ON ra.asset_type_id = at.id
-        WHERE ra.room_id = b.room_id) AS room_assets
+        WHERE ra.room_id = b.room_id) AS room_assets,
+       (SELECT json_agg(cl.class_name)::text
+        FROM booking_class bc
+        JOIN class cl ON bc.class_id = cl.id
+        WHERE bc.booking_id = b.id) AS class_names
 FROM bookings b
          LEFT JOIN users u ON b.user_id = u.id
          LEFT JOIN rooms r ON b.room_id = r.id
@@ -312,9 +358,8 @@ GROUP BY b.id, b.user_id, u.display_name, u.email,
          b.booker_name, b.created_at, b.updated_at, c.city;
 
 
--- Rumsdetaljer med assets som en |||‑separerad sträng.
--- STRING_AGG ger en text som matchar C#-modellens AssetsString
--- (samma mönster som SQLite-vyns GROUP_CONCAT).
+-- Rumsdetaljer med assets som JSON-array-sträng.
+-- json_agg ger en text som matchar C#-modellens AssetsString.
 DROP VIEW IF EXISTS v_room_details;
 CREATE VIEW v_room_details AS
 SELECT r.id    AS RoomId,
@@ -326,7 +371,7 @@ SELECT r.id    AS RoomId,
        rt.name AS RoomTypeName,
        r.floor AS Floor,
        r.notes AS Notes,
-       STRING_AGG(at.description, '|||') FILTER (WHERE at.description IS NOT NULL)
+       (json_agg(at.description) FILTER (WHERE at.description IS NOT NULL))::text
                AS AssetsString
 FROM rooms r
          LEFT JOIN campus c ON r.campus_id = c.id
@@ -399,3 +444,7 @@ CREATE INDEX IF NOT EXISTS idx_bookings_user_id
 -- Behörighetskontroll slår upp alla overrides för en specifik användare.
 CREATE INDEX IF NOT EXISTS idx_user_perm_overrides_user_id
     ON user_permission_overrides (user_id);
+
+-- Registreringar filtreras per användare och status i "mina bokningar"-vyer.
+CREATE INDEX IF NOT EXISTS idx_registrations_user_status
+    ON registrations (user_id, status);
