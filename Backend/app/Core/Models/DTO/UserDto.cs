@@ -12,6 +12,7 @@ public record UserResponseDto(
     string? DisplayName,
     BannedStatus IsBanned,
     UserPermissions? Permissions,
+    int PermissionLevel,
     List<string>? CampusNames = null,
     List<string>? ClassNames = null
 );
@@ -27,5 +28,6 @@ public record UpdateUserDto(
     [property: MaxLength(254)] string Email,
     [property: MaxLength(100)] string? DisplayName,
     [property: MaxLength(128)] string? Password,
-    BannedStatus IsBanned
+    BannedStatus IsBanned,
+    int PermissionLevel
 );

@@ -5,6 +5,7 @@ using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
 using Backend.Tests.Helpers;
 using NSubstitute;
+using Xunit;
 
 namespace Backend.Tests.Core.Services;
 
@@ -20,7 +21,14 @@ public class BookingServiceTests
 
     public BookingServiceTests()
     {
-        _sut = new BookingService(_repo, _readModelRepo, _userRepo, _roomRepo, _classRepo, _registrationRepo);
+        _sut = new BookingService(
+            _repo,
+            _readModelRepo,
+            _userRepo,
+            _roomRepo,
+            _classRepo,
+            _registrationRepo
+        );
     }
 
     [Fact]
@@ -29,7 +37,7 @@ public class BookingServiceTests
         // Arrange
         var startTime = DateTime.Now.AddHours(1);
         var endTime = DateTime.Now.AddHours(2);
-        var dto = new CreateBookingDto(1, 1, startTime, endTime, "Notes", BookingStatus.Active, false);
+        var dto = new CreateBookingDto(1, 1, startTime, endTime, "Notes", BookingStatus.Active);
 
         _userRepo.GetUserByIdAsync(1).Returns(TestDataFactory.CreateUser(1));
         _roomRepo.GetRoomByIdAsync(1).Returns(TestDataFactory.CreateRoom(1));
@@ -45,19 +53,27 @@ public class BookingServiceTests
     }
 
     [Fact]
-    public async Task CreateBookingAsync_ShouldOverridePrivateBooking_WhenNewIsLesson()
+    public async Task CreateBookingAsync_ShouldOverride_WhenNewUserHasHigherPriority()
     {
         // Arrange
         var startTime = DateTime.Now.AddHours(1);
         var endTime = DateTime.Now.AddHours(2);
-        var dto = new CreateBookingDto(1, 1, startTime, endTime, null, BookingStatus.Active, IsLesson: true);
+        var dto = new CreateBookingDto(1, 1, startTime, endTime, null, BookingStatus.Active);
 
-        var existingPrivate = TestDataFactory.CreateBooking(99, 2, 1);
-        existingPrivate.IsLesson = false;
+        var higherUser = TestDataFactory.CreateUser(1);
+        higherUser.PermissionLevel = 10; // Admin level
+        higherUser.IsActive = true;
 
-        _userRepo.GetUserByIdAsync(1).Returns(TestDataFactory.CreateUser(1));
+        var lowerUser = TestDataFactory.CreateUser(2);
+        lowerUser.PermissionLevel = 1; // Student level
+        lowerUser.IsActive = true;
+
+        var existingBooking = TestDataFactory.CreateBooking(99, 2, 1);
+
+        _userRepo.GetUserByIdAsync(1).Returns(higherUser);
+        _userRepo.GetUserByIdAsync(2).Returns(lowerUser);
         _roomRepo.GetRoomByIdAsync(1).Returns(TestDataFactory.CreateRoom(1));
-        _repo.GetOverlappingBookingsAsync(1, startTime, endTime).Returns(new List<Booking> { existingPrivate });
+        _repo.GetOverlappingBookingsAsync(1, startTime, endTime).Returns(new List<Booking> { existingBooking });
         _repo.CreateBookingAsync(Arg.Any<Booking>()).Returns(101);
 
         // Act
@@ -65,56 +81,43 @@ public class BookingServiceTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.IsLesson);
-        await _repo.Received(1).CancelBookingAsync(99); // Should have cancelled the private one
-        await _repo.Received(1).CreateBookingAsync(Arg.Is<Booking>(b => b.IsLesson));
+        await _repo.Received(1).CancelBookingAsync(99); 
+        await _repo.Received(1).CreateBookingAsync(Arg.Any<Booking>());
     }
 
     [Fact]
-    public async Task CreateBookingAsync_ShouldThrowConflict_WhenLessonOverlapsAnotherLesson()
+    public async Task CreateBookingAsync_ShouldThrowConflict_WhenConflictingUserHasSameOrHigherPriority()
     {
         // Arrange
         var startTime = DateTime.Now.AddHours(1);
         var endTime = DateTime.Now.AddHours(2);
-        var dto = new CreateBookingDto(1, 1, startTime, endTime, null, BookingStatus.Active, IsLesson: true);
+        var dto = new CreateBookingDto(1, 1, startTime, endTime, null, BookingStatus.Active);
 
-        var existingLesson = TestDataFactory.CreateBooking(99, 2, 1);
-        existingLesson.IsLesson = true;
+        var user1 = TestDataFactory.CreateUser(1);
+        user1.PermissionLevel = 5;
+        user1.IsActive = true;
 
-        _userRepo.GetUserByIdAsync(1).Returns(TestDataFactory.CreateUser(1));
+        var user2 = TestDataFactory.CreateUser(2);
+        user2.PermissionLevel = 5;
+        user2.IsActive = true;
+
+        var existingBooking = TestDataFactory.CreateBooking(99, 2, 1);
+
+        _userRepo.GetUserByIdAsync(1).Returns(user1);
+        _userRepo.GetUserByIdAsync(2).Returns(user2);
         _roomRepo.GetRoomByIdAsync(1).Returns(TestDataFactory.CreateRoom(1));
-        _repo.GetOverlappingBookingsAsync(1, startTime, endTime).Returns(new List<Booking> { existingLesson });
+        _repo.GetOverlappingBookingsAsync(1, startTime, endTime).Returns(new List<Booking> { existingBooking });
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.CreateBookingAsync(dto));
-        Assert.Contains("occupied by another lesson", ex.Message);
-        await _repo.DidNotReceive().CreateBookingAsync(Arg.Any<Booking>());
-    }
-
-    [Fact]
-    public async Task CreateBookingAsync_ShouldThrowConflict_WhenPrivateOverlapsAnything()
-    {
-        // Arrange
-        var startTime = DateTime.Now.AddHours(1);
-        var endTime = DateTime.Now.AddHours(2);
-        var dto = new CreateBookingDto(1, 1, startTime, endTime, null, BookingStatus.Active, IsLesson: false);
-
-        var existing = TestDataFactory.CreateBooking(99, 2, 1);
-
-        _userRepo.GetUserByIdAsync(1).Returns(TestDataFactory.CreateUser(1));
-        _roomRepo.GetRoomByIdAsync(1).Returns(TestDataFactory.CreateRoom(1));
-        _repo.GetOverlappingBookingsAsync(1, startTime, endTime).Returns(new List<Booking> { existing });
-
-        // Act & Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.CreateBookingAsync(dto));
-        Assert.Contains("already occupied", ex.Message);
+        Assert.Contains("Konflikt", ex.Message);
     }
 
     [Fact]
     public async Task CreateBookingAsync_ShouldThrowKeyNotFound_WhenUserDoesNotExist()
     {
         // Arrange
-        var dto = new CreateBookingDto(99, 1, DateTime.Now, DateTime.Now.AddHours(1), null, BookingStatus.Active, false);
+        var dto = new CreateBookingDto(99, 1, DateTime.Now, DateTime.Now.AddHours(1), null, BookingStatus.Active);
         _userRepo.GetUserByIdAsync(99).Returns((User?)null);
 
         // Act & Assert

@@ -25,7 +25,15 @@ public class AuthServiceTests
 
     public AuthServiceTests()
     {
-        _sut = new AuthService(_userRepo, _permissionRepo, _passwordHasher, _tokenProvider, _emailService, _configuration, _logger);
+        _sut = new AuthService(
+            _userRepo,
+            _permissionRepo,
+            _passwordHasher,
+            _tokenProvider,
+            _emailService,
+            _configuration,
+            _logger
+        );
     }
 
     [Fact]
@@ -35,6 +43,7 @@ public class AuthServiceTests
         var request = new LoginDto { Email = "test@example.com", Password = "password123" };
         var user = TestDataFactory.CreateUser(1, request.Email);
         user.PasswordHash = "hashed_password";
+        user.IsActive = true;
 
         _userRepo.GetUserByEmailAsync(request.Email).Returns(user);
         _passwordHasher.VerifyPassword(request.Password, user.PasswordHash).Returns(true);
@@ -70,11 +79,14 @@ public class AuthServiceTests
     public async Task LoginAsync_ShouldReturnBannedResult_WhenUserIsBanned()
     {
         // Arrange
-        var request = new LoginDto { Email = "banned@example.com", Password = "password" };
+        var request = new LoginDto { Email = "test@example.com", Password = "password" };
         var user = TestDataFactory.CreateUser(1, request.Email);
         user.IsBanned = BannedStatus.Banned;
+        user.IsActive = true;
 
         _userRepo.GetUserByEmailAsync(request.Email).Returns(user);
+        _passwordHasher.VerifyPassword(request.Password, user.PasswordHash).Returns(true);
+        _permissionRepo.GetEffectivePermissionsAsync(user.Id).Returns(new UserPermissions { UserId = user.Id });
 
         // Act
         var result = await _sut.LoginAsync(request);
@@ -96,6 +108,7 @@ public class AuthServiceTests
         
         // Mock the user that is fetched after creation
         var createdUser = TestDataFactory.CreateUser(10, request.Email);
+        createdUser.IsActive = true;
         _userRepo.GetUserByEmailAsync(request.Email).Returns((User?)null, createdUser);
 
         // Act

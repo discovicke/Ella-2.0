@@ -1,4 +1,5 @@
-﻿using Backend.app.Core.Models;
+﻿﻿using Backend.app.Core.Models;
+
 using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
@@ -293,6 +294,146 @@ public static class BookingEndpoints
             )
             .Produces(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
+        // ==========================================
+        //  RECURRING SERIES ENDPOINTS
+        // ==========================================
+
+        // GET /api/bookings/series/{groupId}
+        group
+            .MapGet(
+                "/series/{groupId:guid}",
+                async (Guid groupId, BookingService service) =>
+                {
+                    var bookings = await service.GetSeriesAsync(groupId);
+                    return bookings.Any() ? Results.Ok(bookings) : Results.NotFound();
+                }
+            )
+            .WithName("GetBookingSeries")
+            .WithSummary("Get all bookings in a recurring series")
+            .WithDescription(
+                "Returns all individual bookings sharing the same recurring group ID.\n\n🔒 **Authentication Required**"
+            )
+            .Produces<IEnumerable<Booking>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
+
+        // DELETE /api/bookings/{id}/cancel?scope=single|thisAndFollowing|all
+        group
+            .MapDelete(
+                "/{id}/cancel",
+                async (
+                    long id,
+                    [FromQuery] string? scope,
+                    HttpContext context,
+                    BookingService service
+                ) =>
+                {
+                    if (
+                        context.Items["UserId"] is not long userId
+                        || context.Items["Permissions"] is not UserPermissions permissions
+                    )
+                        return Results.Unauthorized();
+
+                    var booking = await service.GetBookingByIdAsync(id);
+                    if (booking is null) return Results.NotFound();
+
+                    if (booking.UserId != userId && !permissions.ManageBookings)
+                        return Results.Forbid();
+
+                    var parsedScope = scope?.ToLower() switch
+                    {
+                        "thisandfollowing" => SeriesScope.ThisAndFollowing,
+                        "all" => SeriesScope.All,
+                        _ => SeriesScope.Single,
+                    };
+
+                    var cancelled = await service.CancelWithScopeAsync(id, parsedScope);
+                    return Results.Ok(new { cancelledCount = cancelled });
+                }
+            )
+            .WithName("CancelBookingWithScope")
+            .WithSummary("Cancel booking(s) — single, this-and-following, or entire series")
+            .WithDescription(
+                "Cancels a booking. Use `scope=single` (default), `scope=thisAndFollowing`, or `scope=all`.\n\n🔒 **Authentication Required**"
+            )
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
+        // PATCH /api/bookings/{id}/details
+        group
+            .MapPatch(
+                "/{id}/details",
+                async (
+                    long id,
+                    UpdateBookingDto dto,
+                    HttpContext context,
+                    BookingService service
+                ) =>
+                {
+                    if (
+                        context.Items["UserId"] is not long userId
+                        || context.Items["Permissions"] is not UserPermissions permissions
+                    )
+                        return Results.Unauthorized();
+
+                    var booking = await service.GetBookingByIdAsync(id);
+                    if (booking is null) return Results.NotFound();
+
+                    if (booking.UserId != userId && !permissions.ManageBookings)
+                        return Results.Forbid();
+
+                    var updated = await service.UpdateBookingDetailsAsync(id, dto);
+                    return Results.Ok(updated);
+                }
+            )
+            .WithName("UpdateBookingDetails")
+            .WithSummary("Update a single booking's time/notes/lesson flag")
+            .WithDescription(
+                "Updates details of one booking. Re-validates room availability if time changed.\n\n🔒 **Authentication Required**"
+            )
+            .Accepts<UpdateBookingDto>("application/json")
+            .Produces<Booking>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
+        // POST /api/bookings/{id}/detach
+        group
+            .MapPost(
+                "/{id}/detach",
+                async (
+                    long id,
+                    HttpContext context,
+                    BookingService service
+                ) =>
+                {
+                    if (
+                        context.Items["UserId"] is not long userId
+                        || context.Items["Permissions"] is not UserPermissions permissions
+                    )
+                        return Results.Unauthorized();
+
+                    var booking = await service.GetBookingByIdAsync(id);
+                    if (booking is null) return Results.NotFound();
+
+                    if (booking.UserId != userId && !permissions.ManageBookings)
+                        return Results.Forbid();
+
+                    var detached = await service.DetachFromSeriesAsync(id);
+                    return Results.Ok(detached);
+                }
+            )
+            .WithName("DetachBookingFromSeries")
+            .WithSummary("Detach a booking from its recurring series")
+            .WithDescription(
+                "Removes the recurring group ID so the booking can be managed independently.\n\n🔒 **Authentication Required**"
+            )
+            .Produces<Booking>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
 

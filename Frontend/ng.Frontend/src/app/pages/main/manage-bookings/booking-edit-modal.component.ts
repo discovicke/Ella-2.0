@@ -12,6 +12,7 @@ import {
 export interface BookingEditModalConfig {
   booking: BookingDetailedReadModel;
   onStatusChange: (bookingId: number, newStatus: BookingStatus) => Promise<void>;
+  onCancelWithScope?: (bookingId: number, scope: 'single' | 'thisAndFollowing' | 'all') => Promise<void>;
 }
 
 @Component({
@@ -150,6 +151,17 @@ export interface BookingEditModalConfig {
         </div>
       }
 
+      @if (booking.recurringGroupId) {
+        <div class="recurring-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <polyline points="23 4 23 10 17 10" />
+            <polyline points="1 20 1 14 7 14" />
+            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+          </svg>
+          <span>Återkommande serie</span>
+        </div>
+      }
+
       <!-- Footer: meta + actions -->
       <div class="modal-footer">
         <span class="meta-text">
@@ -171,13 +183,32 @@ export interface BookingEditModalConfig {
             </app-button>
           }
           @if (booking.status === BookingStatus.Active) {
-            <app-button
-              variant="danger"
-              [disabled]="isSubmitting()"
-              (clicked)="onSetStatus(BookingStatus.Cancelled)"
-            >
-              {{ isSubmitting() ? 'Sparar...' : 'Avboka' }}
-            </app-button>
+            @if (booking.recurringGroupId && !showSeriesCancelOptions()) {
+              <app-button
+                variant="danger"
+                (clicked)="showSeriesCancelOptions.set(true)"
+              >
+                Avboka…
+              </app-button>
+            } @else if (booking.recurringGroupId && showSeriesCancelOptions()) {
+              <app-button variant="danger" [disabled]="isSubmitting()" (clicked)="onCancelScope('single')">
+                {{ isSubmitting() ? '...' : 'Denna' }}
+              </app-button>
+              <app-button variant="danger" [disabled]="isSubmitting()" (clicked)="onCancelScope('thisAndFollowing')">
+                {{ isSubmitting() ? '...' : 'Denna & kommande' }}
+              </app-button>
+              <app-button variant="danger" [disabled]="isSubmitting()" (clicked)="onCancelScope('all')">
+                {{ isSubmitting() ? '...' : 'Hela serien' }}
+              </app-button>
+            } @else {
+              <app-button
+                variant="danger"
+                [disabled]="isSubmitting()"
+                (clicked)="onSetStatus(BookingStatus.Cancelled)"
+              >
+                {{ isSubmitting() ? 'Sparar...' : 'Avboka' }}
+              </app-button>
+            }
           }
           @if (booking.status === BookingStatus.Pending) {
             <app-button
@@ -391,6 +422,20 @@ export interface BookingEditModalConfig {
         line-height: 1.5;
       }
 
+      .recurring-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        margin-top: 12px;
+        background: var(--color-primary-surface);
+        color: var(--color-primary);
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        width: fit-content;
+      }
+
       /* ── Clickable info row ── */
       .info-row.clickable {
         cursor: pointer;
@@ -530,6 +575,7 @@ export class BookingEditModalComponent {
   readonly showParticipants = signal(false);
   readonly isLoadingParticipants = signal(false);
   readonly participants = signal<RegistrationParticipant[]>([]);
+  readonly showSeriesCancelOptions = signal(false);
 
   statusLabel(status?: BookingStatus): string {
     switch (status) {
@@ -576,6 +622,17 @@ export class BookingEditModalComponent {
     this.isSubmitting.set(true);
     try {
       await this.config.onStatusChange(this.booking.bookingId, status);
+    } catch {
+      this.isSubmitting.set(false);
+    }
+  }
+
+  async onCancelScope(scope: 'single' | 'thisAndFollowing' | 'all'): Promise<void> {
+    if (!this.booking.bookingId || !this.config.onCancelWithScope) return;
+
+    this.isSubmitting.set(true);
+    try {
+      await this.config.onCancelWithScope(this.booking.bookingId, scope);
     } catch {
       this.isSubmitting.set(false);
     }

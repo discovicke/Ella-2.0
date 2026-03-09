@@ -126,6 +126,7 @@ public class UserService(
             DisplayName = dto.DisplayName,
             PasswordHash = hashed,
             IsBanned = BannedStatus.NotBanned,
+            PermissionLevel = 1,
         };
 
         var success = await repo.CreateUserAsync(user);
@@ -152,6 +153,9 @@ public class UserService(
     {
         logger.LogInformation("Updating user with ID {UserId}", id);
 
+        if (dto.PermissionLevel is < 1 or > 10)
+            throw new ArgumentException("PermissionLevel must be between 1 and 10.");
+
         var existing =
             await repo.GetUserByIdAsync(id)
             ?? throw new KeyNotFoundException($"User with ID {id} does not exist.");
@@ -170,6 +174,7 @@ public class UserService(
             DisplayName = dto.DisplayName,
             PasswordHash = passwordHash,
             IsBanned = dto.IsBanned,
+            PermissionLevel = dto.PermissionLevel,
             TokensValidAfter = existing.TokensValidAfter,
             PermissionTemplateId = existing.PermissionTemplateId,
         };
@@ -267,6 +272,7 @@ public class UserService(
                 ["ManageBookings"] = dto.ManageBookings,
                 ["ManageCampuses"] = dto.ManageCampuses,
                 ["ManageRoles"] = dto.ManageRoles,
+                ["ManageResources"] = dto.ManageResources,
             }
         );
 
@@ -292,6 +298,7 @@ public class UserService(
             user.DisplayName,
             user.IsBanned,
             permissions,
+            user.PermissionLevel,
             campusNames,
             classNames
         );

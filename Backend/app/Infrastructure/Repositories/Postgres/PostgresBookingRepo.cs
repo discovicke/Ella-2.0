@@ -19,8 +19,8 @@ public class PostgresBookingRepo(
 
             var sql =
                 @"
-                INSERT INTO bookings (user_id, room_id, start_time, end_time, status, notes, booker_name)
-                VALUES (@UserId, @RoomId, @StartTime, @EndTime, @Status::booking_status, @Notes, @BookerName)
+                INSERT INTO bookings (user_id, room_id, start_time, end_time, status, notes, booker_name, recurring_group_id)
+                VALUES (@UserId, @RoomId, @StartTime, @EndTime, @Status::booking_status, @Notes, @BookerName, @RecurringGroupId)
                 RETURNING id;
             ";
 
@@ -35,6 +35,7 @@ public class PostgresBookingRepo(
                     Status = booking.Status.ToString().ToLower(),
                     booking.Notes,
                     booking.BookerName,
+                    booking.RecurringGroupId
                 }
             );
 
@@ -176,7 +177,8 @@ public class PostgresBookingRepo(
                     end_time = @EndTime,
                     status = @Status::booking_status,
                     notes = @Notes,
-                    booker_name = @BookerName
+                    booker_name = @BookerName,
+                    recurring_group_id = @RecurringGroupId
                 WHERE id = @BookingId;
             ";
 
@@ -191,6 +193,7 @@ public class PostgresBookingRepo(
                     Status = booking.Status.ToString().ToLower(),
                     booking.Notes,
                     booking.BookerName,
+                    booking.RecurringGroupId,
                     BookingId = bookingId,
                 }
             );
@@ -204,6 +207,57 @@ public class PostgresBookingRepo(
                 "Database error while updating booking with ID {BookingId}",
                 bookingId
             );
+            throw;
+        }
+    }
+
+    public async Task<IEnumerable<Booking>> GetBookingsByRecurringGroupIdAsync(Guid groupId)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            return await conn.QueryAsync<Booking>(
+                "SELECT * FROM bookings WHERE recurring_group_id = @GroupId ORDER BY start_time;",
+                new { GroupId = groupId });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching bookings for recurring group {GroupId}", groupId);
+            throw;
+        }
+    }
+
+    public async Task<int> CancelBookingsByRecurringGroupIdAsync(Guid groupId)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            return await conn.ExecuteAsync(
+                "UPDATE bookings SET status = @Status::booking_status WHERE recurring_group_id = @GroupId AND status != @Status::booking_status;",
+                new { GroupId = groupId, Status = BookingStatus.Cancelled.ToString().ToLower() });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error cancelling series {GroupId}", groupId);
+            throw;
+        }
+    }
+
+    public async Task<int> CancelFutureBookingsInSeriesAsync(Guid groupId, DateTime fromDate)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            return await conn.ExecuteAsync(
+                "UPDATE bookings SET status = @Status::booking_status WHERE recurring_group_id = @GroupId AND start_time >= @FromDate AND status != @Status::booking_status;",
+                new { GroupId = groupId, FromDate = fromDate.ToUniversalTime(), Status = BookingStatus.Cancelled.ToString().ToLower() });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error cancelling future bookings in series {GroupId} from {FromDate}", groupId, fromDate);
             throw;
         }
     }

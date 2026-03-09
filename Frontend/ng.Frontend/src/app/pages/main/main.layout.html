@@ -152,6 +152,31 @@
                 </a>
               </li>
             }
+            @if (sessionService.hasPermission('manageResources')) {
+              <li>
+                <a
+                  routerLink="/book-resource"
+                  routerLinkActive="active"
+                  (click)="layoutService.closeSidebar()"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="nav-icon"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                    />
+                  </svg>
+                  <span class="text">Boka Resurs</span>
+                </a>
+              </li>
+            }
           </ul>
         </nav>
       </div>
@@ -234,6 +259,32 @@
                       />
                     </svg>
                     <span class="text">Bokningslänkar</span>
+                  </a>
+                </li>
+              }
+
+              @if (sessionService.hasPermission('manageResources')) {
+                <li>
+                  <a
+                    routerLink="/manage-resources"
+                    routerLinkActive="active"
+                    (click)="layoutService.closeSidebar()"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="nav-icon"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.806H8.044a2.056 2.056 0 0 0-1.58.806 17.902 17.902 0 0 0-3.213 9.193c-.039.62.504 1.124 1.125 1.124h1.125m-12 0h12"
+                      />
+                    </svg>
+                    <span class="text">Hantera resurser</span>
                   </a>
                 </li>
               }

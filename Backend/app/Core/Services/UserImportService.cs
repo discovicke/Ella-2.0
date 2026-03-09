@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.DTO;
+using Backend.app.Core.Models.Entities;
+using Backend.app.Infrastructure.Parser;
 
 namespace Backend.app.Core.Services;
 
@@ -10,6 +12,7 @@ public class UserImportService(
     CampusService campusService,
     PermissionTemplateService permissionTemplateService,
     IUserRepository userRepository,
+    IClassRepository classRepository,
     IParser<StudentImportDto> parser,
     ILogger<UserImportService> logger
 )
@@ -28,6 +31,8 @@ public class UserImportService(
         var normalizedClassName = className.Trim();
         var students = await parser.Parse(csvContent, normalizedClassName);
         var classId = await ResolveClassIdAsync(normalizedClassName);
+        
+        var campuses = await campusService.GetAllAsync();
 
         // Build a city → campus ID lookup for auto-matching Studieort
         var allCampuses = await campusService.GetAllAsync();
@@ -66,12 +71,26 @@ public class UserImportService(
             try
             {
                 var createdUser = await userService.CreateUserAsync(dto);
+                
                 await userRepository.SetClassesForUserAsync(createdUser.Id, new[] { classId });
+                
+                if (!string.IsNullOrWhiteSpace(student.City))
+                {
+                    var matchedCampus = campuses.FirstOrDefault(c => 
+                        string.Equals(c.City, student.City.Trim(), StringComparison.OrdinalIgnoreCase));
+                    
+                    if (matchedCampus != null)
+                    {
+                        await userRepository.SetCampusesForUserAsync(createdUser.Id, new[] { matchedCampus.Id });
+                    }
+                }
+
                 if (student.TemplateId.HasValue)
                     await permissionTemplateService.ApplyTemplateAsync(
                         createdUser.Id,
                         student.TemplateId.Value
                     );
+                
                 if (!string.IsNullOrWhiteSpace(student.CampusName))
                 {
                     if (campusLookup.TryGetValue(student.CampusName, out var campusId))
@@ -144,9 +163,7 @@ public class UserImportService(
 
     private async Task<long> ResolveClassIdAsync(string className)
     {
-        var existingClass = (await classService.GetAllAsync()).FirstOrDefault(c =>
-            string.Equals(c.ClassName, className, StringComparison.OrdinalIgnoreCase)
-        );
+        var existingClass = await classRepository.GetByNameAsync(className);
 
         if (existingClass is not null)
             return existingClass.Id;
@@ -155,7 +172,7 @@ public class UserImportService(
         return createdClass.Id;
     }
 
-    private static string GenerateDisplayName(StudentImportDto student)
+    public static string GenerateDisplayName(StudentImportDto student)
     {
         var firstName = (student.FirstName ?? "").Trim();
         var lastName = (student.LastName ?? "").Trim();
@@ -165,7 +182,7 @@ public class UserImportService(
         );
     }
 
-    private static string GeneratePlaceholderPassword(StudentImportDto student)
+    public static string GeneratePlaceholderPassword(StudentImportDto student)
     {
         var firstName = string.IsNullOrWhiteSpace(student.FirstName)
             ? "student"

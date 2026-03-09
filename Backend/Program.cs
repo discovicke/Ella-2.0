@@ -7,6 +7,7 @@ using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
 using Backend.app.Infrastructure.Data;
+using Backend.app.Infrastructure.Data.DbUtils;
 using Backend.app.Infrastructure.Email;
 using Backend.app.Infrastructure.Middleware;
 using Backend.app.Infrastructure.Parser;
@@ -14,6 +15,7 @@ using Backend.app.Infrastructure.Repositories.Postgres;
 using Backend.app.Infrastructure.Repositories.Sqlite;
 using DotNetEnv;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 
@@ -40,7 +42,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 // 3. SETUP
 ConfigureDatabase(builder);
 ConfigureCoreServices(builder.Services);
-builder.Services.AddScoped<IBookingSlugRepository, PostgresBookingSlugRepo>();
+builder.Services.AddScoped<IBookingSlugRepository, PostgresBookingSlugRepo>(); // TODO: move into provider switch when SqliteBookingSlugRepo exists
 builder.Services.AddScoped<BookingSlugService>();
 ConfigureRateLimiting(builder.Services);
 
@@ -90,6 +92,7 @@ var api = app.MapGroup("api").AddEndpointFilter<ValidationFilter>();
 api.MapAuthEndpoints();
 api.MapBookingSlugEndpoints();
 api.MapUserEndpoints();
+api.MapResourceEndpoints();
 api.MapRoomEndpoints();
 api.MapAssetEndpoints();
 api.MapBookingEndpoints();
@@ -262,6 +265,7 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
             services.AddScoped<IRegistrationRepository, SqliteRegistrationRepo>();
             services.AddScoped<ICampusRepository, SqliteCampusRepo>();
             services.AddScoped<IClassRepository, SqliteClassRepo>();
+            services.AddScoped<IResourceRepository, SqliteResourceRepo>();
             break;
 
         case DbProviders.Postgres:
@@ -278,6 +282,7 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
             services.AddScoped<IRoomReadModelRepository, PostgresRoomReadModelRepo>();
             services.AddScoped<ICampusRepository, PostgresCampusRepo>();
             services.AddScoped<IClassRepository, PostgresClassRepo>();
+            services.AddScoped<IResourceRepository, PostgresResourceRepo>();
             break;
 
         case DbProviders.SqlServer:
@@ -310,6 +315,7 @@ static void ConfigureCoreServices(IServiceCollection services)
     services.AddScoped<CampusService>();
     services.AddScoped<ClassService>();
     services.AddScoped<UserImportService>();
+    services.AddScoped<ResourceService>();
 }
 
 static void ConfigureRateLimiting(IServiceCollection services)

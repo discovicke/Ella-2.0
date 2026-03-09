@@ -479,6 +479,8 @@ export class ManageBookingsPage {
         booking,
         onStatusChange: (bookingId: number, newStatus: BookingStatus) =>
           this.handleStatusChange(bookingId, newStatus),
+        onCancelWithScope: (bookingId: number, scope: 'single' | 'thisAndFollowing' | 'all') =>
+          this.handleCancelWithScope(bookingId, scope),
       },
       width: '520px',
     });
@@ -498,6 +500,21 @@ export class ManageBookingsPage {
     } catch (err) {
       console.error('Failed updating booking status', err);
       this.toastService.showError('Kunde inte uppdatera bokningens status.');
+      throw err;
+    }
+  }
+
+  private async handleCancelWithScope(bookingId: number, scope: 'single' | 'thisAndFollowing' | 'all'): Promise<void> {
+    try {
+      const result = await firstValueFrom(this.bookingService.cancelWithScope(bookingId, scope));
+      const label = scope === 'all' ? 'Hela serien' : scope === 'thisAndFollowing' ? 'Denna och kommande' : 'Bokningen';
+      this.toastService.showSuccess(`${label} har avbokats (${result.cancelledCount} st).`);
+      this.modalService.close();
+      this.bookingsResource.reload();
+      this.loadPendingCount();
+    } catch (err) {
+      console.error('Failed cancelling with scope', err);
+      this.toastService.showError('Kunde inte avboka.');
       throw err;
     }
   }

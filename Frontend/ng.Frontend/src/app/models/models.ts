@@ -65,6 +65,8 @@ export interface BookingDetailedReadModel {
   status?: BookingStatus;
   notes?: string | null;
   bookerName?: string | null;
+  /** @format uuid */
+  recurringGroupId?: string | null;
   /** @format date-time */
   createdAt?: string;
   /** @format date-time */
@@ -138,6 +140,13 @@ export interface CreateBookingDto {
   classIds?: number[] | null;
   /** @default null */
   bookerName?: string | null;
+  /** @default null */
+  recurrencePattern?: string | null;
+  /**
+   * @format date-time
+   * @default null
+   */
+  recurrenceEnd?: string | null;
 }
 
 export interface CreateBookingSlugDto {
@@ -172,6 +181,29 @@ export interface CreatePublicBookingDto {
   endTime: string;
   bookerName: string;
   notes: string | null;
+}
+
+export interface CreateResourceBookingDto {
+  /** @format int64 */
+  resourceId: number;
+  /** @format date-time */
+  startTime: string;
+  /** @format date-time */
+  endTime: string;
+  notes: string | null;
+}
+
+export interface CreateResourceCategoryDto {
+  name: string;
+}
+
+export interface CreateResourceDto {
+  /** @format int64 */
+  categoryId: number;
+  /** @format int64 */
+  campusId: number;
+  name: string;
+  description: string | null;
 }
 
 export interface CreateRoomDto {
@@ -292,6 +324,42 @@ export interface ResetPasswordDto {
   newPassword: string;
 }
 
+export interface ResourceBookingResponseDto {
+  /** @format int64 */
+  id: number;
+  /** @format int64 */
+  resourceId: number;
+  resourceName: string;
+  /** @format int64 */
+  userId: number;
+  userName: string;
+  /** @format date-time */
+  startTime: string;
+  /** @format date-time */
+  endTime: string;
+  notes: string | null;
+}
+
+export interface ResourceCategoryDto {
+  /** @format int64 */
+  id: number;
+  name: string;
+}
+
+export interface ResourceResponseDto {
+  /** @format int64 */
+  id: number;
+  /** @format int64 */
+  categoryId: number;
+  categoryName: string;
+  /** @format int64 */
+  campusId: number;
+  campusCity: string;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+}
+
 export interface RoomDetailModel {
   /** @format int64 */
   roomId?: number;
@@ -393,6 +461,8 @@ export interface UpdateUserDto {
   /** @maxLength 128 */
   password: string | null;
   isBanned: BannedStatus;
+  /** @format int32 */
+  permissionLevel: number;
 }
 
 export type UserPermissions = {
@@ -407,6 +477,7 @@ export type UserPermissions = {
   manageBookings?: boolean;
   manageCampuses?: boolean;
   manageRoles?: boolean;
+  manageResources?: boolean;
 };
 
 export interface UserPermissions2 {
@@ -421,6 +492,7 @@ export interface UserPermissions2 {
   manageBookings?: boolean;
   manageCampuses?: boolean;
   manageRoles?: boolean;
+  manageResources?: boolean;
 }
 
 export interface UserResponseDto {
@@ -430,6 +502,8 @@ export interface UserResponseDto {
   displayName: string | null;
   isBanned: BannedStatus;
   permissions: UserPermissions;
+  /** @format int32 */
+  permissionLevel: number;
   /** @default null */
   campusNames?: string[] | null;
   /** @default null */

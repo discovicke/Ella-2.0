@@ -46,6 +46,34 @@
       ></textarea>
     </div>
 
+    <!-- Återkommande bokning -->
+    <div class="recurrence-section">
+      <label class="checkbox-label">
+        <input type="checkbox" formControlName="isRecurring" />
+        Återkommande bokning
+      </label>
+
+      @if (bookingForm.controls.isRecurring.value) {
+        <div class="recurrence-options">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="pattern">Upprepa</label>
+              <select id="pattern" formControlName="recurrencePattern">
+                <option value="daily">Varje dag</option>
+                <option value="weekly">Varje vecka</option>
+                <option value="biweekly">Varannan vecka</option>
+                <option value="monthly">Varje månad</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="recurrenceEnd">Slutdatum</label>
+              <input type="date" id="recurrenceEnd" formControlName="recurrenceEnd" />
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
     <!-- ─── Invite section ─── -->
     <div class="invite-section">
       <p class="invite-heading">Bjud in</p>

@@ -82,6 +82,15 @@ export const routes: Routes = [
           import('./pages/main/manage-slugs/manage-slugs.page').then((m) => m.ManageSlugsPage),
       },
       {
+        path: 'manage-resources',
+        canActivate: [permissionGuard],
+        data: { permission: 'manageResources' },
+        loadComponent: () =>
+          import('./pages/main/manage-resources/manage-resources.page').then(
+            (m) => m.ManageResourcesPage,
+          ),
+      },
+      {
         path: 'manage-rooms',
         canActivate: [permissionGuard],
         data: { permission: 'manageRooms' },

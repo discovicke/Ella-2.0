@@ -10,7 +10,8 @@ public static class TestDataFactory
         Id = id,
         Email = email,
         PasswordHash = "fake-hash",
-        DisplayName = "Test User"
+        DisplayName = "Test User",
+        IsActive = true
     };
 
     public static Room CreateRoom(long id = 1, string name = "Test Room") => new()

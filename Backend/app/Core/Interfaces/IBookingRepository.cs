@@ -1,11 +1,10 @@
-﻿using Backend.app.Core.Models.Entities;
+﻿﻿using Backend.app.Core.Models.Entities;
 
 namespace Backend.app.Core.Interfaces;
 
 public interface IBookingRepository
 {
     // Repository interface for Booking data access
-    // Reference: src/modules/bookings/booking.repo.js for all methods
     // CRUD stands for Create, Read, Update, and Delete – basic operations used to add, fetch, modify, and remove data.
     Task<long> CreateBookingAsync(Booking booking);
     Task<Booking?> GetBookingByIdAsync(long bookingId);
@@ -17,4 +16,9 @@ public interface IBookingRepository
     );
     Task<bool> UpdateBookingAsync(long bookingId, Booking booking);
     Task<bool> CancelBookingAsync(long bookingId);
+
+    // Series operations (recurring bookings)
+    Task<IEnumerable<Booking>> GetBookingsByRecurringGroupIdAsync(Guid groupId);
+    Task<int> CancelBookingsByRecurringGroupIdAsync(Guid groupId);
+    Task<int> CancelFutureBookingsInSeriesAsync(Guid groupId, DateTime fromDate);
 }

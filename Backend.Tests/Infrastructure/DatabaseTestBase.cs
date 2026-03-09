@@ -1,6 +1,7 @@
 using Backend.app.Core.Interfaces;
 using Backend.app.Infrastructure.Data;
 using Backend.app.Infrastructure.Auth;
+using Backend.app.Infrastructure.Data.DbUtils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.IO;

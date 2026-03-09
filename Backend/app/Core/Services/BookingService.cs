@@ -159,67 +159,121 @@ public class BookingService(
             throw new KeyNotFoundException($"Room with ID {dto.RoomId} not found.");
         }
 
-        // 2. Check for overlaps
-        var overlaps = (await repo.GetOverlappingBookingsAsync(
-            dto.RoomId,
-            dto.StartTime,
-            dto.EndTime
-        )).ToList();
+        // Calculate all occurrences if it's a recurring booking
+        var occurrences = new List<(DateTime Start, DateTime End)>();
+        occurrences.Add((dto.StartTime, dto.EndTime));
 
-        if (overlaps.Any())
+        if (!string.IsNullOrWhiteSpace(dto.RecurrencePattern) && dto.RecurrenceEnd.HasValue)
         {
-            if (dto.IsLesson)
-            {
-                // Lesson priority logic: Can only override private bookings
-                var lessonConflicts = overlaps.Where(b => b.IsLesson).ToList();
-                if (lessonConflicts.Any())
-                {
-                    throw new InvalidOperationException("Cannot book lesson: Room is already occupied by another lesson.");
-                }
+            var currentStart = dto.StartTime;
+            var currentEnd = dto.EndTime;
+            var duration = dto.EndTime - dto.StartTime;
 
-                // Automatically cancel the private bookings that were in the way
-                foreach (var privateBooking in overlaps)
-                {
-                    await repo.CancelBookingAsync(privateBooking.Id);
-                    // TODO: In a real app, we would notify the users here
-                }
-            }
-            else
+            while (true)
             {
-                // Private booking logic: Cannot override anything
-                throw new InvalidOperationException("Cannot create private booking: Room is already occupied.");
+                if (dto.RecurrencePattern.ToLower() == "daily")
+                    currentStart = currentStart.AddDays(1);
+                else if (dto.RecurrencePattern.ToLower() == "weekly")
+                    currentStart = currentStart.AddDays(7);
+                else if (dto.RecurrencePattern.ToLower() == "biweekly")
+                    currentStart = currentStart.AddDays(14);
+                else if (dto.RecurrencePattern.ToLower() == "monthly")
+                    currentStart = currentStart.AddMonths(1);
+                else
+                    break;
+
+                currentEnd = currentStart + duration;
+
+                if (currentStart > dto.RecurrenceEnd.Value)
+                    break;
+
+                occurrences.Add((currentStart, currentEnd));
+                
+                // Safety break to prevent infinite loops (max 1 year or 100 occurrences)
+                if (occurrences.Count >= 100) break;
             }
         }
 
-        // 3. Create the booking
-        var booking = new Booking
+        var recurringGroupId = occurrences.Count > 1 ? Guid.NewGuid() : (Guid?)null;
+        var createdBookings = new List<Booking>();
+
+        // 2. Check for overlaps for ALL occurrences
+        foreach (var occ in occurrences)
         {
-            UserId = dto.UserId,
-            RoomId = dto.RoomId,
-            StartTime = dto.StartTime,
-            EndTime = dto.EndTime,
-            Notes = dto.Notes,
-            IsLesson = dto.IsLesson,
-            BookerName = dto.BookerName,
-            Status = dto.Status != default ? dto.Status : BookingStatus.Active,
-        };
+            var overlaps = (await repo.GetOverlappingBookingsAsync(
+                dto.RoomId,
+                occ.Start,
+                occ.End
+            )).ToList();
 
+            if (overlaps.Any())
+            {
+                var user = await userRepo.GetUserByIdAsync(dto.UserId);
+                var userLevel = user?.PermissionLevel ?? 1;
 
+                bool canOverrideAll = true;
+                var conflictingUsers = new List<(long BookingId, int Level)>();
 
-        var id = await repo.CreateBookingAsync(booking);
-        booking.Id = id;
+                foreach (var existing in overlaps)
+                {
+                    var existingUser = await userRepo.GetUserByIdAsync(existing.UserId);
+                    var existingLevel = existingUser?.PermissionLevel ?? 1;
+                    
+                    if (userLevel <= existingLevel)
+                    {
+                        canOverrideAll = false;
+                        break;
+                    }
+                    conflictingUsers.Add((existing.Id, existingLevel));
+                }
 
-        // Link classes and auto-invite class members if classIds provided
-        if (dto.ClassIds is { Length: > 0 })
-        {
-            await classRepo.SetClassesForBookingAsync(id, dto.ClassIds);
-            var userIds = await classRepo.GetUserIdsByClassIdsAsync(dto.ClassIds);
-            // Exclude the booking owner from auto-invites
-            var inviteIds = userIds.Where(uid => uid != dto.UserId);
-            await registrationRepo.BulkInviteAsync(id, inviteIds);
+                if (canOverrideAll)
+                {
+                    foreach (var conflict in conflictingUsers)
+                    {
+                        await repo.CancelBookingAsync(conflict.BookingId);
+                    }
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        $"Konflikt vid {occ.Start:yyyy-MM-dd HH:mm}: Rummet är upptaget av en användare med samma eller högre prioritet (din nivå: {userLevel}).");
+                }
+            }
         }
 
-        return booking;
+        // 3. Create all bookings in the series
+        Booking? firstBooking = null;
+        foreach (var occ in occurrences)
+        {
+            var booking = new Booking
+            {
+                UserId = dto.UserId,
+                RoomId = dto.RoomId,
+                StartTime = occ.Start,
+                EndTime = occ.End,
+                Notes = dto.Notes,
+                IsLesson = dto.IsLesson,
+                BookerName = dto.BookerName,
+                Status = dto.Status != default ? dto.Status : BookingStatus.Active,
+                RecurringGroupId = recurringGroupId
+            };
+
+            var id = await repo.CreateBookingAsync(booking);
+            booking.Id = id;
+            if (firstBooking == null) firstBooking = booking;
+
+            // Link classes and auto-invite
+            if (dto.ClassIds is { Length: > 0 })
+            {
+                await classRepo.SetClassesForBookingAsync(id, dto.ClassIds);
+                var userIds = await classRepo.GetUserIdsByClassIdsAsync(dto.ClassIds);
+                var inviteIds = userIds.Where(uid => uid != dto.UserId);
+                await registrationRepo.BulkInviteAsync(id, inviteIds);
+            }
+        }
+
+        return firstBooking!;
     }
 
     /// <summary>
@@ -263,5 +317,92 @@ public class BookingService(
     public async Task<IEnumerable<BookingDetailedReadModel>> GetUserOwnedBookingsAsync(long userId)
     {
         return await readModelRepo.GetDetailedBookingsByUserIdAsync(userId);
+    }
+
+    // ==========================================
+    //  RECURRING SERIES OPERATIONS
+    // ==========================================
+
+    /// <summary>
+    /// Get all bookings in a recurring series.
+    /// </summary>
+    public async Task<IEnumerable<Booking>> GetSeriesAsync(Guid recurringGroupId)
+    {
+        return await repo.GetBookingsByRecurringGroupIdAsync(recurringGroupId);
+    }
+
+    /// <summary>
+    /// Cancel booking(s) based on scope: Single, ThisAndFollowing, or All in series.
+    /// Google Calendar-style: "Denna bokning", "Denna och kommande", "Alla i serien".
+    /// </summary>
+    public async Task<int> CancelWithScopeAsync(long bookingId, SeriesScope scope)
+    {
+        var booking = await repo.GetBookingByIdAsync(bookingId)
+            ?? throw new KeyNotFoundException($"Booking with ID {bookingId} not found.");
+
+        return scope switch
+        {
+            SeriesScope.Single =>
+                await repo.CancelBookingAsync(bookingId) ? 1 : 0,
+
+            SeriesScope.ThisAndFollowing when booking.RecurringGroupId.HasValue =>
+                await repo.CancelFutureBookingsInSeriesAsync(
+                    booking.RecurringGroupId.Value,
+                    booking.StartTime),
+
+            SeriesScope.All when booking.RecurringGroupId.HasValue =>
+                await repo.CancelBookingsByRecurringGroupIdAsync(
+                    booking.RecurringGroupId.Value),
+
+            // Not part of a series → just cancel the single booking
+            _ => await repo.CancelBookingAsync(bookingId) ? 1 : 0,
+        };
+    }
+
+    /// <summary>
+    /// Update a single booking's details (time, notes, lesson flag).
+    /// Re-validates room availability if the time is changed.
+    /// </summary>
+    public async Task<Booking> UpdateBookingDetailsAsync(long bookingId, UpdateBookingDto dto)
+    {
+        var booking = await repo.GetBookingByIdAsync(bookingId)
+            ?? throw new KeyNotFoundException($"Booking with ID {bookingId} not found.");
+
+        if (dto.StartTime.HasValue) booking.StartTime = dto.StartTime.Value;
+        if (dto.EndTime.HasValue) booking.EndTime = dto.EndTime.Value;
+        if (dto.Notes is not null) booking.Notes = dto.Notes;
+        if (dto.IsLesson.HasValue) booking.IsLesson = dto.IsLesson.Value;
+
+        if (booking.StartTime >= booking.EndTime)
+            throw new InvalidOperationException("Start time must be before end time.");
+
+        // Re-validate availability if time changed
+        if (dto.StartTime.HasValue || dto.EndTime.HasValue)
+        {
+            var overlaps = (await repo.GetOverlappingBookingsAsync(
+                booking.RoomId,
+                booking.StartTime,
+                booking.EndTime
+            )).Where(b => b.Id != bookingId).ToList();
+
+            if (overlaps.Any())
+                throw new InvalidOperationException("Rummet är redan bokat under den nya tiden.");
+        }
+
+        await repo.UpdateBookingAsync(bookingId, booking);
+        return booking;
+    }
+
+    /// <summary>
+    /// Detach a single booking from its recurring series so it can be edited independently.
+    /// </summary>
+    public async Task<Booking> DetachFromSeriesAsync(long bookingId)
+    {
+        var booking = await repo.GetBookingByIdAsync(bookingId)
+            ?? throw new KeyNotFoundException($"Booking with ID {bookingId} not found.");
+
+        booking.RecurringGroupId = null;
+        await repo.UpdateBookingAsync(bookingId, booking);
+        return booking;
     }
 }

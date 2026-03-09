@@ -70,6 +70,9 @@ public class SqlitePermissionRepo(
                     case "ManageRoles":
                         permissions.ManageRoles = val;
                         break;
+                    case "ManageResources":
+                        permissions.ManageResources = val;
+                        break;
                 }
             }
 
@@ -142,6 +145,9 @@ public class SqlitePermissionRepo(
                         break;
                     case "ManageRoles":
                         perms.ManageRoles = val;
+                        break;
+                    case "ManageResources":
+                        perms.ManageResources = val;
                         break;
                 }
             }
@@ -345,6 +351,9 @@ public class SqlitePermissionRepo(
                         break;
                     case "ManageRoles":
                         permissions.ManageRoles = val;
+                        break;
+                    case "ManageResources":
+                        permissions.ManageResources = val;
                         break;
                 }
             }

@@ -187,6 +187,9 @@ export class BookingModalComponent implements OnInit, OnDestroy {
     notes: new FormControl('', {
       nonNullable: true,
     }),
+    isRecurring: new FormControl(false, { nonNullable: true }),
+    recurrencePattern: new FormControl('weekly', { nonNullable: true }),
+    recurrenceEnd: new FormControl('', { nonNullable: false }),
   });
 
   readonly isSubmitting = signal(false);
@@ -215,6 +218,13 @@ export class BookingModalComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const formValue = this.bookingForm.getRawValue();
+    if (formValue.isRecurring && !formValue.recurrenceEnd) {
+      this.toastService.showError('Du måste välja ett slutdatum för återkommande bokningar.');
+      this.isSubmitting.set(false);
+      return;
+    }
+
     if (!this.room.roomId) {
       this.toastService.showError('Ogiltigt rum.');
       this.isSubmitting.set(false);
@@ -232,9 +242,11 @@ export class BookingModalComponent implements OnInit, OnDestroy {
       roomId: this.room.roomId,
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
-      notes: this.bookingForm.value.notes || '',
+      notes: formValue.notes || '',
       status: BookingStatus.Active,
       classIds,
+      recurrencePattern: formValue.isRecurring ? formValue.recurrencePattern : null,
+      recurrenceEnd: formValue.isRecurring && formValue.recurrenceEnd ? new Date(formValue.recurrenceEnd).toISOString() : null,
     };
 
     this.bookingService.createBooking(booking).subscribe({

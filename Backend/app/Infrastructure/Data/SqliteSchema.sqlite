@@ -32,6 +32,10 @@ CREATE TABLE IF NOT EXISTS "users" (
     "password_hash" TEXT NOT NULL,
     "display_name" TEXT,
     "is_banned" INTEGER NOT NULL DEFAULT 0,
+    "is_active" INTEGER NOT NULL DEFAULT 0,
+    "permission_level" INTEGER NOT NULL DEFAULT 1 CHECK (permission_level >= 1 AND permission_level <= 10),
+    "reset_token_hash" TEXT,
+    "reset_token_expires" TEXT,
     "tokens_valid_after" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "permission_template_id" INTEGER,
     PRIMARY KEY("id"),
@@ -168,6 +172,7 @@ CREATE TABLE IF NOT EXISTS "bookings" (
     "is_lesson" INTEGER NOT NULL DEFAULT 0,
     "notes" TEXT,
     "booker_name" TEXT,
+    "recurring_group_id" TEXT,
     "created_at" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TEXT,
     PRIMARY KEY("id"),
@@ -230,6 +235,8 @@ SELECT
     END AS status,
     b.is_lesson AS is_lesson,
     b.notes AS notes,
+    b.booker_name AS booker_name,
+    b.recurring_group_id AS recurring_group_id,
     b.created_at AS created_at,
     b.updated_at AS updated_at,
     COALESCE(SUM(CASE WHEN reg.status = 1 THEN 1 ELSE 0 END), 0) AS registration_count,
@@ -248,7 +255,7 @@ LEFT JOIN rooms r ON b.room_id = r.id
 LEFT JOIN room_types rt ON r.room_type_id = rt.id
 LEFT JOIN campus c ON r.campus_id = c.id
 LEFT JOIN registrations reg ON b.id = reg.booking_id
-GROUP BY b.id, b.user_id, u.display_name, u.email, b.room_id, r.name, r.capacity, rt.name, r.floor, c.city, b.start_time, b.end_time, b.status, b.is_lesson, b.notes, b.created_at, b.updated_at;
+GROUP BY b.id, b.user_id, u.display_name, u.email, b.room_id, r.name, r.capacity, rt.name, r.floor, c.city, b.start_time, b.end_time, b.status, b.is_lesson, b.notes, b.booker_name, b.recurring_group_id, b.created_at, b.updated_at;
 
 -- View: Room Details with JSON array assets
 DROP VIEW IF EXISTS "v_room_details";
@@ -272,3 +279,39 @@ LEFT JOIN room_types rt ON r.room_type_id = rt.id
 LEFT JOIN room_assets ra ON r.id = ra.room_id
 LEFT JOIN asset_types at ON ra.asset_type_id = at.id
 GROUP BY r.id, r.campus_id, r.name, c.city, r.capacity, r.room_type_id, rt.name, r.floor, r.notes;
+
+
+-- =============================================================
+--  RESOURCE MANAGEMENT (Movable items like cars, laptop carts)
+-- =============================================================
+
+CREATE TABLE IF NOT EXISTS "resource_categories" (
+    "id" INTEGER NOT NULL,
+    "name" TEXT NOT NULL UNIQUE,
+    PRIMARY KEY("id")
+);
+
+CREATE TABLE IF NOT EXISTS "bookable_resources" (
+    "id" INTEGER NOT NULL,
+    "category_id" INTEGER NOT NULL,
+    "campus_id" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "is_active" INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY("id"),
+    FOREIGN KEY ("category_id") REFERENCES "resource_categories"("id") ON DELETE RESTRICT,
+    FOREIGN KEY ("campus_id") REFERENCES "campus"("id") ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS "resource_bookings" (
+    "id" INTEGER NOT NULL,
+    "resource_id" INTEGER NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "start_time" TEXT NOT NULL,
+    "end_time" TEXT NOT NULL,
+    "notes" TEXT,
+    "created_at" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY("id"),
+    FOREIGN KEY ("resource_id") REFERENCES "bookable_resources"("id") ON DELETE CASCADE,
+    FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT
+);
