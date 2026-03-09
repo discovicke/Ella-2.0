@@ -68,39 +68,120 @@ if (fs.existsSync(ENV_PATH) || fs.existsSync(ENV_EXAMPLE_PATH)) {
         ui.footer();
         process.exit(0);
       }
-      // Remove old env files and continue setup
-      function removeAndContinue() {
-        if (fs.existsSync(ENV_PATH)) fs.unlinkSync(ENV_PATH);
-        if (fs.existsSync(ENV_EXAMPLE_PATH)) fs.unlinkSync(ENV_EXAMPLE_PATH);
-        ui.ok("Removed old environment files.");
-        runSetup();
+
+      // --- Offer to wipe the current database before reconfiguring ---
+      const currentEnvFile = fs.existsSync(ENV_PATH)
+        ? ENV_PATH
+        : ENV_EXAMPLE_PATH;
+      const currentEnvContent = fs.readFileSync(currentEnvFile, "utf8");
+      const currentProvider = currentEnvContent
+        .match(/DatabaseSettings__Provider=([^\r\n]+)/)?.[1]
+        ?.trim()
+        .toLowerCase();
+      const currentConnStr = currentEnvContent
+        .match(/DatabaseSettings__ConnectionString=([^\r\n]+)/)?.[1]
+        ?.trim();
+
+      function afterWipePrompt() {
+        // Remove old env files and continue setup
+        function removeAndContinue() {
+          if (fs.existsSync(ENV_PATH)) fs.unlinkSync(ENV_PATH);
+          if (fs.existsSync(ENV_EXAMPLE_PATH)) fs.unlinkSync(ENV_EXAMPLE_PATH);
+          ui.ok("Removed old environment files.");
+          runSetup();
+        }
+
+        if (fs.existsSync(ENV_PATH)) {
+          ui.warn(
+            "A real Backend/.env file exists (may contain production credentials).",
+          );
+          const rlConfirm = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+          });
+          rlConfirm.question(
+            ui.prompt(
+              "Delete Backend/.env too? This cannot be undone. (y/N): ",
+            ),
+            (confirm) => {
+              rlConfirm.close();
+              if (confirm.trim().toLowerCase() !== "y") {
+                ui.hint("Keeping Backend/.env — only removing .env-example.");
+                if (fs.existsSync(ENV_EXAMPLE_PATH))
+                  fs.unlinkSync(ENV_EXAMPLE_PATH);
+                ui.ok("Removed Backend/.env-example.");
+                runSetup();
+              } else {
+                removeAndContinue();
+              }
+            },
+          );
+        } else {
+          removeAndContinue();
+        }
       }
 
-      if (fs.existsSync(ENV_PATH)) {
-        ui.warn(
-          "A real Backend/.env file exists (may contain production credentials).",
-        );
-        const rlConfirm = readline.createInterface({
+      if (currentProvider) {
+        const rlWipe = readline.createInterface({
           input: process.stdin,
           output: process.stdout,
         });
-        rlConfirm.question(
-          ui.prompt("Delete Backend/.env too? This cannot be undone. (y/N): "),
-          (confirm) => {
-            rlConfirm.close();
-            if (confirm.trim().toLowerCase() !== "y") {
-              ui.hint("Keeping Backend/.env — only removing .env-example.");
-              if (fs.existsSync(ENV_EXAMPLE_PATH))
-                fs.unlinkSync(ENV_EXAMPLE_PATH);
-              ui.ok("Removed Backend/.env-example.");
-              runSetup();
+        rlWipe.question(
+          ui.prompt(
+            `Wipe existing ${c.cyan}${currentProvider}${c.reset} database too? (y/N): `,
+          ),
+          (wipeAns) => {
+            rlWipe.close();
+            if (wipeAns.trim().toLowerCase() === "y") {
+              try {
+                if (currentProvider === "sqlite") {
+                  const match = currentConnStr?.match(
+                    /Data Source=([^;]+)/i,
+                  );
+                  if (match) {
+                    const dbPath = path.resolve(
+                      ROOT,
+                      "Backend",
+                      match[1].trim(),
+                    );
+                    [dbPath, `${dbPath}-wal`, `${dbPath}-shm`].forEach((f) => {
+                      if (fs.existsSync(f)) fs.unlinkSync(f);
+                    });
+                    ui.ok("SQLite database deleted.");
+                  }
+                } else if (DOCKER_PROVIDERS.includes(currentProvider)) {
+                  const composeFile = path.join(
+                    ROOT,
+                    "_tools",
+                    "docker",
+                    `docker-compose.${currentProvider}.yml`,
+                  );
+                  if (fs.existsSync(composeFile)) {
+                    try {
+                      execSync("docker info", { stdio: "ignore" });
+                      execSync(
+                        `docker compose -f "${composeFile}" down -v`,
+                        { cwd: ROOT, stdio: "inherit" },
+                      );
+                      ui.ok(`${currentProvider} database wiped.`);
+                    } catch {
+                      ui.warn(
+                        "Docker is not running — skipping database wipe.",
+                      );
+                    }
+                  }
+                }
+              } catch (err) {
+                ui.warn(`Could not wipe database: ${err.message}`);
+              }
             } else {
-              removeAndContinue();
+              ui.hint("Keeping existing database.");
             }
+            afterWipePrompt();
           },
         );
       } else {
-        removeAndContinue();
+        afterWipePrompt();
       }
     },
   );
