@@ -2,9 +2,9 @@
 
 > **Source of truth:** [`SqliteSchema.sqlite`](../../app/Infrastructure/Data/SqliteSchema.sqlite) (SQLite) and [`PostgresSchema.sql`](../../app/Infrastructure/Data/PostgresSchema.sql) (PostgreSQL).
 
-[View the ELLA2.0 Postgres Design (PDF)](../images/ELLA2.0%20-%20Postgres.pdf)
-
-Link to diagram: [www.dbdiagram.io](https://dbdiagram.io/d/ELLA2-0-Postgres-69a9a253a3f0aa31e1f2e2a0)
+<!-- dbdocs-link:start -->
+> Schema diagram not yet published. Run `dbdocs login` then `npm start` to auto-publish.
+<!-- dbdocs-link:end -->
 
 ---
 

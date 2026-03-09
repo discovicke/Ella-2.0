@@ -36,6 +36,12 @@ Se [USAGE.md](./_docs/usage.md) för en detaljerad genomgång av systemets funkt
 
 ---
 
+## Databasschema
+
+<!-- dbdocs-link:start -->
+> Schema diagram not yet published. Run `dbdocs login` then `npm start` to auto-publish.
+<!-- dbdocs-link:end -->
+
 ## Databasmigrering
 
 Applikationen skapar automatiskt alla tabeller, enum-typer, vyer, triggers och index vid uppstart om de inte redan finns. Ingen manuell SQL-körning krävs.
