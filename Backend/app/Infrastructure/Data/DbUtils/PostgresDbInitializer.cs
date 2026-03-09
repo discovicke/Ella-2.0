@@ -1,3 +1,4 @@
+
 using System.Data;
 using Backend.app.Core.Interfaces;
 using Dapper;
@@ -36,25 +37,7 @@ public class PostgresDbInitializer(
     {
         logger.LogInformation("Running schema.sql...");
 
-        var schemaPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "app",
-            "Infrastructure",
-            "Data",
-            "PostgresSchema.sql"
-        );
-
-        // Fallback: try relative path from project root (for development)
-        if (!File.Exists(schemaPath))
-        {
-            schemaPath = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "app",
-                "Infrastructure",
-                "Data",
-                "PostgresSchema.sql"
-            );
-        }
+        var schemaPath = GetFullPath("PostgresSchema.sql");
 
         if (!File.Exists(schemaPath))
         {
@@ -91,25 +74,7 @@ public class PostgresDbInitializer(
 
         logger.LogInformation("Seeding database with initial data...");
 
-        var seedPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "app",
-            "Infrastructure",
-            "Data",
-            "PostgresSeed.sql"
-        );
-
-        // Fallback: try relative path from project root (for development)
-        if (!File.Exists(seedPath))
-        {
-            seedPath = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "app",
-                "Infrastructure",
-                "Data",
-                "PostgresSeed.sql"
-            );
-        }
+        var seedPath = GetFullPath("PostgresSeed.sql");
 
         if (!File.Exists(seedPath))
         {
@@ -130,6 +95,32 @@ public class PostgresDbInitializer(
         await conn.ExecuteAsync(seedSql);
 
         logger.LogInformation("Database seeded successfully.");
+    }
+
+    private string GetFullPath(string fileName)
+    {
+        // 1. Try AppContext.BaseDirectory (standard)
+        var path = Path.Combine(AppContext.BaseDirectory, "app", "Infrastructure", "Data", fileName);
+        if (File.Exists(path)) return path;
+
+        // 2. Climb up from CurrentDirectory to find the project root or Backend folder
+        var current = new DirectoryInfo(Directory.GetCurrentDirectory());
+        for (int i = 0; i < 6; i++)
+        {
+            if (current == null) break;
+
+            // Try <current>/Backend/app/Infrastructure/Data
+            path = Path.Combine(current.FullName, "Backend", "app", "Infrastructure", "Data", fileName);
+            if (File.Exists(path)) return path;
+
+            // Try <current>/app/Infrastructure/Data
+            path = Path.Combine(current.FullName, "app", "Infrastructure", "Data", fileName);
+            if (File.Exists(path)) return path;
+
+            current = current.Parent;
+        }
+
+        return Path.Combine(AppContext.BaseDirectory, "app", "Infrastructure", "Data", fileName);
     }
 
     private string ReplaceHashPlaceholders(string sql, string password)

@@ -11,7 +11,16 @@ public record CreateBookingDto(
     [property: MaxLength(500)] string? Notes,
     BookingStatus Status,
     bool IsLesson = false,
-    long[]? ClassIds = null
+    long[]? ClassIds = null,
+    string? BookerName = null
+);
+
+public record CreatePublicBookingDto(
+    long RoomId,
+    DateTime StartTime,
+    DateTime EndTime,
+    string BookerName,
+    string? Notes
 );
 
 public record CancelBookingDto(long Id);

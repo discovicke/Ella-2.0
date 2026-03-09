@@ -2,11 +2,13 @@
 using System.Threading.RateLimiting;
 using Backend.app.API.Endpoints;
 using Backend.app.Core.Interfaces;
+using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
 using Backend.app.Infrastructure.Data;
 using Backend.app.Infrastructure.Middleware;
+using Backend.app.Infrastructure.Parser;
 using Backend.app.Infrastructure.Repositories.Postgres;
 using Backend.app.Infrastructure.Repositories.Sqlite;
 using DotNetEnv;
@@ -90,6 +92,7 @@ api.MapRegistrationEndpoints();
 api.MapPermissionTemplateEndpoints();
 api.MapCampusEndpoints();
 api.MapClassEndpoints();
+api.MapImportEndpoints();
 api.MapPublicBookingEndpoints();
 
 // 5. THE CATCH-ALL (SPA Fallback)
@@ -284,6 +287,7 @@ static void ConfigureCoreServices(IServiceCollection services)
     services.AddScoped<PermissionTemplateService>();
     services.AddScoped<CampusService>();
     services.AddScoped<ClassService>();
+    services.AddScoped<UserImportService>();
 }
 
 static void ConfigureRateLimiting(IServiceCollection services)

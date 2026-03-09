@@ -1,7 +1,7 @@
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models;
 using Backend.app.Core.Models.Entities;
-using Backend.app.Infrastructure.Repositories.Postgres;
+using Backend.app.Infrastructure.Repositories.Sqlite;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -13,8 +13,8 @@ public class PermissionRepositoryTests : DatabaseTestBase
 
     public PermissionRepositoryTests() : base()
     {
-        // For now, we test the Postgres implementation using the connection from .env
-        _sut = new PostgresPermissionRepo(ConnectionFactory, NullLogger<PostgresPermissionRepo>.Instance);
+        // Use SQLite implementation for integration tests in this environment
+        _sut = new SqlitePermissionRepo(ConnectionFactory, NullLogger<SqlitePermissionRepo>.Instance);
     }
 
     [Fact]

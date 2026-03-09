@@ -239,6 +239,7 @@ CREATE TABLE IF NOT EXISTS bookings
     status     booking_status NOT NULL DEFAULT 'active',
     is_lesson  BOOLEAN        NOT NULL DEFAULT FALSE,
     notes      TEXT,
+    booker_name TEXT,
     created_at TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ,
 

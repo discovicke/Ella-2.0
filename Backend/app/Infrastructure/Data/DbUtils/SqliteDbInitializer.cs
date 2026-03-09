@@ -43,25 +43,7 @@ public class SqliteDbInitializer(
     {
         logger.LogInformation("Running schema.sqlite...");
 
-        var schemaPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "app",
-            "Infrastructure",
-            "Data",
-            "SqliteSchema.sqlite"
-        );
-
-        // Fallback: try relative path from project root (for development)
-        if (!File.Exists(schemaPath))
-        {
-            schemaPath = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "app",
-                "Infrastructure",
-                "Data",
-                "SqliteSchema.sqlite"
-            );
-        }
+        var schemaPath = GetFullPath("SqliteSchema.sqlite");
 
         if (!File.Exists(schemaPath))
         {
@@ -90,25 +72,7 @@ public class SqliteDbInitializer(
 
         logger.LogInformation("Seeding database with initial data...");
 
-        var seedPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "app",
-            "Infrastructure",
-            "Data",
-            "SqliteSeed.sqlite"
-        );
-
-        // Fallback: try relative path from project root (for development)
-        if (!File.Exists(seedPath))
-        {
-            seedPath = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "app",
-                "Infrastructure",
-                "Data",
-                "SqliteSeed.sqlite"
-            );
-        }
+        var seedPath = GetFullPath("SqliteSeed.sqlite");
 
         if (!File.Exists(seedPath))
         {
@@ -129,6 +93,32 @@ public class SqliteDbInitializer(
         await conn.ExecuteAsync(seedSql);
 
         logger.LogInformation("Database seeded successfully.");
+    }
+
+    private string GetFullPath(string fileName)
+    {
+        // 1. Try AppContext.BaseDirectory (standard)
+        var path = Path.Combine(AppContext.BaseDirectory, "app", "Infrastructure", "Data", fileName);
+        if (File.Exists(path)) return path;
+
+        // 2. Climb up from CurrentDirectory to find the project root or Backend folder
+        var current = new DirectoryInfo(Directory.GetCurrentDirectory());
+        for (int i = 0; i < 6; i++)
+        {
+            if (current == null) break;
+
+            // Try <current>/Backend/app/Infrastructure/Data
+            path = Path.Combine(current.FullName, "Backend", "app", "Infrastructure", "Data", fileName);
+            if (File.Exists(path)) return path;
+
+            // Try <current>/app/Infrastructure/Data
+            path = Path.Combine(current.FullName, "app", "Infrastructure", "Data", fileName);
+            if (File.Exists(path)) return path;
+
+            current = current.Parent;
+        }
+
+        return Path.Combine(AppContext.BaseDirectory, "app", "Infrastructure", "Data", fileName);
     }
 
     private string ReplaceHashPlaceholders(string sql, string password)
