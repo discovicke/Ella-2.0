@@ -17,7 +17,7 @@ public static class ResourceEndpoints
 
         group.MapPost("/categories", async (CreateResourceCategoryDto dto, ResourceService service) => 
             Results.Ok(await service.CreateCategoryAsync(dto)))
-            .RequirePermission("manageResources")
+            .RequirePermission("ManageResources")
             .Produces<ResourceCategoryDto>(StatusCodes.Status200OK);
 
         // --- Resources ---
@@ -27,12 +27,12 @@ public static class ResourceEndpoints
 
         group.MapPost("/", async (CreateResourceDto dto, ResourceService service) => 
             Results.Ok(await service.CreateResourceAsync(dto)))
-            .RequirePermission("manageResources")
+            .RequirePermission("ManageResources")
             .Produces<ResourceResponseDto>(StatusCodes.Status200OK);
 
         group.MapDelete("/{id:long}", async (long id, ResourceService service) => 
             await service.DeleteResourceAsync(id) ? Results.Ok() : Results.NotFound())
-            .RequirePermission("manageResources")
+            .RequirePermission("ManageResources")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
