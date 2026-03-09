@@ -21,8 +21,13 @@ public static class ImportEndpoint
                     UserImportService service
                 ) =>
                 {
-                    if (file.Length == 0)
+                    if (file == null || file.Length == 0)
                         return Results.BadRequest("CSV file is required.");
+                    
+                    const long maxFileSize = 5 * 1024 * 1024; // 5MB
+                    if (file.Length > maxFileSize)
+                        return Results.BadRequest("File size exceeds the 5MB limit.");
+
                     if (string.IsNullOrWhiteSpace(className))
                         return Results.BadRequest("className is required.");
 
