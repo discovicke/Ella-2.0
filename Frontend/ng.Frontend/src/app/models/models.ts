@@ -186,6 +186,8 @@ export interface ImportUsersResponseDto {
   /** @format int32 */
   created: number;
   /** @format int32 */
+  updated: number;
+  /** @format int32 */
   skipped: number;
   /** @format int64 */
   classId: number;

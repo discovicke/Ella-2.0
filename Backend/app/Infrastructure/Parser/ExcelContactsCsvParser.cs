@@ -23,7 +23,7 @@ public class ExcelContactsCsvParser : IParser<StudentImportDto>
                     FirstName = cols[3].Trim(),
                     LastName = cols[4].Trim(),
                     Email = cols[9].Trim(),
-                    City = cols[13].Trim(),
+                    CampusName = cols.Length > 25 ? cols[25].Trim() : null,
                     ClassName = className,
                 }
             );
