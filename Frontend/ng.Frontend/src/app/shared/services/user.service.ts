@@ -127,7 +127,8 @@ export class UserService {
     if (templateId != null) {
       formData.append('templateId', templateId.toString());
     }
-    return this.http
-      .post<ImportUsersResponseDto>('/api/import', formData, { withCredentials: true });
+    return this.http.post<ImportUsersResponseDto>('/api/import', formData, {
+      withCredentials: true,
+    });
   }
 }
