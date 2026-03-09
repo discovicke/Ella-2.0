@@ -23,9 +23,10 @@ public record BookingDetailedReadModel
     public DateTime StartTime { get; init; }
     public DateTime EndTime { get; init; }
     public BookingStatus Status { get; init; }
-    public string? Notes { get; init; }
-    public string? BookerName { get; init; }
-    public DateTime CreatedAt { get; init; }
+    public string? Notes { get; set; }
+    public string? BookerName { get; set; }
+    public Guid? RecurringGroupId { get; set; }
+    public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; init; }
     public int RegistrationCount { get; init; }
     public int InvitationCount { get; init; }

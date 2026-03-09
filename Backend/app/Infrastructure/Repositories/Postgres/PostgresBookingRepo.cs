@@ -19,8 +19,8 @@ public class PostgresBookingRepo(
 
             var sql =
                 @"
-                INSERT INTO bookings (user_id, room_id, start_time, end_time, status, notes, booker_name)
-                VALUES (@UserId, @RoomId, @StartTime, @EndTime, @Status::booking_status, @Notes, @BookerName)
+                INSERT INTO bookings (user_id, room_id, start_time, end_time, status, notes, booker_name, recurring_group_id)
+                VALUES (@UserId, @RoomId, @StartTime, @EndTime, @Status::booking_status, @Notes, @BookerName, @RecurringGroupId)
                 RETURNING id;
             ";
 
@@ -35,6 +35,7 @@ public class PostgresBookingRepo(
                     Status = booking.Status.ToString().ToLower(),
                     booking.Notes,
                     booking.BookerName,
+                    booking.RecurringGroupId
                 }
             );
 
@@ -176,7 +177,8 @@ public class PostgresBookingRepo(
                     end_time = @EndTime,
                     status = @Status::booking_status,
                     notes = @Notes,
-                    booker_name = @BookerName
+                    booker_name = @BookerName,
+                    recurring_group_id = @RecurringGroupId
                 WHERE id = @BookingId;
             ";
 
@@ -191,6 +193,7 @@ public class PostgresBookingRepo(
                     Status = booking.Status.ToString().ToLower(),
                     booking.Notes,
                     booking.BookerName,
+                    booking.RecurringGroupId,
                     BookingId = bookingId,
                 }
             );
