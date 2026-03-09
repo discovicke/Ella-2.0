@@ -2,7 +2,7 @@ using System.Data;
 using Backend.app.Core.Interfaces;
 using Dapper;
 
-namespace Backend.app.Infrastructure.Data;
+namespace Backend.app.Infrastructure.Data.DbUtils;
 
 /// <summary>
 /// Initializes and seeds the PostgreSQL database on application startup.
@@ -36,7 +36,7 @@ public class PostgresDbInitializer(
     {
         logger.LogInformation("Running schema.sql...");
 
-        var schemaPath = GetFullPath("PostgresSchema.sql");
+        var schemaPath = DbPathHelper.GetFullPath("PostgresSchema.sql");
 
         if (!File.Exists(schemaPath))
         {
@@ -69,21 +69,7 @@ public class PostgresDbInitializer(
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMPTZ;"
         );
 
-        // Add permission_level column
-        await conn.ExecuteAsync(@"
-            ALTER TABLE users ADD COLUMN IF NOT EXISTS permission_level INTEGER NOT NULL DEFAULT 1;
-            ALTER TABLE users DROP CONSTRAINT IF EXISTS chk_permission_level;
-            ALTER TABLE users ADD CONSTRAINT chk_permission_level CHECK (permission_level >= 1 AND permission_level <= 10);
-        ");
-
-        // Set default levels for existing users based on their template
-        await conn.ExecuteAsync(@"
-            UPDATE users SET permission_level = 10 WHERE permission_template_id = (SELECT id FROM permission_templates WHERE name = 'admin');
-            UPDATE users SET permission_level = 5 WHERE permission_template_id = (SELECT id FROM permission_templates WHERE name = 'teacher');
-            UPDATE users SET permission_level = 1 WHERE permission_template_id = (SELECT id FROM permission_templates WHERE name = 'student');
-        ");
-
-        // Add user_booking_slugs table
+        // 3. User booking slugs table
         await conn.ExecuteAsync(@"
             CREATE TABLE IF NOT EXISTS user_booking_slugs (
                 id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -141,7 +127,7 @@ public class PostgresDbInitializer(
 
         logger.LogInformation("Seeding database with initial data...");
 
-        var seedPath = GetFullPath("PostgresSeed.sql");
+        var seedPath = DbPathHelper.GetFullPath("PostgresSeed.sql");
 
         if (!File.Exists(seedPath))
         {
@@ -162,28 +148,6 @@ public class PostgresDbInitializer(
         await conn.ExecuteAsync(seedSql);
 
         logger.LogInformation("Database seeded successfully.");
-    }
-
-    private string GetFullPath(string fileName)
-    {
-        var path = Path.Combine(AppContext.BaseDirectory, "app", "Infrastructure", "Data", fileName);
-        if (File.Exists(path)) return path;
-
-        var current = new DirectoryInfo(Directory.GetCurrentDirectory());
-        for (int i = 0; i < 6; i++)
-        {
-            if (current == null) break;
-
-            path = Path.Combine(current.FullName, "Backend", "app", "Infrastructure", "Data", fileName);
-            if (File.Exists(path)) return path;
-
-            path = Path.Combine(current.FullName, "app", "Infrastructure", "Data", fileName);
-            if (File.Exists(path)) return path;
-
-            current = current.Parent;
-        }
-
-        return Path.Combine(AppContext.BaseDirectory, "app", "Infrastructure", "Data", fileName);
     }
 
     private string ReplaceHashPlaceholders(string sql, string password)
