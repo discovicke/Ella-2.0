@@ -117,6 +117,8 @@ export interface CreateBookingDto {
   isLesson?: boolean;
   /** @default null */
   classIds?: number[] | null;
+  /** @default null */
+  bookerName?: string | null;
 }
 
 export interface CreateCampusDto {
@@ -172,6 +174,19 @@ export interface GroupedPagedResultOfBookingDetailedReadModel {
   page: number;
   /** @format int32 */
   groupsPerPage: number;
+}
+
+export interface ImportUsersResponseDto {
+  /** @format int32 */
+  totalRows: number;
+  /** @format int32 */
+  created: number;
+  /** @format int32 */
+  skipped: number;
+  /** @format int64 */
+  classId: number;
+  className: string;
+  errors: string[];
 }
 
 export interface InviteClassRequest {
