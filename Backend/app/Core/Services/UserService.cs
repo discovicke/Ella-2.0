@@ -269,6 +269,7 @@ public class UserService(
                 ["ManageBookings"] = dto.ManageBookings,
                 ["ManageCampuses"] = dto.ManageCampuses,
                 ["ManageRoles"] = dto.ManageRoles,
+                ["ManageResources"] = dto.ManageResources,
             }
         );
 
