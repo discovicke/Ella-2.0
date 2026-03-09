@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { 
   ResourceResponseDto, 
@@ -8,7 +8,7 @@ import {
   CreateResourceCategoryDto,
   ResourceBookingResponseDto,
   CreateResourceBookingDto
-} from '../../../models/models';
+} from '../../models/models';
 
 @Injectable({
   providedIn: 'root',
@@ -41,7 +41,10 @@ export class ResourceService {
 
   // Bookings
   getBookings(resourceId?: number): Observable<ResourceBookingResponseDto[]> {
-    const params = resourceId ? { resourceId: resourceId.toString() } : {};
+    let params = new HttpParams();
+    if (resourceId) {
+      params = params.set('resourceId', resourceId.toString());
+    }
     return this.http.get<ResourceBookingResponseDto[]>(`${this.baseUrl}/bookings`, { params });
   }
 

@@ -206,7 +206,7 @@ export class BookResourcePage implements OnInit {
   async loadData() {
     try {
       const [cams, cats, res] = await Promise.all([
-        firstValueFrom(this.campusService.getAllAsync()),
+        firstValueFrom(this.campusService.getAll()),
         firstValueFrom(this.resourceService.getCategories()),
         firstValueFrom(this.resourceService.getResources())
       ]);

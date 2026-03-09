@@ -2,7 +2,6 @@ import { Component, inject, resource, OnInit, signal, TemplateRef, ViewChild } f
 import { CommonModule } from '@angular/common';
 import { BookingSlugService } from '../../../core/services/booking-slug.service';
 import { TableComponent, TableColumn } from '../../../shared/components/table/table.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { ToastService } from '../../../shared/services/toast.service';
 import { firstValueFrom } from 'rxjs';
 import { BookingSlugResponseDto } from '../../../models/models';
@@ -10,7 +9,7 @@ import { BookingSlugResponseDto } from '../../../models/models';
 @Component({
   selector: 'app-manage-slugs-page',
   standalone: true,
-  imports: [CommonModule, TableComponent, ButtonComponent],
+  imports: [CommonModule, TableComponent],
   template: `
     <div class="page-container">
       <div class="page-header">

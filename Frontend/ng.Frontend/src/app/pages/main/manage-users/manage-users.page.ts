@@ -348,8 +348,9 @@ export class ManageUsersPage implements OnInit {
           id: userId,
           email: payload.email,
           displayName: payload.displayName,
-          password: payload.password ?? null,
-          isBanned: payload.isBanned ?? BannedStatus.NotBanned,
+          password: payload.password || null,
+          isBanned: payload.isBanned || BannedStatus.NotBanned,
+          permissionLevel: payload.permissionLevel,
         };
 
         await firstValueFrom(this.userService.updateUser(userId, updatePayload));
