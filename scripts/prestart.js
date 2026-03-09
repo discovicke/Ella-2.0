@@ -10,19 +10,8 @@
 const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
-
-// --- Output helpers ---
-const c = {
-  reset: "\x1b[0m",
-  red: "\x1b[31m",
-  cyan: "\x1b[36m",
-  bold: "\x1b[1m",
-  dim: "\x1b[2m",
-};
-const DIV = `  ${c.dim}${"─".repeat(42)}${c.reset}`;
-const info = (msg) => console.log(`  ${c.cyan}◆${c.reset}  ${msg}`);
-const fail = (msg) => console.error(`  ${c.red}✖${c.reset}  ${msg}`);
-const hint = (msg) => console.log(`     ${c.dim}${msg}${c.reset}`);
+const ui = require("./lib/ella-ui");
+const { c } = ui;
 
 const ROOT = path.resolve(__dirname, "..");
 const ENV_PATH = path.join(ROOT, "Backend", ".env");
@@ -32,12 +21,12 @@ const DOCKER_PROVIDERS = ["postgres", "sqlserver"];
 
 // --- Check env files exist ---
 if (!fs.existsSync(ENV_PATH) && !fs.existsSync(ENV_EXAMPLE_PATH)) {
-  console.log(`\n${DIV}`);
-  fail("No .env or .env-example found.");
-  hint(
+  ui.header("Pre-flight");
+  ui.fail("No .env or .env-example found.");
+  ui.hint(
     `Run ${c.cyan}npm run setup${c.reset}${c.dim} to complete initial configuration.`,
   );
-  console.log(`${DIV}\n`);
+  ui.footer();
   process.exit(1);
 }
 
@@ -50,20 +39,20 @@ const jwtMatch = content.match(/JwtSettings__SecretKey=(.+)/);
 const jwtKey = jwtMatch ? jwtMatch[1].trim() : null;
 const PLACEHOLDERS = ["CHANGE_ME", "REPLACE_WITH_SECURE_KEY_MIN_32_CHARS"];
 if (jwtKey && PLACEHOLDERS.includes(jwtKey.toUpperCase())) {
-  console.log(`\n${DIV}`);
-  fail("JWT SecretKey is set to a placeholder — the app will not start.");
+  ui.header("Pre-flight");
+  ui.fail("JWT SecretKey is set to a placeholder — the app will not start.");
   console.log();
-  hint(
+  ui.hint(
     `Open ${c.cyan}${envFile}${c.reset}${c.dim} and replace the JwtSettings__SecretKey value.`,
   );
-  hint(
+  ui.hint(
     `Generate a key with: ${c.cyan}node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"${c.reset}`,
   );
   console.log();
-  hint(
+  ui.hint(
     `Or delete both env files and run ${c.cyan}npm run setup${c.reset}${c.dim} to regenerate automatically.`,
   );
-  console.log(`${DIV}\n`);
+  ui.footer();
   process.exit(1);
 }
 
@@ -73,29 +62,39 @@ const provider = match ? match[1].trim().toLowerCase() : null;
 
 // --- Start Docker if needed ---
 if (provider && DOCKER_PROVIDERS.includes(provider)) {
-  const composeFile = path.join(ROOT, `docker-compose.${provider}.yml`);
+  const composeFile = path.join(
+    ROOT,
+    "_tools",
+    "docker",
+    `docker-compose.${provider}.yml`,
+  );
   if (!fs.existsSync(composeFile)) {
-    fail(`No compose file found: docker-compose.${provider}.yml`);
+    ui.fail(
+      `No compose file found: _tools/docker/docker-compose.${provider}.yml`,
+    );
     process.exit(1);
   }
 
   try {
     execSync("docker info", { stdio: "ignore" });
   } catch {
-    fail(`Docker is not running. Start Docker Desktop and try again.`);
+    ui.fail(`Docker is not running. Start Docker Desktop and try again.`);
     process.exit(1);
   }
 
-  console.log(`\n${DIV}`);
-  info(`Ensuring ${provider} container is up...`);
+  ui.header("Pre-flight");
+  ui.info(`Ensuring ${provider} container is up...`);
   try {
     execSync(`docker-compose -f "${composeFile}" up -d`, {
       cwd: ROOT,
-      stdio: "inherit",
+      stdio: "pipe",
     });
-  } catch {
-    fail(`docker-compose up failed for docker-compose.${provider}.yml`);
+    ui.ok(`${provider} container is running.`);
+  } catch (err) {
+    ui.fail(
+      `docker-compose up failed for _tools/docker/docker-compose.${provider}.yml`,
+    );
+    if (err.stderr) console.error(err.stderr.toString());
     process.exit(1);
   }
-  console.log(DIV);
 }

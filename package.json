@@ -20,17 +20,22 @@
     "test": "npm run test:backend && echo. && echo --- FRONTEND TESTS --- && npm run test:frontend",
     "// --- FRONTEND ---": "",
     "frontend:install": "npm install --prefix Frontend/ng.Frontend",
-    "frontend:sync": "npm run api:sync --prefix Frontend/ng.Frontend -- --quiet",
+    "frontend:sync": "node scripts/sync-frontend.js",
     "frontend:serve": "npm start --prefix Frontend/ng.Frontend",
     "frontend:build:prod": "npm run build --prefix Frontend/ng.Frontend -- --configuration production --output-path ../../Backend/wwwroot",
     "// --- ORCHESTRATION ---": "",
     "refresh:models": "npm run dotnet:clean && npm run dotnet:build && npm run frontend:sync",
-    "start": "node scripts/prestart.js && npm run refresh:models && concurrently -k -p \"[{name}]\" -n \"BACKEND,FRONTEND\" -c \"cyan.bold,green.bold\" \"npm run dotnet:watch\" \"npm run frontend:serve\"",
+    "start": "node scripts/prestart.js && npm run refresh:models && npm run dbml:generate && concurrently -k -p \"[{name}]\" -n \"BACKEND,FRONTEND\" -c \"cyan.bold,green.bold\" \"npm run dotnet:watch\" \"npm run frontend:serve\"",
+    "// --- DATABASE DOCS ---": "",
+    "dbml:generate": "node scripts/generate-dbml.js",
+    "dbdocs:build": "node scripts/generate-dbml.js && dbdocs build _tools/dbml/schema.dbml --project ELLA2",
     "// --- PROD BUILD ---": "",
     "build:prod": "npm run setup && npm run frontend:build:prod && npm run dotnet:publish"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "@dbml/cli": "^6.4.0",
+    "concurrently": "^9.2.1",
+    "dbdocs": "^1.1.0"
   },
   "repository": {
     "type": "git",

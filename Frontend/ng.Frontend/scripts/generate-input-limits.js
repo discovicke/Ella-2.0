@@ -13,6 +13,10 @@
 const fs = require('fs');
 const path = require('path');
 
+// Resolve the shared UI module from the workspace root
+const ROOT = path.resolve(__dirname, '..', '..', '..');
+const ui = require(path.join(ROOT, 'scripts', 'lib', 'ella-ui'));
+
 // ── Paths ──────────────────────────────────────────────────
 const OPENAPI_PATH = path.resolve(__dirname, '..', 'openapi', 'models.json');
 const OUTPUT_PATH = path.resolve(
@@ -27,7 +31,7 @@ const OUTPUT_PATH = path.resolve(
 
 // ── Read OpenAPI spec ──────────────────────────────────────
 if (!fs.existsSync(OPENAPI_PATH)) {
-  console.error(`✖  OpenAPI spec not found at ${OPENAPI_PATH}`);
+  ui.fail(`OpenAPI spec not found at ${OPENAPI_PATH}`);
   process.exit(1);
 }
 
@@ -51,8 +55,8 @@ for (const [schemaName, schema] of Object.entries(schemas)) {
 }
 
 if (Object.keys(limits).length === 0) {
-  console.warn('⚠  No maxLength constraints found in the OpenAPI spec.');
-  console.warn('   Make sure DTOs have [MaxLength] attributes and the spec is up to date.');
+  ui.warn('No maxLength constraints found in the OpenAPI spec.');
+  ui.hint('Make sure DTOs have [MaxLength] attributes and the spec is up to date.');
 }
 
 // ── Generate TypeScript ────────────────────────────────────
@@ -98,6 +102,4 @@ if (!fs.existsSync(outputDir)) {
 fs.writeFileSync(OUTPUT_PATH, content, 'utf8');
 
 const count = Object.values(limits).reduce((sum, obj) => sum + Object.keys(obj).length, 0);
-console.log(
-  `  ✔  input-limits.ts generated — ${Object.keys(limits).length} schemas, ${count} constraints`,
-);
+ui.ok(`input-limits.ts generated — ${Object.keys(limits).length} schemas, ${count} constraints`);

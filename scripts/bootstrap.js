@@ -14,23 +14,8 @@ const path = require("path");
 const readline = require("readline");
 const crypto = require("crypto");
 const { execSync } = require("child_process");
-
-// --- Output helpers ---
-const c = {
-  reset: "\x1b[0m",
-  bold: "\x1b[1m",
-  dim: "\x1b[2m",
-  red: "\x1b[31m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
-  cyan: "\x1b[36m",
-};
-const DIV = `  ${c.dim}${"─".repeat(42)}${c.reset}`;
-const ok = (msg) => console.log(`  ${c.green}✔${c.reset}  ${msg}`);
-const info = (msg) => console.log(`  ${c.cyan}◆${c.reset}  ${msg}`);
-const hint = (msg) => console.log(`     ${c.dim}${msg}${c.reset}`);
-const fail = (msg) => console.error(`  ${c.red}✖${c.reset}  ${msg}`);
-const section = (msg) => console.log(`\n  ${c.bold}${msg}${c.reset}\n${DIV}`);
+const ui = require("./lib/ella-ui");
+const { c } = ui;
 
 const ROOT = path.resolve(__dirname, "..");
 const ENV_PATH = path.join(ROOT, "Backend", ".env");
@@ -61,12 +46,12 @@ function extractEnvValue(yml, pattern) {
 
 // --- Already set up ---
 if (fs.existsSync(ENV_PATH) || fs.existsSync(ENV_EXAMPLE_PATH)) {
-  console.log(`\n${DIV}`);
-  ok("Environment already configured — skipping setup.");
-  hint(
+  ui.header("Setup");
+  ui.ok("Environment already configured — skipping setup.");
+  ui.hint(
     "To reconfigure, delete Backend/.env and Backend/.env-example, then run this again.",
   );
-  console.log(`${DIV}\n`);
+  ui.footer();
   process.exit(0);
 }
 
@@ -74,7 +59,7 @@ if (fs.existsSync(ENV_PATH) || fs.existsSync(ENV_EXAMPLE_PATH)) {
 const csSource = fs.readFileSync(DB_PROVIDERS_CS, "utf8");
 const enumBodyMatch = csSource.match(/enum\s+DbProviders\s*\{([^}]+)\}/);
 if (!enumBodyMatch) {
-  fail("Could not parse DbProviders enum from C# source.");
+  ui.fail("Could not parse DbProviders enum from C# source.");
   process.exit(1);
 }
 const providers = enumBodyMatch[1]
@@ -91,7 +76,12 @@ function getConnectionString(providerName) {
     return "Data Source=app/Infrastructure/Data/ella.db";
   }
 
-  const composeFile = path.join(ROOT, `docker-compose.${providerLower}.yml`);
+  const composeFile = path.join(
+    ROOT,
+    "_tools",
+    "docker",
+    `docker-compose.${providerLower}.yml`,
+  );
   if (!fs.existsSync(composeFile)) {
     return "YOUR_CONNECTION_STRING_HERE";
   }
@@ -129,13 +119,9 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-console.log(`\n${DIV}`);
-console.log(`  ${c.yellow}${c.bold}  ELLA — First-time Setup${c.reset}`);
-console.log(DIV);
-section("Select a database provider");
-providers.forEach((p, i) =>
-  console.log(`     ${c.bold}${i + 1}${c.reset}  ${p}`),
-);
+ui.header("First-time Setup");
+ui.section("Select a database provider");
+providers.forEach((p, i) => ui.menuItem(i + 1, p));
 console.log();
 
 rl.question(`Enter choice (1-${providers.length}) [default: 1]: `, (answer) => {
@@ -148,7 +134,7 @@ rl.question(`Enter choice (1-${providers.length}) [default: 1]: `, (answer) => {
     if (!isNaN(n) && n >= 1 && n <= providers.length) {
       index = n - 1;
     } else {
-      fail(`Invalid choice "${raw}". Aborting.`);
+      ui.fail(`Invalid choice "${raw}". Aborting.`);
       process.exit(1);
     }
   }
@@ -173,40 +159,90 @@ rl.question(`Enter choice (1-${providers.length}) [default: 1]: `, (answer) => {
 
   fs.writeFileSync(ENV_EXAMPLE_PATH, content, "utf8");
 
-  section("Environment");
-  ok(`Created Backend/.env-example  ${c.dim}(provider: ${chosen})${c.reset}`);
-  ok(
+  ui.section("Environment");
+  ui.ok(
+    `Created Backend/.env-example  ${c.dim}(provider: ${chosen})${c.reset}`,
+  );
+  ui.ok(
     `Generated JWT signing key  ${c.dim}(auto-generated, unique to this machine)${c.reset}`,
   );
-  hint("For production, copy to Backend/.env and configure real credentials.");
+  ui.hint(
+    "For production, copy to Backend/.env and configure real credentials.",
+  );
 
   // Start Docker if needed
   const providerLower = chosen.toLowerCase();
   if (DOCKER_PROVIDERS.includes(providerLower)) {
-    section("Docker");
-    const composeFile = path.join(ROOT, `docker-compose.${providerLower}.yml`);
+    ui.section("Docker");
+    const composeFile = path.join(
+      ROOT,
+      "_tools",
+      "docker",
+      `docker-compose.${providerLower}.yml`,
+    );
     if (!fs.existsSync(composeFile)) {
-      fail(`No compose file found: docker-compose.${providerLower}.yml`);
+      ui.fail(
+        `No compose file found: _tools/docker/docker-compose.${providerLower}.yml`,
+      );
       process.exit(1);
     }
     try {
       execSync("docker info", { stdio: "ignore" });
     } catch {
-      fail(
+      ui.fail(
         `Docker is not running. Start Docker Desktop and run 'npm run setup' again.`,
       );
       process.exit(1);
     }
-    info(`Starting ${chosen} container...`);
-    execSync(`docker-compose -f "${composeFile}" up -d`, {
-      cwd: ROOT,
-      stdio: "inherit",
-    });
+    ui.info(`Starting ${chosen} container...`);
+    try {
+      execSync(`docker-compose -f "${composeFile}" up -d`, {
+        cwd: ROOT,
+        stdio: "pipe",
+      });
+      ui.ok(`${chosen} container is running.`);
+    } catch (err) {
+      ui.fail(`docker-compose up failed.`);
+      if (err.stderr) console.error(err.stderr.toString());
+      process.exit(1);
+    }
   }
 
-  console.log(`\n${DIV}`);
-  console.log(
-    `  ${c.green}${c.bold}Setup complete!${c.reset}  Run ${c.cyan}npm start${c.reset} to launch the project.`,
+  ui.done(
+    `Setup complete!  Run ${c.cyan}npm start${c.reset}${c.green}${c.bold} to launch the project.`,
   );
-  console.log(`${DIV}\n`);
+  ui.footer();
+
+  // --- Optional: dbdocs setup for live schema diagrams ---
+  const rl2 = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  console.log();
+  ui.info("Optional: Publish a live database schema diagram to dbdocs.io.");
+  ui.hint(
+    "Requires a free account at https://dbdocs.io (sign in with GitHub or email).",
+  );
+  rl2.question(ui.prompt("Set up live schema diagrams? (y/N): "), (ans) => {
+    rl2.close();
+    if (ans.trim().toLowerCase() !== "y") return;
+
+    ui.section("Schema Diagrams");
+    ui.info("Opening browser for dbdocs authentication...");
+    ui.hint("Sign in or create a free account when prompted.");
+    try {
+      execSync("dbdocs login", { cwd: ROOT, stdio: "inherit" });
+      ui.ok("Authenticated with dbdocs.");
+      ui.info("Generating and publishing schema diagram...");
+      execSync("node scripts/generate-dbml.js", {
+        cwd: ROOT,
+        stdio: "inherit",
+      });
+    } catch {
+      ui.fail("dbdocs setup failed. You can retry later with: dbdocs login");
+      ui.hint(
+        "Schema diagrams will auto-publish on next npm start after login.",
+      );
+    }
+  });
 });
