@@ -17,7 +17,7 @@ public abstract class DatabaseTestBase
     protected DatabaseTestBase()
     {
         var envPath = FindEnvFile(Directory.GetCurrentDirectory());
-        var configDict = new Dictionary<string, string>();
+        var configDict = new Dictionary<string, string?>();
 
         if (envPath != null)
         {

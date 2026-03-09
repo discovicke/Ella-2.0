@@ -168,6 +168,70 @@ public static class AuthEndpoints
             )
             .Produces(StatusCodes.Status200OK);
 
+        // POST /auth/forgot-password
+        group
+            .MapPost(
+                "/forgot-password",
+                async (ForgotPasswordDto request, AuthService authService) =>
+                {
+                    await authService.RequestPasswordResetAsync(request.Email, false);
+                    return Results.Ok(
+                        new { message = "If the user exists, a reset email has been sent." }
+                    );
+                }
+            )
+            .WithName("ForgotPassword")
+            .WithSummary("Request password reset")
+            .WithDescription(
+                "Sends a password reset email if the user exists and is not banned."
+            )
+            .Accepts<ForgotPasswordDto>("application/json")
+            .Produces(StatusCodes.Status200OK);
+
+        // POST /auth/activate-account
+        group
+            .MapPost(
+                "/activate-account",
+                async (ForgotPasswordDto request, AuthService authService) =>
+                {
+                    await authService.RequestPasswordResetAsync(request.Email, true);
+                    return Results.Ok(
+                        new { message = "If the user exists, an activation email has been sent." }
+                    );
+                }
+            )
+            .WithName("ActivateAccount")
+            .WithSummary("Request account activation")
+            .WithDescription(
+                "Sends an activation email with a welcome message if the user exists."
+            )
+            .Accepts<ForgotPasswordDto>("application/json")
+            .Produces(StatusCodes.Status200OK);
+
+        // POST /auth/reset-password
+        group
+            .MapPost(
+                "/reset-password",
+                async (ResetPasswordDto request, AuthService authService) =>
+                {
+                    var success = await authService.ResetPasswordAsync(request);
+                    if (!success)
+                        return Results.BadRequest(
+                            new { error = "Reset failed", message = "Invalid or expired token" }
+                        );
+
+                    return Results.Ok(new { message = "Password has been reset successfully." });
+                }
+            )
+            .WithName("ResetPassword")
+            .WithSummary("Reset password")
+            .WithDescription(
+                "Resets a user's password using a valid reset token from their email."
+            )
+            .Accepts<ResetPasswordDto>("application/json")
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest);
+
         // GET /auth/me
         group
             .MapGet(

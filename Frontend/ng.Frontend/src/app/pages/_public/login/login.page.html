@@ -53,6 +53,11 @@
         <div class="labelline">Lösenord</div>
       </div>
 
+      <div class="auth-links">
+        <a routerLink="/forgot-password" [queryParams]="{mode: 'activate'}" class="activate-link">Aktivera konto</a>
+        <a routerLink="/forgot-password" class="forgot-link">Glömt lösenord?</a>
+      </div>
+
       <app-button
         type="submit"
         variant="primary"

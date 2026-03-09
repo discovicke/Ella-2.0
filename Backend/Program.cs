@@ -7,6 +7,7 @@ using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
 using Backend.app.Infrastructure.Data;
+using Backend.app.Infrastructure.Email;
 using Backend.app.Infrastructure.Middleware;
 using Backend.app.Infrastructure.Parser;
 using Backend.app.Infrastructure.Repositories.Postgres;
@@ -23,6 +24,7 @@ LoadEnvironmentVariables();
 
 // 2. CONFIGURATION
 builder.Configuration.AddEnvironmentVariables();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 ConfigureOpenApi(builder.Services);
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -108,35 +110,47 @@ app.Run(); // <--- Start the machine!
 
 static void LoadEnvironmentVariables()
 {
-    var rootPath = Directory.GetCurrentDirectory();
-    var envPath = Path.Combine(rootPath, ".env");
-    var envExamplePath = Path.Combine(rootPath, ".env-example");
+    // Search for .env or .env-example in current and parent directories (up to 3 levels)
+    var currentDir = new DirectoryInfo(Directory.GetCurrentDirectory());
+    string? envPath = null;
+    string? envExamplePath = null;
 
-    if (File.Exists(envPath))
+    for (int i = 0; i < 4; i++)
+    {
+        if (currentDir == null) break;
+        
+        var potentialEnv = Path.Combine(currentDir.FullName, ".env");
+        var potentialExample = Path.Combine(currentDir.FullName, ".env-example");
+
+        if (envPath == null && File.Exists(potentialEnv)) envPath = potentialEnv;
+        if (envExamplePath == null && File.Exists(potentialExample)) envExamplePath = potentialExample;
+
+        if (envPath != null) break;
+        currentDir = currentDir.Parent;
+    }
+
+    if (envPath != null)
     {
         Env.Load(envPath);
-        Console.WriteLine("  \u001b[32m\u2714\u001b[0m  Configuration loaded from .env");
+        Console.WriteLine($"  \u001b[32m\u2714\u001b[0m  Configuration loaded from {envPath}");
     }
-    else if (File.Exists(envExamplePath))
+    else if (envExamplePath != null)
     {
         var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "";
         if (env.Equals("Production", StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException(
-                "Cannot use .env-example in Production. Create a Backend/.env with real credentials or set environment variables directly."
+                $"Cannot use {envExamplePath} in Production. Create a .env with real credentials."
             );
         }
 
         Env.Load(envExamplePath);
-        Console.WriteLine("  \u001b[33m\u25b8\u001b[0m  Configuration loaded from .env-example");
-        Console.WriteLine(
-            "     \u001b[2mCopy to .env and fill in real credentials for production use.\u001b[0m"
-        );
+        Console.WriteLine($"  \u001b[33m\u25b8\u001b[0m  Configuration loaded from {envExamplePath}");
     }
     else
     {
         throw new InvalidOperationException(
-            "No .env or .env-example file found. Run 'npm run setup' from the project root."
+            "No .env or .env-example file found. Please ensure it exists in the project root or Backend folder."
         );
     }
 }
@@ -276,6 +290,8 @@ static void ConfigureCoreServices(IServiceCollection services)
     services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
     services.AddSingleton<ITokenProvider, JwtTokenProvider>();
 
+    // Email
+    services.AddScoped<IEmailService, BrevoEmailService>();
     // Parser
     services.AddScoped<IParser<StudentImportDto>, ExcelContactsCsvParser>();
 

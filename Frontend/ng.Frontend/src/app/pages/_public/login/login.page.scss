@@ -229,6 +229,26 @@ input {
   }
 }
 
+.auth-links {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -1rem;
+  margin-bottom: 0.5rem;
+
+  a {
+    color: var(--color-primary);
+    font-size: var(--font-sm);
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.8;
+      text-decoration: underline;
+    }
+  }
+}
+
 /* MOBIL: Visa bara login-rutan */
 @include breakpoint-down('md') {
   .art-side {
