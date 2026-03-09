@@ -206,6 +206,9 @@ rl.question(`Enter choice (1-${providers.length}) [default: 1]: `, (answer) => {
     `JwtSettings__Issuer=EllaBookingAPI`,
     `JwtSettings__Audience=EllaBookingClient`,
     `JwtSettings__AccessTokenExpirationMinutes=60`,
+    `# --- Schema Diagrams (optional) ---`,
+    `# Shared team token for dbdocs.io. Generate with: dbdocs login && dbdocs token --generate`,
+    `# DBDOCS_TOKEN=`,
   ].join("\n");
 
   fs.writeFileSync(ENV_EXAMPLE_PATH, content, "utf8");
@@ -264,37 +267,16 @@ rl.question(`Enter choice (1-${providers.length}) [default: 1]: `, (answer) => {
   );
   ui.footer();
 
-  // --- Optional: dbdocs setup for live schema diagrams ---
-  const rl2 = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
+  // --- Optional: dbdocs token setup ---
   console.log();
-  ui.info("Optional: Publish a live database schema diagram to dbdocs.io.");
-  ui.hint(
-    "Requires a free account at https://dbdocs.io (sign in with GitHub or email).",
-  );
-  rl2.question(ui.prompt("Set up live schema diagrams? (y/N): "), (ans) => {
-    rl2.close();
-    if (ans.trim().toLowerCase() !== "y") return;
-
-    ui.section("Schema Diagrams");
-    ui.info("Opening browser for dbdocs authentication...");
-    ui.hint("Sign in or create a free account when prompted.");
-    try {
-      execSync("dbdocs login", { cwd: ROOT, stdio: "inherit" });
-      ui.ok("Authenticated with dbdocs.");
-      ui.info("Generating and publishing schema diagram...");
-      execSync("node scripts/generate-dbml.js", {
-        cwd: ROOT,
-        stdio: "inherit",
-      });
-    } catch {
-      ui.fail("dbdocs setup failed. You can retry later with: dbdocs login");
-      ui.hint(
-        "Schema diagrams will auto-publish on next npm start after login.",
-      );
-    }
-  });
+  ui.section("Schema Diagrams (optional)");
+  ui.info("Live schema diagrams are published to dbdocs.io on each npm start.");
+  ui.info("To enable, add a shared team token to your env file:");
+  console.log();
+  ui.detail(`1. One team member runs: ${c.cyan}dbdocs login${c.reset}${c.dim} then ${c.cyan}dbdocs token --generate${c.reset}`);
+  ui.detail(`2. Add ${c.cyan}DBDOCS_TOKEN=<token>${c.reset}${c.dim} to Backend/.env-example`);
+  ui.detail("3. All team members use the same token — one shared project, no duplicates.");
+  console.log();
+  ui.hint("You can do this later. Schema diagrams will auto-publish once the token is set.");
 });
 } // end runSetup

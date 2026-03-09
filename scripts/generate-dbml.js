@@ -17,6 +17,20 @@ const { execSync } = require("child_process");
 const ui = require("./lib/ella-ui");
 
 const ROOT = path.resolve(__dirname, "..");
+
+// --- Load DBDOCS_TOKEN from .env / .env-example if not already set ---
+if (!process.env.DBDOCS_TOKEN) {
+  const envFile = ["Backend/.env", "Backend/.env-example"]
+    .map((f) => path.join(ROOT, f))
+    .find((f) => fs.existsSync(f));
+  if (envFile) {
+    const match = fs
+      .readFileSync(envFile, "utf-8")
+      .match(/^DBDOCS_TOKEN=(.+)$/m);
+    if (match) process.env.DBDOCS_TOKEN = match[1].trim();
+  }
+}
+
 const SCHEMA_PATH = path.join(
   ROOT,
   "Backend",
@@ -156,9 +170,9 @@ if (currentHash === previousHash) {
     // Cache the hash after successful publish
     fs.writeFileSync(HASH_PATH, currentHash, "utf-8");
   } catch {
-    // Not authenticated, offline, or dbdocs unavailable — skip silently
+    // No token, offline, or dbdocs unavailable — skip silently
     ui.hint(
-      'Skipped dbdocs publish (not authenticated). Run "dbdocs login" to enable.',
+      "Skipped dbdocs publish (no DBDOCS_TOKEN). Add it to Backend/.env-example to enable.",
     );
   }
 }
