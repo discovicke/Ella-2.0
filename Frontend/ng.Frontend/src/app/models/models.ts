@@ -475,6 +475,7 @@ export type UserPermissions = {
   manageBookings?: boolean;
   manageCampuses?: boolean;
   manageRoles?: boolean;
+  manageResources?: boolean;
 };
 
 export interface UserPermissions2 {
@@ -489,6 +490,7 @@ export interface UserPermissions2 {
   manageBookings?: boolean;
   manageCampuses?: boolean;
   manageRoles?: boolean;
+  manageResources?: boolean;
 }
 
 export interface UserResponseDto {

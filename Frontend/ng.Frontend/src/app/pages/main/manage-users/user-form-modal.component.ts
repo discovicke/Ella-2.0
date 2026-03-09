@@ -27,6 +27,7 @@ export interface CustomPermissionsPayload {
   manageBookings: boolean;
   manageCampuses: boolean;
   manageRoles: boolean;
+  manageResources: boolean;
 }
 
 export interface UserFormPayload {
@@ -494,6 +495,7 @@ export class UserFormModalComponent {
     { key: 'manageBookings', label: 'Hantera bokningar' },
     { key: 'manageCampuses', label: 'Hantera campus' },
     { key: 'manageRoles', label: 'Hantera roller' },
+    { key: 'manageResources', label: 'Hantera resurser' },
   ];
 
   readonly isSubmitting = signal(false);
@@ -532,6 +534,9 @@ export class UserFormModalComponent {
         nonNullable: true,
       }),
       manageRoles: new FormControl<boolean>(this.initialPermissions?.manageRoles ?? false, {
+        nonNullable: true,
+      }),
+      manageResources: new FormControl<boolean>(this.initialPermissions?.manageResources ?? false, {
         nonNullable: true,
       }),
       password: new FormControl('', {
@@ -612,6 +617,7 @@ export class UserFormModalComponent {
       manageBookings,
       manageCampuses,
       manageRoles,
+      manageResources,
       ...formData
     } = this.userForm.getRawValue();
 
@@ -627,6 +633,7 @@ export class UserFormModalComponent {
         manageBookings,
         manageCampuses,
         manageRoles,
+        manageResources,
       },
       campusIds: this.selectedCampusIds(),
       classIds: this.selectedClassIds(),

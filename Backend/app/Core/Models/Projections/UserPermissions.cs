@@ -18,6 +18,7 @@ public class UserPermissions
     public bool ManageBookings { get; set; }
     public bool ManageCampuses { get; set; }
     public bool ManageRoles { get; set; }
+    public bool ManageResources { get; set; }
 
     /// <summary>
     /// Helper to check permission by key name dynamically.
@@ -33,6 +34,7 @@ public class UserPermissions
             "ManageBookings" => ManageBookings,
             "ManageCampuses" => ManageCampuses,
             "ManageRoles" => ManageRoles,
+            "ManageResources" => ManageResources,
             _ => false,
         };
     }

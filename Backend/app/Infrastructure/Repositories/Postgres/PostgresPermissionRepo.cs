@@ -68,6 +68,9 @@ public class PostgresPermissionRepo(
                     case "ManageRoles":
                         permissions.ManageRoles = granted;
                         break;
+                    case "manageResources":
+                        permissions.ManageResources = granted;
+                        break;
                 }
             }
 
@@ -139,6 +142,9 @@ public class PostgresPermissionRepo(
                         break;
                     case "ManageRoles":
                         perms.ManageRoles = granted;
+                        break;
+                    case "manageResources":
+                        perms.ManageResources = granted;
                         break;
                 }
             }
@@ -344,6 +350,9 @@ public class PostgresPermissionRepo(
                         break;
                     case "ManageRoles":
                         permissions.ManageRoles = granted;
+                        break;
+                    case "manageResources":
+                        permissions.ManageResources = granted;
                         break;
                 }
             }
