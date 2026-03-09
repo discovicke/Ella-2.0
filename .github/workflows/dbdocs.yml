@@ -1,0 +1,25 @@
+name: Publish Schema Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Backend/app/Infrastructure/Data/PostgresSchema.sql"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install DBML tools
+        run: npm install --no-save @dbml/cli dbdocs
+
+      - name: Generate DBML and publish
+        env:
+          DBDOCS_TOKEN: ${{ secrets.DBDOCS_TOKEN }}
+        run: node scripts/generate-dbml.js

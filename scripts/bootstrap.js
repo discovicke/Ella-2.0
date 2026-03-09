@@ -206,9 +206,6 @@ rl.question(`Enter choice (1-${providers.length}) [default: 1]: `, (answer) => {
     `JwtSettings__Issuer=EllaBookingAPI`,
     `JwtSettings__Audience=EllaBookingClient`,
     `JwtSettings__AccessTokenExpirationMinutes=60`,
-    `# --- Schema Diagrams (optional) ---`,
-    `# Shared team token for dbdocs.io. Generate with: dbdocs login && dbdocs token --generate`,
-    `# DBDOCS_TOKEN=`,
   ].join("\n");
 
   fs.writeFileSync(ENV_EXAMPLE_PATH, content, "utf8");
@@ -267,16 +264,5 @@ rl.question(`Enter choice (1-${providers.length}) [default: 1]: `, (answer) => {
   );
   ui.footer();
 
-  // --- Optional: dbdocs token setup ---
-  console.log();
-  ui.section("Schema Diagrams (optional)");
-  ui.info("Live schema diagrams are published to dbdocs.io on each npm start.");
-  ui.info("To enable, add a shared team token to your env file:");
-  console.log();
-  ui.detail(`1. One team member runs: ${c.cyan}dbdocs login${c.reset}${c.dim} then ${c.cyan}dbdocs token --generate${c.reset}`);
-  ui.detail(`2. Add ${c.cyan}DBDOCS_TOKEN=<token>${c.reset}${c.dim} to Backend/.env-example`);
-  ui.detail("3. All team members use the same token — one shared project, no duplicates.");
-  console.log();
-  ui.hint("You can do this later. Schema diagrams will auto-publish once the token is set.");
 });
 } // end runSetup

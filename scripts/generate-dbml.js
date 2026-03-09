@@ -6,7 +6,7 @@
 //
 // 1. Strips Postgres-specific syntax that sql2dbml can't parse
 // 2. Converts to DBML via sql2dbml
-// 3. Pushes to dbdocs.io if authenticated (optional, graceful)
+// 3. Pushes to dbdocs.io if DBDOCS_TOKEN is set (CI-only, via GitHub Actions)
 // 4. Updates DATABASE_DOC.md + README.md links on successful push
 // ============================================================
 
@@ -17,20 +17,6 @@ const { execSync } = require("child_process");
 const ui = require("./lib/ella-ui");
 
 const ROOT = path.resolve(__dirname, "..");
-
-// --- Load DBDOCS_TOKEN from .env / .env-example if not already set ---
-if (!process.env.DBDOCS_TOKEN) {
-  const envFile = ["Backend/.env", "Backend/.env-example"]
-    .map((f) => path.join(ROOT, f))
-    .find((f) => fs.existsSync(f));
-  if (envFile) {
-    const match = fs
-      .readFileSync(envFile, "utf-8")
-      .match(/^DBDOCS_TOKEN=(.+)$/m);
-    if (match) process.env.DBDOCS_TOKEN = match[1].trim();
-  }
-}
-
 const SCHEMA_PATH = path.join(
   ROOT,
   "Backend",
@@ -136,44 +122,45 @@ try {
   }
 }
 
-// --- Optional: push to dbdocs.io (only if schema changed) ---
-const dbml = fs.readFileSync(OUTPUT_PATH, "utf-8");
-const currentHash = crypto.createHash("sha256").update(dbml).digest("hex");
-const previousHash = fs.existsSync(HASH_PATH)
-  ? fs.readFileSync(HASH_PATH, "utf-8").trim()
-  : null;
-
-if (currentHash === previousHash) {
-  ui.hint("Schema unchanged — skipped dbdocs publish.");
+// --- Publish to dbdocs.io (CI-only, requires DBDOCS_TOKEN) ---
+if (!process.env.DBDOCS_TOKEN) {
+  ui.hint("No DBDOCS_TOKEN — skipping dbdocs publish (CI handles this).");
 } else {
-  try {
-    ui.info("Schema changed — pushing to dbdocs...");
-    const result = execSync(
-      `dbdocs build "${OUTPUT_PATH}" --project ${DBDOCS_PROJECT}`,
-      {
-        cwd: ROOT,
-        encoding: "utf-8",
-        timeout: 30000,
-        stdio: ["pipe", "pipe", "pipe"],
-      },
-    );
+  const dbml = fs.readFileSync(OUTPUT_PATH, "utf-8");
+  const currentHash = crypto.createHash("sha256").update(dbml).digest("hex");
+  const previousHash = fs.existsSync(HASH_PATH)
+    ? fs.readFileSync(HASH_PATH, "utf-8").trim()
+    : null;
 
-    // Extract the URL from dbdocs output
-    const urlMatch = result.match(/https:\/\/dbdocs\.io\/\S+/);
-    if (urlMatch) {
-      const dbdocsUrl = urlMatch[0];
-      updateDocLinks(dbdocsUrl);
-      ui.ok("Published schema diagram");
-      ui.link(dbdocsUrl);
+  if (currentHash === previousHash) {
+    ui.hint("Schema unchanged — skipped dbdocs publish.");
+  } else {
+    try {
+      ui.info("Publishing schema to dbdocs...");
+      const result = execSync(
+        `dbdocs build "${OUTPUT_PATH}" --project ${DBDOCS_PROJECT}`,
+        {
+          cwd: ROOT,
+          encoding: "utf-8",
+          timeout: 30000,
+          stdio: ["pipe", "pipe", "pipe"],
+        },
+      );
+
+      const urlMatch = result.match(/https:\/\/dbdocs\.io\/\S+/);
+      if (urlMatch) {
+        const dbdocsUrl = urlMatch[0];
+        updateDocLinks(dbdocsUrl);
+        ui.ok("Published schema diagram");
+        ui.link(dbdocsUrl);
+      }
+
+      fs.writeFileSync(HASH_PATH, currentHash, "utf-8");
+    } catch (err) {
+      ui.fail("dbdocs publish failed.");
+      if (err.stderr) console.error(err.stderr.toString());
+      process.exit(1);
     }
-
-    // Cache the hash after successful publish
-    fs.writeFileSync(HASH_PATH, currentHash, "utf-8");
-  } catch {
-    // No token, offline, or dbdocs unavailable — skip silently
-    ui.hint(
-      "Skipped dbdocs publish (no DBDOCS_TOKEN). Add it to Backend/.env-example to enable.",
-    );
   }
 }
 
