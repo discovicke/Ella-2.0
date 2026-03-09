@@ -92,6 +92,7 @@ api.MapRegistrationEndpoints();
 api.MapPermissionTemplateEndpoints();
 api.MapCampusEndpoints();
 api.MapClassEndpoints();
+api.MapImportEndpoints();
 api.MapPublicBookingEndpoints();
 
 // 5. THE CATCH-ALL (SPA Fallback)
