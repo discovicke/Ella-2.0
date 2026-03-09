@@ -6,6 +6,7 @@ public interface IClassRepository
 {
     Task<IEnumerable<SchoolClass>> GetAllAsync();
     Task<SchoolClass?> GetByIdAsync(long id);
+    Task<SchoolClass?> GetByNameAsync(string className);
     Task<long> CreateAsync(SchoolClass schoolClass);
     Task<bool> UpdateAsync(long id, SchoolClass schoolClass);
     Task<bool> DeleteAsync(long id);

@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.DTO;
+using Backend.app.Core.Models.Entities;
+using Backend.app.Infrastructure.Parser;
 
 namespace Backend.app.Core.Services;
 
@@ -10,6 +12,7 @@ public class UserImportService(
     CampusService campusService,
     PermissionTemplateService permissionTemplateService,
     IUserRepository userRepository,
+    IClassRepository classRepository,
     IParser<StudentImportDto> parser,
     ILogger<UserImportService> logger
 )
@@ -29,10 +32,8 @@ public class UserImportService(
         var students = await parser.Parse(csvContent, normalizedClassName);
         var classId = await ResolveClassIdAsync(normalizedClassName);
         
-        // Fetch all available campuses for matching
         var campuses = await campusService.GetAllAsync();
 
-        // Stamp the chosen template onto each student
         if (templateId.HasValue)
         {
             foreach (var s in students)
@@ -63,10 +64,8 @@ public class UserImportService(
             {
                 var createdUser = await userService.CreateUserAsync(dto);
                 
-                // 1. Assign Class
                 await userRepository.SetClassesForUserAsync(createdUser.Id, new[] { classId });
                 
-                // 2. Assign Campus (if city matches)
                 if (!string.IsNullOrWhiteSpace(student.City))
                 {
                     var matchedCampus = campuses.FirstOrDefault(c => 
@@ -78,7 +77,6 @@ public class UserImportService(
                     }
                 }
 
-                // 3. Apply Permission Template
                 if (student.TemplateId.HasValue)
                     await permissionTemplateService.ApplyTemplateAsync(
                         createdUser.Id,
@@ -112,9 +110,7 @@ public class UserImportService(
 
     private async Task<long> ResolveClassIdAsync(string className)
     {
-        var existingClass = (await classService.GetAllAsync()).FirstOrDefault(c =>
-            string.Equals(c.ClassName, className, StringComparison.OrdinalIgnoreCase)
-        );
+        var existingClass = await classRepository.GetByNameAsync(className);
 
         if (existingClass is not null)
             return existingClass.Id;
@@ -123,7 +119,7 @@ public class UserImportService(
         return createdClass.Id;
     }
 
-    private static string GenerateDisplayName(StudentImportDto student)
+    public static string GenerateDisplayName(StudentImportDto student)
     {
         var firstName = (student.FirstName ?? "").Trim();
         var lastName = (student.LastName ?? "").Trim();
@@ -133,7 +129,7 @@ public class UserImportService(
         );
     }
 
-    private static string GeneratePlaceholderPassword(StudentImportDto student)
+    public static string GeneratePlaceholderPassword(StudentImportDto student)
     {
         var firstName = string.IsNullOrWhiteSpace(student.FirstName)
             ? "student"

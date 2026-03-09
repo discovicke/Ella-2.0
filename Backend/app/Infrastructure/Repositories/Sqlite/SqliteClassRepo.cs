@@ -42,6 +42,24 @@ public class SqliteClassRepo(
         }
     }
 
+    public async Task<SchoolClass?> GetByNameAsync(string className)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            return await conn.QuerySingleOrDefaultAsync<SchoolClass>(
+                "SELECT * FROM class WHERE class_name = @className;",
+                new { className }
+            );
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database error while fetching class with name {Name}", className);
+            throw;
+        }
+    }
+
     public async Task<long> CreateAsync(SchoolClass schoolClass)
     {
         try
