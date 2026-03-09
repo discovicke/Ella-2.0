@@ -200,6 +200,7 @@ public class BookingService(
             EndTime = dto.EndTime,
             Notes = dto.Notes,
             IsLesson = dto.IsLesson,
+            BookerName = dto.BookerName,
             Status = dto.Status != default ? dto.Status : BookingStatus.Active,
         };
 

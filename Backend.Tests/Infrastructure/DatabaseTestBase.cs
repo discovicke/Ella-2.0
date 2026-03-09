@@ -1,8 +1,11 @@
 using Backend.app.Core.Interfaces;
 using Backend.app.Infrastructure.Data;
+using Backend.app.Infrastructure.Auth;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.IO;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Backend.Tests.Infrastructure;
 
@@ -39,8 +42,8 @@ public abstract class DatabaseTestBase
         // ⚠️ HARD FORCED FALLBACK FOR THIS SESSION IF .ENV FAILS ⚠️
         if (!configDict.ContainsKey("DatabaseSettings:Provider"))
         {
-            configDict["DatabaseSettings:Provider"] = "postgres";
-            configDict["DatabaseSettings:ConnectionString"] = "Host=localhost;Port=5432;Database=net25_db;Username=net25;Password=SecretNet25Password!;";
+            configDict["DatabaseSettings:Provider"] = "sqlite";
+            configDict["DatabaseSettings:ConnectionString"] = "Data Source=test.db";
         }
 
         Configuration = new ConfigurationBuilder()
@@ -49,6 +52,33 @@ public abstract class DatabaseTestBase
 
         ConnectionFactory = new DbConnectionFactory(Configuration);
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
+        InitializeDatabaseAsync().Wait();
+    }
+
+    private async Task InitializeDatabaseAsync()
+    {
+        var provider = Configuration["DatabaseSettings:Provider"]?.ToLower();
+        var hasher = new Argon2PasswordHasher(NullLogger<Argon2PasswordHasher>.Instance);
+
+        if (provider == "postgres")
+        {
+            var initializer = new PostgresDbInitializer(
+                ConnectionFactory, 
+                NullLogger<PostgresDbInitializer>.Instance,
+                hasher
+            );
+            await initializer.InitializeAsync();
+        }
+        else if (provider == "sqlite")
+        {
+            var initializer = new SqliteDbInitializer(
+                ConnectionFactory,
+                NullLogger<SqliteDbInitializer>.Instance,
+                hasher
+            );
+            await initializer.InitializeAsync();
+        }
     }
 
     private static string? FindEnvFile(string startDir)

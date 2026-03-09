@@ -15,11 +15,13 @@ public class BookingServiceTests
     private readonly IBookingReadModelRepository _readModelRepo = Substitute.For<IBookingReadModelRepository>();
     private readonly IUserRepository _userRepo = Substitute.For<IUserRepository>();
     private readonly IRoomRepository _roomRepo = Substitute.For<IRoomRepository>();
+    private readonly IClassRepository _classRepo = Substitute.For<IClassRepository>();
+    private readonly IRegistrationRepository _registrationRepo = Substitute.For<IRegistrationRepository>();
     private readonly BookingService _sut;
 
     public BookingServiceTests()
     {
-        _sut = new BookingService(_repo, _readModelRepo, _userRepo, _roomRepo);
+        _sut = new BookingService(_repo, _readModelRepo, _userRepo, _roomRepo, _classRepo, _registrationRepo);
     }
 
     [Fact]
