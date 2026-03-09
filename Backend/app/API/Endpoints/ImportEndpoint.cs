@@ -17,6 +17,7 @@ public static class ImportEndpoint
                 async (
                     [FromForm] IFormFile file,
                     [FromForm] string className,
+                    [FromForm] long? templateId,
                     UserImportService service
                 ) =>
                 {
@@ -28,7 +29,7 @@ public static class ImportEndpoint
                     using var reader = new StreamReader(file.OpenReadStream());
                     var content = await reader.ReadToEndAsync();
 
-                    var result = await service.ImportCsvAsync(content, className);
+                    var result = await service.ImportCsvAsync(content, className, templateId);
                     return Results.Ok(result);
                 }
             )
@@ -38,6 +39,7 @@ public static class ImportEndpoint
             .WithDescription(
                 "Parses a CSV file and creates users with generated placeholder passwords, then links them to a class.\n\n🔒 **Authentication Required**\n🔑 **Requires manageUsers permission**"
             )
+            .DisableAntiforgery()
             .Accepts<IFormFile>("multipart/form-data")
             .Produces<ImportUsersResponseDto>()
             .Produces(StatusCodes.Status400BadRequest)

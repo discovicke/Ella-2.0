@@ -27,6 +27,7 @@ import {
   UserFormPayload,
   CustomPermissionsPayload,
 } from './user-form-modal.component';
+import { ImportUsersModalComponent } from './import-users-modal.component';
 import { TableComponent, TableColumn } from '../../../shared/components/table/table.component';
 import {
   permissionTemplates,
@@ -214,6 +215,18 @@ export class ManageUsersPage implements OnInit {
 
   toggleFilters() {
     this.filtersOpen.update((v) => !v);
+  }
+
+  openImportUsersModal() {
+    this.modalService.open(ImportUsersModalComponent, {
+      title: 'Importera användare',
+      data: {
+        classOptions: this.allClasses(),
+        roleOptions: this.templateOptions(),
+        onComplete: () => this.userResource.reload(),
+      },
+      width: '500px',
+    });
   }
 
   openAddUserModal() {

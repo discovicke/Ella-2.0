@@ -5,7 +5,7 @@ namespace Backend.app.Infrastructure.Parser;
 
 public class ExcelContactsCsvParser : IParser<StudentImportDto>
 {
-    public static Task<List<StudentImportDto>> Parse(string content, string className)
+    public Task<List<StudentImportDto>> Parse(string content, string className)
     {
         var result = new List<StudentImportDto>();
         var lines = content.Replace("\r", "").Split('\n', StringSplitOptions.RemoveEmptyEntries);
@@ -17,14 +17,16 @@ public class ExcelContactsCsvParser : IParser<StudentImportDto>
             if (cols.Length < 14 || string.IsNullOrWhiteSpace(cols[3]))
                 continue;
 
-            result.Add(new StudentImportDto
-            {
-                FirstName = cols[3].Trim(),
-                LastName  = cols[4].Trim(),
-                Email     = cols[9].Trim(),
-                City      = cols[13].Trim(),
-                ClassName = className
-            });
+            result.Add(
+                new StudentImportDto
+                {
+                    FirstName = cols[3].Trim(),
+                    LastName = cols[4].Trim(),
+                    Email = cols[9].Trim(),
+                    City = cols[13].Trim(),
+                    ClassName = className,
+                }
+            );
         }
 
         return Task.FromResult(result);

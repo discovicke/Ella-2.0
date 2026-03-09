@@ -292,6 +292,8 @@ static void ConfigureCoreServices(IServiceCollection services)
 
     // Email
     services.AddScoped<IEmailService, BrevoEmailService>();
+    // Parser
+    services.AddScoped<IParser<StudentImportDto>, ExcelContactsCsvParser>();
 
     // Business Logic
     services.AddScoped<AuthService>();
