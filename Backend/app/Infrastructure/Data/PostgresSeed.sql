@@ -148,9 +148,47 @@ VALUES (1, 1, 'Skolbil 1 (Hudiksvall)', 'Vit Volkswagen Golf - ABC 123'),
        (1, 2, 'Skolbil 2 (Gävle)', 'Blå Volvo V60 - XYZ 789'),
        (2, 1, 'Projektor Kit A', 'Portabel projektor med duk')
 ON CONFLICT DO NOTHING;
+--  RUM
+--  Hudiksvall: 1-6, Gävle: 10-12, Sundsvall: 20-22
+-- -------------------------------------------------------------
 
--- (Hoppar över bokningar och kopplingar för att spara utrymme, 
---  men de finns kvar i SQL-format om du kör setup)
+INSERT INTO rooms (id, campus_id, name, capacity, room_type_id, floor)
+    OVERRIDING SYSTEM VALUE
+VALUES (1, 1, 'Lintjärn', 16, 2, '1'),
+       (2, 1, 'Lillfjärden', 22, 1, '1'),
+       (3, 1, 'Personalrummet', 10, 3, '1'),
+       (4, 1, 'Dellen', 24, 1, '2'),
+       (5, 1, 'Kopparlab', 16, 2, '2'),
+       (6, 1, 'Fiberlab', 20, 2, '2'),
+       (10, 2, 'Gävlebukten', 30, 1, '1'),
+       (11, 2, 'Bocklab', 12, 2, '1'),
+       (12, 2, 'Mötesrum 1', 6, 3, '2'),
+       (20, 3, 'Sundsvallsbron', 25, 1, 'Gatuplan'),
+       (21, 3, 'Draken', 15, 2, '2'),
+       (22, 3, 'Sälsten', 8, 3, '2');
+
+SELECT setval(pg_get_serial_sequence('rooms', 'id'), (SELECT MAX(id) FROM rooms));
+
+
+-- -------------------------------------------------------------
+--  ASSET-TYPER
+-- -------------------------------------------------------------
+
+INSERT INTO asset_types (id, description)
+    OVERRIDING SYSTEM VALUE
+VALUES (1, 'Whiteboard'),
+       (2, 'TV'),
+       (3, 'Nätverksutrustning'),
+       (4, 'Projektor'),
+       (5, 'Fiberutrustning'),
+       (6, 'Videokonferens');
+
+SELECT setval(pg_get_serial_sequence('asset_types', 'id'), (SELECT MAX(id) FROM asset_types));
+
+
+-- -------------------------------------------------------------
+--  ROOM ASSETS
+-- -------------------------------------------------------------
 
 INSERT INTO user_class (user_id, class_id)
 VALUES (50, 1),
