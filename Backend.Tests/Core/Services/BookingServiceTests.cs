@@ -5,7 +5,6 @@ using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
 using Backend.Tests.Helpers;
 using NSubstitute;
-using Xunit;
 
 namespace Backend.Tests.Core.Services;
 
