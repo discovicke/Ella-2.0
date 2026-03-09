@@ -177,6 +177,8 @@ public class BookingService(
                     currentStart = currentStart.AddDays(7);
                 else if (dto.RecurrencePattern.ToLower() == "biweekly")
                     currentStart = currentStart.AddDays(14);
+                else if (dto.RecurrencePattern.ToLower() == "monthly")
+                    currentStart = currentStart.AddMonths(1);
                 else
                     break;
 
