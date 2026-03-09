@@ -5,28 +5,32 @@ namespace Backend.app.Infrastructure.Parser;
 
 public class ExcelContactsCsvParser : IParser<StudentImportDto>
 {
+    private const int ColFirstName = 3;
+    private const int ColLastName = 4;
+    private const int ColEmail = 9;
+    private const int ColCity = 13;
+    private const int MinRequiredColumns = 14;
+
     public Task<List<StudentImportDto>> Parse(string content, string className)
     {
         var result = new List<StudentImportDto>();
-        var lines = content.Replace("\r", "").Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        var lines = content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
 
-        foreach (var line in lines.Skip(1))
+        foreach (var line in lines)
         {
             var cols = line.Split(';');
 
-            if (cols.Length < 14 || string.IsNullOrWhiteSpace(cols[3]))
+            if (cols.Length < MinRequiredColumns || string.IsNullOrWhiteSpace(cols[ColFirstName]))
                 continue;
 
-            result.Add(
-                new StudentImportDto
-                {
-                    FirstName = cols[3].Trim(),
-                    LastName = cols[4].Trim(),
-                    Email = cols[9].Trim(),
-                    City = cols[13].Trim(),
-                    ClassName = className,
-                }
-            );
+            result.Add(new StudentImportDto
+            {
+                FirstName = cols[ColFirstName].Trim(),
+                LastName  = cols[ColLastName].Trim(),
+                Email     = cols[ColEmail].Trim(),
+                City      = cols[ColCity].Trim(),
+                ClassName = className,
+            });
         }
 
         return Task.FromResult(result);
