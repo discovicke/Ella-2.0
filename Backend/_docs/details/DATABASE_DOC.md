@@ -3,7 +3,9 @@
 > **Source of truth:** [`SqliteSchema.sqlite`](../../app/Infrastructure/Data/SqliteSchema.sqlite) (SQLite) and [`PostgresSchema.sql`](../../app/Infrastructure/Data/PostgresSchema.sql) (PostgreSQL).
 
 <!-- dbdocs-link:start -->
-📊 **[View live schema diagram](https://dbdocs.io/christiangennari61/ELLA2)** — *auto-updated via GitHub Actions*
+
+📊 **[View live schema diagram](https://dbdocs.io/christiangennari61/ELLA2)** — _auto-updated via GitHub Actions_
+
 <!-- dbdocs-link:end -->
 
 ---

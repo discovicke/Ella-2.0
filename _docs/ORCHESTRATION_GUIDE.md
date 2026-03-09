@@ -83,14 +83,14 @@ graph LR
 
 ### Key Configuration Files
 
-| File                                     | Purpose                                                                  |
-| ---------------------------------------- | ------------------------------------------------------------------------ |
-| **`root/package.json`**                  | The "Commander". Orchestrates calls to nested projects.                  |
-| **`Backend/Backend.csproj`**             | Configured with `<OpenApiGenerateDocuments>` to dump JSON on build.      |
-| **`Frontend/ng.Frontend/package.json`**  | Contains the logic to generate `models.ts` via `swagger-typescript-api`. |
-| **`_tools/docker/docker-compose.*.yml`** | Docker Compose files for PostgreSQL and SQL Server dev environments.     |
+| File                                     | Purpose                                                                     |
+| ---------------------------------------- | --------------------------------------------------------------------------- |
+| **`root/package.json`**                  | The "Commander". Orchestrates calls to nested projects.                     |
+| **`Backend/Backend.csproj`**             | Configured with `<OpenApiGenerateDocuments>` to dump JSON on build.         |
+| **`Frontend/ng.Frontend/package.json`**  | Contains the logic to generate `models.ts` via `swagger-typescript-api`.    |
+| **`_tools/docker/docker-compose.*.yml`** | Docker Compose files for PostgreSQL and SQL Server dev environments.        |
 | **`scripts/generate-dbml.js`**           | Converts PostgresSchema.sql → DBML. Publishing is CI-only (GitHub Actions). |
-| **`scripts/lib/ella-ui.js`**             | Shared console UI module used by all CLI scripts (see below).            |
+| **`scripts/lib/ella-ui.js`**             | Shared console UI module used by all CLI scripts (see below).               |
 
 ### CLI Architecture (`scripts/lib/ella-ui.js`)
 
