@@ -41,7 +41,9 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 ConfigureDatabase(builder);
 ConfigureCoreServices(builder.Services);
 builder.Services.AddScoped<IBookingSlugRepository, PostgresBookingSlugRepo>();
+builder.Services.AddScoped<IResourceRepository, PostgresResourceRepo>();
 builder.Services.AddScoped<BookingSlugService>();
+builder.Services.AddScoped<ResourceService>();
 ConfigureRateLimiting(builder.Services);
 
 var app = builder.Build();
@@ -310,6 +312,7 @@ static void ConfigureCoreServices(IServiceCollection services)
     services.AddScoped<CampusService>();
     services.AddScoped<ClassService>();
     services.AddScoped<UserImportService>();
+    services.AddScoped<ResourceService>();
 }
 
 static void ConfigureRateLimiting(IServiceCollection services)
