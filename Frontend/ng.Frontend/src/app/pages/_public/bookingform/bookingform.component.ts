@@ -8,6 +8,8 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
 import { PublicBookingService } from '../../../shared/services/public-booking.service';
 import {
   BookingStatus,
@@ -28,6 +30,8 @@ import { ToastService } from '../../../shared/services/toast.service';
 export class BookingformComponent implements OnInit {
   private readonly publicBookingService = inject(PublicBookingService);
   private readonly toastService = inject(ToastService);
+  private readonly http = inject(HttpClient);
+  private readonly route = inject(ActivatedRoute);
 
   // --- State signals ---
   readonly rooms = signal<RoomDetailModel[]>([]);
@@ -36,6 +40,8 @@ export class BookingformComponent implements OnInit {
   readonly isLoading = signal(true);
   readonly isSubmitting = signal(false);
   readonly submitSuccess = signal(false);
+  readonly bookingSlug = signal<string | null>(null);
+  readonly userDisplayName = signal<string | null>(null);
 
   // --- Form ---
   readonly bookingForm = new FormGroup({
@@ -109,10 +115,30 @@ export class BookingformComponent implements OnInit {
   readonly today = new Date().toISOString().split('T')[0];
 
   ngOnInit(): void {
+    const slug = this.route.snapshot.queryParamMap.get('slug');
+    if (slug) {
+      this.bookingSlug.set(slug);
+      this.verifySlug(slug);
+    }
+
     this.loadData();
     // Set default dates to today
     this.bookingForm.controls.startDate.setValue(this.today);
     this.bookingForm.controls.endDate.setValue(this.today);
+  }
+
+  private verifySlug(slug: string): void {
+    this.http.get<{ userDisplayName: string }>(`/api/public/booking-slugs/${slug}`).subscribe({
+      next: (info) => {
+        this.userDisplayName.set(info.userDisplayName);
+        this.bookingForm.controls.name.setValue(info.userDisplayName);
+        this.bookingForm.controls.name.disable();
+      },
+      error: () => {
+        this.toastService.showError('Ogiltig eller inaktiv bokningslänk.');
+        this.bookingSlug.set(null);
+      }
+    });
   }
 
   private loadData(): void {
@@ -122,13 +148,15 @@ export class BookingformComponent implements OnInit {
     this.publicBookingService.getFormStatus().subscribe({
       next: (status) => {
         this.isFormEnabled.set(status.enabled);
-        if (!status.enabled) {
+        if (!status.enabled && !this.bookingSlug()) {
           this.bookingForm.disable();
         }
       },
       error: () => {
-        this.isFormEnabled.set(false);
-        this.bookingForm.disable();
+        if (!this.bookingSlug()) {
+          this.isFormEnabled.set(false);
+          this.bookingForm.disable();
+        }
       },
     });
 
@@ -181,44 +209,68 @@ export class BookingformComponent implements OnInit {
     const startDateTime = new Date(`${this.startDate()}T${this.startTime()}`);
     const endDateTime = new Date(`${this.endDate()}T${this.endTime()}`);
 
-    const bookerName = this.name();
+    const slug = this.bookingSlug();
+    const bookerName = this.userDisplayName() || this.name();
     const userNotes = this.notes();
-    const combinedNotes = userNotes ? `[${bookerName}] ${userNotes}` : `[${bookerName}]`;
+    
+    if (slug) {
+      // Slug booking
+      const payload = {
+        roomId: this.selectedRoomId()!,
+        startTime: startDateTime.toISOString(),
+        endTime: endDateTime.toISOString(),
+        notes: userNotes,
+        bookerName: bookerName
+      };
 
-    const dto: CreateBookingDto = {
-      userId: 0,
-      roomId: this.selectedRoomId()!,
-      startTime: startDateTime.toISOString(),
-      endTime: endDateTime.toISOString(),
-      notes: combinedNotes,
-      status: BookingStatus.Pending,
-    };
+      this.http.post(`/api/public/booking-slugs/${slug}/book`, payload).subscribe({
+        next: () => this.handleSuccess(),
+        error: (err) => this.handleError(err)
+      });
+    } else {
+      // Regular public booking
+      const combinedNotes = userNotes ? `[${bookerName}] ${userNotes}` : `[${bookerName}]`;
+      const dto: CreateBookingDto = {
+        userId: 0,
+        roomId: this.selectedRoomId()!,
+        startTime: startDateTime.toISOString(),
+        endTime: endDateTime.toISOString(),
+        notes: combinedNotes,
+        status: BookingStatus.Pending,
+      };
 
-    this.publicBookingService.createBooking(dto).subscribe({
-      next: () => {
-        this.submitSuccess.set(true);
-        this.toastService.showSuccess(
-          'Din bokningsförfrågan har skickats och inväntar godkännande!',
-        );
-        this.resetForm();
-        this.isSubmitting.set(false);
-      },
-      error: (err) => {
-        this.isSubmitting.set(false);
-        const status = err.status;
-        if (status === 403) {
-          this.toastService.showError('Bokningsformuläret är tillfälligt stängt.');
-          this.isFormEnabled.set(false);
-          this.bookingForm.disable();
-        } else if (status === 409) {
-          this.toastService.showError('Rummet är redan bokat för den valda tiden.');
-        } else if (status === 429) {
-          this.toastService.showError('För många förfrågningar. Försök igen senare.');
-        } else {
-          this.toastService.showError('Något gick fel vid bokningen.');
-        }
-      },
-    });
+      this.publicBookingService.createBooking(dto).subscribe({
+        next: () => this.handleSuccess(),
+        error: (err) => this.handleError(err)
+      });
+    }
+  }
+
+  private handleSuccess(): void {
+    this.submitSuccess.set(true);
+    this.toastService.showSuccess(
+      this.bookingSlug() 
+        ? 'Bokningen är genomförd!' 
+        : 'Din bokningsförfrågan har skickats och inväntar godkännande!',
+    );
+    this.resetForm();
+    this.isSubmitting.set(false);
+  }
+
+  private handleError(err: any): void {
+    this.isSubmitting.set(false);
+    const status = err.status;
+    if (status === 403) {
+      this.toastService.showError('Bokningsformuläret är tillfälligt stängt.');
+      this.isFormEnabled.set(false);
+      this.bookingForm.disable();
+    } else if (status === 409) {
+      this.toastService.showError('Rummet är redan bokat för den valda tiden.');
+    } else if (status === 429) {
+      this.toastService.showError('För många förfrågningar. Försök igen senare.');
+    } else {
+      this.toastService.showError('Något gick fel vid bokningen.');
+    }
   }
 
   private resetForm(): void {
@@ -226,5 +278,9 @@ export class BookingformComponent implements OnInit {
       startDate: this.today,
       endDate: this.today,
     });
+    if (this.bookingSlug()) {
+      this.bookingForm.controls.name.setValue(this.userDisplayName() || '');
+      this.bookingForm.controls.name.disable();
+    }
   }
 }
