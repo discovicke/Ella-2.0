@@ -92,6 +92,7 @@ var api = app.MapGroup("api").AddEndpointFilter<ValidationFilter>();
 api.MapAuthEndpoints();
 api.MapBookingSlugEndpoints();
 api.MapUserEndpoints();
+api.MapResourceEndpoints();
 api.MapRoomEndpoints();
 api.MapAssetEndpoints();
 api.MapBookingEndpoints();
