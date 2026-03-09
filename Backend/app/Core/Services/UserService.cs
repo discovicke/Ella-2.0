@@ -153,6 +153,9 @@ public class UserService(
     {
         logger.LogInformation("Updating user with ID {UserId}", id);
 
+        if (dto.PermissionLevel is < 1 or > 10)
+            throw new ArgumentException("PermissionLevel must be between 1 and 10.");
+
         var existing =
             await repo.GetUserByIdAsync(id)
             ?? throw new KeyNotFoundException($"User with ID {id} does not exist.");

@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿﻿using System.Text;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
@@ -160,8 +160,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
 
             var sql =
                 @"
-            INSERT INTO users (email, password_hash, display_name, is_banned, permission_template_id)
-            VALUES (@Email, @PasswordHash, @DisplayName, @IsBanned, @PermissionTemplateId);";
+            INSERT INTO users (email, password_hash, display_name, is_banned, is_active, permission_level, permission_template_id)
+            VALUES (@Email, @PasswordHash, @DisplayName, @IsBanned, @IsActive, @PermissionLevel, @PermissionTemplateId);";
 
             var rowsAffected = await conn.ExecuteAsync(
                 sql,
@@ -171,6 +171,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
                     user.PasswordHash,
                     user.DisplayName,
                     user.IsBanned,
+                    user.IsActive,
+                    user.PermissionLevel,
                     user.PermissionTemplateId,
                 }
             );
@@ -198,6 +200,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
                 password_hash = @PasswordHash,
                 display_name = @DisplayName,
                 is_banned = @IsBanned,
+                is_active = @IsActive,
+                permission_level = @PermissionLevel,
                 tokens_valid_after = @TokensValidAfter,
                 permission_template_id = @PermissionTemplateId
             WHERE id = @Id;";
@@ -210,6 +214,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
                     user.PasswordHash,
                     user.DisplayName,
                     user.IsBanned,
+                    user.IsActive,
+                    user.PermissionLevel,
                     user.TokensValidAfter,
                     user.PermissionTemplateId,
                     Id = id,
