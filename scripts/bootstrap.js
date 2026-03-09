@@ -199,6 +199,32 @@ function runSetup() {
       const chosen = providers[index];
       const connStr = getConnectionString(chosen);
 
+      // --- Early Docker check so devs don't fill in config only to fail at the end ---
+      const providerLower = chosen.toLowerCase();
+      if (DOCKER_PROVIDERS.includes(providerLower)) {
+        const composeFile = path.join(
+          ROOT,
+          "_tools",
+          "docker",
+          `docker-compose.${providerLower}.yml`,
+        );
+        if (!fs.existsSync(composeFile)) {
+          ui.fail(
+            `No compose file found: _tools/docker/docker-compose.${providerLower}.yml`,
+          );
+          process.exit(1);
+        }
+        try {
+          execSync("docker info", { stdio: "ignore" });
+        } catch {
+          ui.fail(
+            `Docker is not running. Start Docker Desktop and run 'npm run setup' again.`,
+          );
+          process.exit(1);
+        }
+        ui.ok(`Docker is running.`);
+      }
+
       const jwtKey = crypto.randomBytes(32).toString("base64");
 
       // --- Email setup prompt ---
@@ -230,7 +256,9 @@ function runSetup() {
           }
 
           rlEmail.question(
-            ui.prompt(`SMTP Server ${c.dim}(enter = smtp-relay.brevo.com)${c.reset}: `),
+            ui.prompt(
+              `SMTP Server ${c.dim}(enter = smtp-relay.brevo.com)${c.reset}: `,
+            ),
             (smtpServer) => {
               rlEmail.question(
                 ui.prompt(`SMTP Port ${c.dim}(enter = 587)${c.reset}: `),
@@ -245,17 +273,27 @@ function runSetup() {
                             ui.prompt("Sender email address: "),
                             (senderEmail) => {
                               rlEmail.question(
-                                ui.prompt(`Sender display name ${c.dim}(enter = ELLA)${c.reset}: `),
+                                ui.prompt(
+                                  `Sender display name ${c.dim}(enter = ELLA)${c.reset}: `,
+                                ),
                                 (senderName) => {
                                   rlEmail.close();
-                                  finishSetup(chosen, connStr, jwtKey, providers, {
-                                    smtpServer: smtpServer.trim() || "smtp-relay.brevo.com",
-                                    port: smtpPort.trim() || "587",
-                                    username: smtpUser.trim(),
-                                    password: smtpPass.trim(),
-                                    senderEmail: senderEmail.trim(),
-                                    senderName: senderName.trim() || "ELLA",
-                                  });
+                                  finishSetup(
+                                    chosen,
+                                    connStr,
+                                    jwtKey,
+                                    providers,
+                                    {
+                                      smtpServer:
+                                        smtpServer.trim() ||
+                                        "smtp-relay.brevo.com",
+                                      port: smtpPort.trim() || "587",
+                                      username: smtpUser.trim(),
+                                      password: smtpPass.trim(),
+                                      senderEmail: senderEmail.trim(),
+                                      senderName: senderName.trim() || "ELLA",
+                                    },
+                                  );
                                 },
                               );
                             },
@@ -311,7 +349,7 @@ function runSetup() {
       "For production, copy to Backend/.env and configure real credentials.",
     );
 
-    // Start Docker if needed
+    // Start Docker container (Docker availability was already verified earlier)
     const providerLower = chosen.toLowerCase();
     if (DOCKER_PROVIDERS.includes(providerLower)) {
       ui.section("Docker");
@@ -321,20 +359,6 @@ function runSetup() {
         "docker",
         `docker-compose.${providerLower}.yml`,
       );
-      if (!fs.existsSync(composeFile)) {
-        ui.fail(
-          `No compose file found: _tools/docker/docker-compose.${providerLower}.yml`,
-        );
-        process.exit(1);
-      }
-      try {
-        execSync("docker info", { stdio: "ignore" });
-      } catch {
-        ui.fail(
-          `Docker is not running. Start Docker Desktop and run 'npm run setup' again.`,
-        );
-        process.exit(1);
-      }
       ui.info(`Starting ${chosen} container...`);
       try {
         execSync(`docker-compose -f "${composeFile}" up -d`, {
