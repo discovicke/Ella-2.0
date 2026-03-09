@@ -10,6 +10,7 @@ Instead of manually managing two terminals (Backend & Frontend) and manually upd
 - **One Command Startup:** `npm start` boots everything.
 - **Automated Sync:** C# DTOs are automatically converted to TypeScript interfaces on every build.
 - **Unified Deployment:** Angular is compiled _into_ the ASP.NET Core backend for a single-file deployment.
+- **Consistent CLI output:** All scripts share a unified visual style via `scripts/lib/ella-ui.js`.
 
 ---
 
@@ -36,16 +37,20 @@ You can always view the interactive menu by running `npm run help`.
 
 This is the main command. It executes a strictly ordered chain reaction:
 
-1. **Clean:** Runs `dotnet clean` to remove stale artifacts.
-2. **Build:** Runs `dotnet build`.
+1. **Pre-checks** (`prestart.js`): Verifies env files exist, starts Docker container if needed.
+2. **Clean:** Runs `dotnet clean` to remove stale artifacts.
+3. **Build:** Runs `dotnet build`.
 
 - _Trigger:_ This forces the `Microsoft.Extensions.ApiDescription.Server` tool to generate a fresh `models.json` OpenAPI spec.
 
-3. **Sync:** Runs `frontend:sync`.
+4. **Sync** (`sync-frontend.js`): Runs `swagger-typescript-api` to regenerate `src/app/models/models.ts` from the OpenAPI spec, then runs `generate-input-limits.js` to produce `input-limits.ts`. Third-party tool noise is captured; only clean status lines are printed.
 
-- _Trigger:_ Uses `swagger-typescript-api` to read `models.json` and update `src/app/models/models.ts`.
+5. **DBML** (`generate-dbml.js`): Converts `PostgresSchema.sql` → `_tools/dbml/schema.dbml`. If authenticated with dbdocs.io, compares a SHA-256 hash of the generated DBML against the cached hash in `_tools/dbml/.schema.hash`:
+   - **Schema unchanged** → skips the push entirely (instant, no network call).
+   - **Schema changed** → pushes to dbdocs.io and updates links in `DATABASE_DOC.md` and `README.md`.
+   - **Not authenticated** → skips silently with a hint.
 
-4. **Run:** Uses `concurrently` to launch:
+6. **Run:** Uses `concurrently` to launch:
 
 - **Backend:** `dotnet watch` (Hot Reloads C#).
 - **Frontend:** `ng serve` (Hot Reloads Angular).
@@ -81,11 +86,51 @@ graph LR
 
 ### Key Configuration Files
 
-| File                                    | Purpose                                                                  |
-| --------------------------------------- | ------------------------------------------------------------------------ |
-| **`root/package.json`**                 | The "Commander". Orchestrates calls to nested projects.                  |
-| **`Backend/Backend.csproj`**            | Configured with `<OpenApiGenerateDocuments>` to dump JSON on build.      |
-| **`Frontend/ng.Frontend/package.json`** | Contains the logic to generate `models.ts` via `swagger-typescript-api`. |
+| File                                     | Purpose                                                                  |
+| ---------------------------------------- | ------------------------------------------------------------------------ |
+| **`root/package.json`**                  | The "Commander". Orchestrates calls to nested projects.                  |
+| **`Backend/Backend.csproj`**             | Configured with `<OpenApiGenerateDocuments>` to dump JSON on build.      |
+| **`Frontend/ng.Frontend/package.json`**  | Contains the logic to generate `models.ts` via `swagger-typescript-api`. |
+| **`_tools/docker/docker-compose.*.yml`** | Docker Compose files for PostgreSQL and SQL Server dev environments.     |
+| **`scripts/generate-dbml.js`**           | Converts PostgresSchema.sql → DBML, optionally publishes to dbdocs.io.   |
+| **`scripts/lib/ella-ui.js`**             | Shared console UI module used by all CLI scripts (see below).            |
+
+### CLI Architecture (`scripts/lib/ella-ui.js`)
+
+All custom scripts import a shared UI module that provides consistent formatting:
+
+```
+scripts/
+├── lib/
+│   └── ella-ui.js          ← Shared colors, icons, and formatting helpers
+├── bootstrap.js             ← npm run setup (interactive)
+├── prestart.js              ← npm start pre-flight (non-interactive)
+├── sync-frontend.js         ← Wraps swagger-typescript-api + input-limits
+├── generate-dbml.js         ← SQL → DBML + dbdocs publish with hash cache
+└── test-pretty.js           ← Formatted test runner output
+```
+
+**Design principles:**
+
+- **Piped third-party output:** External tools (Docker, sql2dbml, dbdocs, swagger-typescript-api) run with `stdio: 'pipe'` so their noisy output is captured and replaced with clean status lines.
+- **Consistent vocabulary:** `✔` = success, `◆` = action in progress, `▲` = warning, `✖` = error, `→` = link.
+- **Branded headers:** Each phase displays `ELLA  <phase name>` in a consistent banner.
+- **No information loss:** All the same information is still surfaced — just formatted uniformly.
+
+**Available helpers (from `ella-ui.js`):**
+
+| Function         | Output                               |
+| ---------------- | ------------------------------------ |
+| `header(phase)`  | `ELLA  <phase>` banner with dividers |
+| `section(title)` | Bold heading + divider               |
+| `ok(msg)`        | `✔  <msg>` (green)                   |
+| `info(msg)`      | `◆  <msg>` (cyan)                    |
+| `warn(msg)`      | `▲  <msg>` (yellow)                  |
+| `fail(msg)`      | `✖  <msg>` (red)                     |
+| `hint(msg)`      | Indented dimmed text                 |
+| `detail(msg)`    | `▸ <msg>` (dimmed)                   |
+| `link(url)`      | `→ <url>` (cyan)                     |
+| `done(msg)`      | Bold green completion banner         |
 
 ---
 

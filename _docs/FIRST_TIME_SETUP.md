@@ -23,12 +23,12 @@ npm run setup
 This installs all dependencies (root, frontend, backend restore) and runs the interactive bootstrap:
 
 ```
-  ──────────────────────────────────────────
-    ELLA — First-time Setup
-  ──────────────────────────────────────────
+  ────────────────────────────────────────────────
+  ELLA  First-time Setup
+  ────────────────────────────────────────────────
 
   Select a database provider
-  ──────────────────────────────────────────
+  ────────────────────────────────────────────────
      1  Sqlite
      2  Postgres
      3  SqlServer
@@ -41,6 +41,16 @@ After picking, setup:
 1. Writes `Backend/.env-example` with the correct connection string (credentials pulled directly from the provider's compose file) and an auto-generated JWT signing key.
 2. Starts the Docker container if the chosen provider requires one.
 3. Prints **"Setup complete! Run `npm start` to launch the project."**
+4. Asks if you want to set up live schema diagrams (optional):
+
+```
+  ◆  Optional: Publish a live database schema diagram to dbdocs.io.
+     Requires a free account at https://dbdocs.io (sign in with GitHub or email).
+  ?  Set up live schema diagrams? (y/N):
+```
+
+- **y** — Opens your browser to sign in (or create a free account), then publishes the database diagram and updates doc links automatically.
+- **N** (or Enter) — Skips. Everything works without it. You can run `npx dbdocs login` at any time later to enable it.
 
 If env files already exist, setup exits immediately without re-prompting.
 
@@ -57,7 +67,8 @@ Automatically:
 1. Verifies env files exist (exits with instructions if missing).
 2. Starts the Docker container if the configured provider needs one.
 3. Rebuilds the backend and syncs OpenAPI TypeScript models.
-4. Launches both servers in parallel:
+4. Generates DBML schema diagram. Only pushes to dbdocs.io if authenticated **and** the schema has changed since the last publish (hash-cached in `_tools/dbml/.schema.hash`).
+5. Launches both servers in parallel:
 
 | Server   | URL                   |
 | -------- | --------------------- |
@@ -95,13 +106,14 @@ npm run setup
 
 ## Quick Reference
 
-| Command                  | Purpose                                                     |
-| ------------------------ | ----------------------------------------------------------- |
-| `npm run setup`          | One-time: install deps, pick DB provider, start Docker      |
-| `npm start`              | Daily: pre-checks, rebuild models, serve both servers       |
-| `npm run refresh:models` | Regenerate TypeScript models from backend DTOs (no restart) |
-| `npm run build:prod`     | Full production build → `dist/final_app`                    |
-| `npm run help`           | Show all available commands                                 |
+| Command                  | Purpose                                                          |
+| ------------------------ | ---------------------------------------------------------------- |
+| `npm run setup`          | One-time: install deps, pick DB provider, start Docker           |
+| `npm start`              | Daily: pre-checks, rebuild models, generate DBML, serve servers  |
+| `npm run refresh:models` | Regenerate TypeScript models from backend DTOs (no restart)      |
+| `npm run dbml:generate`  | Regenerate DBML from PostgresSchema.sql (+ publish if logged in) |
+| `npm run build:prod`     | Full production build → `dist/final_app`                         |
+| `npm run help`           | Show all available commands                                      |
 
 ---
 
@@ -116,9 +128,9 @@ npm run setup
 **Container fails to start** — Run the compose command manually to see the full error output:
 
 ```bash
-docker-compose -f docker-compose.postgres.yml up -d
+docker-compose -f _tools/docker/docker-compose.postgres.yml up -d
 # or
-docker-compose -f docker-compose.sqlserver.yml up -d
+docker-compose -f _tools/docker/docker-compose.sqlserver.yml up -d
 ```
 
 > **Tip:** Docker compose credentials can be overridden with environment variables (e.g. `POSTGRES_PASSWORD`, `MSSQL_SA_PASSWORD`). The compose files use `${VAR:-default}` syntax — see the files for all supported variables.
