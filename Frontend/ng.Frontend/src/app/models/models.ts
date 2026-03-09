@@ -174,6 +174,29 @@ export interface CreatePublicBookingDto {
   notes: string | null;
 }
 
+export interface CreateResourceBookingDto {
+  /** @format int64 */
+  resourceId: number;
+  /** @format date-time */
+  startTime: string;
+  /** @format date-time */
+  endTime: string;
+  notes: string | null;
+}
+
+export interface CreateResourceCategoryDto {
+  name: string;
+}
+
+export interface CreateResourceDto {
+  /** @format int64 */
+  categoryId: number;
+  /** @format int64 */
+  campusId: number;
+  name: string;
+  description: string | null;
+}
+
 export interface CreateRoomDto {
   /** @format int64 */
   campusId: number;
