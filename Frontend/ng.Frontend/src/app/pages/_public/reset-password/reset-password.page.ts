@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -14,66 +14,77 @@ import { ActivatedRoute, RouterLink, Router } from '@angular/router';
         <div class="auth-header">
           <div class="logo-placeholder">E</div>
           <h1>ELLA Booking</h1>
-          <p>Set your new password below</p>
+          <p>Ange ditt nya lösenord nedan</p>
         </div>
 
-        <div *ngIf="success" class="alert success animate-slide-up">
-          <div class="alert-icon">✔</div>
-          <div class="alert-content">
-            <strong>Success!</strong>
-            <p>Your password has been updated. You can now log in.</p>
-            <a routerLink="/login" class="btn btn-primary mt-2">Go to Login</a>
-          </div>
-        </div>
-
-        <form *ngIf="!success" #resetForm="ngForm" (ngSubmit)="onSubmit()">
-          <div class="form-group">
-            <label for="password">New Password</label>
-            <div class="input-wrapper">
-              <span class="input-icon">🔒</span>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                [(ngModel)]="newPassword"
-                required
-                minlength="6"
-                placeholder="Minimum 6 characters"
-                [disabled]="loading"
-              />
+        @if (success()) {
+          <div class="alert success animate-slide-up">
+            <div class="alert-icon">✔</div>
+            <div class="alert-content">
+              <strong>Klart!</strong>
+              <p>Ditt lösenord har uppdaterats. Du kan nu logga in.</p>
+              <a routerLink="/login" class="btn btn-primary mt-2">Gå till logga in</a>
             </div>
           </div>
+        }
 
-          <div class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <div class="input-wrapper">
-              <span class="input-icon">🔒</span>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                [(ngModel)]="confirmPassword"
-                required
-                placeholder="Repeat your password"
-                [disabled]="loading"
-              />
+        @if (!success()) {
+          <form #resetForm="ngForm" (ngSubmit)="onSubmit()">
+            <div class="form-group">
+              <label for="password">Nytt lösenord</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🔒</span>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  [(ngModel)]="newPassword"
+                  required
+                  minlength="6"
+                  placeholder="Minst 6 tecken"
+                  [disabled]="loading()"
+                />
+              </div>
             </div>
-            <p *ngIf="newPassword !== confirmPassword && confirmPassword" class="field-error">Passwords do not match</p>
-          </div>
 
-          <div *ngIf="error" class="alert error animate-shake">
-            <div class="alert-icon">⚠</div>
-            <p>{{ error }}</p>
-          </div>
+            <div class="form-group">
+              <label for="confirmPassword">Bekräfta lösenord</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🔒</span>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  [(ngModel)]="confirmPassword"
+                  required
+                  placeholder="Upprepa lösenordet"
+                  [disabled]="loading()"
+                />
+              </div>
+              @if (newPassword !== confirmPassword && confirmPassword) {
+                <p class="field-error">Lösenorden matchar inte</p>
+              }
+            </div>
 
-          <button type="submit" class="btn btn-primary btn-block" [disabled]="resetForm.invalid || loading || newPassword !== confirmPassword">
-            <span *ngIf="!loading">Update Password</span>
-            <span *ngIf="loading" class="spinner"></span>
-          </button>
-        </form>
+            @if (error()) {
+              <div class="alert error animate-shake">
+                <div class="alert-icon">⚠</div>
+                <p>{{ error() }}</p>
+              </div>
+            }
+
+            <button type="submit" class="btn btn-primary btn-block" [disabled]="resetForm.invalid || loading() || newPassword !== confirmPassword">
+              @if (!loading()) {
+                <span>Uppdatera lösenord</span>
+              } @else {
+                <span class="spinner"></span>
+              }
+            </button>
+          </form>
+        }
 
         <div class="auth-footer">
-          <p>Changed your mind? <a routerLink="/login">Back to Login</a></p>
+          <p>Ångrat dig? <a routerLink="/login">Tillbaka till logga in</a></p>
         </div>
       </div>
     </div>
@@ -82,7 +93,8 @@ import { ActivatedRoute, RouterLink, Router } from '@angular/router';
   styles: [`
     .mt-2 { margin-top: 1rem; }
     .field-error { color: #f87171; font-size: 0.8rem; margin-top: 0.25rem; }
-  `]
+  `],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ResetPasswordPage implements OnInit {
   private http = inject(HttpClient);
@@ -93,22 +105,23 @@ export class ResetPasswordPage implements OnInit {
   token = '';
   newPassword = '';
   confirmPassword = '';
-  loading = false;
-  success = false;
-  error = '';
+  
+  loading = signal(false);
+  success = signal(false);
+  error = signal('');
 
   ngOnInit() {
     this.email = this.route.snapshot.queryParamMap.get('email') || '';
     this.token = this.route.snapshot.queryParamMap.get('token') || '';
 
     if (!this.email || !this.token) {
-      this.error = 'Invalid reset link. Please request a new one.';
+      this.error.set('Ogiltig länk. Vänligen be om en ny.');
     }
   }
 
   onSubmit() {
-    this.loading = true;
-    this.error = '';
+    this.loading.set(true);
+    this.error.set('');
 
     const payload = {
       email: this.email,
@@ -119,12 +132,12 @@ export class ResetPasswordPage implements OnInit {
     this.http.post('/api/auth/reset-password', payload)
       .subscribe({
         next: () => {
-          this.success = true;
-          this.loading = false;
+          this.success.set(true);
+          this.loading.set(false);
         },
         error: (err) => {
-          this.error = err.error?.message || 'Failed to reset password. The link may have expired.';
-          this.loading = false;
+          this.error.set(err.error?.message || 'Misslyckades att återställa lösenordet. Länken kan ha gått ut.');
+          this.loading.set(false);
         }
       });
   }
