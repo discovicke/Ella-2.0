@@ -44,17 +44,68 @@ function extractEnvValue(yml, pattern) {
   return fallbackMatch ? fallbackMatch[1] : unquoted;
 }
 
-// --- Already set up ---
+// --- Already set up? ---
 if (fs.existsSync(ENV_PATH) || fs.existsSync(ENV_EXAMPLE_PATH)) {
   ui.header("Setup");
-  ui.ok("Environment already configured — skipping setup.");
-  ui.hint(
-    "To reconfigure, delete Backend/.env and Backend/.env-example, then run this again.",
+  ui.ok("Environment already configured.");
+
+  const existing = [
+    fs.existsSync(ENV_PATH) && "Backend/.env",
+    fs.existsSync(ENV_EXAMPLE_PATH) && "Backend/.env-example",
+  ].filter(Boolean);
+  ui.detail(`Found: ${existing.join(", ")}`);
+
+  const rlReconfigure = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  rlReconfigure.question(
+    ui.prompt("Reconfigure from scratch? (y/N): "),
+    (ans) => {
+      rlReconfigure.close();
+      if (ans.trim().toLowerCase() !== "y") {
+        ui.hint("Keeping existing configuration.");
+        ui.footer();
+        process.exit(0);
+      }
+      // Remove old env files and continue setup
+      function removeAndContinue() {
+        if (fs.existsSync(ENV_PATH)) fs.unlinkSync(ENV_PATH);
+        if (fs.existsSync(ENV_EXAMPLE_PATH)) fs.unlinkSync(ENV_EXAMPLE_PATH);
+        ui.ok("Removed old environment files.");
+        runSetup();
+      }
+
+      if (fs.existsSync(ENV_PATH)) {
+        ui.warn("A real Backend/.env file exists (may contain production credentials).");
+        const rlConfirm = readline.createInterface({
+          input: process.stdin,
+          output: process.stdout,
+        });
+        rlConfirm.question(
+          ui.prompt("Delete Backend/.env too? This cannot be undone. (y/N): "),
+          (confirm) => {
+            rlConfirm.close();
+            if (confirm.trim().toLowerCase() !== "y") {
+              ui.hint("Keeping Backend/.env — only removing .env-example.");
+              if (fs.existsSync(ENV_EXAMPLE_PATH)) fs.unlinkSync(ENV_EXAMPLE_PATH);
+              ui.ok("Removed Backend/.env-example.");
+              runSetup();
+            } else {
+              removeAndContinue();
+            }
+          },
+        );
+      } else {
+        removeAndContinue();
+      }
+    },
   );
-  ui.footer();
-  process.exit(0);
+} else {
+  runSetup();
 }
 
+function runSetup() {
 // --- Parse enum members from C# source ---
 const csSource = fs.readFileSync(DB_PROVIDERS_CS, "utf8");
 const enumBodyMatch = csSource.match(/enum\s+DbProviders\s*\{([^}]+)\}/);
@@ -246,3 +297,4 @@ rl.question(`Enter choice (1-${providers.length}) [default: 1]: `, (answer) => {
     }
   });
 });
+} // end runSetup
