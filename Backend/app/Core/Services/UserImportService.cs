@@ -7,6 +7,7 @@ namespace Backend.app.Core.Services;
 public class UserImportService(
     UserService userService,
     ClassService classService,
+    CampusService campusService,
     PermissionTemplateService permissionTemplateService,
     IUserRepository userRepository,
     IParser<StudentImportDto> parser,
@@ -27,6 +28,9 @@ public class UserImportService(
         var normalizedClassName = className.Trim();
         var students = await parser.Parse(csvContent, normalizedClassName);
         var classId = await ResolveClassIdAsync(normalizedClassName);
+        
+        // Fetch all available campuses for matching
+        var campuses = await campusService.GetAllAsync();
 
         // Stamp the chosen template onto each student
         if (templateId.HasValue)
@@ -58,12 +62,29 @@ public class UserImportService(
             try
             {
                 var createdUser = await userService.CreateUserAsync(dto);
+                
+                // 1. Assign Class
                 await userRepository.SetClassesForUserAsync(createdUser.Id, new[] { classId });
+                
+                // 2. Assign Campus (if city matches)
+                if (!string.IsNullOrWhiteSpace(student.City))
+                {
+                    var matchedCampus = campuses.FirstOrDefault(c => 
+                        string.Equals(c.City, student.City.Trim(), StringComparison.OrdinalIgnoreCase));
+                    
+                    if (matchedCampus != null)
+                    {
+                        await userRepository.SetCampusesForUserAsync(createdUser.Id, new[] { matchedCampus.Id });
+                    }
+                }
+
+                // 3. Apply Permission Template
                 if (student.TemplateId.HasValue)
                     await permissionTemplateService.ApplyTemplateAsync(
                         createdUser.Id,
                         student.TemplateId.Value
                     );
+                
                 created++;
             }
             catch (InvalidOperationException ex)
