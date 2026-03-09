@@ -354,6 +354,8 @@ SELECT b.id               AS booking_id,
            END::booking_status                         AS status,
        b.is_lesson,
        b.notes,
+       b.booker_name,
+       b.recurring_group_id,
        b.created_at,
        b.updated_at,
        COUNT(reg.user_id) FILTER (WHERE reg.status = 'registered') AS registration_count,
@@ -376,6 +378,7 @@ FROM bookings b
 GROUP BY b.id, b.user_id, u.display_name, u.email,
          b.room_id, r.name, r.capacity, rt.name, r.floor,
          b.start_time, b.end_time, b.status, b.is_lesson, b.notes,
+         b.booker_name, b.recurring_group_id,
          b.created_at, b.updated_at, c.city;
 
 
@@ -499,6 +502,10 @@ CREATE INDEX IF NOT EXISTS idx_bookings_room_time
 -- "Visa mina bokningar" är en vanlig vy för inloggad användare.
 CREATE INDEX IF NOT EXISTS idx_bookings_user_id
     ON bookings (user_id);
+
+-- Snabb uppslagning av alla bokningar i en återkommande serie.
+CREATE INDEX IF NOT EXISTS idx_bookings_recurring_group
+    ON bookings (recurring_group_id) WHERE recurring_group_id IS NOT NULL;
 
 -- Behörighetskontroll slår upp alla overrides för en specifik användare.
 CREATE INDEX IF NOT EXISTS idx_user_perm_overrides_user_id

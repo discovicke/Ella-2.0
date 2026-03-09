@@ -210,4 +210,55 @@ public class PostgresBookingRepo(
             throw;
         }
     }
+
+    public async Task<IEnumerable<Booking>> GetBookingsByRecurringGroupIdAsync(Guid groupId)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            return await conn.QueryAsync<Booking>(
+                "SELECT * FROM bookings WHERE recurring_group_id = @GroupId ORDER BY start_time;",
+                new { GroupId = groupId });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching bookings for recurring group {GroupId}", groupId);
+            throw;
+        }
+    }
+
+    public async Task<int> CancelBookingsByRecurringGroupIdAsync(Guid groupId)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            return await conn.ExecuteAsync(
+                "UPDATE bookings SET status = @Status::booking_status WHERE recurring_group_id = @GroupId AND status != @Status::booking_status;",
+                new { GroupId = groupId, Status = BookingStatus.Cancelled.ToString().ToLower() });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error cancelling series {GroupId}", groupId);
+            throw;
+        }
+    }
+
+    public async Task<int> CancelFutureBookingsInSeriesAsync(Guid groupId, DateTime fromDate)
+    {
+        try
+        {
+            await using var conn = connectionFactory.CreateConnection();
+            await conn.OpenAsync();
+            return await conn.ExecuteAsync(
+                "UPDATE bookings SET status = @Status::booking_status WHERE recurring_group_id = @GroupId AND start_time >= @FromDate AND status != @Status::booking_status;",
+                new { GroupId = groupId, FromDate = fromDate.ToUniversalTime(), Status = BookingStatus.Cancelled.ToString().ToLower() });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error cancelling future bookings in series {GroupId} from {FromDate}", groupId, fromDate);
+            throw;
+        }
+    }
 }

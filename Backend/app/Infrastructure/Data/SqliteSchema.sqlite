@@ -168,6 +168,7 @@ CREATE TABLE IF NOT EXISTS "bookings" (
     "is_lesson" INTEGER NOT NULL DEFAULT 0,
     "notes" TEXT,
     "booker_name" TEXT,
+    "recurring_group_id" TEXT,
     "created_at" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TEXT,
     PRIMARY KEY("id"),
@@ -230,6 +231,8 @@ SELECT
     END AS status,
     b.is_lesson AS is_lesson,
     b.notes AS notes,
+    b.booker_name AS booker_name,
+    b.recurring_group_id AS recurring_group_id,
     b.created_at AS created_at,
     b.updated_at AS updated_at,
     COALESCE(SUM(CASE WHEN reg.status = 1 THEN 1 ELSE 0 END), 0) AS registration_count,
@@ -248,7 +251,7 @@ LEFT JOIN rooms r ON b.room_id = r.id
 LEFT JOIN room_types rt ON r.room_type_id = rt.id
 LEFT JOIN campus c ON r.campus_id = c.id
 LEFT JOIN registrations reg ON b.id = reg.booking_id
-GROUP BY b.id, b.user_id, u.display_name, u.email, b.room_id, r.name, r.capacity, rt.name, r.floor, c.city, b.start_time, b.end_time, b.status, b.is_lesson, b.notes, b.created_at, b.updated_at;
+GROUP BY b.id, b.user_id, u.display_name, u.email, b.room_id, r.name, r.capacity, rt.name, r.floor, c.city, b.start_time, b.end_time, b.status, b.is_lesson, b.notes, b.booker_name, b.recurring_group_id, b.created_at, b.updated_at;
 
 -- View: Room Details with JSON array assets
 DROP VIEW IF EXISTS "v_room_details";
