@@ -124,7 +124,7 @@ try {
 
 // --- Publish to dbdocs.io (CI-only, requires DBDOCS_TOKEN) ---
 if (!process.env.DBDOCS_TOKEN) {
-  ui.hint("No DBDOCS_TOKEN — skipping dbdocs publish (CI handles this).");
+  ui.hint("Live schema diagram updates automatically when schema changes are pushed to main.");
 } else {
   const dbml = fs.readFileSync(OUTPUT_PATH, "utf-8");
   const currentHash = crypto.createHash("sha256").update(dbml).digest("hex");
