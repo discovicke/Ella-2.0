@@ -530,3 +530,26 @@ VALUES
     (304, 50, 2),   -- Elev Testlund declined Sven's upcoming (Mar 3)
     (311, 11, 2),   -- Christian   declined Anders' AI (Mar 12)
     (313, 10, 2);   -- André      declined Anders' Hackathon (Mar 25)
+
+
+-- ═══════════════════════════════════════════════════════════════
+-- 14. RESOURCE CATEGORIES
+-- ═══════════════════════════════════════════════════════════════
+INSERT INTO resource_categories (id, name)
+VALUES
+    (1, 'Fordon'),
+    (2, 'Portabel IT');
+
+
+-- ═══════════════════════════════════════════════════════════════
+-- 15. BOOKABLE RESOURCES
+-- ═══════════════════════════════════════════════════════════════
+INSERT INTO bookable_resources (id, category_id, campus_id, name, description, is_active)
+VALUES
+    (1, 1, 1, 'Skolbil 1',        'Vit VW Golf — Hudiksvall',           1),
+    (2, 1, 1, 'Skolbil 2',        'Blå Volvo V60 — Hudiksvall',         1),
+    (3, 1, 2, 'Skolbil Gävle',    'Grå Toyota Corolla — Gävle',         1),
+    (4, 2, 1, 'Laptopvagn A',     '30 st Lenovo ThinkPad — Hudiksvall', 1),
+    (5, 2, 2, 'Laptopvagn B',     '24 st MacBook Air — Gävle',          1),
+    (6, 2, 3, 'Laptopvagn C',     '20 st Dell Latitude — Sundsvall',    1);
+

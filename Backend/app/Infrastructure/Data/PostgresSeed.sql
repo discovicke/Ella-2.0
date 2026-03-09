@@ -607,10 +607,31 @@ VALUES
        (304, 50, 'declined'),    -- Elev Testlund declined Sven's upcoming (Mar 3)
        (311, 11, 'declined'),    -- Christian   declined Anders' AI (Mar 12)
        (313, 10, 'declined');    -- André      declined Anders' Hackathon (Mar 25)
--- -------------------------------------------------------------
---  ADDITIONAL RESOURCES (Cars, etc.)
--- -------------------------------------------------------------
-INSERT INTO resource_categories (id, name) VALUES (1, 'Fordon'), (2, 'Portabel IT'), (3, '�vrigt') ON CONFLICT (id) DO NOTHING;
-SELECT setval(pg_get_serial_sequence('resource_categories', 'id'), (SELECT MAX(id) FROM resource_categories));
-INSERT INTO bookable_resources (category_id, campus_id, name, description) VALUES (1, 1, 'Skolbil 1 (Hudiksvall)', 'Vit Volkswagen Golf - ABC 123'), (1, 2, 'Skolbil 2 (G�vle)', 'Bl� Volvo V60 - XYZ 789'), (2, 1, 'Projektor Kit A', 'Portabel projektor med duk') ON CONFLICT DO NOTHING;
 
+
+-- -------------------------------------------------------------
+--  RESOURCE CATEGORIES
+-- -------------------------------------------------------------
+
+INSERT INTO resource_categories (id, name)
+    OVERRIDING SYSTEM VALUE
+VALUES (1, 'Fordon'),
+       (2, 'Portabel IT');
+
+SELECT setval(pg_get_serial_sequence('resource_categories', 'id'), (SELECT MAX(id) FROM resource_categories));
+
+
+-- -------------------------------------------------------------
+--  BOOKABLE RESOURCES
+-- -------------------------------------------------------------
+
+INSERT INTO bookable_resources (id, category_id, campus_id, name, description, is_active)
+    OVERRIDING SYSTEM VALUE
+VALUES (1, 1, 1, 'Skolbil 1',        'Vit VW Golf — Hudiksvall',           true),
+       (2, 1, 1, 'Skolbil 2',        'Blå Volvo V60 — Hudiksvall',         true),
+       (3, 1, 2, 'Skolbil Gävle',    'Grå Toyota Corolla — Gävle',         true),
+       (4, 2, 1, 'Laptopvagn A',     '30 st Lenovo ThinkPad — Hudiksvall', true),
+       (5, 2, 2, 'Laptopvagn B',     '24 st MacBook Air — Gävle',          true),
+       (6, 2, 3, 'Laptopvagn C',     '20 st Dell Latitude — Sundsvall',    true);
+
+SELECT setval(pg_get_serial_sequence('bookable_resources', 'id'), (SELECT MAX(id) FROM bookable_resources));
