@@ -104,4 +104,24 @@ export class BookingService {
   toggleForm(): Observable<{ enabled: boolean }> {
     return this.http.post<{ enabled: boolean }>(`${this.apiUrl}/form-toggle`, {});
   }
+
+  // ── Recurring series ──
+
+  getRecurringSeries(groupId: string): Observable<BookingDetailedReadModel[]> {
+    return this.http.get<BookingDetailedReadModel[]>(`${this.apiUrl}/series/${groupId}`);
+  }
+
+  cancelWithScope(bookingId: number, scope: 'single' | 'thisAndFollowing' | 'all' = 'single'): Observable<{ cancelledCount: number }> {
+    return this.http.delete<{ cancelledCount: number }>(`${this.apiUrl}/${bookingId}/cancel`, {
+      params: new HttpParams().set('scope', scope),
+    });
+  }
+
+  updateBookingDetails(bookingId: number, dto: { startTime?: string; endTime?: string; notes?: string; isLesson?: boolean }): Observable<unknown> {
+    return this.http.patch(`${this.apiUrl}/${bookingId}/details`, dto);
+  }
+
+  detachFromSeries(bookingId: number): Observable<unknown> {
+    return this.http.post(`${this.apiUrl}/${bookingId}/detach`, {});
+  }
 }
