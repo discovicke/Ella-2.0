@@ -62,9 +62,11 @@ public class BookingServiceTests
 
         var higherUser = TestDataFactory.CreateUser(1);
         higherUser.PermissionLevel = 10; // Admin level
+        higherUser.IsActive = true;
 
         var lowerUser = TestDataFactory.CreateUser(2);
         lowerUser.PermissionLevel = 1; // Student level
+        lowerUser.IsActive = true;
 
         var existingBooking = TestDataFactory.CreateBooking(99, 2, 1);
 
@@ -93,9 +95,11 @@ public class BookingServiceTests
 
         var user1 = TestDataFactory.CreateUser(1);
         user1.PermissionLevel = 5;
+        user1.IsActive = true;
 
         var user2 = TestDataFactory.CreateUser(2);
         user2.PermissionLevel = 5;
+        user2.IsActive = true;
 
         var existingBooking = TestDataFactory.CreateBooking(99, 2, 1);
 
@@ -106,7 +110,7 @@ public class BookingServiceTests
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.CreateBookingAsync(dto));
-        Assert.Contains("samma eller högre prioritet", ex.Message);
+        Assert.Contains("Konflikt", ex.Message);
     }
 
     [Fact]
