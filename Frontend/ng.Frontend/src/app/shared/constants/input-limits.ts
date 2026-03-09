@@ -9,10 +9,9 @@
 
 export const INPUT_LIMITS = {
   CreateAssetTypeDto: { description: 100 },
-  CreateBookingDto: { bookerName: 100, notes: 500 },
+  CreateBookingDto: { notes: 500 },
   CreateCampusDto: { city: 100, contact: 150, country: 100, street: 150, zip: 20 },
   CreateClassDto: { className: 100 },
-  CreatePublicBookingDto: { bookerName: 100, notes: 500 },
   CreateRoomDto: { floor: 20, name: 100, notes: 200 },
   CreateUserDto: { displayName: 100, email: 254, password: 128 },
   LoginDto: { email: 254, password: 128 },

@@ -81,15 +81,13 @@ public static class PublicBookingEndpoints
             .MapPost(
                 "/bookings",
                 async (
-                    CreatePublicBookingDto dto,
+                    CreateBookingDto dto,
                     IConfiguration config,
                     UserService userService,
                     BookingService bookingService
                 ) =>
                 {
                     // Validate required fields
-                    if (string.IsNullOrWhiteSpace(dto.BookerName))
-                        return Results.BadRequest(new { message = "Booker name is required." });
                     if (dto.StartTime >= dto.EndTime)
                         return Results.BadRequest(
                             new { message = "Start time must be before end time." }
@@ -115,15 +113,11 @@ public static class PublicBookingEndpoints
                     }
 
                     // Create the booking as Pending, owned by the system user
-                    var createDto = new CreateBookingDto(
-                        UserId: systemUser.Id,
-                        RoomId: dto.RoomId,
-                        StartTime: dto.StartTime,
-                        EndTime: dto.EndTime,
-                        Notes: dto.Notes,
-                        Status: BookingStatus.Pending,
-                        BookerName: dto.BookerName
-                    );
+                    var createDto = dto with
+                    {
+                        UserId = systemUser.Id,
+                        Status = BookingStatus.Pending,
+                    };
 
                     try
                     {
@@ -159,7 +153,7 @@ public static class PublicBookingEndpoints
                     + "The booking must be approved by an administrator before it becomes active.\n\n"
                     + "⚠️ **Rate limited** — max 5 requests per 15 minutes per IP."
             )
-            .Accepts<CreatePublicBookingDto>("application/json")
+            .Accepts<CreateBookingDto>("application/json")
             .Produces(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status403Forbidden)

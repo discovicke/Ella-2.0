@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CampusResponseDto, CreatePublicBookingDto, RoomDetailModel } from '../../models/models';
+import { CampusResponseDto, CreateBookingDto, RoomDetailModel } from '../../models/models';
 
 /**
  * Service for the public booking form.
@@ -31,7 +31,7 @@ export class PublicBookingService {
 
   /** Submit a public booking request (creates a Pending booking) */
   createBooking(
-    dto: CreatePublicBookingDto,
+    dto: CreateBookingDto,
   ): Observable<{ id: number; message: string; status: string }> {
     return this.http.post<{ id: number; message: string; status: string }>(
       `${this.baseUrl}/bookings`,

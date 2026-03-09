@@ -113,11 +113,8 @@ export interface CreateBookingDto {
   /** @maxLength 500 */
   notes: string | null;
   status: BookingStatus;
-  /**
-   * @maxLength 100
-   * @default null
-   */
-  bookerName?: string | null;
+  /** @default false */
+  isLesson?: boolean;
   /** @default null */
   classIds?: number[] | null;
 }
@@ -138,19 +135,6 @@ export interface CreateCampusDto {
 export interface CreateClassDto {
   /** @maxLength 100 */
   className: string;
-}
-
-export interface CreatePublicBookingDto {
-  /** @maxLength 100 */
-  bookerName: string;
-  /** @format int64 */
-  roomId: number;
-  /** @format date-time */
-  startTime: string;
-  /** @format date-time */
-  endTime: string;
-  /** @maxLength 500 */
-  notes: string | null;
 }
 
 export interface CreateRoomDto {

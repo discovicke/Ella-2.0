@@ -9,7 +9,12 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PublicBookingService } from '../../../shared/services/public-booking.service';
-import { CreatePublicBookingDto, RoomDetailModel, CampusResponseDto } from '../../../models/models';
+import {
+  BookingStatus,
+  CreateBookingDto,
+  RoomDetailModel,
+  CampusResponseDto,
+} from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { ToastService } from '../../../shared/services/toast.service';
 
@@ -176,12 +181,17 @@ export class BookingformComponent implements OnInit {
     const startDateTime = new Date(`${this.startDate()}T${this.startTime()}`);
     const endDateTime = new Date(`${this.endDate()}T${this.endTime()}`);
 
-    const dto: CreatePublicBookingDto = {
-      bookerName: this.name(),
+    const bookerName = this.name();
+    const userNotes = this.notes();
+    const combinedNotes = userNotes ? `[${bookerName}] ${userNotes}` : `[${bookerName}]`;
+
+    const dto: CreateBookingDto = {
+      userId: 0,
       roomId: this.selectedRoomId()!,
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
-      notes: this.notes() || null,
+      notes: combinedNotes,
+      status: BookingStatus.Pending,
     };
 
     this.publicBookingService.createBooking(dto).subscribe({
