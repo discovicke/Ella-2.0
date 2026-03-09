@@ -78,6 +78,13 @@ public class PostgresDbInitializer(
             CREATE UNIQUE INDEX IF NOT EXISTS idx_booking_slugs_slug ON user_booking_slugs(slug);
         ");
 
+        // 5. Ensure manageResources permission exists
+        await conn.ExecuteAsync(@"
+            INSERT INTO system_permissions (key, description)
+            VALUES ('manageResources', 'Manage and book movable resources like vehicles')
+            ON CONFLICT (key) DO NOTHING;
+        ");
+
         logger.LogInformation("Schema applied.");
     }
 
