@@ -78,6 +78,25 @@ export interface BookingDetailedReadModel {
   classNames?: string[] | null;
 }
 
+export interface BookingSlugQuickInfoDto {
+  userDisplayName: string;
+  /** @format int64 */
+  userId: number;
+}
+
+export interface BookingSlugResponseDto {
+  /** @format int64 */
+  id: number;
+  /** @format int64 */
+  userId: number;
+  userDisplayName: string;
+  slug: string;
+  isActive: boolean;
+  /** @format date-time */
+  createdAt: string;
+  bookingUrl: string;
+}
+
 export interface CampusResponseDto {
   /** @format int64 */
   id: number;
@@ -121,6 +140,11 @@ export interface CreateBookingDto {
   bookerName?: string | null;
 }
 
+export interface CreateBookingSlugDto {
+  /** @format int64 */
+  userId: number;
+}
+
 export interface CreateCampusDto {
   /** @maxLength 150 */
   street: string;
@@ -137,6 +161,17 @@ export interface CreateCampusDto {
 export interface CreateClassDto {
   /** @maxLength 100 */
   className: string;
+}
+
+export interface CreatePublicBookingDto {
+  /** @format int64 */
+  roomId: number;
+  /** @format date-time */
+  startTime: string;
+  /** @format date-time */
+  endTime: string;
+  bookerName: string;
+  notes: string | null;
 }
 
 export interface CreateRoomDto {

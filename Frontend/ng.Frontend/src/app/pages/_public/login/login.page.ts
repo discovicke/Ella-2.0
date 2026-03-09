@@ -69,22 +69,22 @@ export class LoginPage {
 
         this.isSubmitting.set(false);
       }, 1000);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Login error:', err);
 
+      const errorMessage = err.error?.message || 'Fel e-post eller lösenord';
+
       // Force re-trigger of shake animation by toggling error state
-      // This ensures the animation plays even if user clicks multiple times
       setTimeout(() => {
         this.hasLoginError.set(true);
 
-        // Auto-clear error state after 2 seconds
         this.errorTimeoutId = window.setTimeout(() => {
           this.hasLoginError.set(false);
           this.errorTimeoutId = undefined;
         }, 2000);
       }, 0);
 
-      this.toastService.showError('Fel e-post eller lösenord');
+      this.toastService.showError(errorMessage);
       this.isSubmitting.set(false);
     }
   }

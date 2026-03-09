@@ -75,6 +75,13 @@ export const routes: Routes = [
           import('./pages/main/manage-users/manage-users.page').then((m) => m.ManageUsersPage),
       },
       {
+        path: 'manage-slugs',
+        canActivate: [permissionGuard],
+        data: { permission: 'manageUsers' },
+        loadComponent: () =>
+          import('./pages/main/manage-slugs/manage-slugs.page').then((m) => m.ManageSlugsPage),
+      },
+      {
         path: 'manage-rooms',
         canActivate: [permissionGuard],
         data: { permission: 'manageRooms' },

@@ -121,21 +121,14 @@ public class AuthService(
             return new LoginResultDto();
         }
 
-        if (!user.IsActive)
+        // 1. VALIDATE PASSWORD FIRST
+        if (!passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
         {
-            logger.LogWarning("Login failed: account not active for email {Email}", request.Email);
-            var perms = await permissionRepo.GetEffectivePermissionsAsync(user.Id);
-            return new LoginResultDto 
-            { 
-                Response = new AuthResponseDto 
-                { 
-                    Message = "Account not activated. Please check your email or click 'Activate Account'.",
-                    Token = "",
-                    User = MapToUserDto(user, perms)
-                }
-            };
+            logger.LogWarning("Login failed: invalid password for user {UserId}", user.Id);
+            return new LoginResultDto();
         }
 
+        // 2. CHECK IF BANNED
         if (user.IsBanned == BannedStatus.Banned)
         {
             logger.LogWarning("Login failed: user {UserId} is banned", user.Id);
@@ -152,14 +145,23 @@ public class AuthService(
             };
         }
 
-        var isValidPassword = passwordHasher.VerifyPassword(request.Password, user.PasswordHash);
-
-        if (!isValidPassword)
+        // 3. CHECK IF ACTIVE
+        if (!user.IsActive)
         {
-            logger.LogWarning("Login failed: invalid password for user {UserId}", user.Id);
-            return new LoginResultDto();
+            logger.LogWarning("Login failed: account not active for email {Email}", request.Email);
+            var perms = await permissionRepo.GetEffectivePermissionsAsync(user.Id);
+            return new LoginResultDto 
+            { 
+                Response = new AuthResponseDto 
+                { 
+                    Message = "Account not activated. Please check your email or click 'Activate Account'.",
+                    Token = "",
+                    User = MapToUserDto(user, perms)
+                }
+            };
         }
 
+        // 4. PROCEED WITH LOGIN
         var token = tokenProvider.GenerateAccessToken(user.Id, user.Email);
 
         logger.LogInformation("Login successful for user {UserId} ({Email})", user.Id, user.Email);

@@ -41,7 +41,7 @@ public class UserImportService(
 
         foreach (var student in students)
         {
-            var email = student.Email.Trim();
+            var email = (student.Email ?? "").Trim();
             if (string.IsNullOrWhiteSpace(email))
             {
                 skipped++;
@@ -104,8 +104,8 @@ public class UserImportService(
 
     private static string GenerateDisplayName(StudentImportDto student)
     {
-        var firstName = student.FirstName.Trim();
-        var lastName = student.LastName.Trim();
+        var firstName = (student.FirstName ?? "").Trim();
+        var lastName = (student.LastName ?? "").Trim();
         return string.Join(
             " ",
             new[] { firstName, lastName }.Where(s => !string.IsNullOrWhiteSpace(s))
