@@ -14,6 +14,7 @@ public class User
     public string? DisplayName { get; set; }
     public BannedStatus IsBanned { get; set; } = BannedStatus.NotBanned;
     public bool IsActive { get; set; } = false;
+    public int PermissionLevel { get; set; } = 1;
     public string? ResetTokenHash { get; set; }
     public DateTime? ResetTokenExpires { get; set; }
     public DateTime TokensValidAfter { get; set; } = DateTime.UtcNow;

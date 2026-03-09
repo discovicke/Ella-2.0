@@ -69,7 +69,21 @@ public class PostgresDbInitializer(
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMPTZ;"
         );
 
-        // 3. User booking slugs table
+        // Add permission_level column
+        await conn.ExecuteAsync(@"
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS permission_level INTEGER NOT NULL DEFAULT 1;
+            ALTER TABLE users DROP CONSTRAINT IF EXISTS chk_permission_level;
+            ALTER TABLE users ADD CONSTRAINT chk_permission_level CHECK (permission_level >= 1 AND permission_level <= 10);
+        ");
+
+        // Set default levels for existing users based on their template
+        await conn.ExecuteAsync(@"
+            UPDATE users SET permission_level = 10 WHERE permission_template_id = (SELECT id FROM permission_templates WHERE name = 'admin');
+            UPDATE users SET permission_level = 5 WHERE permission_template_id = (SELECT id FROM permission_templates WHERE name = 'teacher');
+            UPDATE users SET permission_level = 1 WHERE permission_template_id = (SELECT id FROM permission_templates WHERE name = 'student');
+        ");
+
+        // Add user_booking_slugs table
         await conn.ExecuteAsync(@"
             CREATE TABLE IF NOT EXISTS user_booking_slugs (
                 id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,

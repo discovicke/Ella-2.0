@@ -423,6 +423,8 @@ export interface UpdateUserDto {
   /** @maxLength 128 */
   password: string | null;
   isBanned: BannedStatus;
+  /** @format int32 */
+  permissionLevel: number;
 }
 
 export type UserPermissions = {
@@ -460,6 +462,8 @@ export interface UserResponseDto {
   displayName: string | null;
   isBanned: BannedStatus;
   permissions: UserPermissions;
+  /** @format int32 */
+  permissionLevel: number;
   /** @default null */
   campusNames?: string[] | null;
   /** @default null */

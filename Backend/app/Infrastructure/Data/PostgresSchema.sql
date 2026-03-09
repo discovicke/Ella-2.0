@@ -172,6 +172,7 @@ CREATE TABLE IF NOT EXISTS users
     display_name           TEXT,
     is_banned              BOOLEAN     NOT NULL DEFAULT FALSE,
     is_active              BOOLEAN     NOT NULL DEFAULT TRUE,
+    permission_level       INTEGER     NOT NULL DEFAULT 1 CHECK (permission_level >= 1 AND permission_level <= 10),
     reset_token_hash       TEXT,
     reset_token_expires    TIMESTAMPTZ,
     tokens_valid_after     TIMESTAMPTZ NOT NULL DEFAULT NOW(),

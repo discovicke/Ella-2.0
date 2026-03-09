@@ -126,6 +126,7 @@ public class UserService(
             DisplayName = dto.DisplayName,
             PasswordHash = hashed,
             IsBanned = BannedStatus.NotBanned,
+            PermissionLevel = 1,
         };
 
         var success = await repo.CreateUserAsync(user);
@@ -170,6 +171,7 @@ public class UserService(
             DisplayName = dto.DisplayName,
             PasswordHash = passwordHash,
             IsBanned = dto.IsBanned,
+            PermissionLevel = dto.PermissionLevel,
             TokensValidAfter = existing.TokensValidAfter,
             PermissionTemplateId = existing.PermissionTemplateId,
         };
@@ -292,6 +294,7 @@ public class UserService(
             user.DisplayName,
             user.IsBanned,
             permissions,
+            user.PermissionLevel,
             campusNames,
             classNames
         );

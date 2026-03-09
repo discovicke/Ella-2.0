@@ -162,8 +162,8 @@ public class PostgresUserRepo(
 
             var sql =
                 @"
-            INSERT INTO users (email, password_hash, display_name, is_banned, is_active, reset_token_hash, reset_token_expires, permission_template_id)
-            VALUES (@Email, @PasswordHash, @DisplayName, @IsBanned, @IsActive, @ResetTokenHash, @ResetTokenExpires, @PermissionTemplateId);";
+            INSERT INTO users (email, password_hash, display_name, is_banned, is_active, permission_level, reset_token_hash, reset_token_expires, permission_template_id)
+            VALUES (@Email, @PasswordHash, @DisplayName, @IsBanned, @IsActive, @PermissionLevel, @ResetTokenHash, @ResetTokenExpires, @PermissionTemplateId);";
 
             var rowsAffected = await conn.ExecuteAsync(
                 sql,
@@ -174,6 +174,7 @@ public class PostgresUserRepo(
                     user.DisplayName,
                     IsBanned = user.IsBanned == BannedStatus.Banned,
                     user.IsActive,
+                    user.PermissionLevel,
                     user.ResetTokenHash,
                     user.ResetTokenExpires,
                     user.PermissionTemplateId,
@@ -204,6 +205,7 @@ public class PostgresUserRepo(
                 display_name = @DisplayName,
                 is_banned = @IsBanned,
                 is_active = @IsActive,
+                permission_level = @PermissionLevel,
                 reset_token_hash = @ResetTokenHash,
                 reset_token_expires = @ResetTokenExpires,
                 tokens_valid_after = @TokensValidAfter,
@@ -219,6 +221,7 @@ public class PostgresUserRepo(
                     user.DisplayName,
                     IsBanned = user.IsBanned == BannedStatus.Banned,
                     user.IsActive,
+                    user.PermissionLevel,
                     user.ResetTokenHash,
                     user.ResetTokenExpires,
                     TokensValidAfter = user.TokensValidAfter.ToUniversalTime(),
