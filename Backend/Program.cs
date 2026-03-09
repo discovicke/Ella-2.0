@@ -276,6 +276,9 @@ static void ConfigureCoreServices(IServiceCollection services)
     services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
     services.AddSingleton<ITokenProvider, JwtTokenProvider>();
 
+    // Parser
+    services.AddScoped<IParser<StudentImportDto>, ExcelContactsCsvParser>();
+
     // Business Logic
     services.AddScoped<AuthService>();
     services.AddScoped<RoomService>();

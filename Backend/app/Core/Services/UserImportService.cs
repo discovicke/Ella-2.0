@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Backend.app.Core.Interfaces;
 using Backend.app.Core.Models.DTO;
 
@@ -8,6 +9,7 @@ public class UserImportService(
     ClassService classService,
     PermissionTemplateService permissionTemplateService,
     IUserRepository userRepository,
+    IParser<StudentImportDto> parser,
     ILogger<UserImportService> logger
 )
 {
@@ -23,7 +25,7 @@ public class UserImportService(
             throw new ArgumentException("Class name is required.", nameof(className));
 
         var normalizedClassName = className.Trim();
-        var students = await ParserService.ParseExcelContactsCsv(csvContent, normalizedClassName);
+        var students = await parser.Parse(csvContent, normalizedClassName);
         var classId = await ResolveClassIdAsync(normalizedClassName);
 
         // Stamp the chosen template onto each student
@@ -49,8 +51,8 @@ public class UserImportService(
 
             var dto = new CreateUserDto(
                 email,
-                ParserService.GenerateDisplayName(student),
-                ParserService.GeneratePlaceholderPassword(student)
+                GenerateDisplayName(student),
+                GeneratePlaceholderPassword(student)
             );
 
             try
@@ -98,5 +100,26 @@ public class UserImportService(
 
         var createdClass = await classService.CreateAsync(new CreateClassDto(className));
         return createdClass.Id;
+    }
+
+    private static string GenerateDisplayName(StudentImportDto student)
+    {
+        var firstName = student.FirstName.Trim();
+        var lastName = student.LastName.Trim();
+        return string.Join(
+            " ",
+            new[] { firstName, lastName }.Where(s => !string.IsNullOrWhiteSpace(s))
+        );
+    }
+
+    private static string GeneratePlaceholderPassword(StudentImportDto student)
+    {
+        var firstName = string.IsNullOrWhiteSpace(student.FirstName)
+            ? "student"
+            : student.FirstName.Trim().ToLowerInvariant();
+
+        var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(6)).ToLowerInvariant();
+        var password = $"placeholder-{firstName}-{token}";
+        return password.Length <= 128 ? password : password[..128];
     }
 }
