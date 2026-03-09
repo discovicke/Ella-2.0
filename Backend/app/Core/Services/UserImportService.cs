@@ -6,11 +6,16 @@ namespace Backend.app.Core.Services;
 public class UserImportService(
     UserService userService,
     ClassService classService,
+    PermissionTemplateService permissionTemplateService,
     IUserRepository userRepository,
     ILogger<UserImportService> logger
 )
 {
-    public async Task<ImportUsersResponseDto> ImportCsvAsync(string csvContent, string className)
+    public async Task<ImportUsersResponseDto> ImportCsvAsync(
+        string csvContent,
+        string className,
+        long? templateId = null
+    )
     {
         if (string.IsNullOrWhiteSpace(csvContent))
             throw new ArgumentException("CSV content is required.", nameof(csvContent));
@@ -20,6 +25,13 @@ public class UserImportService(
         var normalizedClassName = className.Trim();
         var students = await ParserService.ParseExcelContactsCsv(csvContent, normalizedClassName);
         var classId = await ResolveClassIdAsync(normalizedClassName);
+
+        // Stamp the chosen template onto each student
+        if (templateId.HasValue)
+        {
+            foreach (var s in students)
+                s.TemplateId ??= (int)templateId.Value;
+        }
 
         var created = 0;
         var skipped = 0;
@@ -45,6 +57,11 @@ public class UserImportService(
             {
                 var createdUser = await userService.CreateUserAsync(dto);
                 await userRepository.SetClassesForUserAsync(createdUser.Id, new[] { classId });
+                if (student.TemplateId.HasValue)
+                    await permissionTemplateService.ApplyTemplateAsync(
+                        createdUser.Id,
+                        student.TemplateId.Value
+                    );
                 created++;
             }
             catch (InvalidOperationException ex)

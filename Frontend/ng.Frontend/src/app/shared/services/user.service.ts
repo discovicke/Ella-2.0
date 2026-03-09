@@ -3,6 +3,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import {
   CreateUserDto,
+  ImportUsersResponseDto,
   UserPermissions,
   UpdateUserDto,
   UserResponseDto,
@@ -111,5 +112,22 @@ export class UserService {
 
   setUserClasses(userId: number, classIds: number[]): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/${userId}/classes`, classIds);
+  }
+
+  // ── Import ─────────────────────────────────────────
+
+  importUsersFromCsv(
+    file: File,
+    className: string,
+    templateId?: number,
+  ): Observable<ImportUsersResponseDto> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('className', className);
+    if (templateId != null) {
+      formData.append('templateId', templateId.toString());
+    }
+    return this.http
+      .post<ImportUsersResponseDto>('/api/import', formData, { withCredentials: true });
   }
 }

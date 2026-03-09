@@ -124,12 +124,20 @@
   display: inline-flex;
 }
 
+.import-btn-desktop {
+  display: inline-flex;
+}
+
 .fab-create {
   display: none;
 }
 
 @media (max-width: 768px) {
   .create-btn-desktop {
+    display: none !important;
+  }
+
+  .import-btn-desktop {
     display: none !important;
   }
 
