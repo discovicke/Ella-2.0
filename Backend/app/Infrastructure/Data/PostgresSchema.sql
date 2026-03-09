@@ -439,6 +439,44 @@ UPDATE ON bookings
 
 
 -- =============================================================
+--  RESOURCE MANAGEMENT (Movable items like cars, etc.)
+-- =============================================================
+
+-- Kategorier av resurser (t.ex. Fordon, Portabel IT)
+CREATE TABLE IF NOT EXISTS resource_categories
+(
+    id   BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name TEXT NOT NULL UNIQUE
+);
+
+-- Faktiska bokningsbara resurser kopplade till en kategori och en ort (campus)
+CREATE TABLE IF NOT EXISTS bookable_resources
+(
+    id                   BIGINT  NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    category_id          BIGINT  NOT NULL REFERENCES resource_categories (id) ON DELETE RESTRICT,
+    campus_id            BIGINT  NOT NULL REFERENCES campus (id) ON DELETE RESTRICT,
+    name                 TEXT    NOT NULL,
+    description          TEXT,
+    is_active            BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+-- Bokningar av fria resurser
+CREATE TABLE IF NOT EXISTS resource_bookings
+(
+    id          BIGINT      PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    resource_id BIGINT      NOT NULL REFERENCES bookable_resources (id) ON DELETE CASCADE,
+    user_id     BIGINT      NOT NULL REFERENCES users (id) ON DELETE RESTRICT,
+    start_time  TIMESTAMPTZ NOT NULL,
+    end_time    TIMESTAMPTZ NOT NULL,
+    notes       TEXT,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Index för snabbare sökning på resursbokningar
+CREATE INDEX IF NOT EXISTS idx_resource_bookings_time ON resource_bookings (start_time, end_time);
+CREATE INDEX IF NOT EXISTS idx_resource_bookings_resource ON resource_bookings (resource_id);
+
+-- =============================================================
 --  INDEX
 --  Enbart det nödvändigaste — för många index kostar skrivprestanda.
 --  Primary keys och UNIQUE-constraints skapar automatiskt index.

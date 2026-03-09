@@ -78,6 +78,33 @@ public class PostgresDbInitializer(
             CREATE UNIQUE INDEX IF NOT EXISTS idx_booking_slugs_slug ON user_booking_slugs(slug);
         ");
 
+        // 4. Resource Management tables
+        await conn.ExecuteAsync(@"
+            CREATE TABLE IF NOT EXISTS resource_categories (
+                id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+                name TEXT NOT NULL UNIQUE
+            );
+            CREATE TABLE IF NOT EXISTS bookable_resources (
+                id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+                category_id BIGINT NOT NULL REFERENCES resource_categories(id) ON DELETE RESTRICT,
+                campus_id BIGINT NOT NULL REFERENCES campus(id) ON DELETE RESTRICT,
+                name TEXT NOT NULL,
+                description TEXT,
+                is_active BOOLEAN NOT NULL DEFAULT TRUE
+            );
+            CREATE TABLE IF NOT EXISTS resource_bookings (
+                id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+                resource_id BIGINT NOT NULL REFERENCES bookable_resources(id) ON DELETE CASCADE,
+                user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+                start_time TIMESTAMPTZ NOT NULL,
+                end_time TIMESTAMPTZ NOT NULL,
+                notes TEXT,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            );
+            CREATE INDEX IF NOT EXISTS idx_resource_bookings_time ON resource_bookings(start_time, end_time);
+            CREATE INDEX IF NOT EXISTS idx_resource_bookings_resource ON resource_bookings(resource_id);
+        ");
+
         // 5. Ensure manageResources permission exists
         await conn.ExecuteAsync(@"
             INSERT INTO system_permissions (key, description)
