@@ -28,7 +28,7 @@ public class SqliteDbInitializer(
 
     private async Task RunSchemaAsync(IDbConnection conn)
     {
-        var schemaPath = DbPathHelper.GetFullPath("SqliteSchema.sql");
+        var schemaPath = DbPathHelper.GetFullPath("SqliteSchema.sqlite");
         if (!File.Exists(schemaPath))
         {
             throw new FileNotFoundException($"Schema file not found at: {schemaPath}");
@@ -43,7 +43,7 @@ public class SqliteDbInitializer(
         var userCount = await conn.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM users;");
         if (userCount > 0) return;
 
-        var seedPath = DbPathHelper.GetFullPath("SqliteSeed.sql");
+        var seedPath = DbPathHelper.GetFullPath("SqliteSeed.sqlite");
         if (!File.Exists(seedPath)) return;
 
         var seedSql = await File.ReadAllTextAsync(seedPath);
