@@ -37,4 +37,10 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
   </ItemGroup>
 
+  <!-- Schema and seed files needed at runtime for database initialization -->
+  <ItemGroup>
+    <Content Include="app\Infrastructure\Data\*.sql" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="app\Infrastructure\Data\*.sqlite" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

@@ -52,7 +52,7 @@ This is the main command. It executes a strictly ordered chain reaction:
 - **Backend:** `dotnet watch` (Hot Reloads C#).
 - **Frontend:** `ng serve` (Hot Reloads Angular).
 
-### 2. Manual Sync (`npm run refresh:models`)
+### 2. Manual Sync (`npm run sync:models`)
 
 Use this command if you have modified a C# DTO (e.g., added a property to `UserDto`) and want the Frontend to "see" it immediately, without restarting the whole server.
 
@@ -158,7 +158,7 @@ This project uses a **Hosted** deployment model. We do not host the Frontend and
 
 **"My frontend models aren't updating!"**
 
-- Run `npm run refresh:models`.
+- Run `npm run sync:models`.
 - Check the build output for "API documentation generation failed". If the Backend crashes during startup (e.g., DB connection error), the JSON file will not be generated.
 
 **"The startup script hangs at 'Restore'"**
