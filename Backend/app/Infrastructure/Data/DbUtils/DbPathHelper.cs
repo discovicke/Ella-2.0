@@ -6,27 +6,29 @@ public static class DbPathHelper
 {
     public static string GetFullPath(string fileName)
     {
-        // 1. Try AppContext.BaseDirectory (standard)
-        var path = Path.Combine(AppContext.BaseDirectory, "app", "Infrastructure", "Data", fileName);
-        if (File.Exists(path)) return path;
-
-        // 2. Climb up from CurrentDirectory to find the project root or Backend folder
+        // 1. Try common locations relative to current directory
         var current = new DirectoryInfo(Directory.GetCurrentDirectory());
-        for (int i = 0; i < 6; i++)
+        
+        for (int i = 0; i < 10; i++)
         {
             if (current == null) break;
 
-            // Try <current>/Backend/app/Infrastructure/Data
-            var p1 = Path.Combine(current.FullName, "Backend", "app", "Infrastructure", "Data", fileName);
-            if (File.Exists(p1)) return p1;
+            // Try direct path
+            var path = Path.Combine(current.FullName, "Backend", "app", "Infrastructure", "Data", fileName);
+            if (File.Exists(path)) return path;
 
-            // Try <current>/app/Infrastructure/Data
-            var p2 = Path.Combine(current.FullName, "app", "Infrastructure", "Data", fileName);
-            if (File.Exists(p2)) return p2;
+            path = Path.Combine(current.FullName, "app", "Infrastructure", "Data", fileName);
+            if (File.Exists(path)) return path;
+
+            // Try nested bin folders (for tests)
+            path = Path.Combine(current.FullName, "..", "Backend", "app", "Infrastructure", "Data", fileName);
+            if (File.Exists(path)) return path;
 
             current = current.Parent;
         }
 
-        return Path.Combine(AppContext.BaseDirectory, "app", "Infrastructure", "Data", fileName);
+        // 2. Try AppContext.BaseDirectory as fallback
+        var baseDir = AppContext.BaseDirectory;
+        return Path.Combine(baseDir, "app", "Infrastructure", "Data", fileName);
     }
 }

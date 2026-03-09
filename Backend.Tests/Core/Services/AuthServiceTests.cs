@@ -79,9 +79,10 @@ public class AuthServiceTests
     public async Task LoginAsync_ShouldReturnBannedResult_WhenUserIsBanned()
     {
         // Arrange
-        var request = new LoginDto("test@example.com", "password");
+        var request = new LoginDto { Email = "test@example.com", Password = "password" };
         var user = TestDataFactory.CreateUser(1, request.Email);
         user.IsBanned = BannedStatus.Banned;
+        user.IsActive = true;
 
         _userRepo.GetUserByEmailAsync(request.Email).Returns(user);
         _passwordHasher.VerifyPassword(request.Password, user.PasswordHash).Returns(true);
@@ -107,6 +108,7 @@ public class AuthServiceTests
         
         // Mock the user that is fetched after creation
         var createdUser = TestDataFactory.CreateUser(10, request.Email);
+        createdUser.IsActive = true;
         _userRepo.GetUserByEmailAsync(request.Email).Returns((User?)null, createdUser);
 
         // Act

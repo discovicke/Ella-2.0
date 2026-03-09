@@ -15,6 +15,7 @@ using Backend.app.Infrastructure.Repositories.Postgres;
 using Backend.app.Infrastructure.Repositories.Sqlite;
 using DotNetEnv;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 

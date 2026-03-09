@@ -17,8 +17,14 @@ public class UserImportServiceTests
         Substitute.For<IPasswordHasher>(),
         Substitute.For<ILogger<UserService>>()
     );
-    private readonly ClassService _classService = Substitute.For<ClassService>(Substitute.For<IClassRepository>(), Substitute.For<ILogger<ClassService>>());
-    private readonly CampusService _campusService = Substitute.For<CampusService>(Substitute.For<ICampusRepository>(), Substitute.For<ILogger<CampusService>>());
+    private readonly ClassService _classService = Substitute.For<ClassService>(
+        Substitute.For<IClassRepository>(), 
+        Substitute.For<ILogger<ClassService>>()
+    );
+    private readonly CampusService _campusService = Substitute.For<CampusService>(
+        Substitute.For<ICampusRepository>(), 
+        Substitute.For<ILogger<CampusService>>()
+    );
     private readonly PermissionTemplateService _permissionService = Substitute.For<PermissionTemplateService>(
         Substitute.For<IPermissionTemplateRepository>(),
         Substitute.For<IPermissionRepository>(),

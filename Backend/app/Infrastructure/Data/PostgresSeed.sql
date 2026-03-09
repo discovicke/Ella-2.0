@@ -39,8 +39,8 @@ VALUES ('BookRoom', 'Can book rooms'),
 INSERT INTO permission_templates (id, name, label, css_class, sort_order)
     OVERRIDING SYSTEM VALUE
 VALUES (1, 'student', 'Student', 'green', 0),
-       (2, 'educator', 'Educator', 'blue', true, 1, 1),
-       (3, 'admin', 'Admin', 'orange', true, 5, 2);
+       (2, 'educator', 'Educator', 'blue', 1),
+       (3, 'admin', 'Admin', 'orange', 2);
 
 SELECT setval(pg_get_serial_sequence('permission_templates', 'id'), (SELECT MAX(id) FROM permission_templates));
 
@@ -607,3 +607,10 @@ VALUES
        (304, 50, 'declined'),    -- Elev Testlund declined Sven's upcoming (Mar 3)
        (311, 11, 'declined'),    -- Christian   declined Anders' AI (Mar 12)
        (313, 10, 'declined');    -- AndrÃ©      declined Anders' Hackathon (Mar 25)
+-- -------------------------------------------------------------
+--  ADDITIONAL RESOURCES (Cars, etc.)
+-- -------------------------------------------------------------
+INSERT INTO resource_categories (id, name) VALUES (1, 'Fordon'), (2, 'Portabel IT'), (3, 'Övrigt') ON CONFLICT (id) DO NOTHING;
+SELECT setval(pg_get_serial_sequence('resource_categories', 'id'), (SELECT MAX(id) FROM resource_categories));
+INSERT INTO bookable_resources (category_id, campus_id, name, description) VALUES (1, 1, 'Skolbil 1 (Hudiksvall)', 'Vit Volkswagen Golf - ABC 123'), (1, 2, 'Skolbil 2 (Gävle)', 'Blå Volvo V60 - XYZ 789'), (2, 1, 'Projektor Kit A', 'Portabel projektor med duk') ON CONFLICT DO NOTHING;
+
