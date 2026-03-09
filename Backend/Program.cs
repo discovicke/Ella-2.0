@@ -40,6 +40,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 // 3. SETUP
 ConfigureDatabase(builder);
 ConfigureCoreServices(builder.Services);
+builder.Services.AddScoped<IBookingSlugRepository, PostgresBookingSlugRepo>();
+builder.Services.AddScoped<BookingSlugService>();
 ConfigureRateLimiting(builder.Services);
 
 var app = builder.Build();
@@ -86,6 +88,7 @@ app.UseRateLimiter();
 // 4. THE API GATES
 var api = app.MapGroup("api").AddEndpointFilter<ValidationFilter>();
 api.MapAuthEndpoints();
+api.MapBookingSlugEndpoints();
 api.MapUserEndpoints();
 api.MapRoomEndpoints();
 api.MapAssetEndpoints();
