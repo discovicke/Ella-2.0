@@ -2,11 +2,13 @@
 using System.Threading.RateLimiting;
 using Backend.app.API.Endpoints;
 using Backend.app.Core.Interfaces;
+using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
 using Backend.app.Infrastructure.Auth;
 using Backend.app.Infrastructure.Data;
 using Backend.app.Infrastructure.Middleware;
+using Backend.app.Infrastructure.Parser;
 using Backend.app.Infrastructure.Repositories.Postgres;
 using Backend.app.Infrastructure.Repositories.Sqlite;
 using DotNetEnv;
@@ -284,6 +286,7 @@ static void ConfigureCoreServices(IServiceCollection services)
     services.AddScoped<PermissionTemplateService>();
     services.AddScoped<CampusService>();
     services.AddScoped<ClassService>();
+    services.AddScoped<IParser<StudentImportDto>, ExcelContactsCsvParser>();
 }
 
 static void ConfigureRateLimiting(IServiceCollection services)
