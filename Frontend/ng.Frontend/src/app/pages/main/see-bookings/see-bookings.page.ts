@@ -398,6 +398,15 @@ export class SeeBookingsPage {
         this.modalService.close();
         this.loadBookings(true);
       };
+
+      // Recurring series: scope-aware cancel
+      if (booking.recurringGroupId) {
+        config.onCancelWithScope = async (bookingId: number, scope: 'single' | 'thisAndFollowing' | 'all') => {
+          await firstValueFrom(this.bookingService.cancelWithScope(bookingId, scope));
+          this.modalService.close();
+          this.loadBookings(true);
+        };
+      }
     }
 
     // Mark attended bookings so the modal can show "Du deltar"

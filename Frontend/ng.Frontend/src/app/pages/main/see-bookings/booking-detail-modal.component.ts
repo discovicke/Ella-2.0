@@ -7,6 +7,8 @@ import { BookingDetailedReadModel, BookingStatus } from '../../../models/models'
 export interface BookingDetailModalConfig {
   booking: BookingDetailedReadModel;
   onCancel?: (bookingId: number) => Promise<void>;
+  /** Cancel with scope for recurring bookings */
+  onCancelWithScope?: (bookingId: number, scope: 'single' | 'thisAndFollowing' | 'all') => Promise<void>;
   /** Whether the current user is registered for this booking */
   isRegistered?: boolean;
   /** Whether the current user has declined this invitation */
@@ -108,6 +110,22 @@ export interface BookingDetailModalConfig {
           </div>
         }
 
+        @if (booking.recurringGroupId) {
+          <div class="detail-row">
+            <div class="detail-icon detail-icon--recurring">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+              </svg>
+            </div>
+            <div class="detail-content">
+              <span class="detail-primary detail-primary--recurring">Återkommande bokning</span>
+              <span class="detail-secondary">Del av en serie</span>
+            </div>
+          </div>
+        }
+
         <!-- Registration row — show participant count for attended bookings -->
         @if (hasRegistration) {
           <div class="detail-row">
@@ -174,9 +192,25 @@ export interface BookingDetailModalConfig {
             {{ isRegistering() ? 'Avregistrerar...' : 'Avregistrera' }}
           </app-button>
         } @else if (config.onCancel && booking.status === BookingStatus.Active && !isDeclined()) {
-          <app-button variant="danger" [disabled]="isCancelling()" (clicked)="onCancel()">
-            {{ isCancelling() ? 'Avbokar...' : 'Avboka' }}
-          </app-button>
+          @if (booking.recurringGroupId && config.onCancelWithScope && !showSeriesCancelOptions()) {
+            <app-button variant="danger" (clicked)="showSeriesCancelOptions.set(true)">
+              Avboka…
+            </app-button>
+          } @else if (booking.recurringGroupId && config.onCancelWithScope && showSeriesCancelOptions()) {
+            <app-button variant="danger" [disabled]="isCancelling()" (clicked)="onCancelScope('single')">
+              {{ isCancelling() ? '...' : 'Denna' }}
+            </app-button>
+            <app-button variant="danger" [disabled]="isCancelling()" (clicked)="onCancelScope('thisAndFollowing')">
+              {{ isCancelling() ? '...' : 'Denna & kommande' }}
+            </app-button>
+            <app-button variant="danger" [disabled]="isCancelling()" (clicked)="onCancelScope('all')">
+              {{ isCancelling() ? '...' : 'Hela serien' }}
+            </app-button>
+          } @else {
+            <app-button variant="danger" [disabled]="isCancelling()" (clicked)="onCancel()">
+              {{ isCancelling() ? 'Avbokar...' : 'Avboka' }}
+            </app-button>
+          }
         }
       </div>
     </div>
@@ -387,8 +421,17 @@ export interface BookingDetailModalConfig {
         }
       }
 
-      .detail-primary--success {
+      .detail-icon--success {
         color: var(--color-success, #16a34a);
+      }
+
+      .detail-icon--recurring {
+        color: var(--color-primary);
+      }
+
+      .detail-primary--recurring {
+        color: var(--color-primary);
+        font-weight: 500;
       }
 
       .detail-icon--declined {
@@ -473,6 +516,7 @@ export class BookingDetailModalComponent {
   readonly isRegistered = signal(this.config.isRegistered ?? false);
   readonly isDeclined = signal(this.config.isDeclined ?? false);
   readonly registrationCount = signal(this.config.booking.registrationCount ?? 0);
+  readonly showSeriesCancelOptions = signal(false);
 
   /** Reactive label for participant count */
   registrationCountLabel = computed(() => {
@@ -520,6 +564,17 @@ export class BookingDetailModalComponent {
     this.isCancelling.set(true);
     try {
       await this.config.onCancel(this.booking.bookingId);
+    } catch {
+      this.isCancelling.set(false);
+    }
+  }
+
+  async onCancelScope(scope: 'single' | 'thisAndFollowing' | 'all'): Promise<void> {
+    if (!this.booking.bookingId || !this.config.onCancelWithScope) return;
+
+    this.isCancelling.set(true);
+    try {
+      await this.config.onCancelWithScope(this.booking.bookingId, scope);
     } catch {
       this.isCancelling.set(false);
     }
