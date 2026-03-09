@@ -102,6 +102,7 @@ sql = enumSql + "\n\n" + sql;
 sql = sql.replace(/\n{4,}/g, "\n\n");
 
 // --- Write temp file ---
+fs.mkdirSync(path.dirname(TEMP_SQL), { recursive: true });
 fs.writeFileSync(TEMP_SQL, sql, "utf-8");
 
 // --- Run sql2dbml ---
