@@ -171,6 +171,9 @@ CREATE TABLE IF NOT EXISTS users
     password_hash          TEXT        NOT NULL,
     display_name           TEXT,
     is_banned              BOOLEAN     NOT NULL DEFAULT FALSE,
+    is_active              BOOLEAN     NOT NULL DEFAULT TRUE,
+    reset_token_hash       TEXT,
+    reset_token_expires    TIMESTAMPTZ,
     tokens_valid_after     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     permission_template_id BIGINT      REFERENCES permission_templates (id) ON DELETE SET NULL
 );
