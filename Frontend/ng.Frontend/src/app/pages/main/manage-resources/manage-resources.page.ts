@@ -1,6 +1,5 @@
 import { Component, inject, resource, signal, computed, TemplateRef, ViewChild, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ResourceService } from '../../../core/services/resource.service';
 import { CampusService } from '../../../shared/services/campus.service';
 import { TableComponent, TableColumn } from '../../../shared/components/table/table.component';
@@ -11,15 +10,15 @@ import { firstValueFrom } from 'rxjs';
 import { 
   ResourceResponseDto, 
   ResourceCategoryDto, 
-  CampusResponseDto,
-  CreateResourceDto,
-  CreateResourceCategoryDto
+  CampusResponseDto
 } from '../../../models/models';
+import { ResourceFormModalComponent } from './resource-form-modal.component';
+import { CategoryFormModalComponent } from './category-form-modal.component';
 
 @Component({
   selector: 'app-manage-resources-page',
   standalone: true,
-  imports: [CommonModule, TableComponent, ButtonComponent, ReactiveFormsModule],
+  imports: [CommonModule, TableComponent, ButtonComponent],
   template: `
     <div class="page-container">
       <div class="page-header">
@@ -45,79 +44,7 @@ import {
       </div>
     </div>
 
-    <!-- Modaltemplates -->
-    <ng-template #resourceFormTpl let-data>
-      <form [formGroup]="resourceForm" class="modal-form" (ngSubmit)="saveResource(data.close)">
-        <div class="form-group">
-          <label>Namn</label>
-          <input type="text" formControlName="name" placeholder="T.ex. Volvo V60 (ABC 123)" />
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label>Kategori</label>
-            <select formControlName="categoryId">
-              <option [ngValue]="null">Välj kategori...</option>
-              @for (cat of categories(); track cat.id) {
-                <option [ngValue]="cat.id">{{ cat.name }}</option>
-              }
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label>Ort (Campus)</label>
-            <select formControlName="campusId">
-              <option [ngValue]="null">Välj ort...</option>
-              @for (campus of campuses(); track campus.id) {
-                <option [ngValue]="campus.id">{{ campus.city }}</option>
-              }
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Beskrivning</label>
-          <textarea formControlName="description" rows="3" placeholder="Ytterligare info om resursen..."></textarea>
-        </div>
-
-        <div class="modal-actions">
-          <app-button variant="secondary" (clicked)="data.close()">Avbryt</app-button>
-          <app-button type="submit" [disabled]="resourceForm.invalid">Spara</app-button>
-        </div>
-      </form>
-    </ng-template>
-
-    <ng-template #categoryFormTpl let-data>
-      <div class="category-manager">
-        <div class="existing-categories">
-          <h3>Befintliga kategorier</h3>
-          <ul>
-            @for (cat of categories(); track cat.id) {
-              <li>{{ cat.name }}</li>
-            } @empty {
-              <li class="empty">Inga kategorier skapade än.</li>
-            }
-          </ul>
-        </div>
-
-        <hr />
-
-        <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()" class="inline-form">
-          <div class="form-group">
-            <label>Ny Kategori</label>
-            <div class="input-with-btn">
-              <input type="text" formControlName="name" placeholder="T.ex. Fordon" />
-              <app-button type="submit" [disabled]="categoryForm.invalid">Lägg till</app-button>
-            </div>
-          </div>
-        </form>
-
-        <div class="modal-actions">
-          <app-button variant="primary" (clicked)="data.close()">Klar</app-button>
-        </div>
-      </div>
-    </ng-template>
-
+    <!-- Templates -->
     <ng-template #actionsTpl let-res>
       <div class="table-actions">
         <button class="delete-btn" (click)="deleteResource(res)" title="Ta bort resurs">
@@ -133,24 +60,9 @@ import {
     .header-text p { margin: 0.5rem 0 0; color: var(--color-text-secondary); }
     .header-actions { display: flex; gap: 0.75rem; }
 
-    .modal-form { display: flex; flex-direction: column; gap: 1.25rem; padding: 0.5rem; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-    .form-group label { font-size: 0.875rem; font-weight: 500; color: var(--color-text-secondary); }
-    .form-group input, .form-group select, .form-group textarea {
-      padding: 0.6rem; border-radius: var(--radii-md); border: 1px solid var(--color-border);
-      background: var(--color-bg-panel); color: var(--color-text-primary);
-    }
-
-    .category-manager { display: flex; flex-direction: column; gap: 1.5rem; }
-    .existing-categories ul { list-style: none; padding: 0; margin: 0.5rem 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
-    .existing-categories li { background: var(--color-primary-surface); color: var(--color-primary); padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.875rem; }
-    .existing-categories li.empty { background: transparent; color: var(--color-text-muted); font-style: italic; }
-    .inline-form .input-with-btn { display: flex; gap: 0.5rem; }
-    .inline-form input { flex: 1; }
-
     .modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem; }
     
+    .table-actions { display: flex; justify-content: flex-end; }
     .delete-btn {
       background: transparent; border: none; cursor: pointer; padding: 4px; border-radius: 4px;
       color: var(--color-danger); transition: all 0.2s;
@@ -165,8 +77,6 @@ export class ManageResourcesPage implements OnInit {
   private modalService = inject(ModalService);
   private toastService = inject(ToastService);
 
-  @ViewChild('resourceFormTpl', { static: true }) resourceFormTpl!: TemplateRef<any>;
-  @ViewChild('categoryFormTpl', { static: true }) categoryFormTpl!: TemplateRef<any>;
   @ViewChild('actionsTpl', { static: true }) actionsTpl!: TemplateRef<any>;
 
   columns: TableColumn<ResourceResponseDto>[] = [];
@@ -180,24 +90,11 @@ export class ManageResourcesPage implements OnInit {
   categories = signal<ResourceCategoryDto[]>([]);
   campuses = signal<CampusResponseDto[]>([]);
 
-  // Forms
-  resourceForm = new FormGroup({
-    name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    categoryId: new FormControl<number | null>(null, { validators: [Validators.required] }),
-    campusId: new FormControl<number | null>(null, { validators: [Validators.required] }),
-    description: new FormControl('', { nonNullable: true })
-  });
-
-  categoryForm = new FormGroup({
-    name: new FormControl('', { nonNullable: true, validators: [Validators.required] })
-  });
-
   ngOnInit() {
     this.columns = [
       { header: 'Namn', field: 'name' },
       { header: 'Kategori', field: 'categoryName' },
       { header: 'Ort', field: 'campusCity' },
-      { header: 'Status', template: null, field: 'isActive' }, // Add active/inactive logic if needed
       { header: '', template: this.actionsTpl, width: '60px', align: 'right' }
     ];
 
@@ -205,49 +102,38 @@ export class ManageResourcesPage implements OnInit {
   }
 
   async loadDropdownData() {
-    const [cats, cams] = await Promise.all([
-      firstValueFrom(this.resourceService.getCategories()),
-      firstValueFrom(this.campusService.getAllAsync())
-    ]);
-    this.categories.set(cats);
-    this.campuses.set(cams);
+    try {
+      const [cats, cams] = await Promise.all([
+        firstValueFrom(this.resourceService.getCategories()),
+        firstValueFrom(this.campusService.getAll())
+      ]);
+      this.categories.set(cats);
+      this.campuses.set(cams);
+    } catch (err) {
+      console.error('Failed to load dropdown data', err);
+    }
   }
 
   openCreateResourceModal() {
-    this.resourceForm.reset({ categoryId: null, campusId: null });
-    this.modalService.open(this.resourceFormTpl, { title: 'Skapa ny resurs', width: '500px' });
-  }
-
-  openCategoryModal() {
-    this.categoryForm.reset();
-    this.modalService.open(this.categoryFormTpl, { title: 'Hantera kategorier', width: '450px' });
-  }
-
-  saveResource(close: () => void) {
-    if (this.resourceForm.invalid) return;
-
-    const dto = this.resourceForm.getRawValue() as CreateResourceDto;
-    this.resourceService.createResource(dto).subscribe({
-      next: () => {
-        this.toastService.showSuccess('Resurs skapad!');
-        this.resourcesResource.reload();
-        close();
-      },
-      error: () => this.toastService.showError('Kunde inte skapa resurs.')
+    this.modalService.open(ResourceFormModalComponent, { 
+      title: 'Skapa ny resurs', 
+      width: '500px',
+      data: {
+        categories: this.categories(),
+        campuses: this.campuses(),
+        onSave: () => this.resourcesResource.reload()
+      }
     });
   }
 
-  saveCategory() {
-    if (this.categoryForm.invalid) return;
-
-    const dto = this.categoryForm.getRawValue() as CreateResourceCategoryDto;
-    this.resourceService.createCategory(dto).subscribe({
-      next: (newCat) => {
-        this.toastService.showSuccess(`Kategori "${newCat.name}" tillagd!`);
-        this.categories.update(list => [...list, newCat]);
-        this.categoryForm.reset();
-      },
-      error: () => this.toastService.showError('Kunde inte skapa kategori.')
+  openCategoryModal() {
+    this.modalService.open(CategoryFormModalComponent, { 
+      title: 'Hantera kategorier', 
+      width: '450px',
+      data: {
+        categories: this.categories(),
+        onRefresh: () => this.loadDropdownData()
+      }
     });
   }
 
