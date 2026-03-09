@@ -39,7 +39,7 @@ Se [USAGE.md](./_docs/usage.md) för en detaljerad genomgång av systemets funkt
 ## Databasschema
 
 <!-- dbdocs-link:start -->
-> Schema diagram is auto-published via GitHub Actions when schema changes are pushed to main.
+📊 **[View live schema diagram](https://dbdocs.io/christiangennari61/ELLA2)** — *auto-updated via GitHub Actions*
 <!-- dbdocs-link:end -->
 
 ## Databasmigrering
