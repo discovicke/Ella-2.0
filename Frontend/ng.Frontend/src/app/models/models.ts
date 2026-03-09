@@ -322,6 +322,42 @@ export interface ResetPasswordDto {
   newPassword: string;
 }
 
+export interface ResourceBookingResponseDto {
+  /** @format int64 */
+  id: number;
+  /** @format int64 */
+  resourceId: number;
+  resourceName: string;
+  /** @format int64 */
+  userId: number;
+  userName: string;
+  /** @format date-time */
+  startTime: string;
+  /** @format date-time */
+  endTime: string;
+  notes: string | null;
+}
+
+export interface ResourceCategoryDto {
+  /** @format int64 */
+  id: number;
+  name: string;
+}
+
+export interface ResourceResponseDto {
+  /** @format int64 */
+  id: number;
+  /** @format int64 */
+  categoryId: number;
+  categoryName: string;
+  /** @format int64 */
+  campusId: number;
+  campusCity: string;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+}
+
 export interface RoomDetailModel {
   /** @format int64 */
   roomId?: number;
