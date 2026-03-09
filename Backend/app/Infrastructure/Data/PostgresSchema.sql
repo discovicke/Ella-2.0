@@ -333,7 +333,6 @@ SELECT b.id               AS booking_id,
            WHEN b.status = 'pending' THEN 'pending'
            WHEN b.end_time < NOW() THEN 'expired'
            ELSE 'active'
-           END::booking_status                         AS status, b.notes,
            END::booking_status                         AS status,
        b.is_lesson,
        b.notes,
