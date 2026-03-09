@@ -38,6 +38,8 @@ import {
 } from '../../../core/permission-templates';
 import { CampusService } from '../../../shared/services/campus.service';
 import { ClassService } from '../../../shared/services/class.service';
+import { BookingSlugService } from '../../../core/services/booking-slug.service';
+import { BookingSlugModalComponent } from './booking-slug-modal.component';
 
 @Component({
   selector: 'app-manage-users-page',
@@ -52,6 +54,7 @@ export class ManageUsersPage implements OnInit {
   private toastService = inject(ToastService);
   private campusService = inject(CampusService);
   private classService = inject(ClassService);
+  private slugService = inject(BookingSlugService);
 
   @ViewChild('avatarTpl', { static: true }) avatarTpl!: TemplateRef<any>;
   @ViewChild('roleTpl', { static: true }) roleTpl!: TemplateRef<any>;
@@ -291,6 +294,22 @@ export class ManageUsersPage implements OnInit {
         onDelete: (id: number) => this.handleDelete(id),
       },
       width: '500px',
+    });
+  }
+
+  generateBookingLink(user: UserResponseDto, event: Event) {
+    event.stopPropagation();
+    this.slugService.createSlug(user.id).subscribe({
+      next: (slug) => {
+        this.modalService.open(BookingSlugModalComponent, {
+          title: 'Snabbokningslänk',
+          data: slug,
+          width: '450px',
+        });
+      },
+      error: () => {
+        this.toastService.showError('Kunde inte generera länk.');
+      }
     });
   }
 

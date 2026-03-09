@@ -527,3 +527,9 @@
   color: var(--color-text-muted);
   font-size: var(--font-sm);
 }
+
+.actions-cell {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}

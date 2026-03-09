@@ -223,6 +223,18 @@ CREATE TABLE IF NOT EXISTS class_campus
 );
 
 
+CREATE TABLE IF NOT EXISTS user_booking_slugs
+(
+    id         BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    user_id    BIGINT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    slug       TEXT   NOT NULL UNIQUE,
+    is_active  BOOLEAN     NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Index for fast slug lookups
+CREATE UNIQUE INDEX IF NOT EXISTS idx_booking_slugs_slug ON user_booking_slugs(slug);
+
 -- =============================================================
 --  BOOKINGS
 -- =============================================================

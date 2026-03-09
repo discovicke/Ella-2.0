@@ -1,4 +1,3 @@
-
 using System.Data;
 using Backend.app.Core.Interfaces;
 using Dapper;
@@ -48,14 +47,43 @@ public class PostgresDbInitializer(
 
         // Apply schema (creates tables if they don't exist)
         await conn.ExecuteAsync(schemaSql);
+
+        // Post-schema migration: ensure new columns exist (for databases created before these were added)
         
+        // 1. Bookings lesson flag
+        await conn.ExecuteAsync(
+            "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS is_lesson BOOLEAN NOT NULL DEFAULT FALSE;"
+        );
+
+        // 2. Account activation and password reset columns
+        await conn.ExecuteAsync(
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE;"
+        );
+        await conn.ExecuteAsync(
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_hash TEXT;"
+        );
+        await conn.ExecuteAsync(
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMPTZ;"
+        );
+
+        // 3. User booking slugs table
+        await conn.ExecuteAsync(@"
+            CREATE TABLE IF NOT EXISTS user_booking_slugs (
+                id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+                user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                slug TEXT NOT NULL UNIQUE,
+                is_active BOOLEAN NOT NULL DEFAULT TRUE,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_booking_slugs_slug ON user_booking_slugs(slug);
+        ");
+
         logger.LogInformation("Schema applied.");
     }
 
     private async Task SeedIfEmptyAsync(IDbConnection conn)
     {
         // Check if users table has any rows.
-        // Table existence should be guaranteed by RunSchemaAsync.
         var userCount = await conn.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM users;");
 
         if (userCount > 0)
@@ -94,21 +122,17 @@ public class PostgresDbInitializer(
 
     private string GetFullPath(string fileName)
     {
-        // 1. Try AppContext.BaseDirectory (standard)
         var path = Path.Combine(AppContext.BaseDirectory, "app", "Infrastructure", "Data", fileName);
         if (File.Exists(path)) return path;
 
-        // 2. Climb up from CurrentDirectory to find the project root or Backend folder
         var current = new DirectoryInfo(Directory.GetCurrentDirectory());
         for (int i = 0; i < 6; i++)
         {
             if (current == null) break;
 
-            // Try <current>/Backend/app/Infrastructure/Data
             path = Path.Combine(current.FullName, "Backend", "app", "Infrastructure", "Data", fileName);
             if (File.Exists(path)) return path;
 
-            // Try <current>/app/Infrastructure/Data
             path = Path.Combine(current.FullName, "app", "Infrastructure", "Data", fileName);
             if (File.Exists(path)) return path;
 
@@ -120,7 +144,6 @@ public class PostgresDbInitializer(
 
     private string ReplaceHashPlaceholders(string sql, string password)
     {
-        // Each __HASH__ gets its own hash
         while (sql.Contains("__HASH__"))
         {
             var hash = passwordHasher.HashPassword(password);

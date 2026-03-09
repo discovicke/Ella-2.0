@@ -103,8 +103,23 @@ public static class AuthEndpoints
                         );
                     }
 
-                    if (!result.Success || result.Response is null)
+                    if (result.Response is null)
                         return Results.Unauthorized();
+
+                    // Check for inactive account
+                    if (result.Response.Message.Contains("not activated"))
+                    {
+                        return Results.Json(
+                            new
+                            {
+                                error = "Inactive",
+                                message = result.Response.Message,
+                                code = "USER_INACTIVE",
+                                user = result.Response.User,
+                            },
+                            statusCode: StatusCodes.Status403Forbidden
+                        );
+                    }
 
                     var expirationMinutes = int.Parse(
                         configuration["JwtSettings:AccessTokenExpirationMinutes"] ?? "60"
