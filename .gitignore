@@ -511,5 +511,6 @@ Frontend/ng.Frontend/src/app/models/models.ts
 # DBML generation artifacts
 _tools/dbml/schema.dbml
 _tools/dbml/.schema-clean.sql
-dbml-error.log
+_tools/dbml/dbml-error.log
 Frontend/ng.Frontend/src/app/models/models.ts
+opencode.json

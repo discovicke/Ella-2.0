@@ -90,7 +90,7 @@ api:sync = swagger-typescript-api generate ... && node scripts/generate-input-li
 ## How to Change a Limit
 
 1. Update the `[MaxLength(N)]` value on the relevant DTO property
-2. Run `npm run refresh:models` from the project root
+2. Run `npm run sync:models` from the project root
 3. Done — both `models.json` and `input-limits.ts` are regenerated
 
 That's it. No manual frontend edits needed.
@@ -98,7 +98,7 @@ That's it. No manual frontend edits needed.
 ## How to Add a New Field
 
 1. Add `[MaxLength(N)]` to the new DTO string property
-2. Run `npm run refresh:models`
+2. Run `npm run sync:models`
 3. In the Angular template, use `INPUT_LIMITS.YourDto.newField` for the HTML `maxlength` attribute
 
 ## Current Limits Reference

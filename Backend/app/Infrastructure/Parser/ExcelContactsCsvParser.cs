@@ -28,7 +28,7 @@ public class ExcelContactsCsvParser : IParser<StudentImportDto>
                 FirstName = cols[ColFirstName].Trim(),
                 LastName  = cols[ColLastName].Trim(),
                 Email     = cols[ColEmail].Trim(),
-                City      = cols[ColCity].Trim(),
+                CampusName = cols.Length > 25 ? cols[ColCity].Trim() : null,
                 ClassName = className,
             });
         }

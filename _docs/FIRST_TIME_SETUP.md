@@ -100,7 +100,7 @@ npm run setup
 | ------------------------ | ---------------------------------------------------------------- |
 | `npm run setup`          | One-time: install deps, pick DB provider, start Docker           |
 | `npm start`              | Daily: pre-checks, rebuild models, generate DBML, serve servers  |
-| `npm run refresh:models` | Regenerate TypeScript models from backend DTOs (no restart)      |
+| `npm run sync:models`    | Regenerate TypeScript models from backend DTOs (no restart)      |
 | `npm run dbml:generate`  | Regenerate DBML from PostgresSchema.sql (+ publish if logged in) |
 | `npm run build:prod`     | Full production build → `dist/final_app`                         |
 | `npm run help`           | Show all available commands                                      |

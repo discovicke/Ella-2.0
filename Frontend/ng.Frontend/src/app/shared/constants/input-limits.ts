@@ -4,7 +4,7 @@
  * Source of truth: [MaxLength] attributes on C# DTOs →
  *   Backend/app/Core/Models/DTO/*.cs
  *
- * Re-generate: npm run refresh:models  (or npm run api:sync)
+ * Re-generate: npm run sync:models
  */
 
 export const INPUT_LIMITS = {

@@ -68,39 +68,120 @@ if (fs.existsSync(ENV_PATH) || fs.existsSync(ENV_EXAMPLE_PATH)) {
         ui.footer();
         process.exit(0);
       }
-      // Remove old env files and continue setup
-      function removeAndContinue() {
-        if (fs.existsSync(ENV_PATH)) fs.unlinkSync(ENV_PATH);
-        if (fs.existsSync(ENV_EXAMPLE_PATH)) fs.unlinkSync(ENV_EXAMPLE_PATH);
-        ui.ok("Removed old environment files.");
-        runSetup();
+
+      // --- Offer to wipe the current database before reconfiguring ---
+      const currentEnvFile = fs.existsSync(ENV_PATH)
+        ? ENV_PATH
+        : ENV_EXAMPLE_PATH;
+      const currentEnvContent = fs.readFileSync(currentEnvFile, "utf8");
+      const currentProvider = currentEnvContent
+        .match(/DatabaseSettings__Provider=([^\r\n]+)/)?.[1]
+        ?.trim()
+        .toLowerCase();
+      const currentConnStr = currentEnvContent
+        .match(/DatabaseSettings__ConnectionString=([^\r\n]+)/)?.[1]
+        ?.trim();
+
+      function afterWipePrompt() {
+        // Remove old env files and continue setup
+        function removeAndContinue() {
+          if (fs.existsSync(ENV_PATH)) fs.unlinkSync(ENV_PATH);
+          if (fs.existsSync(ENV_EXAMPLE_PATH)) fs.unlinkSync(ENV_EXAMPLE_PATH);
+          ui.ok("Removed old environment files.");
+          runSetup();
+        }
+
+        if (fs.existsSync(ENV_PATH)) {
+          ui.warn(
+            "A real Backend/.env file exists (may contain production credentials).",
+          );
+          const rlConfirm = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+          });
+          rlConfirm.question(
+            ui.prompt(
+              "Delete Backend/.env too? This cannot be undone. (y/N): ",
+            ),
+            (confirm) => {
+              rlConfirm.close();
+              if (confirm.trim().toLowerCase() !== "y") {
+                ui.hint("Keeping Backend/.env — only removing .env-example.");
+                if (fs.existsSync(ENV_EXAMPLE_PATH))
+                  fs.unlinkSync(ENV_EXAMPLE_PATH);
+                ui.ok("Removed Backend/.env-example.");
+                runSetup();
+              } else {
+                removeAndContinue();
+              }
+            },
+          );
+        } else {
+          removeAndContinue();
+        }
       }
 
-      if (fs.existsSync(ENV_PATH)) {
-        ui.warn(
-          "A real Backend/.env file exists (may contain production credentials).",
-        );
-        const rlConfirm = readline.createInterface({
+      if (currentProvider) {
+        const rlWipe = readline.createInterface({
           input: process.stdin,
           output: process.stdout,
         });
-        rlConfirm.question(
-          ui.prompt("Delete Backend/.env too? This cannot be undone. (y/N): "),
-          (confirm) => {
-            rlConfirm.close();
-            if (confirm.trim().toLowerCase() !== "y") {
-              ui.hint("Keeping Backend/.env — only removing .env-example.");
-              if (fs.existsSync(ENV_EXAMPLE_PATH))
-                fs.unlinkSync(ENV_EXAMPLE_PATH);
-              ui.ok("Removed Backend/.env-example.");
-              runSetup();
+        rlWipe.question(
+          ui.prompt(
+            `Wipe existing ${c.cyan}${currentProvider}${c.reset} database too? (y/N): `,
+          ),
+          (wipeAns) => {
+            rlWipe.close();
+            if (wipeAns.trim().toLowerCase() === "y") {
+              try {
+                if (currentProvider === "sqlite") {
+                  const match = currentConnStr?.match(
+                    /Data Source=([^;]+)/i,
+                  );
+                  if (match) {
+                    const dbPath = path.resolve(
+                      ROOT,
+                      "Backend",
+                      match[1].trim(),
+                    );
+                    [dbPath, `${dbPath}-wal`, `${dbPath}-shm`].forEach((f) => {
+                      if (fs.existsSync(f)) fs.unlinkSync(f);
+                    });
+                    ui.ok("SQLite database deleted.");
+                  }
+                } else if (DOCKER_PROVIDERS.includes(currentProvider)) {
+                  const composeFile = path.join(
+                    ROOT,
+                    "_tools",
+                    "docker",
+                    `docker-compose.${currentProvider}.yml`,
+                  );
+                  if (fs.existsSync(composeFile)) {
+                    try {
+                      execSync("docker info", { stdio: "ignore" });
+                      execSync(
+                        `docker compose -f "${composeFile}" down -v`,
+                        { cwd: ROOT, stdio: "inherit" },
+                      );
+                      ui.ok(`${currentProvider} database wiped.`);
+                    } catch {
+                      ui.warn(
+                        "Docker is not running — skipping database wipe.",
+                      );
+                    }
+                  }
+                }
+              } catch (err) {
+                ui.warn(`Could not wipe database: ${err.message}`);
+              }
             } else {
-              removeAndContinue();
+              ui.hint("Keeping existing database.");
             }
+            afterWipePrompt();
           },
         );
       } else {
-        removeAndContinue();
+        afterWipePrompt();
       }
     },
   );
@@ -180,7 +261,7 @@ function runSetup() {
   console.log();
 
   rl.question(
-    `Enter choice (1-${providers.length}) [default: 1]: `,
+    `Enter choice (1-${providers.length}) ${c.dim}(enter = 1)${c.reset}: `,
     (answer) => {
       rl.close();
 
@@ -199,38 +280,9 @@ function runSetup() {
       const chosen = providers[index];
       const connStr = getConnectionString(chosen);
 
-      const jwtKey = crypto.randomBytes(32).toString("base64");
-
-      const content = [
-        `# --- Database Settings ---`,
-        `# Available providers: ${providers.join(" | ")}`,
-        `DatabaseSettings__Provider=${chosen.toLowerCase()}`,
-        `DatabaseSettings__ConnectionString=${connStr}`,
-        `# --- JWT Settings ---`,
-        `# Auto-generated secure key. Replace if needed (min 32 characters).`,
-        `JwtSettings__SecretKey=${jwtKey}`,
-        `JwtSettings__Issuer=EllaBookingAPI`,
-        `JwtSettings__Audience=EllaBookingClient`,
-        `JwtSettings__AccessTokenExpirationMinutes=60`,
-      ].join("\n");
-
-      fs.writeFileSync(ENV_EXAMPLE_PATH, content, "utf8");
-
-      ui.section("Environment");
-      ui.ok(
-        `Created Backend/.env-example  ${c.dim}(provider: ${chosen})${c.reset}`,
-      );
-      ui.ok(
-        `Generated JWT signing key  ${c.dim}(auto-generated, unique to this machine)${c.reset}`,
-      );
-      ui.hint(
-        "For production, copy to Backend/.env and configure real credentials.",
-      );
-
-      // Start Docker if needed
+      // --- Early Docker check so devs don't fill in config only to fail at the end ---
       const providerLower = chosen.toLowerCase();
       if (DOCKER_PROVIDERS.includes(providerLower)) {
-        ui.section("Docker");
         const composeFile = path.join(
           ROOT,
           "_tools",
@@ -251,24 +303,160 @@ function runSetup() {
           );
           process.exit(1);
         }
-        ui.info(`Starting ${chosen} container...`);
-        try {
-          execSync(`docker-compose -f "${composeFile}" up -d`, {
-            cwd: ROOT,
-            stdio: "pipe",
-          });
-          ui.ok(`${chosen} container is running.`);
-        } catch (err) {
-          ui.fail(`docker-compose up failed.`);
-          if (err.stderr) console.error(err.stderr.toString());
-          process.exit(1);
-        }
+        ui.ok(`Docker is running.`);
       }
 
-      ui.done(
-        `Setup complete!  Run ${c.cyan}npm start${c.reset}${c.green}${c.bold} to launch the project.`,
+      const jwtKey = crypto.randomBytes(32).toString("base64");
+
+      // --- Email setup prompt ---
+      ui.section("Email (Brevo SMTP)");
+      const rlEmail = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      });
+
+      rlEmail.question(
+        ui.prompt("Configure outgoing email now? (y/N): "),
+        (emailAns) => {
+          const wantsEmail = emailAns.trim().toLowerCase() === "y";
+
+          if (!wantsEmail) {
+            rlEmail.close();
+            ui.hint(
+              "Skipped. Email placeholders will be written — edit the env file later to enable.",
+            );
+            finishSetup(chosen, connStr, jwtKey, providers, {
+              smtpServer: "smtp-relay.brevo.com",
+              port: "587",
+              username: "CHANGE_ME",
+              password: "CHANGE_ME",
+              senderEmail: "CHANGE_ME",
+              senderName: "ELLA",
+            });
+            return;
+          }
+
+          rlEmail.question(
+            ui.prompt(
+              `SMTP Server ${c.dim}(enter = smtp-relay.brevo.com)${c.reset}: `,
+            ),
+            (smtpServer) => {
+              rlEmail.question(
+                ui.prompt(`SMTP Port ${c.dim}(enter = 587)${c.reset}: `),
+                (smtpPort) => {
+                  rlEmail.question(
+                    ui.prompt("SMTP Username (Brevo login): "),
+                    (smtpUser) => {
+                      rlEmail.question(
+                        ui.prompt("SMTP Password (Brevo key): "),
+                        (smtpPass) => {
+                          rlEmail.question(
+                            ui.prompt("Sender email address: "),
+                            (senderEmail) => {
+                              rlEmail.question(
+                                ui.prompt(
+                                  `Sender display name ${c.dim}(enter = ELLA)${c.reset}: `,
+                                ),
+                                (senderName) => {
+                                  rlEmail.close();
+                                  finishSetup(
+                                    chosen,
+                                    connStr,
+                                    jwtKey,
+                                    providers,
+                                    {
+                                      smtpServer:
+                                        smtpServer.trim() ||
+                                        "smtp-relay.brevo.com",
+                                      port: smtpPort.trim() || "587",
+                                      username: smtpUser.trim(),
+                                      password: smtpPass.trim(),
+                                      senderEmail: senderEmail.trim(),
+                                      senderName: senderName.trim() || "ELLA",
+                                    },
+                                  );
+                                },
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          );
+        },
       );
-      ui.footer();
     },
   );
+
+  function finishSetup(chosen, connStr, jwtKey, providers, email) {
+    const content = [
+      `# --- Database Settings ---`,
+      `# Available providers: ${providers.join(" | ")}`,
+      `DatabaseSettings__Provider=${chosen.toLowerCase()}`,
+      `DatabaseSettings__ConnectionString=${connStr}`,
+      `# --- JWT Settings ---`,
+      `# Auto-generated secure key. Replace if needed (min 32 characters).`,
+      `JwtSettings__SecretKey=${jwtKey}`,
+      `JwtSettings__Issuer=EllaBookingAPI`,
+      `JwtSettings__Audience=EllaBookingClient`,
+      `JwtSettings__AccessTokenExpirationMinutes=60`,
+      `# --- Email Settings (Brevo SMTP) ---`,
+      `# Configure these to enable outgoing email (booking confirmations, reminders, etc).`,
+      `EmailSettings__SmtpServer=${email.smtpServer}`,
+      `EmailSettings__Port=${email.port}`,
+      `EmailSettings__Username=${email.username}`,
+      `EmailSettings__Password=${email.password}`,
+      `EmailSettings__SenderEmail=${email.senderEmail}`,
+      `EmailSettings__SenderName=${email.senderName}`,
+    ].join("\n");
+
+    fs.writeFileSync(ENV_EXAMPLE_PATH, content, "utf8");
+
+    ui.section("Environment");
+    ui.ok(
+      `Created Backend/.env-example  ${c.dim}(provider: ${chosen})${c.reset}`,
+    );
+    ui.ok(
+      `Generated JWT signing key  ${c.dim}(auto-generated, unique to this machine)${c.reset}`,
+    );
+    if (email.username !== "CHANGE_ME") {
+      ui.ok(`Email configured  ${c.dim}(${email.senderEmail})${c.reset}`);
+    }
+    ui.hint(
+      "For production, copy to Backend/.env and configure real credentials.",
+    );
+
+    // Start Docker container (Docker availability was already verified earlier)
+    const providerLower = chosen.toLowerCase();
+    if (DOCKER_PROVIDERS.includes(providerLower)) {
+      ui.section("Docker");
+      const composeFile = path.join(
+        ROOT,
+        "_tools",
+        "docker",
+        `docker-compose.${providerLower}.yml`,
+      );
+      ui.info(`Starting ${chosen} container...`);
+      try {
+        execSync(`docker-compose -f "${composeFile}" up -d`, {
+          cwd: ROOT,
+          stdio: "pipe",
+        });
+        ui.ok(`${chosen} container is running.`);
+      } catch (err) {
+        ui.fail(`docker-compose up failed.`);
+        if (err.stderr) console.error(err.stderr.toString());
+        process.exit(1);
+      }
+    }
+
+    ui.done(
+      `Setup complete!  Run ${c.cyan}npm start${c.reset}${c.green}${c.bold} to launch the project.`,
+    );
+    ui.footer();
+  }
 } // end runSetup

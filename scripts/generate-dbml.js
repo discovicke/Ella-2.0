@@ -109,7 +109,7 @@ fs.writeFileSync(TEMP_SQL, sql, "utf-8");
 try {
   execSync(`sql2dbml "${TEMP_SQL}" --postgres -o "${OUTPUT_PATH}"`, {
     stdio: "pipe",
-    cwd: ROOT,
+    cwd: path.dirname(OUTPUT_PATH),
   });
   ui.ok(`Generated ${path.relative(ROOT, OUTPUT_PATH)}`);
 } catch (err) {

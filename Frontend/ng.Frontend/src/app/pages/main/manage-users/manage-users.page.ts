@@ -226,6 +226,7 @@ export class ManageUsersPage implements OnInit {
       data: {
         classOptions: this.allClasses(),
         roleOptions: this.templateOptions(),
+        campusOptions: this.allCampuses(),
         onComplete: () => this.userResource.reload(),
       },
       width: '500px',
