@@ -17,6 +17,26 @@ public record CreateBookingDto(
     DateTime? RecurrenceEnd = null
 );
 
+/// <summary>
+/// DTO for updating an existing booking's details.
+/// </summary>
+public record UpdateBookingDto(
+    DateTime? StartTime = null,
+    DateTime? EndTime = null,
+    [property: MaxLength(500)] string? Notes = null,
+    bool? IsLesson = null
+);
+
+/// <summary>
+/// Scope for series operations: single booking, this and following, or all in series.
+/// </summary>
+public enum SeriesScope
+{
+    Single,
+    ThisAndFollowing,
+    All
+}
+
 public record CreatePublicBookingDto(
     long RoomId,
     DateTime StartTime,

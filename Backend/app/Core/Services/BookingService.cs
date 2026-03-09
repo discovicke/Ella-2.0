@@ -315,4 +315,91 @@ public class BookingService(
     {
         return await readModelRepo.GetDetailedBookingsByUserIdAsync(userId);
     }
+
+    // ==========================================
+    //  RECURRING SERIES OPERATIONS
+    // ==========================================
+
+    /// <summary>
+    /// Get all bookings in a recurring series.
+    /// </summary>
+    public async Task<IEnumerable<Booking>> GetSeriesAsync(Guid recurringGroupId)
+    {
+        return await repo.GetBookingsByRecurringGroupIdAsync(recurringGroupId);
+    }
+
+    /// <summary>
+    /// Cancel booking(s) based on scope: Single, ThisAndFollowing, or All in series.
+    /// Google Calendar-style: "Denna bokning", "Denna och kommande", "Alla i serien".
+    /// </summary>
+    public async Task<int> CancelWithScopeAsync(long bookingId, SeriesScope scope)
+    {
+        var booking = await repo.GetBookingByIdAsync(bookingId)
+            ?? throw new KeyNotFoundException($"Booking with ID {bookingId} not found.");
+
+        return scope switch
+        {
+            SeriesScope.Single =>
+                await repo.CancelBookingAsync(bookingId) ? 1 : 0,
+
+            SeriesScope.ThisAndFollowing when booking.RecurringGroupId.HasValue =>
+                await repo.CancelFutureBookingsInSeriesAsync(
+                    booking.RecurringGroupId.Value,
+                    booking.StartTime),
+
+            SeriesScope.All when booking.RecurringGroupId.HasValue =>
+                await repo.CancelBookingsByRecurringGroupIdAsync(
+                    booking.RecurringGroupId.Value),
+
+            // Not part of a series → just cancel the single booking
+            _ => await repo.CancelBookingAsync(bookingId) ? 1 : 0,
+        };
+    }
+
+    /// <summary>
+    /// Update a single booking's details (time, notes, lesson flag).
+    /// Re-validates room availability if the time is changed.
+    /// </summary>
+    public async Task<Booking> UpdateBookingDetailsAsync(long bookingId, UpdateBookingDto dto)
+    {
+        var booking = await repo.GetBookingByIdAsync(bookingId)
+            ?? throw new KeyNotFoundException($"Booking with ID {bookingId} not found.");
+
+        if (dto.StartTime.HasValue) booking.StartTime = dto.StartTime.Value;
+        if (dto.EndTime.HasValue) booking.EndTime = dto.EndTime.Value;
+        if (dto.Notes is not null) booking.Notes = dto.Notes;
+        if (dto.IsLesson.HasValue) booking.IsLesson = dto.IsLesson.Value;
+
+        if (booking.StartTime >= booking.EndTime)
+            throw new InvalidOperationException("Start time must be before end time.");
+
+        // Re-validate availability if time changed
+        if (dto.StartTime.HasValue || dto.EndTime.HasValue)
+        {
+            var overlaps = (await repo.GetOverlappingBookingsAsync(
+                booking.RoomId,
+                booking.StartTime,
+                booking.EndTime
+            )).Where(b => b.Id != bookingId).ToList();
+
+            if (overlaps.Any())
+                throw new InvalidOperationException("Rummet är redan bokat under den nya tiden.");
+        }
+
+        await repo.UpdateBookingAsync(bookingId, booking);
+        return booking;
+    }
+
+    /// <summary>
+    /// Detach a single booking from its recurring series so it can be edited independently.
+    /// </summary>
+    public async Task<Booking> DetachFromSeriesAsync(long bookingId)
+    {
+        var booking = await repo.GetBookingByIdAsync(bookingId)
+            ?? throw new KeyNotFoundException($"Booking with ID {bookingId} not found.");
+
+        booking.RecurringGroupId = null;
+        await repo.UpdateBookingAsync(bookingId, booking);
+        return booking;
+    }
 }
