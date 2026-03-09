@@ -41,18 +41,8 @@ After picking, setup:
 1. Writes `Backend/.env-example` with the correct connection string (credentials pulled directly from the provider's compose file) and an auto-generated JWT signing key.
 2. Starts the Docker container if the chosen provider requires one.
 3. Prints **"Setup complete! Run `npm start` to launch the project."**
-4. Asks if you want to set up live schema diagrams (optional):
 
-```
-  ◆  Optional: Publish a live database schema diagram to dbdocs.io.
-     Requires a free account at https://dbdocs.io (sign in with GitHub or email).
-  ?  Set up live schema diagrams? (y/N):
-```
-
-- **y** — Opens your browser to sign in (or create a free account), then publishes the database diagram and updates doc links automatically.
-- **N** (or Enter) — Skips. Everything works without it. You can run `npx dbdocs login` at any time later to enable it.
-
-If env files already exist, setup exits immediately without re-prompting.
+If env files already exist, setup asks if you want to reconfigure. If a real `.env` exists (not just `.env-example`), it asks for a second confirmation before deleting it.
 
 ---
 
@@ -67,7 +57,7 @@ Automatically:
 1. Verifies env files exist (exits with instructions if missing).
 2. Starts the Docker container if the configured provider needs one.
 3. Rebuilds the backend and syncs OpenAPI TypeScript models.
-4. Generates DBML schema diagram. Only pushes to dbdocs.io if authenticated **and** the schema has changed since the last publish (hash-cached in `_tools/dbml/.schema.hash`).
+4. Generates DBML schema diagram locally. Publishing to dbdocs.io is handled automatically by GitHub Actions when schema changes are pushed to main.
 5. Launches both servers in parallel:
 
 | Server   | URL                   |

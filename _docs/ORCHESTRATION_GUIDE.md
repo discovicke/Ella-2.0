@@ -45,10 +45,7 @@ This is the main command. It executes a strictly ordered chain reaction:
 
 4. **Sync** (`sync-frontend.js`): Runs `swagger-typescript-api` to regenerate `src/app/models/models.ts` from the OpenAPI spec, then runs `generate-input-limits.js` to produce `input-limits.ts`. Third-party tool noise is captured; only clean status lines are printed.
 
-5. **DBML** (`generate-dbml.js`): Converts `PostgresSchema.sql` → `_tools/dbml/schema.dbml`. If authenticated with dbdocs.io, compares a SHA-256 hash of the generated DBML against the cached hash in `_tools/dbml/.schema.hash`:
-   - **Schema unchanged** → skips the push entirely (instant, no network call).
-   - **Schema changed** → pushes to dbdocs.io and updates links in `DATABASE_DOC.md` and `README.md`.
-   - **Not authenticated** → skips silently with a hint.
+5. **DBML** (`generate-dbml.js`): Converts `PostgresSchema.sql` → `_tools/dbml/schema.dbml` locally. Publishing to dbdocs.io is handled by GitHub Actions (on push to main when the schema changes), not locally.
 
 6. **Run:** Uses `concurrently` to launch:
 
@@ -92,7 +89,7 @@ graph LR
 | **`Backend/Backend.csproj`**             | Configured with `<OpenApiGenerateDocuments>` to dump JSON on build.      |
 | **`Frontend/ng.Frontend/package.json`**  | Contains the logic to generate `models.ts` via `swagger-typescript-api`. |
 | **`_tools/docker/docker-compose.*.yml`** | Docker Compose files for PostgreSQL and SQL Server dev environments.     |
-| **`scripts/generate-dbml.js`**           | Converts PostgresSchema.sql → DBML, optionally publishes to dbdocs.io.   |
+| **`scripts/generate-dbml.js`**           | Converts PostgresSchema.sql → DBML. Publishing is CI-only (GitHub Actions). |
 | **`scripts/lib/ella-ui.js`**             | Shared console UI module used by all CLI scripts (see below).            |
 
 ### CLI Architecture (`scripts/lib/ella-ui.js`)
@@ -106,7 +103,7 @@ scripts/
 ├── bootstrap.js             ← npm run setup (interactive)
 ├── prestart.js              ← npm start pre-flight (non-interactive)
 ├── sync-frontend.js         ← Wraps swagger-typescript-api + input-limits
-├── generate-dbml.js         ← SQL → DBML + dbdocs publish with hash cache
+├── generate-dbml.js         ← SQL → DBML conversion (publish is CI-only)
 └── test-pretty.js           ← Formatted test runner output
 ```
 
