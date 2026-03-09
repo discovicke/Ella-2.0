@@ -236,7 +236,8 @@ public class BookingService(
                 }
                 else
                 {
-                    throw new InvalidOperationException($"Konflikt vid {occ.Start:yyyy-MM-dd HH:mm}: Rummet är upptaget av en användare med samma eller högre prioritet.");
+                    throw new InvalidOperationException(
+                        $"Konflikt vid {occ.Start:yyyy-MM-dd HH:mm}: Rummet är upptaget av en användare med samma eller högre prioritet (din nivå: {userLevel}).");
                 }
             }
         }
