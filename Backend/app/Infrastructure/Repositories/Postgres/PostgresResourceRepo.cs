@@ -4,7 +4,7 @@ using Dapper;
 
 namespace Backend.app.Infrastructure.Repositories.Postgres;
 
-public class PostgresResourceRepo(IDbConnectionFactory connectionFactory, ILogger<PostgresResourceRepo> logger) : IResourceRepository
+public class PostgresResourceRepo(IDbConnectionFactory connectionFactory) : IResourceRepository
 {
     // Categories
     public async Task<IEnumerable<ResourceCategory>> GetAllCategoriesAsync()

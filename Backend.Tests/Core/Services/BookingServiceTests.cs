@@ -4,6 +4,7 @@ using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
 using Backend.Tests.Helpers;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace Backend.Tests.Core.Services;
@@ -16,11 +17,20 @@ public class BookingServiceTests
     private readonly IRoomRepository _roomRepo = Substitute.For<IRoomRepository>();
     private readonly IClassRepository _classRepo = Substitute.For<IClassRepository>();
     private readonly IRegistrationRepository _registrationRepo = Substitute.For<IRegistrationRepository>();
+    private readonly ILogger<BookingService> _logger = Substitute.For<ILogger<BookingService>>();
     private readonly BookingService _sut;
 
     public BookingServiceTests()
     {
-        _sut = new BookingService(_repo, _readModelRepo, _userRepo, _roomRepo, _classRepo, _registrationRepo);
+        _sut = new BookingService(
+            _repo,
+            _readModelRepo,
+            _userRepo,
+            _roomRepo,
+            _classRepo,
+            _registrationRepo,
+            _logger
+        );
     }
 
     [Fact]

@@ -25,7 +25,15 @@ public class AuthServiceTests
 
     public AuthServiceTests()
     {
-        _sut = new AuthService(_userRepo, _permissionRepo, _passwordHasher, _tokenProvider, _emailService, _configuration, _logger);
+        _sut = new AuthService(
+            _userRepo,
+            _permissionRepo,
+            _passwordHasher,
+            _tokenProvider,
+            _emailService,
+            _configuration,
+            _logger
+        );
     }
 
     [Fact]
