@@ -35,6 +35,7 @@ export interface UserFormPayload {
   displayName: string;
   password?: string;
   isBanned?: BannedStatus;
+  permissionLevel: number;
   selectedTemplateId: number | null;
   customPermissions: CustomPermissionsPayload;
   campusIds: number[];
@@ -61,18 +62,27 @@ export const passwordMatchValidator: ValidatorFn = (
   imports: [ReactiveFormsModule, ButtonComponent],
   template: `
     <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
-      <div class="form-group">
-        <label for="displayName">Namn</label>
-        <input
-          id="displayName"
-          type="text"
-          formControlName="displayName"
-          placeholder="Förnamn Efternamn"
-          maxlength="100"
-        />
-        @if (userForm.get('displayName')?.invalid && userForm.get('displayName')?.touched) {
-          <span class="error-msg">Namn krävs</span>
-        }
+      <div class="form-row">
+        <div class="form-group flex-3">
+          <label for="displayName">Namn</label>
+          <input
+            id="displayName"
+            type="text"
+            formControlName="displayName"
+            placeholder="Förnamn Efternamn"
+            maxlength="100"
+          />
+        </div>
+        <div class="form-group flex-1">
+          <label for="permissionLevel" title="Prioritet 1-10 vid bokningskrockar">Nivå</label>
+          <input
+            id="permissionLevel"
+            type="number"
+            formControlName="permissionLevel"
+            min="1"
+            max="10"
+          />
+        </div>
       </div>
 
       <div class="form-group">
@@ -251,6 +261,8 @@ export const passwordMatchValidator: ValidatorFn = (
         & > * {
           flex: 1;
         }
+        .flex-1 { flex: 1; }
+        .flex-3 { flex: 3; }
       }
 
       .form-group {
@@ -491,6 +503,10 @@ export class UserFormModalComponent {
       displayName: new FormControl(this.initialData?.displayName || '', {
         nonNullable: true,
         validators: [Validators.required],
+      }),
+      permissionLevel: new FormControl<number>(this.initialData?.permissionLevel || 1, {
+        nonNullable: true,
+        validators: [Validators.required, Validators.min(1), Validators.max(10)],
       }),
       email: new FormControl(this.initialData?.email || '', {
         nonNullable: true,
