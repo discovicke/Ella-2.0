@@ -117,6 +117,8 @@ export interface CreateBookingDto {
   isLesson?: boolean;
   /** @default null */
   classIds?: number[] | null;
+  /** @default null */
+  bookerName?: string | null;
 }
 
 export interface CreateCampusDto {
@@ -162,6 +164,10 @@ export interface CreateUserDto {
   password: string;
 }
 
+export interface ForgotPasswordDto {
+  email: string;
+}
+
 export interface GroupedPagedResultOfBookingDetailedReadModel {
   items: BookingDetailedReadModel[];
   /** @format int32 */
@@ -172,6 +178,19 @@ export interface GroupedPagedResultOfBookingDetailedReadModel {
   page: number;
   /** @format int32 */
   groupsPerPage: number;
+}
+
+export interface ImportUsersResponseDto {
+  /** @format int32 */
+  totalRows: number;
+  /** @format int32 */
+  created: number;
+  /** @format int32 */
+  skipped: number;
+  /** @format int64 */
+  classId: number;
+  className: string;
+  errors: string[];
 }
 
 export interface InviteClassRequest {
@@ -228,6 +247,12 @@ export interface RegisterDto {
   password: string;
   /** @maxLength 100 */
   displayName?: string | null;
+}
+
+export interface ResetPasswordDto {
+  email: string;
+  token: string;
+  newPassword: string;
 }
 
 export interface RoomDetailModel {

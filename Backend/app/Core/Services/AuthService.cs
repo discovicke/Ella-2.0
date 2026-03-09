@@ -19,6 +19,96 @@ public class AuthService(
     ILogger<AuthService> logger
 )
 {
+    public async Task<bool> RequestPasswordResetAsync(string email, bool isActivation = false)
+    {
+        logger.LogInformation("Password reset/activation requested for email: {Email}, isActivation: {IsActivation}", email, isActivation);
+        var user = await userRepo.GetUserByEmailAsync(email);
+
+        if (user == null)
+        {
+            // We return true even if user not found for security (prevent email enumeration)
+            logger.LogWarning("Password reset requested for non-existent email: {Email}", email);
+            return true;
+        }
+
+        var token = Guid.NewGuid().ToString("N");
+        user.ResetTokenHash = passwordHasher.HashPassword(token);
+        user.ResetTokenExpires = DateTime.UtcNow.AddHours(24);
+
+        await userRepo.UpdateUserAsync(user.Id, user);
+
+        var frontendUrl = configuration["FrontendUrl"] ?? "http://localhost:4200";
+        var resetLink = $"{frontendUrl}/reset-password?token={token}&email={email}";
+
+        string subject;
+        string body;
+
+        if (isActivation || !user.IsActive)
+        {
+            subject = "Welcome to ELLA - Activate your account";
+            body = $@"
+                <div style='font-family: sans-serif; max-width: 600px; margin: 0 auto;'>
+                    <h1 style='color: #9136cb;'>Welcome to ELLA!</h1>
+                    <p>An account has been created for you in the ELLA Booking System.</p>
+                    <p>With ELLA, you can easily book rooms, manage assets, and see your schedule.</p>
+                    <p style='margin: 20px 0;'>
+                        <a href='{resetLink}' style='background-color: #9136cb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;'>
+                            Activate My Account & Set Password
+                        </a>
+                    </p>
+                    <p style='color: #666; font-size: 0.9em;'>This link will expire in 24 hours.</p>
+                    <hr style='border: none; border-top: 1px solid #eee; margin: 20px 0;'>
+                    <p style='color: #999; font-size: 0.8em;'>If you didn't expect this email, you can safely ignore it.</p>
+                </div>";
+        }
+        else
+        {
+            subject = "Reset your ELLA password";
+            body = $@"
+                <div style='font-family: sans-serif; max-width: 600px; margin: 0 auto;'>
+                    <h1 style='color: #9136cb;'>Password Reset</h1>
+                    <p>We received a request to reset the password for your ELLA account.</p>
+                    <p style='margin: 20px 0;'>
+                        <a href='{resetLink}' style='background-color: #9136cb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;'>
+                            Reset My Password
+                        </a>
+                    </p>
+                    <p style='color: #666; font-size: 0.9em;'>This link will expire in 24 hours.</p>
+                    <hr style='border: none; border-top: 1px solid #eee; margin: 20px 0;'>
+                    <p style='color: #999; font-size: 0.8em;'>If you didn't request this, you can safely ignore this email.</p>
+                </div>";
+        }
+
+        await emailService.SendEmailAsync(user.Email, subject, body);
+        return true;
+    }
+
+    public async Task<bool> ResetPasswordAsync(ResetPasswordDto request)
+    {
+        logger.LogInformation("Password reset attempt for email: {Email}", request.Email);
+        var user = await userRepo.GetUserByEmailAsync(request.Email);
+
+        if (user == null || user.ResetTokenHash == null || user.ResetTokenExpires < DateTime.UtcNow)
+        {
+            logger.LogWarning("Invalid or expired reset attempt for email: {Email}", request.Email);
+            return false;
+        }
+
+        if (!passwordHasher.VerifyPassword(request.Token, user.ResetTokenHash))
+        {
+            logger.LogWarning("Invalid token for email: {Email}", request.Email);
+            return false;
+        }
+
+        user.PasswordHash = passwordHasher.HashPassword(request.NewPassword);
+        user.ResetTokenHash = null;
+        user.ResetTokenExpires = null;
+        user.IsActive = true;
+        user.TokensValidAfter = DateTime.UtcNow; // Invalidate old tokens
+
+        return await userRepo.UpdateUserAsync(user.Id, user);
+    }
+
     public async Task<LoginResultDto> LoginAsync(LoginDto request)
     {
         logger.LogInformation("Login attempt for email: {Email}", request.Email);
@@ -29,6 +119,21 @@ public class AuthService(
         {
             logger.LogWarning("Login failed: user not found for email {Email}", request.Email);
             return new LoginResultDto();
+        }
+
+        if (!user.IsActive)
+        {
+            logger.LogWarning("Login failed: account not active for email {Email}", request.Email);
+            var perms = await permissionRepo.GetEffectivePermissionsAsync(user.Id);
+            return new LoginResultDto 
+            { 
+                Response = new AuthResponseDto 
+                { 
+                    Message = "Account not activated. Please check your email or click 'Activate Account'.",
+                    Token = "",
+                    User = MapToUserDto(user, perms)
+                }
+            };
         }
 
         if (user.IsBanned == BannedStatus.Banned)
@@ -153,6 +258,7 @@ public class AuthService(
             Email = request.Email,
             PasswordHash = passwordHash,
             DisplayName = request.DisplayName,
+            IsActive = false,
             TokensValidAfter = DateTime.MinValue,
         };
 
