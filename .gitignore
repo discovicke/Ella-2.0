@@ -6,6 +6,9 @@
 # dotenv files
 .env
 
+# DBML hash cache (auto-generated)
+_tools/dbml/.schema.hash
+
 # User-specific files
 *.rsuser
 *.suo
@@ -504,3 +507,8 @@ Frontend/ng.Frontend/openapi/models.json
 .env-example
 Frontend/ng.Frontend/src/app/shared/constants/input-limits.ts
 Frontend/ng.Frontend/src/app/models/models.ts
+
+# DBML generation artifacts
+_tools/dbml/schema.dbml
+_tools/dbml/.schema-clean.sql
+dbml-error.log
