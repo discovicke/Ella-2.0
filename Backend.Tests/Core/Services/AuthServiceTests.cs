@@ -5,6 +5,7 @@ using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Services;
 using Backend.Tests.Helpers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
@@ -17,12 +18,14 @@ public class AuthServiceTests
     private readonly IPermissionRepository _permissionRepo = Substitute.For<IPermissionRepository>();
     private readonly IPasswordHasher _passwordHasher = Substitute.For<IPasswordHasher>();
     private readonly ITokenProvider _tokenProvider = Substitute.For<ITokenProvider>();
+    private readonly IEmailService _emailService = Substitute.For<IEmailService>();
+    private readonly IConfiguration _configuration = Substitute.For<IConfiguration>();
     private readonly ILogger<AuthService> _logger = Substitute.For<ILogger<AuthService>>();
     private readonly AuthService _sut;
 
     public AuthServiceTests()
     {
-        _sut = new AuthService(_userRepo, _permissionRepo, _passwordHasher, _tokenProvider, _logger);
+        _sut = new AuthService(_userRepo, _permissionRepo, _passwordHasher, _tokenProvider, _emailService, _configuration, _logger);
     }
 
     [Fact]

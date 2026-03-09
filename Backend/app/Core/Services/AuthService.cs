@@ -14,6 +14,8 @@ public class AuthService(
     IPermissionRepository permissionRepo,
     IPasswordHasher passwordHasher,
     ITokenProvider tokenProvider,
+    IEmailService emailService,
+    IConfiguration configuration,
     ILogger<AuthService> logger
 )
 {
