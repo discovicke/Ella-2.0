@@ -1,38 +1,6 @@
 <div class="page-container">
   <div class="page-content">
 
-    <!-- ─── Compact status bar ──────────────────────────────────────── -->
-    <header class="status-bar">
-      <div class="status-bar__title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="4" width="18" height="18" rx="2" />
-          <line x1="16" y1="2" x2="16" y2="6" />
-          <line x1="8" y1="2" x2="8" y2="6" />
-          <line x1="3" y1="10" x2="21" y2="10" />
-        </svg>
-        <span>Boka rum</span>
-      </div>
-
-      <div class="status-bar__chips">
-        <span class="status-chip status-chip--primary">
-          {{ activeSelectionLabel() }}
-        </span>
-        @if (!timeValidationError() && !availabilityResource.isLoading()) {
-          <span class="status-chip">
-            <span class="status-dot status-dot--available"></span>
-            {{ resultsSummary().available }} lediga
-          </span>
-          <span class="status-chip">
-            <span class="status-dot status-dot--blocked"></span>
-            {{ resultsSummary().unavailable }} upptagna
-          </span>
-        }
-        @if (availabilityResource.isLoading()) {
-          <span class="status-chip status-chip--loading">Söker rum...</span>
-        }
-      </div>
-    </header>
-
     <!-- ─── Filter card ─────────────────────────────────────────────── -->
     <section class="filter-card">
       <!-- Essential row: date + times + reset -->

@@ -190,12 +190,6 @@ export class BookRoomPage {
     this.availabilityCandidates().filter((candidate) => !candidate.isAvailable),
   );
 
-  readonly resultsSummary = computed(() => ({
-    total: this.availabilityCandidates().length,
-    available: this.availableRooms().length,
-    unavailable: this.unavailableRooms().length,
-  }));
-
   readonly activeSecondaryFilterCount = computed(() => {
     let count = 0;
     if (this.selectedCampus() !== 'All') count++;
@@ -220,16 +214,6 @@ export class BookRoomPage {
       name: room.name || 'Okänt rum',
     })),
   );
-
-  readonly activeSelectionLabel = computed(() => {
-    const start = this.selectionStart();
-    const end = this.selectionEnd();
-    return `${start.toLocaleDateString('sv-SE', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-    })} · ${this.startTime()}–${this.endTime()}`;
-  });
 
   setDiscoveryView(view: DiscoveryView): void {
     this.discoveryView.set(view);
