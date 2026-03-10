@@ -1,0 +1,503 @@
+// =============================================================================
+// CalendarComponent — global styles (ViewEncapsulation.None)
+// ELLA brand theming for DayPilot Lite Angular
+// =============================================================================
+
+:host,
+app-calendar {
+  display: block;
+}
+
+.app-calendar-host {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 520px;
+}
+
+// =============================================================================
+// Navigation bar
+// =============================================================================
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 0 14px;
+  flex-shrink: 0;
+}
+
+.cal-nav__controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.cal-nav__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  line-height: 1;
+
+  svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+  }
+
+  &:hover {
+    background: var(--color-bg-card);
+    color: var(--color-primary);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
+  &--today {
+    padding: 6px 14px;
+    letter-spacing: 0.01em;
+  }
+}
+
+.cal-nav__label {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
+  &::first-letter {
+    text-transform: uppercase;
+  }
+}
+
+// =============================================================================
+// Grid wrapper + loading/error overlays
+// =============================================================================
+
+.cal-grid-wrapper {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.cal-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: color-mix(in srgb, var(--color-bg-card) 80%, transparent);
+  backdrop-filter: blur(3px);
+  border-radius: 8px;
+  z-index: 10;
+
+  &--error {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+
+    svg {
+      width: 36px;
+      height: 36px;
+      stroke: var(--color-danger);
+      opacity: 0.7;
+    }
+  }
+}
+
+.cal-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: cal-spin 0.7s linear infinite;
+}
+
+@keyframes cal-spin {
+  to { transform: rotate(360deg); }
+}
+
+// =============================================================================
+// DayPilot CSS Custom Properties — applied to all widget roots
+// Sets ELLA colours, typography, border-radius, shadows across all view types
+// =============================================================================
+
+.calendar_default_main,
+.month_default_main {
+  // Typography
+  --dp-calendar-font-family: var(--font-family, 'Nunito Sans', system-ui, sans-serif);
+  --dp-calendar-font-size: 12px;
+  --dp-month-font-family:  var(--font-family, 'Nunito Sans', system-ui, sans-serif);
+  --dp-month-font-size:    12px;
+
+  // Outer border — matches card border
+  --dp-calendar-border-color: var(--color-border);
+  --dp-month-border-color:    var(--color-border);
+
+  // Header strip (hour col, day names, corner)
+  --dp-calendar-header-color:    var(--color-text-secondary);
+  --dp-calendar-header-bg-color: var(--color-bg-panel);
+  --dp-month-header-color:       var(--color-text-secondary);
+  --dp-month-header-bg-color:    var(--color-bg-panel);
+
+  // Column/row header text alignment & padding
+  --dp-calendar-colheader-padding:          2px 0;
+  --dp-calendar-colheader-vertical-align:   center;
+  --dp-calendar-colheader-horizontal-align: center;
+  --dp-calendar-rowheader-font-size:        11px;
+  --dp-calendar-rowheader-padding:          4px 6px;
+  --dp-month-header-padding:                4px 0;
+  --dp-month-header-vertical-align:         center;
+  --dp-month-header-horizontal-align:       center;
+
+  // Grid cell backgrounds
+  --dp-calendar-cell-bg-color:          var(--color-bg-panel);
+  --dp-calendar-cell-business-bg-color: var(--color-bg-card);
+  --dp-calendar-cell-border-color:      var(--color-border);
+  --dp-month-cell-bg-color:             var(--color-bg-panel);
+  --dp-month-cell-business-bg-color:    var(--color-bg-card);
+  --dp-month-cell-border-color:         var(--color-border);
+
+  // Default event chip — will be overridden per-state below
+  --dp-calendar-event-color:         #ffffff;
+  --dp-calendar-event-background:    var(--color-primary);
+  --dp-calendar-event-bg-top-color:  var(--color-primary);
+  --dp-calendar-event-bg-bottom-color: var(--color-primary);
+  --dp-calendar-event-border-color:  #7326a3;
+  --dp-calendar-event-border-radius: 6px;
+  --dp-calendar-event-box-shadow:    0 1px 3px rgb(0 0 0 / 0.12);
+  --dp-calendar-event-padding:       3px;
+  --dp-calendar-event-padding-left:  10px;
+  // Keep the left accent bar but colour it with a darker primary shade
+  // (hardcoded hex — DayPilot reads these vars via JS/getComputedStyle so
+  //  color-mix() would not survive the round-trip)
+  --dp-calendar-event-bar-display:   block;
+  --dp-calendar-event-bar-color:     #5a1f82;
+  --dp-calendar-event-bar-width:     4px;
+
+  --dp-month-event-color:            #ffffff;
+  --dp-month-event-background:       var(--color-primary);
+  --dp-month-event-bg-top-color:     var(--color-primary);
+  --dp-month-event-bg-bottom-color:  var(--color-primary);
+  --dp-month-event-border-color:     #7326a3;
+  --dp-month-event-border-radius:    6px;
+  --dp-month-event-box-shadow:       0 1px 3px rgb(0 0 0 / 0.1);
+  --dp-month-event-padding:          2px;
+  --dp-month-event-padding-left:     8px;
+  --dp-month-event-bar-display:      block;
+  --dp-month-event-bar-color:        #5a1f82;
+  --dp-month-event-bar-width:        4px;
+
+  // "Now" line — ELLA primary
+  --dp-calendar-now-indicator-color: var(--color-primary);
+
+  // Scroll background
+  --dp-calendar-scroll-bg-color: var(--color-bg-panel);
+
+  // Shadows for drag ghost
+  --dp-calendar-shadow-color:        var(--color-border);
+  --dp-calendar-shadow-border-color: var(--color-primary);
+  --dp-month-shadow-color:           var(--color-border);
+  --dp-month-shadow-border-color:    var(--color-primary);
+}
+
+// =============================================================================
+// Widget outer wrapper — flat card look, no XP chrome
+// =============================================================================
+
+.calendar_default_main,
+.month_default_main {
+  border: 1px solid var(--color-border) !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  font-family: var(--font-family, 'Nunito Sans', system-ui, sans-serif) !important;
+  box-shadow: var(--shadow-sm) !important;
+  background: var(--color-bg-card) !important;
+}
+
+// =============================================================================
+// Header strips — day names, hour column, all-day row
+// =============================================================================
+
+// Calendar view: day-column headers
+.calendar_default_colheader_inner,
+.calendar_default_corner_inner,
+.calendar_default_cornerright_inner,
+.calendar_default_alldayheader_inner {
+  background: var(--color-bg-panel) !important;
+  color: var(--color-text-secondary) !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  border-right-color: var(--color-border) !important;
+  border-bottom-color: var(--color-border) !important;
+}
+
+// Hour labels on the left
+.calendar_default_rowheader_inner {
+  background: var(--color-bg-panel) !important;
+  color: var(--color-text-muted) !important;
+  font-size: 0.6875rem !important;
+  font-weight: 600 !important;
+  border-right-color: var(--color-border) !important;
+  padding: 2px 8px 0 4px !important;
+}
+
+.calendar_default_rowheader_minutes {
+  color: var(--color-text-muted) !important;
+  opacity: 0.55 !important;
+}
+
+// Month: day-of-week header row
+.month_default_header_inner {
+  background: var(--color-bg-panel) !important;
+  color: var(--color-text-secondary) !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  border-right-color: var(--color-border) !important;
+  border-bottom-color: var(--color-border) !important;
+}
+
+// =============================================================================
+// Grid cells
+// =============================================================================
+
+.calendar_default_cell_inner {
+  background: var(--color-bg-panel) !important;
+  border-right-color: var(--color-border) !important;
+  border-bottom-color: var(--color-border) !important;
+}
+
+.calendar_default_cell_business .calendar_default_cell_inner {
+  background: var(--color-bg-card) !important;
+}
+
+.month_default_cell_inner {
+  background: var(--color-bg-card) !important;
+  border-right-color: var(--color-border) !important;
+  border-bottom-color: var(--color-border) !important;
+}
+
+// Month weekend (non-business) cells — subtle tint
+.month_default_cell_business .month_default_cell_inner {
+  background: var(--color-bg-panel) !important;
+}
+
+// Month cell date number
+.month_default_cell_header {
+  color: var(--color-text-muted) !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  padding: 4px 6px !important;
+}
+
+// =============================================================================
+// "Now" indicator — ELLA primary colour
+// =============================================================================
+
+.calendar_default_now {
+  background: var(--color-primary) !important;
+  opacity: 0.7 !important;
+}
+
+.calendar_default_now::before {
+  border-right-color: var(--color-primary) !important;
+  opacity: 0.7 !important;
+}
+
+// =============================================================================
+// Event chips — base reset (overridden by state classes below)
+// =============================================================================
+
+.calendar_default_event,
+.month_default_event {
+  border-radius: 6px !important;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1) !important;
+}
+
+.calendar_default_event_inner,
+.month_default_event_inner {
+  background: var(--color-primary) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  color: #ffffff !important;
+  padding: 3px 6px 3px 10px !important;
+  font-family: var(--font-family, 'Nunito Sans', system-ui, sans-serif) !important;
+  font-size: 0.76rem !important;
+  line-height: 1.35 !important;
+  overflow: hidden !important;
+}
+
+// Left accent bar — darker shade of primary (#5a1f82 ≈ primary 55% + black)
+.calendar_default_event_bar_inner,
+.month_default_event_bar_inner {
+  background: #5a1f82 !important;
+}
+
+// =============================================================================
+// Event status CSS classes (applied via cssClass on event data)
+// =============================================================================
+
+// Active / default
+.event-active .calendar_default_event_inner,
+.event-active .month_default_event_inner,
+.event-default .calendar_default_event_inner,
+.event-default .month_default_event_inner {
+  background: var(--color-primary) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.event-active .calendar_default_event_bar_inner,
+.event-active .month_default_event_bar_inner,
+.event-default .calendar_default_event_bar_inner,
+.event-default .month_default_event_bar_inner {
+  background: #5a1f82 !important;
+}
+
+// Pending — warm amber, dashed border
+.event-pending .calendar_default_event_inner,
+.event-pending .month_default_event_inner {
+  background: var(--color-warning-surface, #fef3c7) !important;
+  color: #92400e !important;
+  border: 1.5px dashed var(--color-warning, #f59e0b) !important;
+}
+
+.event-pending .calendar_default_event_bar_inner,
+.event-pending .month_default_event_bar_inner {
+  background: var(--color-warning, #f59e0b) !important;
+}
+
+// Cancelled / Expired — muted, faded, strikethrough via HTML
+.event-cancelled .calendar_default_event_inner,
+.event-cancelled .month_default_event_inner {
+  background: var(--color-bg-panel) !important;
+  color: var(--color-text-muted) !important;
+  border: 1px solid var(--color-border) !important;
+  opacity: 0.6 !important;
+}
+
+.event-cancelled .calendar_default_event_bar_inner,
+.event-cancelled .month_default_event_bar_inner {
+  background: var(--color-text-muted) !important;
+  opacity: 0.4 !important;
+}
+
+// Invitation — action needed (emerald green, matches list "Ny inbjudan" accent)
+.event-invitation .calendar_default_event_inner,
+.event-invitation .month_default_event_inner {
+  background: rgba(16, 185, 129, 0.12) !important;
+  color: rgb(6, 95, 70) !important;
+  border: 1.5px dashed rgb(16, 185, 129) !important;
+}
+
+.event-invitation .calendar_default_event_bar_inner,
+.event-invitation .month_default_event_bar_inner {
+  background: rgb(16, 185, 129) !important;
+}
+
+// Attending — accepted invitation (blue, matches list "Inbjuden" accent)
+.event-attending .calendar_default_event_inner,
+.event-attending .month_default_event_inner {
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: rgb(30, 64, 175) !important;
+  border: none !important;
+}
+
+.event-attending .calendar_default_event_bar_inner,
+.event-attending .month_default_event_bar_inner {
+  background: rgb(59, 130, 246) !important;
+}
+
+// Declined invitation (red surface, matches list)
+.event-declined .calendar_default_event_inner,
+.event-declined .month_default_event_inner {
+  background: var(--color-danger-surface, #fee2e2) !important;
+  color: var(--color-danger, #ef4444) !important;
+  border: 1px solid color-mix(in srgb, var(--color-danger, #ef4444) 40%, transparent) !important;
+  opacity: 0.75 !important;
+}
+
+.event-declined .calendar_default_event_bar_inner,
+.event-declined .month_default_event_bar_inner {
+  background: var(--color-danger, #ef4444) !important;
+}
+
+// Expired invitation — never responded (muted grey, matches list "Ej svarad")
+.event-expired-invitation .calendar_default_event_inner,
+.event-expired-invitation .month_default_event_inner {
+  background: var(--color-bg-panel, #f4f5f8) !important;
+  color: var(--color-text-muted, #64748b) !important;
+  border: 1px solid var(--color-border, #dbe0e6) !important;
+  opacity: 0.65 !important;
+}
+
+.event-expired-invitation .calendar_default_event_bar_inner,
+.event-expired-invitation .month_default_event_bar_inner {
+  background: var(--color-text-muted, #9ca3af) !important;
+  opacity: 0.5 !important;
+}
+
+// =============================================================================
+// Scrollbar — webkit browsers
+// =============================================================================
+
+.calendar_default_main *,
+.month_default_main * {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--color-bg-panel);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+
+    &:hover {
+      background: var(--color-text-muted);
+    }
+  }
+}
+
+// =============================================================================
+// Dark mode adjustments
+// =============================================================================
+
+@media (prefers-color-scheme: dark) {
+  .calendar_default_main,
+  .month_default_main {
+    --dp-calendar-event-box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
+    --dp-month-event-box-shadow:    0 1px 4px rgb(0 0 0 / 0.35);
+  }
+
+  .calendar_default_cell_inner {
+    border-right-color: var(--color-border) !important;
+    border-bottom-color: var(--color-border) !important;
+  }
+}
