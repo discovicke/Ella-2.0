@@ -21,11 +21,14 @@ import {
   BookingDetailModalComponent,
   BookingDetailModalConfig,
 } from './booking-detail-modal.component';
+import { CalendarComponent } from '../../../shared/components/calendar/calendar.component';
 
 /** A booking enriched with ownership/source info for the merged view */
 interface EnrichedBooking extends BookingDetailedReadModel {
   /** True if the current user created this booking */
   isOwned: boolean;
+  /** True if the user accepted this invitation (registered, not own) */
+  isAttending: boolean;
   /** True if the user declined this invitation */
   isDeclined: boolean;
   /** True if this is a past invitation the user never responded to */
@@ -44,7 +47,7 @@ interface BookingGroup {
 
 @Component({
   selector: 'app-see-bookings-page',
-  imports: [DatePipe, TitleCasePipe, RouterLink],
+  imports: [DatePipe, TitleCasePipe, RouterLink, CalendarComponent],
   templateUrl: './see-bookings.page.html',
   styleUrl: './see-bookings.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -59,6 +62,8 @@ export class SeeBookingsPage {
   private readonly sessionService = inject(SessionService);
 
   // --- STATE ---
+  viewMode = signal<'list' | 'calendar'>('list');
+  calendarDate = signal<Date>(new Date());
   activeTab = signal<'upcoming' | 'history'>('upcoming');
   showCancelled = signal<boolean>(false);
 
@@ -73,10 +78,12 @@ export class SeeBookingsPage {
   invitationBusy = signal<Set<number>>(new Set());
 
   constructor() {
-    // Auto-fetch when tab or showCancelled changes
+    // Auto-fetch when state changes
     effect(() => {
-      const _tab = this.activeTab();
-      const _cancelled = this.showCancelled();
+      this.activeTab();
+      this.showCancelled();
+      this.viewMode();
+      this.calendarDate();
       untracked(() => this.loadBookings(true));
     });
   }
@@ -145,6 +152,7 @@ export class SeeBookingsPage {
     return bookings.map((b) => ({
       ...b,
       isOwned: source === 'owned' || b.userId === userId,
+      isAttending: source === 'registered',
       isDeclined: source === 'declined',
       isExpiredInvitation: source === 'expired-invitation',
       isInvitation: source === 'invitation',
@@ -224,6 +232,14 @@ export class SeeBookingsPage {
 
   // --- ACTIONS ---
 
+  setViewMode(mode: 'list' | 'calendar') {
+    this.viewMode.set(mode);
+  }
+
+  onCalendarDateChange(date: Date): void {
+    this.calendarDate.set(date);
+  }
+
   setActiveTab(tab: 'upcoming' | 'history') {
     this.activeTab.set(tab);
   }
@@ -242,26 +258,36 @@ export class SeeBookingsPage {
 
     this.isLoading.set(true);
     try {
+      const isCalendar = this.viewMode() === 'calendar';
       const isUpcoming = this.activeTab() === 'upcoming';
       const timeFilter = isUpcoming ? 'upcoming' : 'history';
       const userId = this.sessionService.currentUser()?.id;
+
+      let startDate: string | undefined;
+      let endDate: string | undefined;
+
+      if (isCalendar) {
+        const d = this.calendarDate();
+        startDate = new Date(d.getFullYear(), d.getMonth() - 1, 1).toISOString();
+        endDate = new Date(d.getFullYear(), d.getMonth() + 2, 0).toISOString();
+      }
 
       // Two parallel calls: paged own bookings + paged registration bookings
       const [ownResult, regResult] = await Promise.all([
         firstValueFrom(
           this.bookingService.getBookingsByUserId({
-            page: this.currentPage(),
-            pageSize: this.PAGE_SIZE,
-            timeFilter: this.activeTab(),
+            page: isCalendar ? 1 : this.currentPage(),
+            pageSize: isCalendar ? 1000 : this.PAGE_SIZE,
+            timeFilter: isCalendar ? undefined : this.activeTab(),
             includeCancelled: this.showCancelled(),
           }),
         ),
         firstValueFrom(
           this.registrationService.getMyRegistrationBookings(
             ['registered', 'invited', 'declined'],
-            timeFilter,
-            this.currentPage(),
-            this.PAGE_SIZE,
+            isCalendar ? undefined : timeFilter,
+            isCalendar ? 1 : this.currentPage(),
+            isCalendar ? 1000 : this.PAGE_SIZE,
           ),
         ),
       ]);
@@ -375,7 +401,8 @@ export class SeeBookingsPage {
 
   // ─── Booking detail modal ─────────────────────────────
 
-  openBookingDetail(booking: EnrichedBooking): void {
+  openBookingDetail(bookingInput: BookingDetailedReadModel): void {
+    const booking = bookingInput as EnrichedBooking;
     const isHistory = this.activeTab() === 'history';
 
     const config: BookingDetailModalConfig = {

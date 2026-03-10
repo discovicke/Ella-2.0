@@ -34,9 +34,9 @@
 }
 
 // ============================================================================
-// FILTER BAR
+// HEADER ACTIONS (Filter Bar)
 // ============================================================================
-.filter-bar {
+.header-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -106,6 +106,46 @@
   font-weight: 700;
 }
 
+.view-mode-toggle {
+  display: flex;
+  background: var(--color-bg-panel);
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  gap: 4px;
+
+  .pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+    }
+
+    &:hover {
+      color: var(--color-text-primary);
+    }
+
+    &--active {
+      background: var(--color-bg-card);
+      color: var(--color-primary);
+      box-shadow: var(--shadow-sm);
+    }
+  }
+}
+
 .checkbox-filter {
   display: flex;
   align-items: center;
@@ -128,6 +168,18 @@
     accent-color: var(--color-primary);
     margin: 0;
   }
+}
+
+// ============================================================================
+// CALENDAR WRAPPER
+// ============================================================================
+.calendar-container-wrapper {
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  min-height: 600px;
 }
 
 // ============================================================================
