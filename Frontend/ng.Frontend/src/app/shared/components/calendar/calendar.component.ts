@@ -268,8 +268,8 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
 
       return {
         id: b.bookingId!,
-        start: new DayPilot.Date(b.startTime!),
-        end: new DayPilot.Date(b.endTime!),
+        start: this.toEventDateTime(b.startTime),
+        end: this.toEventDateTime(b.endTime),
         text: label,
         html,
         resource: b.roomId?.toString(),
@@ -285,5 +285,21 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
       d.getMonth() + 1,
       d.getDate(),
     );
+  }
+
+  private toEventDateTime(value?: string | null): DayPilot.Date {
+    if (!value) return new DayPilot.Date();
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return new DayPilot.Date(value);
+    }
+
+    return new DayPilot.Date(this.toLocalDateTimeString(parsed));
+  }
+
+  private toLocalDateTimeString(date: Date): string {
+    const pad = (value: number) => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
   }
 }

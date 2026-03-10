@@ -112,7 +112,7 @@ export class BookingformComponent implements OnInit {
   });
 
   // Today's date as default for date inputs
-  readonly today = new Date().toISOString().split('T')[0];
+  readonly today = this.toDateInputValue(new Date());
 
   ngOnInit(): void {
     const slug = this.route.snapshot.queryParamMap.get('slug');
@@ -255,6 +255,11 @@ export class BookingformComponent implements OnInit {
     );
     this.resetForm();
     this.isSubmitting.set(false);
+  }
+
+  private toDateInputValue(date: Date): string {
+    const pad = (value: number) => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   }
 
   private handleError(err: any): void {
