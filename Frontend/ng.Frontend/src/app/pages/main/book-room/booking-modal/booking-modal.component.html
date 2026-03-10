@@ -1,15 +1,28 @@
 <div class="booking-modal-content">
   <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()" class="booking-form">
     <!-- Tid: datum + starttid → sluttid på en rad -->
-    <div class="form-group">
+    <div class="form-group" style="z-index: 10;">
       <label>Tid</label>
       <div class="time-row">
-        <input type="date" id="startDate" formControlName="startDate" required aria-label="Datum" />
-        <input type="time" id="startTime" formControlName="startTime" required aria-label="Starttid" />
+        <app-date-picker 
+          [value]="bookingForm.controls.startDate.value" 
+          (valueChange)="updateStartDate($event)"
+        ></app-date-picker>
+        <app-time-picker 
+          [value]="bookingForm.controls.startTime.value" 
+          (valueChange)="updateStartTime($event)"
+        ></app-time-picker>
         <span class="time-sep" aria-hidden="true">→</span>
-        <input type="time" id="endTime" formControlName="endTime" required aria-label="Sluttid" />
-        <input type="date" id="endDate" formControlName="endDate" required aria-label="Slutdatum"
-          class="end-date" [class.end-date--visible]="bookingForm.value.endDate !== bookingForm.value.startDate" />
+        <app-time-picker 
+          [value]="bookingForm.controls.endTime.value" 
+          (valueChange)="updateEndTime($event)"
+        ></app-time-picker>
+        @if (bookingForm.value.endDate !== bookingForm.value.startDate) {
+          <app-date-picker 
+            [value]="bookingForm.controls.endDate.value" 
+            (valueChange)="updateEndDate($event)"
+          ></app-date-picker>
+        }
       </div>
     </div>
 
@@ -35,18 +48,20 @@
       @if (bookingForm.controls.isRecurring.value) {
         <div class="recurrence-options">
           <div class="form-row">
-            <div class="form-group">
+            <div class="form-group" style="z-index: 9;">
               <label for="pattern">Upprepa</label>
-              <select id="pattern" formControlName="recurrencePattern">
-                <option value="daily">Varje dag</option>
-                <option value="weekly">Varje vecka</option>
-                <option value="biweekly">Varannan vecka</option>
-                <option value="monthly">Varje månad</option>
-              </select>
+              <app-select 
+                [options]="recurrenceOptions"
+                [value]="bookingForm.controls.recurrencePattern.value"
+                (valueChange)="updateRecurrencePattern($event)"
+              ></app-select>
             </div>
-            <div class="form-group">
+            <div class="form-group" style="z-index: 8;">
               <label for="recurrenceEnd">Slutdatum</label>
-              <input type="date" id="recurrenceEnd" formControlName="recurrenceEnd" />
+              <app-date-picker 
+                [value]="bookingForm.controls.recurrenceEnd.value"
+                (valueChange)="updateRecurrenceEnd($event)"
+              ></app-date-picker>
             </div>
           </div>
         </div>
@@ -61,6 +76,10 @@
       <div class="user-search">
         <label for="userSearch">Sök användare</label>
         <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
           <input
             type="text"
             id="userSearch"
@@ -70,7 +89,16 @@
             (blur)="hideSearchResults()"
             placeholder="Namn eller e-post..."
             autocomplete="off"
+            [class.has-text]="searchQuery().length > 0"
           />
+          @if (searchQuery() && !isSearching()) {
+            <button type="button" class="clear-btn" (mousedown)="clearSearchQuery()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          }
           @if (isSearching()) {
             <span class="search-spinner"></span>
           }
@@ -200,7 +228,14 @@
         variant="success"
         [disabled]="bookingForm.invalid || isSubmitting()"
       >
-        {{ isSubmitting() ? 'Bokar...' : 'Bekräfta bokning' }}
+        @if (isSubmitting()) {
+          <svg class="btn-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path>
+          </svg>
+          Bokar...
+        } @else {
+          Bekräfta bokning
+        }
       </app-button>
     </div>
   </form>

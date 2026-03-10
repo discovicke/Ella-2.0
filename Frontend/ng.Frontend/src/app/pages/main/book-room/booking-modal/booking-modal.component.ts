@@ -14,6 +14,9 @@ import { ToastService } from '../../../../shared/services/toast.service';
 import { ClassService } from '../../../../shared/services/class.service';
 import { RegistrationService } from '../../../../shared/services/registration.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { TimePickerComponent } from '../../../../shared/components/time-picker/time-picker.component';
+import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
+import { SelectComponent, SelectOption } from '../../../../shared/components/select/select.component';
 import {
   CreateBookingDto,
   BookingStatus,
@@ -38,7 +41,7 @@ interface BookingModalData extends RoomDetailModel {
 
 @Component({
   selector: 'app-booking-modal',
-  imports: [ReactiveFormsModule, ButtonComponent],
+  imports: [ReactiveFormsModule, ButtonComponent, TimePickerComponent, DatePickerComponent, SelectComponent],
   templateUrl: './booking-modal.component.html',
   styleUrl: './booking-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -73,6 +76,13 @@ export class BookingModalComponent implements OnInit, OnDestroy {
   readonly classMembers = signal<UserSearchResult[]>([]);
   readonly isLoadingMembers = signal(false);
   readonly showClassPicker = signal(false);
+
+  readonly recurrenceOptions: SelectOption[] = [
+    { id: 'daily', label: 'Varje dag' },
+    { id: 'weekly', label: 'Varje vecka' },
+    { id: 'biweekly', label: 'Varannan vecka' },
+    { id: 'monthly', label: 'Varje månad' },
+  ];
 
   ngOnInit(): void {
     // Only load classes if the user has ManageClasses
@@ -156,6 +166,13 @@ export class BookingModalComponent implements OnInit, OnDestroy {
     }, 200);
   }
 
+  clearSearchQuery(): void {
+    this.searchQuery.set('');
+    this.searchSubject.next('');
+    this.showSearchResults.set(false);
+    this.noSearchResults.set(false);
+  }
+
   // ─── Class picker methods ─────────────────────────
   isClassSelected(id: number): boolean {
     return this.selectedClassIds().has(id);
@@ -220,6 +237,30 @@ export class BookingModalComponent implements OnInit, OnDestroy {
     recurrencePattern: new FormControl('weekly', { nonNullable: true }),
     recurrenceEnd: new FormControl('', { nonNullable: false }),
   });
+
+  updateStartDate(date: string | null) {
+    if (date) this.bookingForm.controls.startDate.setValue(date);
+  }
+
+  updateStartTime(time: string | null) {
+    if (time) this.bookingForm.controls.startTime.setValue(time);
+  }
+
+  updateEndTime(time: string | null) {
+    if (time) this.bookingForm.controls.endTime.setValue(time);
+  }
+
+  updateEndDate(date: string | null) {
+    if (date) this.bookingForm.controls.endDate.setValue(date);
+  }
+
+  updateRecurrencePattern(pattern: string | number | null) {
+    if (pattern) this.bookingForm.controls.recurrencePattern.setValue(String(pattern));
+  }
+
+  updateRecurrenceEnd(date: string | null) {
+    this.bookingForm.controls.recurrenceEnd.setValue(date || '');
+  }
 
   readonly isSubmitting = signal(false);
 
