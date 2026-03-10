@@ -100,19 +100,18 @@
     <section class="results-section">
       <!-- Section header with view toggle -->
       <div class="results-section__header">
-        <h2>Rum</h2>
-        <div class="view-switch">
+        <div class="tabs">
           <button
-            class="view-switch__btn"
-            [class.view-switch__btn--active]="discoveryView() === 'availability'"
+            class="tab"
+            [class.active]="discoveryView() === 'availability'"
             (click)="setDiscoveryView('availability')"
             type="button"
           >
             Tillgänglighet
           </button>
           <button
-            class="view-switch__btn"
-            [class.view-switch__btn--active]="discoveryView() === 'schedule'"
+            class="tab"
+            [class.active]="discoveryView() === 'schedule'"
             (click)="setDiscoveryView('schedule')"
             type="button"
           >

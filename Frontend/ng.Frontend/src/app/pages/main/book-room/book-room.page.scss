@@ -45,13 +45,13 @@
 .filter-row {
   display: flex;
   align-items: flex-end;
-  gap: 12px;
-  padding: 16px 20px;
+  gap: 14px;
+  padding: 18px 22px;
 
   @include breakpoint-down('md') {
     flex-wrap: wrap;
 
-    .field { flex: 1 1 calc(50% - 6px); }
+    .field { flex: 1 1 calc(50% - 7px); }
     .filter-row__spacer { display: none; }
     .btn-reset { align-self: flex-end; }
   }
@@ -62,17 +62,17 @@
 }
 
 .filter-row--primary {
-  .field { flex: 0 1 160px; }
+  .field { flex: 0 1 168px; }
 }
 
 .filter-row--secondary {
   padding-top: 0;
-  padding-bottom: 18px;
+  padding-bottom: 20px;
 
   .field { flex: 1 1 0; min-width: 120px; }
 
   @include breakpoint-down('md') {
-    .field { flex: 1 1 calc(50% - 6px); }
+    .field { flex: 1 1 calc(50% - 7px); }
   }
 
   @include breakpoint-down('sm') {
@@ -87,7 +87,7 @@
 .filter-divider {
   height: 1px;
   background: var(--color-border);
-  margin: 0 20px;
+  margin: 0 22px;
 }
 
 /* ─── Fields ─────────────────────────────────────────────────────── */
@@ -95,7 +95,7 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
 
   input,
   select {
@@ -105,12 +105,13 @@
     background: var(--color-bg-panel);
     color: var(--color-text-primary);
     font-size: 0.875rem;
-    padding: 8px 11px;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    padding: 9px 12px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     font: inherit;
 
     &::placeholder { color: var(--color-text-muted); }
-    &:hover  { border-color: var(--color-primary); }
+
+    &:hover { border-color: color-mix(in srgb, var(--color-primary) 60%, var(--color-border)); }
 
     &:focus {
       outline: none;
@@ -122,11 +123,11 @@
 }
 
 .field-label {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
   color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
 }
 
 /* ─── Buttons ────────────────────────────────────────────────────── */
@@ -134,13 +135,13 @@
 .btn-reset {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 13px;
+  gap: 5px;
+  padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid var(--color-border);
   background: transparent;
   color: var(--color-text-muted);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -193,51 +194,46 @@
 .results-section__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-
-  h2 {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
-  }
 }
 
-.view-switch {
-  display: inline-flex;
+/* ─── Tabs (matches see-bookings Kommande/Historik pattern) ──────── */
+
+.tabs {
+  display: flex;
   gap: 4px;
-  padding: 4px;
-  border-radius: 999px;
-  background: var(--color-bg-card);
+  background: var(--color-bg-panel);
   border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 3px;
 }
 
-.view-switch__btn {
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   padding: 7px 16px;
-  border-radius: 999px;
-  border: none;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
   background: transparent;
-  color: var(--color-text-secondary);
-  font-size: 0.84rem;
-  font-weight: 600;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
+  white-space: nowrap;
   font: inherit;
 
   &:hover {
     color: var(--color-text-primary);
-    background: color-mix(in srgb, var(--color-bg-panel) 70%, transparent);
+    background: var(--color-bg-card);
   }
 
-  &--active {
-    background: var(--color-primary);
+  &.active {
     color: #fff;
+    background: var(--color-primary);
     box-shadow: var(--shadow-sm);
 
-    &:hover {
-      background: var(--color-primary-hover);
-    }
+    &:hover { background: var(--color-primary-hover); }
   }
 }
 
