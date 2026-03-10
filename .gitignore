@@ -516,3 +516,5 @@ _tools/dbml/.schema-clean.sql
 _tools/dbml/dbml-error.log
 Frontend/ng.Frontend/src/app/models/models.ts
 opencode.json
+Frontend/ng.Frontend/src/app/models/models.ts
+Frontend/ng.Frontend/src/app/shared/constants/input-limits.ts
