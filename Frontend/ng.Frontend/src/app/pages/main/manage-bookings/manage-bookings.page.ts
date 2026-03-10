@@ -18,7 +18,9 @@ import { ModalService } from '../../../shared/services/modal.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { BookingEditModalComponent } from './booking-edit-modal.component';
 
-export type ViewMode = 'today' | 'week' | 'month' | 'all' | 'room' | 'user' | 'campus';
+import { CalendarComponent } from '../../../shared/components/calendar/calendar.component';
+
+export type ViewMode = 'today' | 'week' | 'month' | 'all' | 'room' | 'user' | 'campus' | 'calendar';
 export type GroupByMode = 'day' | 'week' | 'month' | 'room' | 'user' | 'campus';
 export type DateRange = 'today' | 'week' | 'month' | 'all';
 
@@ -32,7 +34,7 @@ export interface BookingGroup {
 
 @Component({
   selector: 'app-manage-bookings-page',
-  imports: [DatePipe],
+  imports: [DatePipe, CalendarComponent],
   templateUrl: './manage-bookings.page.html',
   styleUrl: './manage-bookings.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -96,7 +98,8 @@ export class ManageBookingsPage {
   debouncedSearch = signal('');
   private searchDebounceTimer: ReturnType<typeof setTimeout> | undefined;
   selectedStatus = signal<BookingStatus | 'All'>(BookingStatus.Active);
-  viewMode = signal<ViewMode>('week');
+  viewMode = signal<ViewMode>('calendar');
+  calendarDate = signal<Date>(new Date());
   /** Sticky preference: should groups default to collapsed? Survives filter/page changes. */
   defaultCollapsed = signal(false);
   /** Per-group overrides that differ from the default. Reset on filter/page change. */
@@ -123,6 +126,8 @@ export class ManageBookingsPage {
         return 'week';
       case 'month':
         return 'month';
+      case 'calendar':
+        return 'week'; // calendar view will fetch a week around current date by default
       case 'all':
         return 'all';
       default:
@@ -139,14 +144,24 @@ export class ManageBookingsPage {
         return 'day';
       case 'month':
         return 'week';
+      case 'calendar':
+        return 'week'; // the list view uses week when calendar is selected if we drop out of the calendar view
       case 'all':
         return 'month';
       default:
-        return vm; // 'room' | 'user' | 'campus'
+        return vm as GroupByMode; // 'room' | 'user' | 'campus'
     }
   });
 
   private getDateBounds(range: DateRange): { start: Date; end: Date } | null {
+    if (this.viewMode() === 'calendar') {
+      const d = this.calendarDate();
+      // For calendar view, load a full month around the selected date to ensure data is available when navigating
+      const start = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+      const end = new Date(d.getFullYear(), d.getMonth() + 2, 0); // End of next month
+      return { start, end };
+    }
+
     if (range === 'all') return null;
     const now = new Date();
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -242,7 +257,7 @@ export class ManageBookingsPage {
     () =>
       this.searchQuery() !== '' ||
       this.selectedStatus() !== BookingStatus.Active ||
-      this.viewMode() !== 'week',
+      (this.viewMode() !== 'calendar' && this.viewMode() !== 'week'),
   );
 
   // --- Grouping helpers ---
@@ -406,7 +421,8 @@ export class ManageBookingsPage {
     this.searchQuery.set('');
     this.debouncedSearch.set('');
     this.selectedStatus.set(BookingStatus.Active);
-    this.viewMode.set('week');
+    this.viewMode.set('calendar');
+    this.calendarDate.set(new Date());
     this.pageIndex.set(0);
     clearTimeout(this.searchDebounceTimer);
   }
@@ -415,6 +431,10 @@ export class ManageBookingsPage {
     this.viewMode.set(mode);
     this.pageIndex.set(0);
     this.groupOverrides.set(new Set());
+  }
+
+  onCalendarDateChange(date: Date): void {
+    this.calendarDate.set(date);
   }
 
   toggleGroupCollapse(key: string): void {
