@@ -351,6 +351,7 @@ export class ManageUsersPage implements OnInit {
           displayName: payload.displayName,
           password: payload.password || null,
           isBanned: payload.isBanned || BannedStatus.NotBanned,
+          isActive: payload.isActive,
           permissionLevel: payload.permissionLevel,
         };
 
