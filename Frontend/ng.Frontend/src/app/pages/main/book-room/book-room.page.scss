@@ -62,7 +62,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-top: 95px;
+  margin-top: 54px;
 
   @include breakpoint-down('lg') {
     position: static;
