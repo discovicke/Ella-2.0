@@ -31,7 +31,7 @@ public class UserImportService(
         var normalizedClassName = className.Trim();
         var students = await parser.Parse(csvContent, normalizedClassName);
         var classId = await ResolveClassIdAsync(normalizedClassName);
-        
+
         var campuses = await campusService.GetAllAsync();
 
         // Build a city → campus ID lookup for auto-matching Studieort
@@ -71,17 +71,25 @@ public class UserImportService(
             try
             {
                 var createdUser = await userService.CreateUserAsync(dto);
-                
+
                 await userRepository.SetClassesForUserAsync(createdUser.Id, new[] { classId });
-                
-                if (!string.IsNullOrWhiteSpace(student.City))
+
+                if (!string.IsNullOrWhiteSpace(student.CampusName))
                 {
-                    var matchedCampus = campuses.FirstOrDefault(c => 
-                        string.Equals(c.City, student.City.Trim(), StringComparison.OrdinalIgnoreCase));
-                    
+                    var matchedCampus = campuses.FirstOrDefault(c =>
+                        string.Equals(
+                            c.City,
+                            student.CampusName.Trim(),
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    );
+
                     if (matchedCampus != null)
                     {
-                        await userRepository.SetCampusesForUserAsync(createdUser.Id, new[] { matchedCampus.Id });
+                        await userRepository.SetCampusesForUserAsync(
+                            createdUser.Id,
+                            new[] { matchedCampus.Id }
+                        );
                     }
                 }
 
@@ -90,7 +98,7 @@ public class UserImportService(
                         createdUser.Id,
                         student.TemplateId.Value
                     );
-                
+
                 if (!string.IsNullOrWhiteSpace(student.CampusName))
                 {
                     if (campusLookup.TryGetValue(student.CampusName, out var campusId))
