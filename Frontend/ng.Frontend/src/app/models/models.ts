@@ -461,6 +461,7 @@ export interface UpdateUserDto {
   /** @maxLength 128 */
   password: string | null;
   isBanned: BannedStatus;
+  isActive: boolean;
   /** @format int32 */
   permissionLevel: number;
 }
@@ -501,6 +502,7 @@ export interface UserResponseDto {
   email: string;
   displayName: string | null;
   isBanned: BannedStatus;
+  isActive: boolean;
   permissions: UserPermissions;
   /** @format int32 */
   permissionLevel: number;
