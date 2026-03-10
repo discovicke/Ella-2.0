@@ -201,30 +201,30 @@
         <div class="filter-section" style="z-index: 3;">
           <h4 class="filter-section__title">Tid & Datum</h4>
           
-          <label class="field" style="z-index: 4;">
+          <div class="field" style="z-index: 4;">
             <span class="field-label">Datum</span>
             <app-date-picker
               [value]="selectedDate()"
               (valueChange)="updateDate($event)"
             ></app-date-picker>
-          </label>
+          </div>
 
           <div class="field-row" style="z-index: 3;">
-            <label class="field">
+            <div class="field">
               <span class="field-label">Starttid</span>
               <app-time-picker
                 [value]="startTime()"
                 (valueChange)="updateStartTime($event)"
               ></app-time-picker>
-            </label>
+            </div>
 
-            <label class="field">
+            <div class="field">
               <span class="field-label">Sluttid</span>
               <app-time-picker
                 [value]="endTime()"
                 (valueChange)="updateEndTime($event)"
               ></app-time-picker>
-            </label>
+            </div>
           </div>
 
         </div>
@@ -234,23 +234,23 @@
         <div class="filter-section" style="z-index: 2;">
           <h4 class="filter-section__title">Plats & Typ</h4>
           
-          <label class="field">
+          <div class="field">
             <span class="field-label">Campus</span>
             <app-select
               [options]="[ { id: 'All', label: 'Alla campus' }, ...campusOptions() ]"
               [value]="selectedCampus()"
               (valueChange)="updateCampus($event)"
             ></app-select>
-          </label>
+          </div>
 
-          <label class="field" style="z-index: 1;">
+          <div class="field" style="z-index: 1;">
             <span class="field-label">Rumstyp</span>
             <app-select
               [options]="[ { id: 'All', label: 'Alla typer' }, ...roomTypeOptions() ]"
               [value]="selectedTypeId()"
               (valueChange)="updateType($event)"
             ></app-select>
-          </label>
+          </div>
         </div>
 
         <div class="filter-divider"></div>
@@ -258,7 +258,7 @@
         <div class="filter-section" style="z-index: 1;">
           <h4 class="filter-section__title">Krav & Detaljer</h4>
 
-          <label class="field">
+          <div class="field">
             <span class="field-label">Kapacitet (minst)</span>
             <app-number-picker
               [value]="minCapacity()"
@@ -267,7 +267,7 @@
               [max]="999"
               placeholder="Antal personer..."
             ></app-number-picker>
-          </label>
+          </div>
 
           <div class="field" style="z-index: 2;">
             <span class="field-label">Utrustning</span>
