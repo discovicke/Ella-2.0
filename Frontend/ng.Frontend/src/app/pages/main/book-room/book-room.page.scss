@@ -41,44 +41,53 @@
   overflow: hidden;
 }
 
-.filter-card__essential {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto;
-  align-items: end;
+/* Primary row: date + start + end + spacer + reset */
+.filter-row {
+  display: flex;
+  align-items: flex-end;
   gap: 12px;
   padding: 16px 20px;
 
   @include breakpoint-down('md') {
-    grid-template-columns: 1fr 1fr;
+    flex-wrap: wrap;
+
+    .field { flex: 1 1 calc(50% - 6px); }
+    .filter-row__spacer { display: none; }
+    .btn-reset { align-self: flex-end; }
   }
 
   @include breakpoint-down('sm') {
-    grid-template-columns: 1fr;
+    .field { flex: 1 1 100%; }
   }
 }
 
-.filter-card__actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-bottom: 1px; // align to input baseline
+.filter-row--primary {
+  .field { flex: 0 1 160px; }
 }
 
-.filter-card__secondary {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  padding: 0 20px 18px;
-  border-top: 1px solid var(--color-border);
-  padding-top: 14px;
+.filter-row--secondary {
+  padding-top: 0;
+  padding-bottom: 18px;
+
+  .field { flex: 1 1 0; min-width: 120px; }
 
   @include breakpoint-down('md') {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    .field { flex: 1 1 calc(50% - 6px); }
   }
 
   @include breakpoint-down('sm') {
-    grid-template-columns: 1fr;
+    .field { flex: 1 1 100%; }
   }
+}
+
+.filter-row__spacer {
+  flex: 1;
+}
+
+.filter-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: 0 20px;
 }
 
 /* ─── Fields ─────────────────────────────────────────────────────── */
@@ -86,15 +95,7 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-
-  &--wide {
-    grid-column: span 2;
-
-    @include breakpoint-down('sm') {
-      grid-column: span 1;
-    }
-  }
+  gap: 5px;
 
   input,
   select {
@@ -104,12 +105,11 @@
     background: var(--color-bg-panel);
     color: var(--color-text-primary);
     font-size: 0.875rem;
-    padding: 9px 12px;
+    padding: 8px 11px;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
     font: inherit;
 
     &::placeholder { color: var(--color-text-muted); }
-
     &:hover  { border-color: var(--color-primary); }
 
     &:focus {
@@ -122,85 +122,37 @@
 }
 
 .field-label {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
 /* ─── Buttons ────────────────────────────────────────────────────── */
-
-.btn-more {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-panel);
-  color: var(--color-text-secondary);
-  font-size: 0.84rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s ease;
-  font: inherit;
-
-  svg {
-    width: 15px;
-    height: 15px;
-    stroke: currentColor;
-    flex-shrink: 0;
-  }
-
-  &:hover {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    background: var(--color-primary-surface);
-  }
-
-  &--active {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    background: var(--color-primary-surface);
-  }
-}
-
-.filter-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: var(--color-primary);
-  color: #fff;
-  font-size: 0.68rem;
-  font-weight: 700;
-}
 
 .btn-reset {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 9px 14px;
+  padding: 8px 13px;
   border-radius: 8px;
   border: 1px solid var(--color-border);
   background: transparent;
-  color: var(--color-text-secondary);
-  font-size: 0.84rem;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, border-color 0.15s ease;
   font: inherit;
+  flex-shrink: 0;
 
   svg {
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
     stroke: currentColor;
+    flex-shrink: 0;
   }
 
   &:hover {

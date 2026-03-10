@@ -3,8 +3,9 @@
 
     <!-- ─── Filter card ─────────────────────────────────────────────── -->
     <section class="filter-card">
-      <!-- Essential row: date + times + reset -->
-      <div class="filter-card__essential">
+
+      <!-- Row 1: date + times + reset -->
+      <div class="filter-row filter-row--primary">
         <label class="field">
           <span class="field-label">Datum</span>
           <input type="date" [value]="selectedDate()" (input)="onDatePicked($event)" />
@@ -20,83 +21,68 @@
           <input type="time" [value]="endTime()" (input)="onEndTimePicked($event)" />
         </label>
 
-        <div class="filter-card__actions">
-          <button
-            class="btn-more"
-            type="button"
-            (click)="toggleSecondaryFilters()"
-            [class.btn-more--active]="secondaryFiltersOpen()"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-            </svg>
-            Fler filter
-            @if (activeSecondaryFilterCount() > 0) {
-              <span class="filter-badge">{{ activeSecondaryFilterCount() }}</span>
-            }
-          </button>
+        <div class="filter-row__spacer"></div>
 
-          @if (hasAnyActiveFilter()) {
-            <button class="btn-reset" type="button" (click)="resetFilters()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="1 4 1 10 7 10" />
-                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-              </svg>
-              Nollställ
-            </button>
-          }
-        </div>
+        @if (hasAnyActiveFilter()) {
+          <button class="btn-reset" type="button" (click)="resetFilters()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+            </svg>
+            Nollställ
+          </button>
+        }
       </div>
 
-      <!-- Secondary filters (collapsible) -->
-      @if (secondaryFiltersOpen()) {
-        <div class="filter-card__secondary">
-          <label class="field">
-            <span class="field-label">Campus</span>
-            <select [value]="selectedCampus()" (change)="updateCampus($event)">
-              <option value="All">Alla</option>
-              @for (campus of campuses(); track campus) {
-                <option [value]="campus">{{ campus }}</option>
-              }
-            </select>
-          </label>
+      <div class="filter-divider"></div>
 
-          <label class="field">
-            <span class="field-label">Rumstyp</span>
-            <select [value]="selectedTypeId()" (change)="updateType($event)">
-              <option value="All">Alla</option>
-              @for (type of roomTypes(); track type.id) {
-                <option [value]="type.id">{{ type.name }}</option>
-              }
-            </select>
-          </label>
+      <!-- Row 2: secondary filters -->
+      <div class="filter-row filter-row--secondary">
+        <label class="field">
+          <span class="field-label">Campus</span>
+          <select [value]="selectedCampus()" (change)="updateCampus($event)">
+            <option value="All">Alla campus</option>
+            @for (campus of campuses(); track campus) {
+              <option [value]="campus">{{ campus }}</option>
+            }
+          </select>
+        </label>
 
-          <label class="field">
-            <span class="field-label">Minsta kapacitet</span>
-            <input type="number" min="0" [value]="minCapacity()" (input)="updateCapacity($event)" />
-          </label>
+        <label class="field">
+          <span class="field-label">Rumstyp</span>
+          <select [value]="selectedTypeId()" (change)="updateType($event)">
+            <option value="All">Alla typer</option>
+            @for (type of roomTypes(); track type.id) {
+              <option [value]="type.id">{{ type.name }}</option>
+            }
+          </select>
+        </label>
 
-          <label class="field field--wide">
-            <span class="field-label">Sök rum eller plats</span>
-            <input
-              type="text"
-              [value]="roomQuery()"
-              (input)="updateRoomQuery($event)"
-              placeholder="Ex. plan 2, Biblioteket…"
-            />
-          </label>
+        <label class="field">
+          <span class="field-label">Kapacitet</span>
+          <input type="number" min="0" [value]="minCapacity()" (input)="updateCapacity($event)" placeholder="Minst…" />
+        </label>
 
-          <label class="field field--wide">
-            <span class="field-label">Utrustning</span>
-            <input
-              type="text"
-              [value]="assetQuery()"
-              (input)="updateAssetQuery($event)"
-              placeholder="Ex. skärm, whiteboard, kamera"
-            />
-          </label>
-        </div>
-      }
+        <label class="field">
+          <span class="field-label">Sök rum</span>
+          <input
+            type="text"
+            [value]="roomQuery()"
+            (input)="updateRoomQuery($event)"
+            placeholder="Namn eller plats…"
+          />
+        </label>
+
+        <label class="field">
+          <span class="field-label">Utrustning</span>
+          <input
+            type="text"
+            [value]="assetQuery()"
+            (input)="updateAssetQuery($event)"
+            placeholder="Skärm, whiteboard…"
+          />
+        </label>
+      </div>
 
       @if (timeValidationError(); as timeError) {
         <div class="validation-banner">

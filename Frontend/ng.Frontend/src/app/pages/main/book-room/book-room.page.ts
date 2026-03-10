@@ -53,7 +53,6 @@ export class BookRoomPage {
   readonly assetQuery = signal('');
   readonly roomQuery = signal('');
   readonly discoveryView = signal<DiscoveryView>('availability');
-  readonly secondaryFiltersOpen = signal(false);
 
   readonly roomsResource = resource({
     loader: () => firstValueFrom(this.roomService.getAllRooms()),
@@ -219,10 +218,6 @@ export class BookRoomPage {
     this.discoveryView.set(view);
   }
 
-  toggleSecondaryFilters(): void {
-    this.secondaryFiltersOpen.update((v) => !v);
-  }
-
   updateRoomQuery(event: Event): void {
     this.roomQuery.set((event.target as HTMLInputElement).value);
   }
@@ -265,7 +260,6 @@ export class BookRoomPage {
     this.minCapacity.set(0);
     this.assetQuery.set('');
     this.roomQuery.set('');
-    this.secondaryFiltersOpen.set(false);
   }
 
   useSuggestedSlot(date: Date): void {
