@@ -3,6 +3,7 @@ using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Models.ReadModels;
+using System.Text.RegularExpressions;
 
 namespace Backend.app.Core.Services;
 
@@ -105,9 +106,7 @@ public class BookingService(
                     || (!string.IsNullOrWhiteSpace(room.Notes)
                         && room.Notes.Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase));
                 var roomAssets = room.Assets ?? [];
-                var matchesAssets = assetTerms.All(term =>
-                    roomAssets.Any(asset => asset.Contains(term, StringComparison.OrdinalIgnoreCase))
-                );
+                var matchesAssets = assetTerms.All(term => roomAssets.Any(asset => AssetMatchesTerm(asset, term)));
 
                 return matchesCampus
                     && matchesRoomType
@@ -524,9 +523,7 @@ public class BookingService(
         if (assetTerms.Length > 0)
         {
             var roomAssets = room.Assets ?? [];
-            score += assetTerms.Count(term =>
-                roomAssets.Any(asset => asset.Contains(term, StringComparison.OrdinalIgnoreCase))
-            ) * 10;
+            score += assetTerms.Count(term => roomAssets.Any(asset => AssetMatchesTerm(asset, term))) * 10;
         }
 
         return score;
@@ -542,18 +539,27 @@ public class BookingService(
         if (room.Capacity.HasValue)
             reasons.Add($"{room.Capacity.Value} platser");
 
-        if (assetTerms.Length > 0)
-        {
-            var matchedAssets = (room.Assets ?? [])
-                .Where(asset => assetTerms.Any(term => asset.Contains(term, StringComparison.OrdinalIgnoreCase)))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Take(2);
-            reasons.AddRange(matchedAssets);
-        }
-
         if (!string.IsNullOrWhiteSpace(query.Query) && room.Name.Contains(query.Query, StringComparison.OrdinalIgnoreCase))
             reasons.Add("Matchar sökning");
 
         return reasons.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    private static bool AssetMatchesTerm(string asset, string term)
+    {
+        if (string.IsNullOrWhiteSpace(asset) || string.IsNullOrWhiteSpace(term))
+            return false;
+
+        var normalizedAsset = asset.Trim();
+        var normalizedTerm = term.Trim();
+
+        if (normalizedAsset.Equals(normalizedTerm, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return Regex.IsMatch(
+            normalizedAsset,
+            $@"(^|[^\p{{L}}\p{{Nd}}]){Regex.Escape(normalizedTerm)}($|[^\p{{L}}\p{{Nd}}])",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
+        );
     }
 }

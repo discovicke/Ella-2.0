@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  OnDestroy,
   inject,
   resource,
   signal,
@@ -39,10 +40,13 @@ interface AvailabilityCandidate {
   styleUrl: './book-room.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BookRoomPage {
+export class BookRoomPage implements OnDestroy {
   private readonly roomService = inject(RoomService);
   private readonly bookingService = inject(BookingService);
   private readonly modalService = inject(ModalService);
+  private roomQueryDebounceTimer?: ReturnType<typeof setTimeout>;
+  private assetQueryDebounceTimer?: ReturnType<typeof setTimeout>;
+  private readonly filterDebounceMs = 300;
 
   readonly selectedDate = signal(this.toDateInputValue(new Date()));
   readonly startTime = signal('09:00');
@@ -51,7 +55,9 @@ export class BookRoomPage {
   readonly selectedTypeId = signal<number | 'All'>('All');
   readonly minCapacity = signal<number>(0);
   readonly assetQuery = signal('');
+  readonly debouncedAssetQuery = signal('');
   readonly roomQuery = signal('');
+  readonly debouncedRoomQuery = signal('');
   readonly discoveryView = signal<DiscoveryView>('availability');
 
   readonly roomsResource = resource({
@@ -126,8 +132,8 @@ export class BookRoomPage {
       campus: this.selectedCampus(),
       roomTypeId: this.selectedTypeId(),
       minCapacity: this.minCapacity(),
-      assets: this.assetQuery().trim(),
-      query: this.roomQuery().trim(),
+      assets: this.debouncedAssetQuery().trim(),
+      query: this.debouncedRoomQuery().trim(),
       isInvalid: Boolean(this.timeValidationError()),
     }),
     loader: ({ params }) => {
@@ -219,11 +225,15 @@ export class BookRoomPage {
   }
 
   updateRoomQuery(event: Event): void {
-    this.roomQuery.set((event.target as HTMLInputElement).value);
+    const value = (event.target as HTMLInputElement).value;
+    this.roomQuery.set(value);
+    this.scheduleRoomQueryDebounce(value);
   }
 
   updateAssetQuery(event: Event): void {
-    this.assetQuery.set((event.target as HTMLInputElement).value);
+    const value = (event.target as HTMLInputElement).value;
+    this.assetQuery.set(value);
+    this.scheduleAssetQueryDebounce(value);
   }
 
   updateCapacity(event: Event): void {
@@ -259,7 +269,14 @@ export class BookRoomPage {
     this.selectedTypeId.set('All');
     this.minCapacity.set(0);
     this.assetQuery.set('');
+    this.debouncedAssetQuery.set('');
     this.roomQuery.set('');
+    this.debouncedRoomQuery.set('');
+    this.clearFilterDebounceTimers();
+  }
+
+  ngOnDestroy(): void {
+    this.clearFilterDebounceTimers();
   }
 
   useSuggestedSlot(date: Date): void {
@@ -314,5 +331,39 @@ export class BookRoomPage {
 
   private toTimeInputValue(date: Date): string {
     return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  }
+
+  private scheduleRoomQueryDebounce(value: string): void {
+    if (this.roomQueryDebounceTimer) {
+      clearTimeout(this.roomQueryDebounceTimer);
+    }
+
+    this.roomQueryDebounceTimer = setTimeout(() => {
+      this.debouncedRoomQuery.set(value);
+      this.roomQueryDebounceTimer = undefined;
+    }, this.filterDebounceMs);
+  }
+
+  private scheduleAssetQueryDebounce(value: string): void {
+    if (this.assetQueryDebounceTimer) {
+      clearTimeout(this.assetQueryDebounceTimer);
+    }
+
+    this.assetQueryDebounceTimer = setTimeout(() => {
+      this.debouncedAssetQuery.set(value);
+      this.assetQueryDebounceTimer = undefined;
+    }, this.filterDebounceMs);
+  }
+
+  private clearFilterDebounceTimers(): void {
+    if (this.roomQueryDebounceTimer) {
+      clearTimeout(this.roomQueryDebounceTimer);
+      this.roomQueryDebounceTimer = undefined;
+    }
+
+    if (this.assetQueryDebounceTimer) {
+      clearTimeout(this.assetQueryDebounceTimer);
+      this.assetQueryDebounceTimer = undefined;
+    }
   }
 }

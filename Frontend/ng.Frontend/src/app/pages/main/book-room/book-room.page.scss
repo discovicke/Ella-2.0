@@ -10,6 +10,14 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  background:
+    radial-gradient(circle at top right, rgba(145, 54, 203, 0.08), transparent 26%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-primary-surface) 24%, var(--color-bg-body)) 0%,
+      var(--color-bg-body) 36%,
+      var(--color-bg-body) 100%
+    );
   overflow-y: auto;
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
@@ -34,7 +42,7 @@
 /* ─── Filter card ────────────────────────────────────────────────── */
 
 .filter-card {
-  background: var(--color-bg-card);
+  background: color-mix(in srgb, var(--color-bg-card) 92%, var(--color-primary-surface));
   border: 1px solid var(--color-border);
   border-radius: 14px;
   box-shadow: var(--shadow-sm);
@@ -62,14 +70,26 @@
 }
 
 .filter-row--primary {
+  padding-bottom: 14px;
+
   .field { flex: 0 1 168px; }
+
+  .field input {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
 }
 
 .filter-row--secondary {
-  padding-top: 0;
+  padding-top: 16px;
   padding-bottom: 20px;
+  background: color-mix(in srgb, var(--color-bg-panel) 40%, transparent);
 
   .field { flex: 1 1 0; min-width: 120px; }
+
+  .field-label {
+    font-size: 0.63rem;
+  }
 
   @include breakpoint-down('md') {
     .field { flex: 1 1 calc(50% - 7px); }
@@ -86,8 +106,14 @@
 
 .filter-divider {
   height: 1px;
-  background: var(--color-border);
   margin: 0 22px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-border) 15%,
+    var(--color-border) 85%,
+    transparent
+  );
 }
 
 /* ─── Fields ─────────────────────────────────────────────────────── */
@@ -102,7 +128,7 @@
     width: 100%;
     border: 1px solid var(--color-border);
     border-radius: 8px;
-    background: var(--color-bg-panel);
+    background: var(--color-bg-body);
     color: var(--color-text-primary);
     font-size: 0.875rem;
     padding: 9px 12px;
@@ -261,13 +287,30 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  padding-left: 12px;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 2px;
+    bottom: 2px;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--color-primary);
+  }
 
   h3 {
     margin: 0;
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--color-text-primary);
   }
+}
+
+.availability-column--secondary .section-title-row::before {
+  background: var(--color-warning);
 }
 
 .section-count {
@@ -309,6 +352,7 @@
 }
 
 .room-card--available {
+  border-left: 3px solid var(--color-primary);
   border-color: color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
   background: color-mix(in srgb, var(--color-primary-surface) 28%, var(--color-bg-card));
 
@@ -318,7 +362,10 @@
 }
 
 .room-card--blocked {
+  opacity: 0.72;
+
   &:hover {
+    opacity: 1;
     border-color: color-mix(in srgb, var(--color-warning) 40%, var(--color-border));
   }
 }
@@ -392,7 +439,7 @@
 
 .room-card__actions {
   display: flex;
-  justify-content: flex-start;
+  justify-content: flex-end;
 }
 
 .btn-primary {
@@ -469,9 +516,9 @@
   min-height: 120px;
   padding: 20px;
   border-radius: 14px;
-  background: var(--color-bg-card);
-  border: 1px dashed var(--color-border);
-  color: var(--color-text-muted);
+  background: color-mix(in srgb, var(--color-bg-card) 85%, var(--color-primary-surface));
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
   font-size: 0.875rem;
   text-align: center;
 }
@@ -479,7 +526,7 @@
 /* ─── Schedule shell ─────────────────────────────────────────────── */
 
 .schedule-shell {
-  background: var(--color-bg-card);
+  background: color-mix(in srgb, var(--color-bg-card) 92%, var(--color-primary-surface));
   border: 1px solid var(--color-border);
   border-radius: 14px;
   box-shadow: var(--shadow-sm);
