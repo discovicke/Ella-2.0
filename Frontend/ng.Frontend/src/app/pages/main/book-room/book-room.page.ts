@@ -53,6 +53,7 @@ export class BookRoomPage {
   readonly assetQuery = signal('');
   readonly roomQuery = signal('');
   readonly discoveryView = signal<DiscoveryView>('availability');
+  readonly secondaryFiltersOpen = signal(false);
 
   readonly roomsResource = resource({
     loader: () => firstValueFrom(this.roomService.getAllRooms()),
@@ -147,33 +148,8 @@ export class BookRoomPage {
     },
   });
 
-  readonly filteredRooms = computed(() => {
-    const query = this.roomQuery().trim().toLowerCase();
-    const campus = this.selectedCampus();
-    const typeId = this.selectedTypeId();
-    const capacity = this.minCapacity();
-    const assetTerms = this.assetQuery()
-      .split(',')
-      .map((term) => term.trim().toLowerCase())
-      .filter(Boolean);
-
-    return this.rooms().filter((room) => {
-      const matchesQuery =
-        !query ||
-        room.name?.toLowerCase().includes(query) ||
-        room.notes?.toLowerCase().includes(query) ||
-        room.campusCity?.toLowerCase().includes(query);
-      const matchesCampus = campus === 'All' || room.campusCity === campus;
-      const matchesType = typeId === 'All' || room.roomTypeId === typeId;
-      const matchesCapacity = (room.capacity ?? 0) >= capacity;
-      const roomAssets = room.assets?.map((asset) => asset.toLowerCase()) ?? [];
-      const matchesAssets = assetTerms.every((term) => roomAssets.some((asset) => asset.includes(term)));
-      return matchesQuery && matchesCampus && matchesType && matchesCapacity && matchesAssets;
-    });
-  });
-
   readonly availabilityCandidates = computed<AvailabilityCandidate[]>(() => {
-    const byRoomId = new Map(this.filteredRooms().map((room) => [room.roomId, room]));
+    const byRoomId = new Map(this.rooms().map((room) => [room.roomId, room]));
     const mapped: AvailabilityCandidate[] = [];
 
     for (const item of this.availabilityResource.value() ?? []) {
@@ -220,8 +196,26 @@ export class BookRoomPage {
     unavailable: this.unavailableRooms().length,
   }));
 
+  readonly activeSecondaryFilterCount = computed(() => {
+    let count = 0;
+    if (this.selectedCampus() !== 'All') count++;
+    if (this.selectedTypeId() !== 'All') count++;
+    if (this.minCapacity() > 0) count++;
+    if (this.roomQuery().trim()) count++;
+    if (this.assetQuery().trim()) count++;
+    return count;
+  });
+
+  readonly hasAnyActiveFilter = computed(
+    () =>
+      this.activeSecondaryFilterCount() > 0 ||
+      this.selectedDate() !== this.toDateInputValue(new Date()) ||
+      this.startTime() !== '09:00' ||
+      this.endTime() !== '10:00',
+  );
+
   readonly calendarResources = computed<DayPilot.ResourceData[]>(() =>
-    this.filteredRooms().map((room) => ({
+    this.rooms().map((room) => ({
       id: room.roomId!.toString(),
       name: room.name || 'Okänt rum',
     })),
@@ -239,6 +233,10 @@ export class BookRoomPage {
 
   setDiscoveryView(view: DiscoveryView): void {
     this.discoveryView.set(view);
+  }
+
+  toggleSecondaryFilters(): void {
+    this.secondaryFiltersOpen.update((v) => !v);
   }
 
   updateRoomQuery(event: Event): void {
@@ -283,6 +281,7 @@ export class BookRoomPage {
     this.minCapacity.set(0);
     this.assetQuery.set('');
     this.roomQuery.set('');
+    this.secondaryFiltersOpen.set(false);
   }
 
   useSuggestedSlot(date: Date): void {
@@ -298,7 +297,7 @@ export class BookRoomPage {
 
   onTimeRangeSelected(event: { start: Date; end: Date; resourceId?: number }): void {
     if (event.resourceId === undefined) return;
-    const room = this.filteredRooms().find((candidate) => candidate.roomId === event.resourceId);
+    const room = this.rooms().find((candidate) => candidate.roomId === event.resourceId);
     if (!room) return;
 
     this.openBookingModal(room, event.start, event.end);

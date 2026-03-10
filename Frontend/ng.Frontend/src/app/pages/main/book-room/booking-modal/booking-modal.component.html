@@ -1,43 +1,15 @@
 <div class="booking-modal-content">
-  <div class="room-info">
-    <p><strong>Rum:</strong> {{ room.name }}</p>
-    <p><strong>Kapacitet:</strong> {{ room.capacity }} platser</p>
-    @if (room.campusCity) {
-      <p><strong>Plats:</strong> {{ room.campusCity }}</p>
-    }
-    @if (room.prefillStart && room.prefillEnd) {
-      <p>
-        <strong>Förvalt tidsförslag:</strong>
-        {{ room.prefillStart | date: 'yyyy-MM-dd HH:mm' }} -
-        {{ room.prefillEnd | date: 'HH:mm' }}
-      </p>
-    }
-  </div>
-
   <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()" class="booking-form">
-    <!-- Start datum och tid -->
-    <div class="form-row">
-      <div class="form-group">
-        <label for="startDate">Startdatum</label>
-        <input type="date" id="startDate" formControlName="startDate" required />
-      </div>
-
-      <div class="form-group">
-        <label for="startTime">Starttid</label>
-        <input type="time" id="startTime" formControlName="startTime" required />
-      </div>
-    </div>
-
-    <!-- Slut datum och tid -->
-    <div class="form-row">
-      <div class="form-group">
-        <label for="endDate">Slutdatum</label>
-        <input type="date" id="endDate" formControlName="endDate" required />
-      </div>
-
-      <div class="form-group">
-        <label for="endTime">Sluttid</label>
-        <input type="time" id="endTime" formControlName="endTime" required />
+    <!-- Tid: datum + starttid → sluttid på en rad -->
+    <div class="form-group">
+      <label>Tid</label>
+      <div class="time-row">
+        <input type="date" id="startDate" formControlName="startDate" required aria-label="Datum" />
+        <input type="time" id="startTime" formControlName="startTime" required aria-label="Starttid" />
+        <span class="time-sep" aria-hidden="true">→</span>
+        <input type="time" id="endTime" formControlName="endTime" required aria-label="Sluttid" />
+        <input type="date" id="endDate" formControlName="endDate" required aria-label="Slutdatum"
+          class="end-date" [class.end-date--visible]="bookingForm.value.endDate !== bookingForm.value.startDate" />
       </div>
     </div>
 

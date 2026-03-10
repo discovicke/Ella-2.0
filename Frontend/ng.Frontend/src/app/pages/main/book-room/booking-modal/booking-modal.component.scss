@@ -4,24 +4,7 @@
 .booking-modal-content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-}
-
-.room-info {
-  background: var(--color-bg-panel);
-  padding: 16px;
-  border-radius: map.get($radii, 'md');
-  border: 1px solid var(--color-border);
-
-  p {
-    margin: 4px 0;
-    font-size: var(--font-sm);
-    color: var(--color-text-secondary);
-
-    strong {
-      color: var(--color-text-primary);
-    }
-  }
+  gap: 20px;
 }
 
 .booking-form {
@@ -30,20 +13,10 @@
   gap: 16px;
 }
 
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
-}
-
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 
   label {
     font-weight: 600;
@@ -52,8 +25,9 @@
   }
 
   input,
+  select,
   textarea {
-    padding: 10px 12px;
+    padding: 9px 12px;
     border: 1px solid var(--color-border);
     border-radius: map.get($radii, 'md');
     font-family: inherit;
@@ -70,7 +44,131 @@
 
   textarea {
     resize: vertical;
-    min-height: 80px;
+    min-height: 72px;
+  }
+}
+
+/* ── Compact time row: date | start → end (+ optional end-date) ── */
+.time-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  input[type='date'],
+  input[type='time'] {
+    padding: 9px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: map.get($radii, 'md');
+    font-family: inherit;
+    font-size: var(--font-base);
+    background: var(--color-bg-card);
+    color: var(--color-text-primary);
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: var(--focus-ring);
+    }
+  }
+
+  input[type='date'] {
+    flex: 1 1 140px;
+  }
+
+  input[type='time'] {
+    flex: 0 0 auto;
+    width: 108px;
+  }
+}
+
+.time-sep {
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+/* End-date is hidden when it equals start-date; shown only when multi-day */
+.end-date {
+  display: none;
+
+  &.end-date--visible {
+    display: block;
+  }
+}
+
+/* ── Recurrence section ── */
+.recurrence-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+  }
+}
+
+.recurrence-options {
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: map.get($radii, 'md');
+  padding: 12px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+
+  select {
+    padding: 9px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: map.get($radii, 'md');
+    font-family: inherit;
+    font-size: var(--font-base);
+    background: var(--color-bg-card);
+    color: var(--color-text-primary);
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: var(--focus-ring);
+    }
+  }
+
+  input[type='date'] {
+    padding: 9px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: map.get($radii, 'md');
+    font-family: inherit;
+    font-size: var(--font-base);
+    background: var(--color-bg-card);
+    color: var(--color-text-primary);
+    width: 100%;
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: var(--focus-ring);
+    }
   }
 }
 
