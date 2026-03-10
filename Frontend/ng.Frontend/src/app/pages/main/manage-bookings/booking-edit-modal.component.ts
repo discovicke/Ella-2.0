@@ -694,6 +694,11 @@ export class BookingEditModalComponent {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
+  private toLocalIsoString(date: Date): string {
+    const pad = (value: number) => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  }
+
   startEditing(): void {
     this.editStartTime = this.toLocalDatetimeInput(this.booking.startTime);
     this.editEndTime = this.toLocalDatetimeInput(this.booking.endTime);
@@ -714,16 +719,16 @@ export class BookingEditModalComponent {
     try {
       await firstValueFrom(
         this.bookingService.updateBookingDetails(this.booking.bookingId, {
-          startTime: start.toISOString(),
-          endTime: end.toISOString(),
+          startTime: this.toLocalIsoString(start),
+          endTime: this.toLocalIsoString(end),
           notes: this.editNotes,
         })
       );
       // Patch local booking reference so the view reflects changes immediately
       this.booking = {
         ...this.booking,
-        startTime: start.toISOString(),
-        endTime: end.toISOString(),
+        startTime: this.toLocalIsoString(start),
+        endTime: this.toLocalIsoString(end),
         notes: this.editNotes,
       };
       this.isEditing.set(false);

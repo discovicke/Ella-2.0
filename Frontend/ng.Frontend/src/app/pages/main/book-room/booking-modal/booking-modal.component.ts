@@ -269,13 +269,15 @@ export class BookingModalComponent implements OnInit, OnDestroy {
     const booking: CreateBookingDto = {
       userId: user.id,
       roomId: this.room.roomId,
-      startTime: startDateTime.toISOString(),
-      endTime: endDateTime.toISOString(),
+      startTime: this.toLocalIsoString(startDateTime),
+      endTime: this.toLocalIsoString(endDateTime),
       notes: formValue.notes || '',
       status: BookingStatus.Active,
       classIds,
       recurrencePattern: formValue.isRecurring ? formValue.recurrencePattern : null,
-      recurrenceEnd: formValue.isRecurring && formValue.recurrenceEnd ? new Date(formValue.recurrenceEnd).toISOString() : null,
+      recurrenceEnd: formValue.isRecurring && formValue.recurrenceEnd
+        ? this.toLocalDateEndOfDayIsoString(formValue.recurrenceEnd)
+        : null,
     };
 
     this.bookingService.createBooking(booking).subscribe({
@@ -308,5 +310,15 @@ export class BookingModalComponent implements OnInit, OnDestroy {
         this.isSubmitting.set(false);
       },
     });
+  }
+
+  private toLocalIsoString(date: Date): string {
+    const pad = (value: number) => String(value).padStart(2, '0');
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  }
+
+  private toLocalDateEndOfDayIsoString(dateInput: string): string {
+    return `${dateInput}T23:59:59`;
   }
 }
