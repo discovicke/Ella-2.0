@@ -36,6 +36,7 @@ export interface UserFormPayload {
   displayName: string;
   password?: string;
   isBanned?: BannedStatus;
+  isActive: boolean;
   permissionLevel: number;
   selectedTemplateId: number | null;
   customPermissions: CustomPermissionsPayload;
@@ -164,12 +165,21 @@ export const passwordMatchValidator: ValidatorFn = (
       </div>
 
       @if (initialData) {
-        <div class="form-group">
-          <label for="isBanned">Status</label>
-          <select id="isBanned" formControlName="isBanned">
-            <option [value]="BannedStatus.NotBanned">Aktiv</option>
-            <option [value]="BannedStatus.Banned">Bannlyst</option>
-          </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="isBanned">Ban-status</label>
+            <select id="isBanned" formControlName="isBanned">
+              <option [value]="BannedStatus.NotBanned">Inte bannlyst</option>
+              <option [value]="BannedStatus.Banned">Bannlyst</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="isActive">Konto-status</label>
+            <select id="isActive" formControlName="isActive">
+              <option [ngValue]="true">Aktiverat</option>
+              <option [ngValue]="false">Väntar på aktivering</option>
+            </select>
+          </div>
         </div>
       }
 
@@ -558,6 +568,9 @@ export class UserFormModalComponent {
           nonNullable: true,
         },
       ),
+      isActive: new FormControl<boolean>(this.initialData?.isActive ?? true, {
+        nonNullable: true,
+      }),
     },
     { validators: [passwordMatchValidator] },
   );
