@@ -106,21 +106,23 @@ fs.mkdirSync(path.dirname(TEMP_SQL), { recursive: true });
 fs.writeFileSync(TEMP_SQL, sql, "utf-8");
 
 // --- Run sql2dbml ---
+const sql2dbmlBin = path.join(ROOT, "node_modules", ".bin", "sql2dbml");
 try {
-  execSync(`sql2dbml "${TEMP_SQL}" --postgres -o "${OUTPUT_PATH}"`, {
+  execSync(`"${sql2dbmlBin}" "${TEMP_SQL}" --postgres -o "${OUTPUT_PATH}"`, {
     stdio: "pipe",
     cwd: path.dirname(OUTPUT_PATH),
   });
   ui.ok(`Generated ${path.relative(ROOT, OUTPUT_PATH)}`);
-} catch (err) {
-  ui.fail("sql2dbml failed. Check .schema-clean.sql for debugging.");
-  process.exit(1);
-} finally {
   try {
     fs.unlinkSync(TEMP_SQL);
   } catch {
     /* ignore */
   }
+} catch (err) {
+  ui.fail("sql2dbml failed. Check .schema-clean.sql for debugging.");
+  if (err.stderr) console.error(err.stderr.toString());
+  else if (err.message) console.error(err.message);
+  process.exit(1);
 }
 
 // --- Publish to dbdocs.io (CI-only, requires DBDOCS_TOKEN) ---
