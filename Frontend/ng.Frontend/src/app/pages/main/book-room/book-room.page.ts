@@ -209,9 +209,9 @@ export class BookRoomPage {
   );
 
   readonly calendarResources = computed<DayPilot.ResourceData[]>(() =>
-    this.rooms().map((room) => ({
-      id: room.roomId!.toString(),
-      name: room.name || 'Okänt rum',
+    this.availabilityCandidates().map((c) => ({
+      id: c.room.roomId!.toString(),
+      name: c.room.name || 'Okänt rum',
     })),
   );
 
