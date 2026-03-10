@@ -1,89 +1,46 @@
 <div class="page-container">
   <div class="page-content">
 
-    <!-- ─── Filter card ─────────────────────────────────────────────── -->
-    <section class="filter-card">
-
-      <!-- Row 1: date + times + reset -->
-      <div class="filter-row filter-row--primary">
-        <label class="field">
-          <span class="field-label">Datum</span>
-          <input type="date" [value]="selectedDate()" (input)="onDatePicked($event)" />
-        </label>
-
-        <label class="field">
-          <span class="field-label">Starttid</span>
-          <input type="time" [value]="startTime()" (input)="onStartTimePicked($event)" />
-        </label>
-
-        <label class="field">
-          <span class="field-label">Sluttid</span>
-          <input type="time" [value]="endTime()" (input)="onEndTimePicked($event)" />
-        </label>
-
-        <div class="filter-row__spacer"></div>
-
-        @if (hasAnyActiveFilter()) {
-          <button class="btn-reset" type="button" (click)="resetFilters()">
+    <!-- ─── Main Content (Left) ─────────────────────────────────────── -->
+    <main class="main-content">
+      <!-- Section header with view toggle -->
+      <div class="results-section__header">
+        <div class="view-mode-toggle">
+          <button
+            class="pill"
+            [class.pill--active]="discoveryView() === 'availability'"
+            (click)="setDiscoveryView('availability')"
+            type="button"
+          >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="1 4 1 10 7 10" />
-              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
             </svg>
-            Nollställ
+            Listvy
           </button>
-        }
+          <button
+            class="pill"
+            [class.pill--active]="discoveryView() === 'schedule'"
+            (click)="setDiscoveryView('schedule')"
+            type="button"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+              <line x1="8" y1="10" x2="8" y2="22"></line>
+            </svg>
+            Kalendervy
+          </button>
+        </div>
       </div>
 
-      <div class="filter-divider"></div>
-
-      <!-- Row 2: secondary filters -->
-      <div class="filter-row filter-row--secondary">
-        <label class="field">
-          <span class="field-label">Campus</span>
-          <select [value]="selectedCampus()" (change)="updateCampus($event)">
-            <option value="All">Alla campus</option>
-            @for (campus of campuses(); track campus) {
-              <option [value]="campus">{{ campus }}</option>
-            }
-          </select>
-        </label>
-
-        <label class="field">
-          <span class="field-label">Rumstyp</span>
-          <select [value]="selectedTypeId()" (change)="updateType($event)">
-            <option value="All">Alla typer</option>
-            @for (type of roomTypes(); track type.id) {
-              <option [value]="type.id">{{ type.name }}</option>
-            }
-          </select>
-        </label>
-
-        <label class="field">
-          <span class="field-label">Kapacitet</span>
-          <input type="number" min="0" [value]="minCapacity()" (input)="updateCapacity($event)" placeholder="Minst…" />
-        </label>
-
-        <label class="field">
-          <span class="field-label">Sök rum</span>
-          <input
-            type="text"
-            [value]="roomQuery()"
-            (input)="updateRoomQuery($event)"
-            placeholder="Namn eller plats…"
-          />
-        </label>
-
-        <label class="field">
-          <span class="field-label">Utrustning</span>
-          <input
-            type="text"
-            [value]="assetQuery()"
-            (input)="updateAssetQuery($event)"
-            placeholder="Skärm, whiteboard…"
-          />
-        </label>
-      </div>
-
+      <!-- Time validation error moved above results if exists -->
       @if (timeValidationError(); as timeError) {
         <div class="validation-banner">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -94,31 +51,6 @@
           <span>{{ timeError }}</span>
         </div>
       }
-    </section>
-
-    <!-- ─── Results ─────────────────────────────────────────────────── -->
-    <section class="results-section">
-      <!-- Section header with view toggle -->
-      <div class="results-section__header">
-        <div class="tabs">
-          <button
-            class="tab"
-            [class.active]="discoveryView() === 'availability'"
-            (click)="setDiscoveryView('availability')"
-            type="button"
-          >
-            Tillgänglighet
-          </button>
-          <button
-            class="tab"
-            [class.active]="discoveryView() === 'schedule'"
-            (click)="setDiscoveryView('schedule')"
-            type="button"
-          >
-            Dagens schema
-          </button>
-        </div>
-      </div>
 
       @if (discoveryView() === 'availability') {
         <div class="availability-layout">
@@ -141,31 +73,44 @@
             } @else {
               <div class="room-results">
                 @for (candidate of availableRooms(); track candidate.room.roomId) {
-                  <article class="room-card room-card--available">
-                    <div class="room-card__header">
-                      <div>
-                        <h3>{{ candidate.room.name }}</h3>
-                        <p>{{ candidate.matchReasons.join(' · ') }}</p>
+                  <article 
+                    class="booking-row clickable" 
+                    tabindex="0" 
+                    role="button" 
+                    (click)="onBookRoom(candidate.room)" 
+                    (keydown.enter)="onBookRoom(candidate.room)" 
+                    (keydown.space)="onBookRoom(candidate.room)"
+                  >
+                    <div class="row-accent row-accent--available"></div>
+                    
+                    <div class="row-main">
+                      <div class="row-top">
+                        <h3 class="row-room">{{ candidate.room.name }}</h3>
                       </div>
-                      <span class="availability-badge availability-badge--available">Ledigt</span>
+                      <div class="row-sub">
+                        <span>{{ candidate.matchReasons.join(' · ') }}</span>
+                      </div>
+
+                      @if (candidate.room.assets?.length) {
+                        <div class="row-classes" style="margin-top: 4px;">
+                          @for (asset of candidate.room.assets; track asset) {
+                            <span class="class-chip">{{ asset }}</span>
+                          }
+                        </div>
+                      }
+
+                      @if (candidate.room.notes) {
+                        <div class="row-notes" style="margin-top: 4px;">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                          </svg>
+                          <p>{{ candidate.room.notes }}</p>
+                        </div>
+                      }
                     </div>
 
-                    @if (candidate.room.assets?.length) {
-                      <div class="asset-list">
-                        @for (asset of candidate.room.assets; track asset) {
-                          <span class="asset-chip">{{ asset }}</span>
-                        }
-                      </div>
-                    }
-
-                    @if (candidate.room.notes) {
-                      <p class="room-note">{{ candidate.room.notes }}</p>
-                    }
-
-                    <div class="room-card__actions">
-                      <button class="btn-primary" type="button" (click)="onBookRoom(candidate.room)">
-                        Boka rummet
-                      </button>
+                    <div class="row-action">
+                      <app-button variant="primary" (clicked)="onBookRoom(candidate.room); $event.stopPropagation()">Boka</app-button>
                     </div>
                   </article>
                 } @empty {
@@ -194,22 +139,31 @@
             } @else {
               <div class="room-results room-results--compact">
                 @for (candidate of unavailableRooms(); track candidate.room.roomId) {
-                  <article class="room-card room-card--blocked">
-                    <div class="room-card__header">
-                      <div>
-                        <h3>{{ candidate.room.name }}</h3>
-                        <p>{{ candidate.matchReasons.join(' · ') }}</p>
-                      </div>
-                      <span class="availability-badge availability-badge--blocked">Upptaget</span>
-                    </div>
+                  <article class="booking-row busy">
+                    <div class="row-accent row-accent--busy"></div>
 
-                    @if (candidate.nextConflict; as conflict) {
-                      <div class="conflict-box">
-                        <span class="conflict-label">Krockar med</span>
-                        <strong>{{ conflict.startTime | date: 'HH:mm' }} – {{ conflict.endTime | date: 'HH:mm' }}</strong>
-                        <span>{{ conflict.userName ?? conflict.userEmail ?? 'Bokning' }}</span>
+                    <div class="row-main">
+                      <div class="row-top">
+                        <h3 class="row-room">{{ candidate.room.name }}</h3>
                       </div>
-                    }
+                      <div class="row-sub">
+                        <span>{{ candidate.matchReasons.join(' · ') }}</span>
+                      </div>
+
+                      @if (candidate.nextConflict; as conflict) {
+                        <div class="conflict-box">
+                          <svg class="conflict-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                          </svg>
+                          <div class="conflict-info">
+                            <span class="conflict-time">{{ conflict.startTime | date: 'HH:mm' }} – {{ conflict.endTime | date: 'HH:mm' }}</span>
+                            <span class="conflict-user">{{ conflict.userName ?? conflict.userEmail ?? 'Upptaget' }}</span>
+                          </div>
+                        </div>
+                      }
+                    </div>
                   </article>
                 } @empty {
                   <div class="empty-state compact">
@@ -238,7 +192,131 @@
           ></app-calendar>
         </div>
       }
-    </section>
+    </main>
+
+    <!-- ─── Sidebar (Right) ─────────────────────────────────────────── -->
+    <aside class="sidebar-filters">
+      <section class="filter-card">
+        
+        <div class="filter-section" style="z-index: 3;">
+          <h4 class="filter-section__title">Tid & Datum</h4>
+          
+          <label class="field" style="z-index: 4;">
+            <span class="field-label">Datum</span>
+            <app-date-picker
+              [value]="selectedDate()"
+              (valueChange)="updateDate($event)"
+            ></app-date-picker>
+          </label>
+
+          <div class="field-row" style="z-index: 3;">
+            <label class="field">
+              <span class="field-label">Starttid</span>
+              <app-time-picker
+                [value]="startTime()"
+                (valueChange)="updateStartTime($event)"
+              ></app-time-picker>
+            </label>
+
+            <label class="field">
+              <span class="field-label">Sluttid</span>
+              <app-time-picker
+                [value]="endTime()"
+                (valueChange)="updateEndTime($event)"
+              ></app-time-picker>
+            </label>
+          </div>
+
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <div class="filter-section" style="z-index: 2;">
+          <h4 class="filter-section__title">Plats & Typ</h4>
+          
+          <label class="field">
+            <span class="field-label">Campus</span>
+            <app-select
+              [options]="[ { id: 'All', label: 'Alla campus' }, ...campusOptions() ]"
+              [value]="selectedCampus()"
+              (valueChange)="updateCampus($event)"
+            ></app-select>
+          </label>
+
+          <label class="field" style="z-index: 1;">
+            <span class="field-label">Rumstyp</span>
+            <app-select
+              [options]="[ { id: 'All', label: 'Alla typer' }, ...roomTypeOptions() ]"
+              [value]="selectedTypeId()"
+              (valueChange)="updateType($event)"
+            ></app-select>
+          </label>
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <div class="filter-section" style="z-index: 1;">
+          <h4 class="filter-section__title">Krav & Detaljer</h4>
+
+          <label class="field">
+            <span class="field-label">Kapacitet (minst)</span>
+            <app-number-picker
+              [value]="minCapacity()"
+              (valueChange)="updateCapacity($event)"
+              [min]="0"
+              [max]="999"
+              placeholder="Antal personer..."
+            ></app-number-picker>
+          </label>
+
+          <div class="field" style="z-index: 2;">
+            <span class="field-label">Utrustning</span>
+            <app-multi-select 
+              [options]="assetTypeOptions()" 
+              [(selectedIds)]="selectedAssets" 
+              placeholder="Skärm, whiteboard…"
+            ></app-multi-select>
+          </div>
+
+          <label class="field">
+            <span class="field-label">Sök specifikt rum</span>
+            <div class="search-input-wrapper">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input
+                type="text"
+                [value]="roomQuery()"
+                (input)="updateRoomQuery($event)"
+                placeholder="Namn eller plats…"
+              />
+              @if (roomQuery()) {
+                <button type="button" class="clear-btn" (click)="clearRoomQuery()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              }
+            </div>
+          </label>
+        </div>
+
+        @if (hasAnyActiveFilter()) {
+          <div class="filter-actions">
+            <button class="btn-reset" type="button" (click)="resetFilters()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="1 4 1 10 7 10" />
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+              </svg>
+              Nollställ filter
+            </button>
+          </div>
+        }
+
+      </section>
+    </aside>
 
   </div>
 </div>

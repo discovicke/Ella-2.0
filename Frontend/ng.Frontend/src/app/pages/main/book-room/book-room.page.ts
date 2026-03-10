@@ -22,6 +22,13 @@ import { ModalService } from '../../../shared/services/modal.service';
 import { RoomService } from '../../../shared/services/room.service';
 import { BookingModalComponent } from './booking-modal/booking-modal.component';
 
+import { TimePickerComponent } from '../../../shared/components/time-picker/time-picker.component';
+import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
+import { MultiSelectComponent, MultiSelectOption } from '../../../shared/components/multi-select/multi-select.component';
+import { SelectComponent, SelectOption } from '../../../shared/components/select/select.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { NumberPickerComponent } from '../../../shared/components/number-picker/number-picker.component';
+
 type DiscoveryView = 'availability' | 'schedule';
 
 interface AvailabilityCandidate {
@@ -35,7 +42,7 @@ interface AvailabilityCandidate {
 
 @Component({
   selector: 'app-book-room-page',
-  imports: [CalendarComponent, DatePipe, FormsModule],
+  imports: [CalendarComponent, DatePipe, FormsModule, MultiSelectComponent, SelectComponent, DatePickerComponent, TimePickerComponent, ButtonComponent, NumberPickerComponent],
   templateUrl: './book-room.page.html',
   styleUrl: './book-room.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,7 +52,7 @@ export class BookRoomPage implements OnDestroy {
   private readonly bookingService = inject(BookingService);
   private readonly modalService = inject(ModalService);
   private roomQueryDebounceTimer?: ReturnType<typeof setTimeout>;
-  private assetQueryDebounceTimer?: ReturnType<typeof setTimeout>;
+  private capacityDebounceTimer?: ReturnType<typeof setTimeout>;
   private readonly filterDebounceMs = 300;
 
   readonly selectedDate = signal(this.toDateInputValue(new Date()));
@@ -54,8 +61,8 @@ export class BookRoomPage implements OnDestroy {
   readonly selectedCampus = signal('All');
   readonly selectedTypeId = signal<number | 'All'>('All');
   readonly minCapacity = signal<number>(0);
-  readonly assetQuery = signal('');
-  readonly debouncedAssetQuery = signal('');
+  readonly debouncedMinCapacity = signal<number>(0);
+  readonly selectedAssets = signal<string[]>([]);
   readonly roomQuery = signal('');
   readonly debouncedRoomQuery = signal('');
   readonly discoveryView = signal<DiscoveryView>('availability');
@@ -66,6 +73,10 @@ export class BookRoomPage implements OnDestroy {
 
   readonly typesResource = resource({
     loader: () => firstValueFrom(this.roomService.getRoomTypes()),
+  });
+
+  readonly assetTypesResource = resource({
+    loader: () => firstValueFrom(this.roomService.getAssetTypes()),
   });
 
   readonly bookingsResource = resource({
@@ -88,6 +99,19 @@ export class BookRoomPage implements OnDestroy {
   });
 
   readonly roomTypes = computed(() => this.typesResource.value() ?? []);
+  readonly assetTypes = computed(() => this.assetTypesResource.value() ?? []);
+  readonly campusOptions = computed<SelectOption[]>(() =>
+    this.campuses().map((c) => ({ id: c, label: c })),
+  );
+
+  readonly roomTypeOptions = computed<SelectOption[]>(() =>
+    this.roomTypes().map((t) => ({ id: t.id, label: t.name })),
+  );
+
+  readonly assetTypeOptions = computed<MultiSelectOption[]>(() =>
+    this.assetTypes().map((a) => ({ id: a.description, label: a.description })),
+  );
+
   readonly rooms = computed(() => this.roomsResource.value() ?? []);
   readonly campuses = computed(() => {
     const values = new Set(
@@ -131,8 +155,8 @@ export class BookRoomPage implements OnDestroy {
       endTime: this.selectionEnd().toISOString(),
       campus: this.selectedCampus(),
       roomTypeId: this.selectedTypeId(),
-      minCapacity: this.minCapacity(),
-      assets: this.debouncedAssetQuery().trim(),
+      minCapacity: this.debouncedMinCapacity(),
+      assets: this.selectedAssets().join(','),
       query: this.debouncedRoomQuery().trim(),
       isInvalid: Boolean(this.timeValidationError()),
     }),
@@ -201,7 +225,7 @@ export class BookRoomPage implements OnDestroy {
     if (this.selectedTypeId() !== 'All') count++;
     if (this.minCapacity() > 0) count++;
     if (this.roomQuery().trim()) count++;
-    if (this.assetQuery().trim()) count++;
+    if (this.selectedAssets().length > 0) count++;
     return count;
   });
 
@@ -230,35 +254,60 @@ export class BookRoomPage implements OnDestroy {
     this.scheduleRoomQueryDebounce(value);
   }
 
-  updateAssetQuery(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    this.assetQuery.set(value);
-    this.scheduleAssetQueryDebounce(value);
+  clearRoomQuery(): void {
+    this.roomQuery.set('');
+    this.scheduleRoomQueryDebounce('');
   }
 
-  updateCapacity(event: Event): void {
-    this.minCapacity.set(Number((event.target as HTMLInputElement).value || 0));
+  toggleAsset(assetDescription: string): void {
+    const current = this.selectedAssets();
+    if (current.includes(assetDescription)) {
+      this.selectedAssets.set(current.filter((a) => a !== assetDescription));
+    } else {
+      this.selectedAssets.set([...current, assetDescription]);
+    }
   }
 
-  updateCampus(event: Event): void {
-    this.selectedCampus.set((event.target as HTMLSelectElement).value);
+  updateCapacity(value: number): void {
+    this.minCapacity.set(value);
+    
+    if (this.capacityDebounceTimer) {
+      clearTimeout(this.capacityDebounceTimer);
+    }
+    this.capacityDebounceTimer = setTimeout(() => {
+      this.debouncedMinCapacity.set(value);
+      this.capacityDebounceTimer = undefined;
+    }, this.filterDebounceMs);
   }
 
-  updateType(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.selectedTypeId.set(value === 'All' ? 'All' : Number(value));
+  updateCampus(campus: string | number | null): void {
+    if (campus != null) {
+      this.selectedCampus.set(campus as string);
+    }
   }
 
-  onDatePicked(event: Event): void {
-    this.selectedDate.set((event.target as HTMLInputElement).value);
+  updateType(typeId: string | number | null): void {
+    if (typeId != null) {
+      this.selectedTypeId.set(typeId === 'All' ? 'All' : Number(typeId));
+    }
   }
 
-  onStartTimePicked(event: Event): void {
-    this.startTime.set((event.target as HTMLInputElement).value);
+  updateDate(date: string | null): void {
+    if (date) {
+      this.selectedDate.set(date);
+    }
   }
 
-  onEndTimePicked(event: Event): void {
-    this.endTime.set((event.target as HTMLInputElement).value);
+  updateStartTime(time: string | null): void {
+    if (time) {
+      this.startTime.set(time);
+    }
+  }
+
+  updateEndTime(time: string | null): void {
+    if (time) {
+      this.endTime.set(time);
+    }
   }
 
   resetFilters(): void {
@@ -268,8 +317,8 @@ export class BookRoomPage implements OnDestroy {
     this.selectedCampus.set('All');
     this.selectedTypeId.set('All');
     this.minCapacity.set(0);
-    this.assetQuery.set('');
-    this.debouncedAssetQuery.set('');
+    this.debouncedMinCapacity.set(0);
+    this.selectedAssets.set([]);
     this.roomQuery.set('');
     this.debouncedRoomQuery.set('');
     this.clearFilterDebounceTimers();
@@ -344,26 +393,14 @@ export class BookRoomPage implements OnDestroy {
     }, this.filterDebounceMs);
   }
 
-  private scheduleAssetQueryDebounce(value: string): void {
-    if (this.assetQueryDebounceTimer) {
-      clearTimeout(this.assetQueryDebounceTimer);
-    }
-
-    this.assetQueryDebounceTimer = setTimeout(() => {
-      this.debouncedAssetQuery.set(value);
-      this.assetQueryDebounceTimer = undefined;
-    }, this.filterDebounceMs);
-  }
-
   private clearFilterDebounceTimers(): void {
     if (this.roomQueryDebounceTimer) {
       clearTimeout(this.roomQueryDebounceTimer);
       this.roomQueryDebounceTimer = undefined;
     }
-
-    if (this.assetQueryDebounceTimer) {
-      clearTimeout(this.assetQueryDebounceTimer);
-      this.assetQueryDebounceTimer = undefined;
+    if (this.capacityDebounceTimer) {
+      clearTimeout(this.capacityDebounceTimer);
+      this.capacityDebounceTimer = undefined;
     }
   }
 }
