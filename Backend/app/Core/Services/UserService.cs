@@ -174,6 +174,7 @@ public class UserService(
             DisplayName = dto.DisplayName,
             PasswordHash = passwordHash,
             IsBanned = dto.IsBanned,
+            IsActive = dto.IsActive, // Use the activation status from the DTO
             PermissionLevel = dto.PermissionLevel,
             TokensValidAfter = existing.TokensValidAfter,
             PermissionTemplateId = existing.PermissionTemplateId,
@@ -297,6 +298,7 @@ public class UserService(
             user.Email,
             user.DisplayName,
             user.IsBanned,
+            user.IsActive,
             permissions,
             user.PermissionLevel,
             campusNames,
