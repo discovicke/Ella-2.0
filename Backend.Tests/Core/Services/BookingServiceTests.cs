@@ -15,6 +15,7 @@ public class BookingServiceTests
     private readonly IBookingReadModelRepository _readModelRepo = Substitute.For<IBookingReadModelRepository>();
     private readonly IUserRepository _userRepo = Substitute.For<IUserRepository>();
     private readonly IRoomRepository _roomRepo = Substitute.For<IRoomRepository>();
+    private readonly IRoomReadModelRepository _roomReadModelRepo = Substitute.For<IRoomReadModelRepository>();
     private readonly IClassRepository _classRepo = Substitute.For<IClassRepository>();
     private readonly IRegistrationRepository _registrationRepo = Substitute.For<IRegistrationRepository>();
     private readonly BookingService _sut;
@@ -26,6 +27,7 @@ public class BookingServiceTests
             _readModelRepo,
             _userRepo,
             _roomRepo,
+            _roomReadModelRepo,
             _classRepo,
             _registrationRepo
         );
@@ -151,5 +153,41 @@ public class BookingServiceTests
 
         // Assert
         await _repo.Received(1).CancelBookingAsync(1);
+    }
+
+    [Fact]
+    public async Task GetRoomAvailabilityAsync_ShouldReturnAvailableAndUnavailableRooms()
+    {
+        var rooms = new[]
+        {
+            new app.Core.Models.ReadModels.RoomDetailModel(1, 1, "A101", "Göteborg", 10, 1, "Grupprum", null, null, null),
+            new app.Core.Models.ReadModels.RoomDetailModel(2, 1, "A102", "Göteborg", 12, 1, "Grupprum", null, null, null),
+        };
+        var start = new DateTime(2026, 3, 10, 9, 0, 0, DateTimeKind.Utc);
+        var end = start.AddHours(1);
+
+        _roomReadModelRepo.GetAllRoomDetailsAsync().Returns(rooms);
+        _readModelRepo.GetDetailedBookingsFilteredAsync(default, default, start.Date, start.Date.AddDays(1), default)
+            .Returns(new[]
+            {
+                new app.Core.Models.ReadModels.BookingDetailedReadModel
+                {
+                    BookingId = 55,
+                    RoomId = 2,
+                    StartTime = start.AddMinutes(15),
+                    EndTime = end.AddMinutes(15),
+                    Status = BookingStatus.Active,
+                    UserName = "Test User",
+                },
+            });
+
+        var result = (await _sut.GetRoomAvailabilityAsync(
+            new BookingAvailabilityQueryDto(start, end, "Göteborg", 1, 8, null, null)
+        )).ToList();
+
+        Assert.Equal(2, result.Count);
+        Assert.True(result.Single(r => r.RoomId == 1).IsAvailable);
+        Assert.False(result.Single(r => r.RoomId == 2).IsAvailable);
+        Assert.NotNull(result.Single(r => r.RoomId == 2).NextConflict);
     }
 }

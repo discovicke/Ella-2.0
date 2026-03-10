@@ -6,6 +6,7 @@ import {
   OnInit,
   OnDestroy,
 } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BookingService } from '../../../../shared/services/booking.service';
 import { ModalService } from '../../../../shared/services/modal.service';
@@ -38,7 +39,7 @@ interface BookingModalData extends RoomDetailModel {
 
 @Component({
   selector: 'app-booking-modal',
-  imports: [ReactiveFormsModule, ButtonComponent],
+  imports: [ReactiveFormsModule, ButtonComponent, DatePipe],
   templateUrl: './booking-modal.component.html',
   styleUrl: './booking-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

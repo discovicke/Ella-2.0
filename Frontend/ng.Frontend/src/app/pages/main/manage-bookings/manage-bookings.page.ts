@@ -23,7 +23,8 @@ import { BookingModalComponent } from '../book-room/booking-modal/booking-modal.
 
 import { CalendarComponent } from '../../../shared/components/calendar/calendar.component';
 
-export type ViewMode = 'today' | 'week' | 'month' | 'all' | 'room' | 'user' | 'campus' | 'calendar';
+export type PresentationMode = 'schedule' | 'list';
+export type ScheduleTimeScale = 'day' | 'week' | 'month';
 export type GroupByMode = 'day' | 'week' | 'month' | 'room' | 'user' | 'campus';
 export type DateRange = 'today' | 'week' | 'month' | 'all';
 
@@ -105,7 +106,8 @@ export class ManageBookingsPage {
 
   filterPending(): void {
     this.selectedStatus.set(BookingStatus.Pending);
-    this.viewMode.set('all');
+    this.presentationMode.set('list');
+    this.listDateRange.set('all');
     this.pageIndex.set(0);
   }
 
@@ -114,7 +116,10 @@ export class ManageBookingsPage {
   debouncedSearch = signal('');
   private searchDebounceTimer: ReturnType<typeof setTimeout> | undefined;
   selectedStatus = signal<BookingStatus | 'All'>(BookingStatus.Active);
-  viewMode = signal<ViewMode>('calendar');
+  presentationMode = signal<PresentationMode>('schedule');
+  scheduleTimeScale = signal<ScheduleTimeScale>('day');
+  listDateRange = signal<DateRange>('all');
+  listGroupBy = signal<GroupByMode>('month');
   calendarDate = signal<Date>(new Date());
   /** Sticky preference: should groups default to collapsed? Survives filter/page changes. */
   defaultCollapsed = signal(false);
@@ -132,50 +137,81 @@ export class ManageBookingsPage {
     return range === 'all' ? 10 : 1_000;
   });
 
-  // Derived from viewMode
   readonly selectedDateRange = computed((): DateRange => {
-    const vm = this.viewMode();
-    switch (vm) {
-      case 'today':
-        return 'today';
-      case 'week':
-        return 'week';
-      case 'month':
-        return 'month';
-      case 'calendar':
-        return 'today'; // resource scheduler shows one day; bounds derived from calendarDate
-      case 'all':
-        return 'all';
-      default:
-        return 'all'; // entity modes show all time
+    if (this.presentationMode() === 'schedule') {
+      switch (this.scheduleTimeScale()) {
+        case 'day':
+          return 'today';
+        case 'week':
+          return 'week';
+        case 'month':
+          return 'month';
+      }
     }
+
+    return this.listDateRange();
   });
 
   readonly groupBy = computed((): GroupByMode => {
-    const vm = this.viewMode();
-    switch (vm) {
-      case 'today':
+    if (this.presentationMode() === 'schedule') {
+      switch (this.scheduleTimeScale()) {
+        case 'day':
+          return 'day';
+        case 'week':
+          return 'week';
+        case 'month':
+          return 'month';
+      }
+    }
+
+    switch (this.listGroupBy()) {
+      case 'day':
         return 'day';
       case 'week':
-        return 'day';
-      case 'month':
         return 'week';
-      case 'calendar':
-        return 'day'; // resource scheduler: if list view is ever shown, group by day
-      case 'all':
+      case 'month':
         return 'month';
       default:
-        return vm as GroupByMode; // 'room' | 'user' | 'campus'
+        return this.listGroupBy();
     }
   });
 
+  readonly calendarViewMode = computed<'resources' | 'week' | 'month'>(() => {
+    switch (this.scheduleTimeScale()) {
+      case 'day':
+        return 'resources';
+      case 'week':
+        return 'week';
+      case 'month':
+        return 'month';
+    }
+  });
+
+  readonly allowScheduleSelection = computed(() => this.scheduleTimeScale() === 'day');
+
   private getDateBounds(range: DateRange): { start: Date; end: Date } | null {
-    if (this.viewMode() === 'calendar') {
-      // Resource scheduler shows one day at a time — load only that day's bookings
+    if (this.presentationMode() === 'schedule') {
       const d = this.calendarDate();
-      const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
-      return { start, end };
+      if (this.scheduleTimeScale() === 'day') {
+        const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+        return { start, end };
+      }
+
+      if (this.scheduleTimeScale() === 'week') {
+        const day = d.getDay();
+        const diff = day === 0 ? 6 : day - 1;
+        const monday = new Date(d.getFullYear(), d.getMonth(), d.getDate() - diff);
+        return {
+          start: monday,
+          end: new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 7),
+        };
+      }
+
+      return {
+        start: new Date(d.getFullYear(), d.getMonth(), 1),
+        end: new Date(d.getFullYear(), d.getMonth() + 1, 1),
+      };
     }
 
     if (range === 'all') return null;
@@ -273,7 +309,10 @@ export class ManageBookingsPage {
     () =>
       this.searchQuery() !== '' ||
       this.selectedStatus() !== BookingStatus.Active ||
-      (this.viewMode() !== 'calendar' && this.viewMode() !== 'week'),
+      this.presentationMode() !== 'schedule' ||
+      this.scheduleTimeScale() !== 'day' ||
+      this.listDateRange() !== 'all' ||
+      this.listGroupBy() !== 'month',
   );
 
   // --- Grouping helpers ---
@@ -437,14 +476,34 @@ export class ManageBookingsPage {
     this.searchQuery.set('');
     this.debouncedSearch.set('');
     this.selectedStatus.set(BookingStatus.Active);
-    this.viewMode.set('calendar');
+    this.presentationMode.set('schedule');
+    this.scheduleTimeScale.set('day');
+    this.listDateRange.set('all');
+    this.listGroupBy.set('month');
     this.calendarDate.set(new Date());
     this.pageIndex.set(0);
     clearTimeout(this.searchDebounceTimer);
   }
 
-  setView(mode: ViewMode): void {
-    this.viewMode.set(mode);
+  setPresentationMode(mode: PresentationMode): void {
+    this.presentationMode.set(mode);
+    this.pageIndex.set(0);
+    this.groupOverrides.set(new Set());
+  }
+
+  setScheduleTimeScale(scale: ScheduleTimeScale): void {
+    this.scheduleTimeScale.set(scale);
+    this.pageIndex.set(0);
+  }
+
+  setListDateRange(range: DateRange): void {
+    this.listDateRange.set(range);
+    this.pageIndex.set(0);
+    this.groupOverrides.set(new Set());
+  }
+
+  setListGroupBy(groupBy: GroupByMode): void {
+    this.listGroupBy.set(groupBy);
     this.pageIndex.set(0);
     this.groupOverrides.set(new Set());
   }

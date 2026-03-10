@@ -153,7 +153,7 @@ export interface BookingDetailModalConfig {
                 </svg>
               </div>
               <div class="detail-content">
-                <span class="detail-primary detail-primary--invitation">Du är inbjuden</span>
+                <span class="detail-primary detail-primary--invitation">Inbjudan väntar på svar</span>
                 <span class="detail-secondary">
                   {{ registrationCountLabel() }}
                 </span>
@@ -167,7 +167,7 @@ export interface BookingDetailModalConfig {
                 </svg>
               </div>
               <div class="detail-content">
-                <span class="detail-primary detail-primary--declined">Du avböjde</span>
+                <span class="detail-primary detail-primary--declined">Du har avböjt</span>
                 <span class="detail-secondary">
                   {{ registrationCountLabel() }}
                 </span>

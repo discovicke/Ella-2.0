@@ -46,3 +46,39 @@ public record CreatePublicBookingDto(
 );
 
 public record CancelBookingDto(long Id);
+
+public record BookingAvailabilityQueryDto(
+    DateTime StartTime,
+    DateTime EndTime,
+    string? Campus = null,
+    long? RoomTypeId = null,
+    int? MinCapacity = null,
+    string? Assets = null,
+    string? Query = null
+);
+
+public record AvailabilityConflictDto(
+    long BookingId,
+    DateTime StartTime,
+    DateTime EndTime,
+    string? UserName,
+    string? UserEmail,
+    BookingStatus Status
+);
+
+public record RoomAvailabilityResultDto(
+    long RoomId,
+    string RoomName,
+    string CampusCity,
+    int? Capacity,
+    long RoomTypeId,
+    string RoomTypeName,
+    string? Floor,
+    string? Notes,
+    List<string>? Assets,
+    bool IsAvailable,
+    int MatchScore,
+    List<string> MatchReasons,
+    AvailabilityConflictDto? NextConflict,
+    List<AvailabilityConflictDto> Conflicts
+);

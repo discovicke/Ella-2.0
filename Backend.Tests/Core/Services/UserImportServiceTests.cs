@@ -95,7 +95,7 @@ public class UserImportServiceTests
     public void GenerateDisplayName_ShouldHandleNulls()
     {
         // Arrange
-        var student = new StudentImportDto { FirstName = "John", LastName = null, Email = "test@test.com", City = "Gävle", ClassName = "net25" };
+        var student = new StudentImportDto { FirstName = "John", LastName = null, Email = "test@test.com", CampusName = "Gävle", ClassName = "net25" };
 
         // Act
         var displayName = UserImportService.GenerateDisplayName(student);
@@ -108,7 +108,7 @@ public class UserImportServiceTests
     public void GeneratePlaceholderPassword_ShouldBeWithinLimit()
     {
         // Arrange
-        var student = new StudentImportDto { FirstName = "AVeryLongFirstNameThatShouldNotBreakAnything", LastName = "Doe", Email = "test@test.com", City = "Gävle", ClassName = "net25" };
+        var student = new StudentImportDto { FirstName = "AVeryLongFirstNameThatShouldNotBreakAnything", LastName = "Doe", Email = "test@test.com", CampusName = "Gävle", ClassName = "net25" };
 
         // Act
         var password = UserImportService.GeneratePlaceholderPassword(student);

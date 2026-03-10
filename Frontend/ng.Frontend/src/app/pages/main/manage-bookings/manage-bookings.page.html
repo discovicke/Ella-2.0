@@ -1,4 +1,28 @@
 <div class="manage-bookings-container">
+  <div class="page-content">
+  <section class="page-intro">
+    <div>
+      <span class="page-intro__eyebrow">Administrera bokningar</span>
+      <h1>Få överblick över schema, förfrågningar och bokningar i hela ELLA</h1>
+      <p>
+        Växla mellan schema för operativ hantering och lista för granskning, gruppering och
+        uppföljning.
+      </p>
+    </div>
+    <div class="page-intro__stats">
+      <div class="intro-stat">
+        <span class="intro-stat__label">Totalt</span>
+        <strong>{{ totalBookings() }}</strong>
+        <span class="intro-stat__value">bokningar</span>
+      </div>
+      <div class="intro-stat">
+        <span class="intro-stat__label">Väntande</span>
+        <strong>{{ pendingCount() }}</strong>
+        <span class="intro-stat__value">förfrågningar</span>
+      </div>
+    </div>
+  </section>
+
   <!-- Filter Panel -->
   <div class="filter-panel">
     <div class="filter-header">
@@ -48,7 +72,7 @@
                 <path d="M9 12l2 2 4-4" />
               }
             </svg>
-            {{ isBookingFormEnabled() ? 'Formulär på' : 'Formulär av' }}
+            {{ isBookingFormEnabled() ? 'Formulär öppet' : 'Formulär stängt' }}
           </button>
         }
       </div>
@@ -90,68 +114,136 @@
         </div>
 
         <div class="filter-item view-mode-filter">
-          <label class="filter-label">Vy</label>
+          <label class="filter-label">Läge</label>
           <div class="view-mode-pills">
             <button
               class="pill"
-              [class.pill--active]="viewMode() === 'calendar'"
-              (click)="setView('calendar')"
+              [class.pill--active]="presentationMode() === 'schedule'"
+              (click)="setPresentationMode('schedule')"
             >
-              Kalender
-            </button>
-            <span class="pills-divider"></span>
-            <button
-              class="pill"
-              [class.pill--active]="viewMode() === 'today'"
-              (click)="setView('today')"
-            >
-              Idag
+              Schema
             </button>
             <button
               class="pill"
-              [class.pill--active]="viewMode() === 'week'"
-              (click)="setView('week')"
+              [class.pill--active]="presentationMode() === 'list'"
+              (click)="setPresentationMode('list')"
             >
-              Vecka
-            </button>
-            <button
-              class="pill"
-              [class.pill--active]="viewMode() === 'month'"
-              (click)="setView('month')"
-            >
-              Månad
-            </button>
-            <button
-              class="pill"
-              [class.pill--active]="viewMode() === 'all'"
-              (click)="setView('all')"
-            >
-              Alla
-            </button>
-            <span class="pills-divider"></span>
-            <button
-              class="pill"
-              [class.pill--active]="viewMode() === 'room'"
-              (click)="setView('room')"
-            >
-              Rum
-            </button>
-            <button
-              class="pill"
-              [class.pill--active]="viewMode() === 'user'"
-              (click)="setView('user')"
-            >
-              Användare
-            </button>
-            <button
-              class="pill"
-              [class.pill--active]="viewMode() === 'campus'"
-              (click)="setView('campus')"
-            >
-              Campus
+              Lista
             </button>
           </div>
         </div>
+
+        @if (presentationMode() === 'schedule') {
+          <div class="filter-item view-mode-filter">
+            <label class="filter-label">Tidskala</label>
+            <div class="view-mode-pills">
+              <button
+                class="pill"
+                [class.pill--active]="scheduleTimeScale() === 'day'"
+                (click)="setScheduleTimeScale('day')"
+              >
+                Dag
+              </button>
+              <button
+                class="pill"
+                [class.pill--active]="scheduleTimeScale() === 'week'"
+                (click)="setScheduleTimeScale('week')"
+              >
+                Vecka
+              </button>
+              <button
+                class="pill"
+                [class.pill--active]="scheduleTimeScale() === 'month'"
+                (click)="setScheduleTimeScale('month')"
+              >
+                Månad
+              </button>
+            </div>
+          </div>
+        } @else {
+          <div class="filter-item view-mode-filter">
+            <label class="filter-label">Period</label>
+            <div class="view-mode-pills">
+              <button
+                class="pill"
+                [class.pill--active]="listDateRange() === 'all'"
+                (click)="setListDateRange('all')"
+              >
+                Alla
+              </button>
+              <button
+                class="pill"
+                [class.pill--active]="listDateRange() === 'today'"
+                (click)="setListDateRange('today')"
+              >
+                Idag
+              </button>
+              <button
+                class="pill"
+                [class.pill--active]="listDateRange() === 'week'"
+                (click)="setListDateRange('week')"
+              >
+                Vecka
+              </button>
+              <button
+                class="pill"
+                [class.pill--active]="listDateRange() === 'month'"
+                (click)="setListDateRange('month')"
+              >
+                Månad
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-item view-mode-filter">
+            <label class="filter-label">Gruppera efter</label>
+            <div class="view-mode-pills">
+              <button
+                class="pill"
+                [class.pill--active]="listGroupBy() === 'month'"
+                (click)="setListGroupBy('month')"
+              >
+                Månad
+              </button>
+              <button
+                class="pill"
+                [class.pill--active]="listGroupBy() === 'week'"
+                (click)="setListGroupBy('week')"
+              >
+                Vecka
+              </button>
+              <button
+                class="pill"
+                [class.pill--active]="listGroupBy() === 'day'"
+                (click)="setListGroupBy('day')"
+              >
+                Dag
+              </button>
+              <span class="pills-divider"></span>
+              <button
+                class="pill"
+                [class.pill--active]="listGroupBy() === 'room'"
+                (click)="setListGroupBy('room')"
+              >
+                Rum
+              </button>
+              <button
+                class="pill"
+                [class.pill--active]="listGroupBy() === 'user'"
+                (click)="setListGroupBy('user')"
+              >
+                Användare
+              </button>
+              <button
+                class="pill"
+                [class.pill--active]="listGroupBy() === 'campus'"
+                (click)="setListGroupBy('campus')"
+              >
+                Campus
+              </button>
+            </div>
+          </div>
+        }
       </div>
     </div>
   </div>
@@ -187,15 +279,16 @@
 
   <!-- Groups Container -->
   <div class="groups-container">
-    @if (viewMode() === 'calendar') {
+    @if (presentationMode() === 'schedule') {
       <div class="calendar-view-container">
         <app-calendar
-          viewMode="resources"
+          [viewMode]="calendarViewMode()"
           [date]="calendarDate()"
-          [resources]="calendarResources()"
+          [resources]="calendarViewMode() === 'resources' ? calendarResources() : []"
           [bookings]="bookings()"
           [isLoading]="bookingsResource.isLoading()"
           [hasError]="bookingsResource.error() !== undefined"
+          [allowTimeRangeSelection]="allowScheduleSelection()"
           (dateChange)="onCalendarDateChange($event)"
           (eventClicked)="openBookingModal($event)"
           (timeRangeSelected)="onTimeRangeSelected($event)"
@@ -417,5 +510,6 @@
         }
       }
     }
+  </div>
   </div>
 </div>

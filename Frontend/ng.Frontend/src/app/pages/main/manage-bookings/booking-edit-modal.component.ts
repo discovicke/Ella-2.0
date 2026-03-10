@@ -112,10 +112,10 @@ export interface BookingEditModalConfig {
             <div class="info-content">
               <span class="info-primary"
                 >{{ booking.registrationCount }} registrering{{
-                  booking.registrationCount !== 1 ? 'ar' : ''
+                  booking.registrationCount !== 1 ? 'er' : ''
                 }}</span
               >
-              <span class="info-secondary">Klicka för att visa</span>
+              <span class="info-secondary">Visa deltagare</span>
             </div>
             <div class="expand-icon" [class.expanded]="showParticipants()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -174,9 +174,9 @@ export interface BookingEditModalConfig {
           </div>
           <div class="edit-actions">
             <app-button variant="tertiary" (clicked)="isEditing.set(false)">Avbryt</app-button>
-            <app-button variant="primary" [disabled]="isSaving()" (clicked)="onSaveDetails()">
-              {{ isSaving() ? 'Sparar...' : 'Spara ändringar' }}
-            </app-button>
+              <app-button variant="primary" [disabled]="isSaving()" (clicked)="onSaveDetails()">
+                {{ isSaving() ? 'Sparar...' : 'Spara' }}
+              </app-button>
           </div>
         </div>
       }

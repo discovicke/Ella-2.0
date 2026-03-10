@@ -94,6 +94,53 @@ public static class BookingEndpoints
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
 
+        group
+            .MapGet(
+                "/availability",
+                async (
+                    [FromQuery] DateTime startTime,
+                    [FromQuery] DateTime endTime,
+                    [FromQuery] string? campus,
+                    [FromQuery] long? roomTypeId,
+                    [FromQuery] int? minCapacity,
+                    [FromQuery] string? assets,
+                    [FromQuery] string? query,
+                    BookingService service
+                ) =>
+                {
+                    if (endTime <= startTime)
+                    {
+                        return Results.BadRequest(
+                            new { message = "End time must be after start time." }
+                        );
+                    }
+
+                    var result = await service.GetRoomAvailabilityAsync(
+                        new BookingAvailabilityQueryDto(
+                            startTime,
+                            endTime,
+                            campus,
+                            roomTypeId,
+                            minCapacity,
+                            assets,
+                            query
+                        )
+                    );
+
+                    return Results.Ok(result);
+                }
+            )
+            .RequirePermission("BookRoom")
+            .WithName("GetRoomAvailability")
+            .WithSummary("Get room availability for a time slot")
+            .WithDescription(
+                "Returns available and unavailable rooms for a selected time slot, with conflict summaries and room match metadata.\n\n🔒 **Authentication Required**\n🔑 **Requires bookRoom permission**"
+            )
+            .Produces<IEnumerable<RoomAvailabilityResultDto>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
         // POST /api/bookings
         group
             .MapPost(

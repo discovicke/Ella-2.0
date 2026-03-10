@@ -31,6 +31,42 @@ export interface MyBookingsParams {
   includeCancelled?: boolean;
 }
 
+export interface BookingAvailabilityFilters {
+  startTime: string;
+  endTime: string;
+  campus?: string;
+  roomTypeId?: number;
+  minCapacity?: number;
+  assets?: string;
+  query?: string;
+}
+
+export interface AvailabilityConflict {
+  bookingId: number;
+  startTime: string;
+  endTime: string;
+  userName?: string | null;
+  userEmail?: string | null;
+  status: BookingStatus;
+}
+
+export interface RoomAvailabilityResult {
+  roomId: number;
+  roomName: string;
+  campusCity: string;
+  capacity?: number | null;
+  roomTypeId: number;
+  roomTypeName: string;
+  floor?: string | null;
+  notes?: string | null;
+  assets?: string[] | null;
+  isAvailable: boolean;
+  matchScore: number;
+  matchReasons: string[];
+  nextConflict?: AvailabilityConflict | null;
+  conflicts: AvailabilityConflict[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -81,6 +117,20 @@ export class BookingService {
     if (filters?.status) params = params.set('status', filters.status);
     if (filters?.groupBy) params = params.set('groupBy', filters.groupBy);
     return this.http.get<GroupedPagedResultOfBookingDetailedReadModel>(this.apiUrl, { params });
+  }
+
+  getAvailability(filters: BookingAvailabilityFilters): Observable<RoomAvailabilityResult[]> {
+    let params = new HttpParams()
+      .set('startTime', filters.startTime)
+      .set('endTime', filters.endTime);
+
+    if (filters.campus) params = params.set('campus', filters.campus);
+    if (filters.roomTypeId) params = params.set('roomTypeId', filters.roomTypeId);
+    if (filters.minCapacity) params = params.set('minCapacity', filters.minCapacity);
+    if (filters.assets) params = params.set('assets', filters.assets);
+    if (filters.query) params = params.set('query', filters.query);
+
+    return this.http.get<RoomAvailabilityResult[]>(`${this.apiUrl}/availability`, { params });
   }
 
   updateBookingStatus(bookingId: number, status: BookingStatus): Observable<unknown> {

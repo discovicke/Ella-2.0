@@ -43,6 +43,30 @@ export interface AuthResponseDto {
   user: AuthedUserResponseDto;
 }
 
+export type AvailabilityConflictDto = {
+  /** @format int64 */
+  bookingId: number;
+  /** @format date-time */
+  startTime: string;
+  /** @format date-time */
+  endTime: string;
+  userName: string | null;
+  userEmail: string | null;
+  status: BookingStatus;
+};
+
+export interface AvailabilityConflictDto2 {
+  /** @format int64 */
+  bookingId: number;
+  /** @format date-time */
+  startTime: string;
+  /** @format date-time */
+  endTime: string;
+  userName: string | null;
+  userEmail: string | null;
+  status: BookingStatus;
+}
+
 export interface Booking {
   /** @format int64 */
   id?: number;
@@ -381,6 +405,27 @@ export interface ResourceResponseDto {
   name: string;
   description: string | null;
   isActive: boolean;
+}
+
+export interface RoomAvailabilityResultDto {
+  /** @format int64 */
+  roomId: number;
+  roomName: string;
+  campusCity: string;
+  /** @format int32 */
+  capacity: number | null;
+  /** @format int64 */
+  roomTypeId: number;
+  roomTypeName: string;
+  floor: string | null;
+  notes: string | null;
+  assets: string[] | null;
+  isAvailable: boolean;
+  /** @format int32 */
+  matchScore: number;
+  matchReasons: string[];
+  nextConflict: AvailabilityConflictDto;
+  conflicts: AvailabilityConflictDto2[];
 }
 
 export interface RoomDetailModel {

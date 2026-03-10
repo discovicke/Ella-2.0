@@ -36,6 +36,9 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
   @Input() resources: DayPilot.ResourceData[] = [];
   @Input() isLoading = false;
   @Input() hasError = false;
+  @Input() allowTimeRangeSelection = false;
+  @Input() businessBeginsHour = 7;
+  @Input() businessEndsHour = 19;
   /** Optional override for event CSS class logic. */
   @Input() eventCssClassFn?: EventCssClassFn;
 
@@ -113,17 +116,16 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['date']) {
       this.currentDate = this.toDpDate(this.date);
-      this.applyDateToConfigs();
     }
 
-    if (changes['resources']) {
-      this.configResources = {
-        ...this.configResources,
-        columns: this.resources.map(r => ({
-          name: r.name || 'Unknown',
-          id: r.id,
-        })) as DayPilot.CalendarColumnData[],
-      };
+    if (
+      changes['date'] ||
+      changes['resources'] ||
+      changes['allowTimeRangeSelection'] ||
+      changes['businessBeginsHour'] ||
+      changes['businessEndsHour']
+    ) {
+      this.refreshConfigs();
     }
 
     if (changes['bookings']) {
@@ -139,18 +141,25 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
   // Config builders
   // ---------------------------------------------------------------------------
 
+  private refreshConfigs(): void {
+    this.configDay = this.buildCalendarConfig('Day');
+    this.configWeek = this.buildCalendarConfig('Week');
+    this.configMonth = this.buildMonthConfig();
+    this.configResources = this.buildResourcesConfig();
+  }
+
   private buildCalendarConfig(viewType: 'Day' | 'Week'): DayPilot.CalendarConfig {
     return {
       viewType,
       startDate: this.currentDate,
       weekStarts: 1,
-      businessBeginsHour: 7,
-      businessEndsHour: 19,
+      businessBeginsHour: this.businessBeginsHour,
+      businessEndsHour: this.businessEndsHour,
       heightSpec: 'BusinessHoursNoScroll',
       eventMoveHandling: 'Disabled',
       eventResizeHandling: 'Disabled',
       eventDeleteHandling: 'Disabled',
-      timeRangeSelectedHandling: 'Enabled',
+      timeRangeSelectedHandling: this.allowTimeRangeSelection ? 'Enabled' : 'Disabled',
       onTimeRangeSelected: (args) => {
         this.timeRangeSelected.emit({
           start: new Date(args.start.toString()),
@@ -171,7 +180,10 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
     return {
       ...this.buildCalendarConfig('Day'),
       viewType: 'Resources',
-      columns: [] as DayPilot.CalendarColumnData[],
+      columns: this.resources.map(r => ({
+        name: r.name || 'Unknown',
+        id: r.id,
+      })) as DayPilot.CalendarColumnData[],
     };
   }
 
