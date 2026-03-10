@@ -239,7 +239,10 @@ export class BookingModalComponent implements OnInit, OnDestroy {
   });
 
   updateStartDate(date: string | null) {
-    if (date) this.bookingForm.controls.startDate.setValue(date);
+    if (date) {
+      this.bookingForm.controls.startDate.setValue(date);
+      this.bookingForm.controls.endDate.setValue(date);
+    }
   }
 
   updateStartTime(time: string | null) {

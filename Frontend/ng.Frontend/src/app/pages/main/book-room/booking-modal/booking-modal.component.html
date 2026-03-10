@@ -17,12 +17,6 @@
           [value]="bookingForm.controls.endTime.value" 
           (valueChange)="updateEndTime($event)"
         ></app-time-picker>
-        @if (bookingForm.value.endDate !== bookingForm.value.startDate) {
-          <app-date-picker 
-            [value]="bookingForm.controls.endDate.value" 
-            (valueChange)="updateEndDate($event)"
-          ></app-date-picker>
-        }
       </div>
     </div>
 

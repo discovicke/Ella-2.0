@@ -60,10 +60,12 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  margin-top: 86px;
   
   @include breakpoint-down('lg') {
     position: static;
     grid-row: 1; /* Move filters above results on smaller screens */
+    margin-top: 0;
   }
 }
 
