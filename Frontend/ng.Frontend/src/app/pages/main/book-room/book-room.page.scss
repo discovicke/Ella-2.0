@@ -20,7 +20,9 @@
     );
   overflow-y: auto;
   scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .page-content {
@@ -29,7 +31,7 @@
   max-width: 1240px;
   margin: 0 auto;
   width: 100%;
-  
+
   display: grid;
   grid-template-columns: 1fr 320px;
   gap: 24px;
@@ -60,8 +62,8 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-top: 86px;
-  
+  margin-top: 95px;
+
   @include breakpoint-down('lg') {
     position: static;
     grid-row: 1; /* Move filters above results on smaller screens */
@@ -83,7 +85,7 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  
+
   &__title {
     margin: 0;
     font-size: 0.85rem;
@@ -137,12 +139,19 @@
     color: var(--color-text-primary);
     font-size: 0.875rem;
     padding: 9px 12px;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease,
+      background 0.15s ease;
     font: inherit;
 
-    &::placeholder { color: var(--color-text-muted); }
+    &::placeholder {
+      color: var(--color-text-muted);
+    }
 
-    &:hover { border-color: color-mix(in srgb, var(--color-primary) 60%, var(--color-border)); }
+    &:hover {
+      border-color: color-mix(in srgb, var(--color-primary) 60%, var(--color-border));
+    }
 
     &:focus {
       outline: none;
@@ -612,12 +621,18 @@
   background-size: 200% 100%;
   animation: shimmer 1.4s ease-in-out infinite;
 
-  &--sm { height: 90px; }
+  &--sm {
+    height: 90px;
+  }
 }
 
 @keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* ─── Empty state ────────────────────────────────────────────────── */
@@ -659,7 +674,9 @@
 /* ─── Reduced motion ─────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
