@@ -439,7 +439,7 @@ VALUES
        (310, 11, 4, '2026-03-11 10:00:00+01', '2026-03-11 15:00:00+01', 'active', 'Prototyp-labb: React Native'),
        (311, 20, 5, '2026-03-12 09:00:00+01', '2026-03-12 12:00:00+01', 'active', 'Gästföreläsning: AI i utbildning'),
        (312, 21, 5, '2026-03-18 13:00:00+01', '2026-03-18 16:00:00+01', 'active', 'Lab: Python maskinlärning'),
-       (313, 20, 5, '2026-03-25 09:00:00+01', '2026-03-25 17:00:00+01', 'active', 'Hackathonarrangemang'),
+       (313, 20, 5, '2026-03-26 09:00:00+01', '2026-03-26 17:00:00+01', 'active', 'Hackathonarrangemang'),
        (314, 2, 80, '2026-03-02 09:00:00+01', '2026-03-02 12:00:00+01', 'active', 'Föreläsning: Systemdesign'),
        (315, 4, 80, '2026-03-09 13:00:00+01', '2026-03-09 16:00:00+01', 'active', 'Workshop: Docker & Kubernetes'),
        (316, 1, 80, '2026-03-16 08:30:00+01', '2026-03-16 11:30:00+01', 'active', 'Tentamen: Operativsystem'),
@@ -470,7 +470,7 @@ VALUES
        (417, 2, 67, '2026-03-12 13:00:00+01', '2026-03-12 16:00:00+01', 'active', 'Projekt: SignalR realtidschat'),
        (418, 10, 70, '2026-03-10 09:00:00+01', '2026-03-10 12:00:00+01', 'active', 'Designsprint: Dag 1'),
        (419, 10, 71, '2026-03-11 09:00:00+01', '2026-03-11 12:00:00+01', 'active', 'Designsprint: Dag 2'),
-       (420, 20, 74, '2026-03-12 09:00:00+01', '2026-03-12 16:00:00+01', 'active', 'Kodmaraton: Game jam'),
+       (420, 20, 74, '2026-03-13 09:00:00+01', '2026-03-13 16:00:00+01', 'active', 'Kodmaraton: Game jam'),
        (421, 21, 75, '2026-03-13 13:00:00+01', '2026-03-13 16:00:00+01', 'cancelled', 'AVBOKAT: Tågförsenad');
 
 SELECT setval(pg_get_serial_sequence('bookings', 'id'), (SELECT MAX(id) FROM bookings));
