@@ -12,18 +12,26 @@ import { ModalService } from '../../../shared/services/modal.service';
 import { RoomDetailModel, RoomTypeResponseDto } from '../../../models/models';
 import { BookingModalComponent } from './booking-modal/booking-modal.component';
 
+import { CalendarComponent } from '../../../shared/components/calendar/calendar.component';
+import { BookingService } from '../../../shared/services/booking.service';
+import { BookingDetailedReadModel } from '../../../models/models';
+import { DayPilot } from '@daypilot/daypilot-lite-angular';
+
 @Component({
   selector: 'app-book-room-page',
-  imports: [],
+  imports: [CalendarComponent],
   templateUrl: './book-room.page.html',
   styleUrl: './book-room.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BookRoomPage {
   private readonly roomService = inject(RoomService);
+  private readonly bookingService = inject(BookingService);
   private readonly modalService = inject(ModalService);
 
   // --- STATE ---
+  viewMode = signal<'list' | 'calendar'>('calendar');
+  currentDate = signal<Date>(new Date());
   searchQuery = signal('');
   selectedTypeId = signal<number | 'All'>('All');
   minCapacity = signal<number>(0);
@@ -42,6 +50,25 @@ export class BookRoomPage {
     loader: () => firstValueFrom(this.roomService.getRoomTypes()),
   });
 
+  // Bookings for the calendar
+  bookingsResource = resource({
+    params: () => {
+      const d = this.currentDate();
+      return {
+        start: new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString(),
+        end: new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).toISOString(),
+      };
+    },
+    loader: ({ params }) =>
+      firstValueFrom(
+        this.bookingService.getAllBookings({
+          startDate: params.start,
+          endDate: params.end,
+          pageSize: 1000,
+        })
+      ),
+  });
+
   // --- COMPUTED ---
   filteredRooms = computed(() => {
     const all = this.roomsResource.value() ?? [];
@@ -57,6 +84,17 @@ export class BookRoomPage {
     });
   });
 
+  calendarResources = computed<DayPilot.ResourceData[]>(() => {
+    return this.filteredRooms().map(r => ({
+      id: r.roomId!.toString(),
+      name: r.name || 'Unknown',
+    }));
+  });
+
+  calendarBookings = computed<BookingDetailedReadModel[]>(() => {
+    return this.bookingsResource.value()?.items ?? [];
+  });
+
   totalRooms = computed(() => this.roomsResource.value()?.length ?? 0);
 
   hasActiveFilters = computed(
@@ -67,10 +105,33 @@ export class BookRoomPage {
 
   // --- ACTIONS ---
 
+  setViewMode(mode: 'list' | 'calendar') {
+    this.viewMode.set(mode);
+  }
+
+  onCalendarDateChange(date: Date): void {
+    this.currentDate.set(date);
+  }
+
   onBookRoom(room: RoomDetailModel) {
     this.modalService.open(BookingModalComponent, {
       title: `Boka ${room.name}`,
       data: room,
+      width: '600px',
+    });
+  }
+
+  onTimeRangeSelected(event: { start: Date; end: Date; resourceId?: number }) {
+    const room = this.filteredRooms().find(r => r.roomId === event.resourceId);
+    if (!room) return;
+
+    this.modalService.open(BookingModalComponent, {
+      title: `Boka ${room.name}`,
+      data: {
+        ...room,
+        prefillStart: event.start,
+        prefillEnd: event.end,
+      },
       width: '600px',
     });
   }

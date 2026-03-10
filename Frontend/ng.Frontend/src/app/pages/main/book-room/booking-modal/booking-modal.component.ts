@@ -28,6 +28,12 @@ interface UserSearchResult {
   email: string;
 }
 
+/** Extended modal data shape — includes optional calendar prefill times. */
+interface BookingModalData extends RoomDetailModel {
+  prefillStart?: Date;
+  prefillEnd?: Date;
+}
+
 @Component({
   selector: 'app-booking-modal',
   imports: [ReactiveFormsModule, ButtonComponent],
@@ -43,8 +49,8 @@ export class BookingModalComponent implements OnInit, OnDestroy {
   private readonly classService = inject(ClassService);
   private readonly registrationService = inject(RegistrationService);
 
-  // Get the room from modal data
-  readonly room = this.modalService.modalData() as RoomDetailModel;
+  // Get the room (and optional prefill times) from modal data
+  readonly room = this.modalService.modalData() as BookingModalData;
 
   // ─── Permission check ─────────────────────────────
   readonly canManageClasses = this.sessionService.hasPermission('bookRoom');
@@ -103,6 +109,18 @@ export class BookingModalComponent implements OnInit, OnDestroy {
         },
         error: () => this.isSearching.set(false),
       });
+
+    // Pre-fill form from calendar time-range selection (if available)
+    if (this.room.prefillStart && this.room.prefillEnd) {
+      const start = new Date(this.room.prefillStart);
+      const end = new Date(this.room.prefillEnd);
+      this.bookingForm.patchValue({
+        startDate: this.formatDate(start),
+        startTime: this.formatTime(start),
+        endDate: this.formatDate(end),
+        endTime: this.formatTime(end),
+      });
+    }
   }
 
   ngOnDestroy(): void {
@@ -165,6 +183,15 @@ export class BookingModalComponent implements OnInit, OnDestroy {
       },
       error: () => this.isLoadingMembers.set(false),
     });
+  }
+
+  // ─── Date / time formatting helpers ────────────────
+  private formatDate(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  private formatTime(d: Date): string {
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   }
 
   // Set default dates (today) - Local time
