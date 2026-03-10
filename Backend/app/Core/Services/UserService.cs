@@ -125,6 +125,7 @@ public class UserService(
             Email = dto.Email,
             DisplayName = dto.DisplayName,
             PasswordHash = hashed,
+            IsActive = true,
             IsBanned = BannedStatus.NotBanned,
             PermissionLevel = 1,
         };

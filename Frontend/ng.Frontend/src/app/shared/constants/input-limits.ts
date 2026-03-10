@@ -18,6 +18,7 @@ export const INPUT_LIMITS = {
   PermissionTemplateDto: { cssClass: 50, label: 100, name: 50 },
   RegisterDto: { displayName: 100, email: 254, password: 128 },
   UpdateAssetTypeDto: { description: 100 },
+  UpdateBookingDto: { notes: 500 },
   UpdateCampusDto: { city: 100, contact: 150, country: 100, street: 150, zip: 20 },
   UpdateClassDto: { className: 100 },
   UpdateRoomDto: { floor: 20, name: 100, notes: 200 },

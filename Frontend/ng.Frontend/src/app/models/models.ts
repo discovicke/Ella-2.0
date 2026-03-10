@@ -43,6 +43,29 @@ export interface AuthResponseDto {
   user: AuthedUserResponseDto;
 }
 
+export interface Booking {
+  /** @format int64 */
+  id?: number;
+  /** @format int64 */
+  userId?: number;
+  /** @format int64 */
+  roomId?: number;
+  /** @format date-time */
+  startTime?: string;
+  /** @format date-time */
+  endTime?: string;
+  status?: BookingStatus;
+  isLesson?: boolean;
+  notes?: string | null;
+  bookerName?: string | null;
+  /** @format uuid */
+  recurringGroupId?: string | null;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string | null;
+}
+
 export interface BookingDetailedReadModel {
   /** @format int64 */
   bookingId?: number;
@@ -405,6 +428,26 @@ export interface UpdateAssetTypeDto {
   description: string;
 }
 
+export interface UpdateBookingDto {
+  /**
+   * @format date-time
+   * @default null
+   */
+  startTime?: string | null;
+  /**
+   * @format date-time
+   * @default null
+   */
+  endTime?: string | null;
+  /**
+   * @maxLength 500
+   * @default null
+   */
+  notes?: string | null;
+  /** @default null */
+  isLesson?: boolean | null;
+}
+
 export interface UpdateCampusDto {
   /** @maxLength 150 */
   street: string;
@@ -433,6 +476,7 @@ export interface UpdatePermissionDto {
   manageBookings: boolean;
   manageCampuses: boolean;
   manageRoles: boolean;
+  manageResources: boolean;
 }
 
 export interface UpdateRoomDto {
