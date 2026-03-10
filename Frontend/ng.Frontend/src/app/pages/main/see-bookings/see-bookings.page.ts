@@ -45,6 +45,9 @@ interface BookingGroup {
   bookings: EnrichedBooking[];
 }
 
+type PersonalScheduleView = 'agenda' | 'week' | 'month';
+type BookingView = 'all' | 'invitations';
+
 @Component({
   selector: 'app-see-bookings-page',
   imports: [DatePipe, TitleCasePipe, RouterLink, CalendarComponent],
@@ -62,17 +65,23 @@ export class SeeBookingsPage {
   private readonly sessionService = inject(SessionService);
 
   // --- STATE ---
-  viewMode = signal<'list' | 'calendar'>('list');
+  viewMode = signal<PersonalScheduleView>('agenda');
   calendarDate = signal<Date>(new Date());
   activeTab = signal<'upcoming' | 'history'>('upcoming');
-  showCancelled = signal<boolean>(false);
+  bookingView = signal<BookingView>('all');
 
   // Merged bookings (own + confirmed registrations)
   bookings = signal<EnrichedBooking[]>([]);
-  totalCount = signal<number>(0);
   currentPage = signal<number>(1);
   isLoading = signal<boolean>(false);
   private readonly PAGE_SIZE = 8;
+
+  // Track whether each source API still has more pages
+  private ownHasMore = signal<boolean>(false);
+  private regHasMore = signal<boolean>(false);
+
+  // Stable pending invitation count — only written on upcoming reset fetches
+  readonly pendingInvitationCount = signal<number>(0);
 
   // Invitation action busy state
   invitationBusy = signal<Set<number>>(new Set());
@@ -81,7 +90,6 @@ export class SeeBookingsPage {
     // Auto-fetch when state changes
     effect(() => {
       this.activeTab();
-      this.showCancelled();
       this.viewMode();
       this.calendarDate();
       untracked(() => this.loadBookings(true));
@@ -90,18 +98,54 @@ export class SeeBookingsPage {
 
   // --- COMPUTED ---
 
-  hasMore = computed(() => this.bookings().length < this.totalCount());
+  readonly isCalendarView = computed(() => this.viewMode() !== 'agenda');
 
+  readonly calendarViewMode = computed<'week' | 'month'>(() =>
+    this.viewMode() === 'week' ? 'week' : 'month',
+  );
+
+  /**
+   * True when there are more pages to load from the server.
+   * View-aware: if we're in a filter that only uses one source, only that
+   * source's hasMore is checked so the button doesn't show spuriously.
+   */
+  readonly hasMore = computed(() => {
+    const view = this.bookingView();
+    switch (view) {
+      case 'invitations':
+        // Invitations only come from the registrations API
+        return this.regHasMore();
+      case 'all':
+      default:
+        // All needs both sources to be exhausted
+        return this.ownHasMore() || this.regHasMore();
+    }
+  });
+
+  readonly filteredBookings = computed(() => {
+    const view = this.bookingView();
+    return this.bookings().filter((booking) => {
+      switch (view) {
+        case 'invitations':
+          return booking.isInvitation;
+        case 'all':
+        default:
+          return !booking.isInvitation;
+      }
+    });
+  });
+
+  /** Raw count of pending invitations — always from unfiltered list so the badge is honest */
   /** The soonest upcoming active booking — from own OR registered bookings */
   nextBooking = computed(() => {
     if (this.activeTab() !== 'upcoming') return null;
     return (
-      this.bookings().find((b) => b.status === BookingStatus.Active && !b.isInvitation) ?? null
+      this.filteredBookings().find((b) => b.status === BookingStatus.Active && !b.isInvitation) ?? null
     );
   });
 
   groupedBookings = computed(() => {
-    const bookings = this.bookings();
+    const bookings = this.filteredBookings();
     const tab = this.activeTab();
 
     if (tab === 'upcoming') {
@@ -232,8 +276,12 @@ export class SeeBookingsPage {
 
   // --- ACTIONS ---
 
-  setViewMode(mode: 'list' | 'calendar') {
+  setViewMode(mode: PersonalScheduleView) {
     this.viewMode.set(mode);
+  }
+
+  setBookingView(view: BookingView): void {
+    this.bookingView.set(view);
   }
 
   onCalendarDateChange(date: Date): void {
@@ -242,26 +290,28 @@ export class SeeBookingsPage {
 
   setActiveTab(tab: 'upcoming' | 'history') {
     this.activeTab.set(tab);
-  }
-
-  toggleCancelled(event: Event) {
-    const checked = (event.target as HTMLInputElement).checked;
-    this.showCancelled.set(checked);
+    this.bookingView.set('all');
   }
 
   async loadBookings(reset: boolean) {
     if (reset) {
       this.currentPage.set(1);
       this.bookings.set([]);
-      this.totalCount.set(0);
+      this.ownHasMore.set(false);
+      this.regHasMore.set(false);
+      // Always return to the default view when data is refreshed so stale
+      // filters (e.g. 'invitations') don't show empty results after a reload
+      this.bookingView.set('all');
     }
 
     this.isLoading.set(true);
     try {
-      const isCalendar = this.viewMode() === 'calendar';
+      const isCalendar = this.isCalendarView();
       const isUpcoming = this.activeTab() === 'upcoming';
       const timeFilter = isUpcoming ? 'upcoming' : 'history';
       const userId = this.sessionService.currentUser()?.id;
+      const page = isCalendar ? 1 : this.currentPage();
+      const pageSize = isCalendar ? 1000 : this.PAGE_SIZE;
 
       let startDate: string | undefined;
       let endDate: string | undefined;
@@ -276,18 +326,18 @@ export class SeeBookingsPage {
       const [ownResult, regResult] = await Promise.all([
         firstValueFrom(
           this.bookingService.getBookingsByUserId({
-            page: isCalendar ? 1 : this.currentPage(),
-            pageSize: isCalendar ? 1000 : this.PAGE_SIZE,
+            page,
+            pageSize,
             timeFilter: isCalendar ? undefined : this.activeTab(),
-            includeCancelled: this.showCancelled(),
+            includeCancelled: !isUpcoming,
           }),
         ),
         firstValueFrom(
           this.registrationService.getMyRegistrationBookings(
             ['registered', 'invited', 'declined'],
             isCalendar ? undefined : timeFilter,
-            isCalendar ? 1 : this.currentPage(),
-            isCalendar ? 1000 : this.PAGE_SIZE,
+            page,
+            pageSize,
           ),
         ),
       ]);
@@ -295,14 +345,18 @@ export class SeeBookingsPage {
       const ownBookings = this.enrichBookings(ownResult.items, 'owned');
 
       // Enrich registration bookings based on userRegistrationStatus from the server
-      const regBookings = regResult.items;
-      const enrichedReg = regBookings
+      const now = new Date();
+      const enrichedReg = regResult.items
         .filter((b) => b.userId !== userId) // exclude own bookings (already in ownBookings)
         .map((b) => {
           const status = b.userRegistrationStatus;
+          // In calendar view the API returns all time periods, so we cannot rely on
+          // the active tab to decide whether an 'invited' booking is still pending.
+          // Use the actual start time: a booking in the past is an expired invitation.
+          const bookingIsFuture = new Date(b.startTime ?? 0) >= now;
           const source: 'registered' | 'invitation' | 'declined' | 'expired-invitation' =
             status === 'invited'
-              ? isUpcoming
+              ? bookingIsFuture
                 ? 'invitation'
                 : 'expired-invitation'
               : status === 'declined'
@@ -338,7 +392,16 @@ export class SeeBookingsPage {
       }
 
       this.bookings.set(deduped);
-      this.totalCount.set(ownResult.totalCount + regResult.totalCount);
+
+      // Only count pending invitations on a fresh upcoming fetch — stays frozen
+      // on load-more and when switching to Historik, so it never flickers or grows.
+      if (isUpcoming && reset) {
+        this.pendingInvitationCount.set(deduped.filter((b) => b.isInvitation).length);
+      }
+
+      // Track whether each source has more pages remaining
+      this.ownHasMore.set(page * pageSize < ownResult.totalCount);
+      this.regHasMore.set(page * pageSize < regResult.totalCount);
     } catch (err) {
       console.error('Failed to load bookings', err);
     } finally {
@@ -402,7 +465,25 @@ export class SeeBookingsPage {
   // ─── Booking detail modal ─────────────────────────────
 
   openBookingDetail(bookingInput: BookingDetailedReadModel): void {
-    const booking = bookingInput as EnrichedBooking;
+    // Calendar emits plain BookingDetailedReadModel without enriched flags — fill them in
+    const booking = ('isOwned' in bookingInput && bookingInput.isOwned !== undefined)
+      ? (bookingInput as EnrichedBooking)
+      : (() => {
+          const userId = this.sessionService.currentUser()?.id;
+          const isOwned = bookingInput.userId === userId;
+          const reg = this.bookings().find((b) => b.bookingId === bookingInput.bookingId);
+          // Re-use the already-enriched version if available; otherwise synthesise
+          if (reg) return reg;
+          return {
+            ...bookingInput,
+            isOwned,
+            isAttending: !isOwned,
+            isDeclined: false,
+            isExpiredInvitation: false,
+            isInvitation: false,
+            inviterName: !isOwned ? (bookingInput.userName ?? undefined) : undefined,
+          } as EnrichedBooking;
+        })();
     const isHistory = this.activeTab() === 'history';
 
     const config: BookingDetailModalConfig = {
@@ -505,6 +586,12 @@ export class SeeBookingsPage {
     event?.stopPropagation();
     if (!booking.bookingId) return;
     if (booking.status !== BookingStatus.Active) return;
+
+    // Recurring bookings need scope selection — delegate to the detail modal
+    if (booking.recurringGroupId) {
+      this.openBookingDetail(booking);
+      return;
+    }
 
     const confirmed = await this.confirmService.show('Vill du avboka bokningen?', {
       title: 'Avboka bokning',

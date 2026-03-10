@@ -1,73 +1,132 @@
 <div class="page-container">
   <div class="page-content">
-    <!-- View Toggle & Tabs -->
-    <div class="header-actions">
-      <div class="filter-left">
+    <!-- Filter Panel -->
+    <div class="filter-panel">
+      <div class="filter-panel__body">
+        <!-- Title -->
+        <div class="filter-panel__title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          <div class="filter-panel__title-text">
+            <span class="filter-panel__title-count">Mina bokningar</span>
+            @if (pendingInvitationCount() > 0) {
+              <span class="filter-panel__title-sub filter-panel__title-sub--warn">
+                {{ pendingInvitationCount() }} inbjudan{{ pendingInvitationCount() === 1 ? '' : 'ingar' }} väntar
+              </span>
+            } @else {
+              <span class="filter-panel__title-sub">Inga nya inbjudningar</span>
+            }
+          </div>
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <!-- Tabs: Kommande / Historik -->
         <div class="tabs">
           <button
             class="tab"
             [class.active]="activeTab() === 'upcoming'"
             (click)="setActiveTab('upcoming')"
           >
-            <span>Kommande</span>
-            @if (activeTab() === 'upcoming' && totalCount() > 0) {
-              <span class="count-badge">{{ totalCount() }}</span>
-            }
+            Kommande
           </button>
-
           <button
             class="tab"
             [class.active]="activeTab() === 'history'"
             (click)="setActiveTab('history')"
           >
-            <span>Historik</span>
+            Historik
           </button>
         </div>
-      </div>
 
-      <div class="view-mode-toggle">
-        <button 
-          class="pill" 
-          [class.pill--active]="viewMode() === 'list'" 
-          (click)="setViewMode('list')"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="8" y1="6" x2="21" y2="6"></line>
-            <line x1="8" y1="12" x2="21" y2="12"></line>
-            <line x1="8" y1="18" x2="21" y2="18"></line>
-            <line x1="3" y1="6" x2="3.01" y2="6"></line>
-            <line x1="3" y1="12" x2="3.01" y2="12"></line>
-            <line x1="3" y1="18" x2="3.01" y2="18"></line>
-          </svg>
-          Lista
-        </button>
-        <button 
-          class="pill" 
-          [class.pill--active]="viewMode() === 'calendar'" 
-          (click)="setViewMode('calendar')"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-          Kalender
-        </button>
-      </div>
+        <div class="filter-divider"></div>
 
-      <label class="checkbox-filter">
-        <input type="checkbox" [checked]="showCancelled()" (change)="toggleCancelled($event)" />
-        <span>Visa avbokade</span>
-      </label>
+        <!-- View mode pills: Agenda / Vecka / Månad -->
+        <div class="view-mode-toggle">
+          <button
+            class="pill"
+            [class.pill--active]="viewMode() === 'agenda'"
+            (click)="setViewMode('agenda')"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+            Agenda
+          </button>
+          <button
+            class="pill"
+            [class.pill--active]="viewMode() === 'week'"
+            (click)="setViewMode('week')"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+              <line x1="8" y1="10" x2="8" y2="22"></line>
+            </svg>
+            Vecka
+          </button>
+          <button
+            class="pill"
+            [class.pill--active]="viewMode() === 'month'"
+            (click)="setViewMode('month')"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            Månad
+          </button>
+        </div>
+
+        <!-- Inbjudningar pill — only on Kommande tab -->
+        @if (activeTab() === 'upcoming') {
+          <div class="filter-divider"></div>
+          <div class="view-pills">
+            <button
+              class="pill"
+              [class.pill--active]="bookingView() === 'all'"
+              (click)="setBookingView('all')"
+              type="button"
+            >
+              Alla
+            </button>
+            <button
+              class="pill"
+              [class.pill--active]="bookingView() === 'invitations'"
+              (click)="setBookingView('invitations')"
+              type="button"
+            >
+              Inbjudningar
+              @if (pendingInvitationCount() > 0) {
+                <span class="pill-badge" [class.pill-badge--active]="bookingView() === 'invitations'">
+                  {{ pendingInvitationCount() }}
+                </span>
+              }
+            </button>
+          </div>
+        }
+      </div>
     </div>
 
-    @if (viewMode() === 'calendar') {
+    @if (isCalendarView()) {
       <div class="calendar-container-wrapper">
         <app-calendar
-          viewMode="month"
+          [viewMode]="calendarViewMode()"
           [date]="calendarDate()"
-          [bookings]="bookings()"
+          [bookings]="filteredBookings()"
           [isLoading]="isLoading()"
           (dateChange)="onCalendarDateChange($event)"
           (eventClicked)="openBookingDetail($event)"
@@ -92,7 +151,7 @@
                 @if (next.isDeclined) {
                   <span class="origin-tag origin-tag--declined">Avböjd</span>
                 } @else if (!next.isOwned) {
-                  <span class="origin-tag origin-tag--attending">Inbjuden</span>
+                          <span class="origin-tag origin-tag--attending">Deltar</span>
                 }
               </div>
 
@@ -188,7 +247,11 @@
                   [class.expired-invitation]="booking.isExpiredInvitation"
                   [class.invitation]="booking.isInvitation"
                   [class.busy]="booking.isInvitation && isInvitationBusy(booking.bookingId)"
+                  tabindex="0"
+                  role="button"
                   (click)="openBookingDetail(booking)"
+                  (keydown.enter)="openBookingDetail(booking)"
+                  (keydown.space)="openBookingDetail(booking)"
                 >
                   <div
                     class="row-accent"
@@ -221,7 +284,7 @@
                       } @else if (booking.isInvitation) {
                         <span class="origin-tag origin-tag--invitation">Ny inbjudan</span>
                       } @else if (!booking.isOwned) {
-                        <span class="origin-tag origin-tag--attending">Inbjuden</span>
+                        <span class="origin-tag origin-tag--attending">Deltar</span>
                       }
                       @if (statusLabel(booking.status)) {
                         <span class="status-badge" [attr.data-status]="booking.status">
@@ -323,7 +386,7 @@
                       Inga kommande bokningar
                     }
                     @case ('history') {
-                      Ingen historik
+                      Ingen bokningshistorik
                     }
                   }
                 </h2>
@@ -349,7 +412,7 @@
       <!-- Load More -->
       @if (hasMore() && !isLoading()) {
         <div class="load-more">
-          <button class="btn-load-more" (click)="loadMore()">Ladda fler bokningar</button>
+          <button class="btn-load-more" (click)="loadMore()">Visa fler bokningar</button>
         </div>
       }
       @if (isLoading() && bookings().length > 0) {
