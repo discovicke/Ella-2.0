@@ -28,10 +28,12 @@ interface UserSearchResult {
   email: string;
 }
 
-/** Extended modal data shape — includes optional calendar prefill times. */
+/** Extended modal data shape — includes optional calendar prefill times and post-create callback. */
 interface BookingModalData extends RoomDetailModel {
   prefillStart?: Date;
   prefillEnd?: Date;
+  /** Called after a booking is successfully created so callers can refresh their data. */
+  onBookingCreated?: () => void;
 }
 
 @Component({
@@ -283,17 +285,20 @@ export class BookingModalComponent implements OnInit, OnDestroy {
           this.registrationService.inviteUsers(result.id, individualUserIds).subscribe({
             next: () => {
               this.toastService.showSuccess(`Bokning för ${this.room.name} skapad!`);
+              this.room.onBookingCreated?.();
               this.modalService.close();
             },
             error: () => {
               this.toastService.showSuccess(
                 `Bokning skapad, men kunde inte bjuda in alla användare.`,
               );
+              this.room.onBookingCreated?.();
               this.modalService.close();
             },
           });
         } else {
           this.toastService.showSuccess(`Bokning för ${this.room.name} skapad!`);
+          this.room.onBookingCreated?.();
           this.modalService.close();
         }
       },

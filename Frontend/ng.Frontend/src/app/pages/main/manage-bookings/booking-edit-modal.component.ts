@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { BookingService } from '../../../shared/services/booking.service';
 import { BookingDetailedReadModel, BookingStatus } from '../../../models/models';
 import {
   RegistrationService,
@@ -13,11 +15,13 @@ export interface BookingEditModalConfig {
   booking: BookingDetailedReadModel;
   onStatusChange: (bookingId: number, newStatus: BookingStatus) => Promise<void>;
   onCancelWithScope?: (bookingId: number, scope: 'single' | 'thisAndFollowing' | 'all') => Promise<void>;
+  /** Called after booking details (times/notes) are successfully saved. */
+  onDetailsUpdated?: () => void;
 }
 
 @Component({
   selector: 'app-booking-edit-modal',
-  imports: [DatePipe, ButtonComponent],
+  imports: [DatePipe, ButtonComponent, FormsModule],
   template: `
     <div class="booking-modal">
       <!-- Hero: Room + Status -->
@@ -151,6 +155,32 @@ export interface BookingEditModalConfig {
         </div>
       }
 
+      @if (isEditing()) {
+        <div class="edit-section">
+          <div class="edit-section__title">Redigera bokning</div>
+          <div class="edit-fields">
+            <div class="edit-row">
+              <label class="edit-label">Starttid</label>
+              <input class="edit-input" type="datetime-local" [(ngModel)]="editStartTime" />
+            </div>
+            <div class="edit-row">
+              <label class="edit-label">Sluttid</label>
+              <input class="edit-input" type="datetime-local" [(ngModel)]="editEndTime" />
+            </div>
+            <div class="edit-row">
+              <label class="edit-label">Anteckning</label>
+              <textarea class="edit-textarea" rows="3" [(ngModel)]="editNotes" maxlength="500" placeholder="Valfri anteckning..."></textarea>
+            </div>
+          </div>
+          <div class="edit-actions">
+            <app-button variant="tertiary" (clicked)="isEditing.set(false)">Avbryt</app-button>
+            <app-button variant="primary" [disabled]="isSaving()" (clicked)="onSaveDetails()">
+              {{ isSaving() ? 'Sparar...' : 'Spara ändringar' }}
+            </app-button>
+          </div>
+        </div>
+      }
+
       @if (booking.recurringGroupId) {
         <div class="recurring-badge">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
@@ -172,6 +202,10 @@ export interface BookingEditModalConfig {
         </span>
         <div class="footer-actions">
           <app-button variant="tertiary" (clicked)="onClose()">Stäng</app-button>
+
+          @if (booking.status === BookingStatus.Active && !hasEnded() && !isEditing()) {
+            <app-button variant="secondary" (clicked)="startEditing()">Redigera</app-button>
+          }
 
           @if (booking.status === BookingStatus.Cancelled && !hasEnded()) {
             <app-button
@@ -436,6 +470,74 @@ export interface BookingEditModalConfig {
         width: fit-content;
       }
 
+      /* ── Edit section ── */
+      .edit-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 12px;
+        padding: 16px;
+        background: var(--color-bg-panel);
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+      }
+
+      .edit-section__title {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--color-text-muted);
+      }
+
+      .edit-fields {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .edit-row {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .edit-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+      }
+
+      .edit-input,
+      .edit-textarea {
+        padding: 8px 10px;
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-family: inherit;
+        color: var(--color-text-primary);
+        background: var(--color-bg-card);
+        width: 100%;
+        box-sizing: border-box;
+
+        &:focus {
+          outline: none;
+          border-color: var(--color-primary);
+          box-shadow: 0 0 0 2px var(--color-primary-surface);
+        }
+      }
+
+      .edit-textarea {
+        resize: vertical;
+        min-height: 72px;
+      }
+
+      .edit-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+
       /* ── Clickable info row ── */
       .info-row.clickable {
         cursor: pointer;
@@ -567,6 +669,7 @@ export class BookingEditModalComponent {
   protected readonly BookingStatus = BookingStatus;
   private readonly modalService = inject(ModalService);
   private readonly registrationService = inject(RegistrationService);
+  private readonly bookingService = inject(BookingService);
 
   private config: BookingEditModalConfig = this.modalService.modalData();
   protected booking = this.config.booking;
@@ -576,6 +679,61 @@ export class BookingEditModalComponent {
   readonly isLoadingParticipants = signal(false);
   readonly participants = signal<RegistrationParticipant[]>([]);
   readonly showSeriesCancelOptions = signal(false);
+
+  // ── Edit mode ──────────────────────────────────────
+  readonly isEditing = signal(false);
+  readonly isSaving = signal(false);
+  editStartTime = '';
+  editEndTime = '';
+  editNotes = '';
+
+  private toLocalDatetimeInput(iso?: string | null): string {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  startEditing(): void {
+    this.editStartTime = this.toLocalDatetimeInput(this.booking.startTime);
+    this.editEndTime = this.toLocalDatetimeInput(this.booking.endTime);
+    this.editNotes = this.booking.notes ?? '';
+    this.isEditing.set(true);
+  }
+
+  async onSaveDetails(): Promise<void> {
+    if (!this.booking.bookingId) return;
+
+    const start = new Date(this.editStartTime);
+    const end = new Date(this.editEndTime);
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) {
+      return; // silent guard — inputs are type=datetime-local so this is rare
+    }
+
+    this.isSaving.set(true);
+    try {
+      await firstValueFrom(
+        this.bookingService.updateBookingDetails(this.booking.bookingId, {
+          startTime: start.toISOString(),
+          endTime: end.toISOString(),
+          notes: this.editNotes,
+        })
+      );
+      // Patch local booking reference so the view reflects changes immediately
+      this.booking = {
+        ...this.booking,
+        startTime: start.toISOString(),
+        endTime: end.toISOString(),
+        notes: this.editNotes,
+      };
+      this.isEditing.set(false);
+      this.config.onDetailsUpdated?.();
+    } catch {
+      // leave edit mode open so user can retry
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
 
   statusLabel(status?: BookingStatus): string {
     switch (status) {

@@ -17,6 +17,9 @@ import { BookingService, BookingPagedFilterParams } from '../../../shared/servic
 import { ModalService } from '../../../shared/services/modal.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { BookingEditModalComponent } from './booking-edit-modal.component';
+import { RoomService } from '../../../shared/services/room.service';
+import { DayPilot } from '@daypilot/daypilot-lite-angular';
+import { BookingModalComponent } from '../book-room/booking-modal/booking-modal.component';
 
 import { CalendarComponent } from '../../../shared/components/calendar/calendar.component';
 
@@ -44,6 +47,7 @@ export class ManageBookingsPage {
   private readonly bookingService = inject(BookingService);
   private readonly modalService = inject(ModalService);
   private readonly toastService = inject(ToastService);
+  private readonly roomService = inject(RoomService);
 
   // --- Booking form kill switch ---
   readonly isBookingFormEnabled = signal<boolean | null>(null);
@@ -51,6 +55,18 @@ export class ManageBookingsPage {
 
   // --- Pending count ---
   readonly pendingCount = signal(0);
+
+  // --- Rooms (for resource scheduler) ---
+  readonly roomsResource = resource({
+    loader: () => firstValueFrom(this.roomService.getAllRooms()),
+  });
+
+  readonly calendarResources = computed<DayPilot.ResourceData[]>(() =>
+    (this.roomsResource.value() ?? []).map(r => ({
+      id: r.roomId!.toString(),
+      name: r.name || 'Okänt rum',
+    }))
+  );
 
   constructor() {
     this.loadFormStatus();
@@ -127,7 +143,7 @@ export class ManageBookingsPage {
       case 'month':
         return 'month';
       case 'calendar':
-        return 'week'; // calendar view will fetch a week around current date by default
+        return 'today'; // resource scheduler shows one day; bounds derived from calendarDate
       case 'all':
         return 'all';
       default:
@@ -145,7 +161,7 @@ export class ManageBookingsPage {
       case 'month':
         return 'week';
       case 'calendar':
-        return 'week'; // the list view uses week when calendar is selected if we drop out of the calendar view
+        return 'day'; // resource scheduler: if list view is ever shown, group by day
       case 'all':
         return 'month';
       default:
@@ -155,10 +171,10 @@ export class ManageBookingsPage {
 
   private getDateBounds(range: DateRange): { start: Date; end: Date } | null {
     if (this.viewMode() === 'calendar') {
+      // Resource scheduler shows one day at a time — load only that day's bookings
       const d = this.calendarDate();
-      // For calendar view, load a full month around the selected date to ensure data is available when navigating
-      const start = new Date(d.getFullYear(), d.getMonth() - 1, 1);
-      const end = new Date(d.getFullYear(), d.getMonth() + 2, 0); // End of next month
+      const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
       return { start, end };
     }
 
@@ -489,6 +505,25 @@ export class ManageBookingsPage {
     }
   }
 
+  onTimeRangeSelected(event: { start: Date; end: Date; resourceId?: number }): void {
+    if (event.resourceId === undefined) return;
+    const resourceIdStr = event.resourceId.toString();
+    const rooms = this.roomsResource.value() ?? [];
+    const room = rooms.find(r => r.roomId?.toString() === resourceIdStr);
+    if (!room) return;
+
+    this.modalService.open(BookingModalComponent, {
+      title: `Boka ${room.name}`,
+      data: {
+        ...room,
+        prefillStart: event.start,
+        prefillEnd: event.end,
+        onBookingCreated: () => this.bookingsResource.reload(),
+      },
+      width: '600px',
+    });
+  }
+
   // --- Modal ---
   openBookingModal(booking: BookingDetailedReadModel, event?: Event): void {
     if (event) event.stopPropagation();
@@ -501,6 +536,7 @@ export class ManageBookingsPage {
           this.handleStatusChange(bookingId, newStatus),
         onCancelWithScope: (bookingId: number, scope: 'single' | 'thisAndFollowing' | 'all') =>
           this.handleCancelWithScope(bookingId, scope),
+        onDetailsUpdated: () => this.bookingsResource.reload(),
       },
       width: '520px',
     });

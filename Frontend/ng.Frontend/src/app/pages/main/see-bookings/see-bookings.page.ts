@@ -20,7 +20,7 @@ import { SessionService } from '../../../core/session.service';
 import {
   BookingDetailModalComponent,
   BookingDetailModalConfig,
-} from './booking-detail-modal.component';
+} from '../../../shared/components/booking-detail-modal/booking-detail-modal.component';
 import { CalendarComponent } from '../../../shared/components/calendar/calendar.component';
 
 /** A booking enriched with ownership/source info for the merged view */

@@ -143,6 +143,7 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
     return {
       viewType,
       startDate: this.currentDate,
+      weekStarts: 1,
       businessBeginsHour: 7,
       businessEndsHour: 19,
       heightSpec: 'BusinessHoursNoScroll',
@@ -178,6 +179,7 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
     const todayStr = this.toDpDate(new Date()).toString('yyyy-MM-dd');
     return {
       startDate: this.currentDate,
+      weekStarts: 1,
       eventMoveHandling: 'Disabled',
       eventResizeHandling: 'Disabled',
       eventDeleteHandling: 'Disabled',
@@ -234,7 +236,16 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
   }
 
   private updateEvents(): void {
-    this.events = this.bookings.map((b) => {
+    // Deduplicate by bookingId — own booking (first occurrence) wins over registration copy.
+    const seen = new Set<number>();
+    const unique = this.bookings.filter((b) => {
+      const id = b.bookingId ?? 0;
+      if (id > 0 && seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+
+    this.events = unique.map((b) => {
       const cssClass = this.getEventCssClass(b);
       const isCancelledOrExpired =
         b.status === BookingStatus.Cancelled || b.status === BookingStatus.Expired;

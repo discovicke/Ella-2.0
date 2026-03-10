@@ -190,13 +190,15 @@
     @if (viewMode() === 'calendar') {
       <div class="calendar-view-container">
         <app-calendar
-          viewMode="week"
+          viewMode="resources"
           [date]="calendarDate()"
+          [resources]="calendarResources()"
           [bookings]="bookings()"
           [isLoading]="bookingsResource.isLoading()"
           [hasError]="bookingsResource.error() !== undefined"
           (dateChange)="onCalendarDateChange($event)"
           (eventClicked)="openBookingModal($event)"
+          (timeRangeSelected)="onTimeRangeSelected($event)"
         ></app-calendar>
       </div>
     } @else {

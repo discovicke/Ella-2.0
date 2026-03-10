@@ -16,6 +16,7 @@ import { CalendarComponent } from '../../../shared/components/calendar/calendar.
 import { BookingService } from '../../../shared/services/booking.service';
 import { BookingDetailedReadModel } from '../../../models/models';
 import { DayPilot } from '@daypilot/daypilot-lite-angular';
+import { BookingDetailModalComponent } from '../../../shared/components/booking-detail-modal/booking-detail-modal.component';
 
 @Component({
   selector: 'app-book-room-page',
@@ -116,8 +117,19 @@ export class BookRoomPage {
   onBookRoom(room: RoomDetailModel) {
     this.modalService.open(BookingModalComponent, {
       title: `Boka ${room.name}`,
-      data: room,
+      data: {
+        ...room,
+        onBookingCreated: () => this.bookingsResource.reload(),
+      },
       width: '600px',
+    });
+  }
+
+  onEventClicked(booking: BookingDetailedReadModel): void {
+    this.modalService.open(BookingDetailModalComponent, {
+      title: 'Bokningsdetaljer',
+      data: { booking },
+      width: '520px',
     });
   }
 
@@ -131,6 +143,7 @@ export class BookRoomPage {
         ...room,
         prefillStart: event.start,
         prefillEnd: event.end,
+        onBookingCreated: () => this.bookingsResource.reload(),
       },
       width: '600px',
     });

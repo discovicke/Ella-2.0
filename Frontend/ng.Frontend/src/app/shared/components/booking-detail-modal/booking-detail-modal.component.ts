@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { ModalService } from '../../../shared/services/modal.service';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { ModalService } from '../../services/modal.service';
+import { ButtonComponent } from '../button/button.component';
 import { BookingDetailedReadModel, BookingStatus } from '../../../models/models';
 
 export interface BookingDetailModalConfig {
@@ -96,6 +96,23 @@ export interface BookingDetailModalConfig {
             </span>
           </div>
         </div>
+
+        @if (booking.userName) {
+          <div class="detail-row">
+            <div class="detail-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </div>
+            <div class="detail-content">
+              <span class="detail-primary">{{ booking.userName }}</span>
+              @if (booking.userEmail) {
+                <span class="detail-secondary">{{ booking.userEmail }}</span>
+              }
+            </div>
+          </div>
+        }
 
         @if (booking.notes) {
           <div class="detail-row">
@@ -224,7 +241,7 @@ export interface BookingDetailModalConfig {
         flex-direction: column;
       }
 
-      /* ── Hero ── */
+      /* -- Hero -- */
       .modal-hero {
         display: flex;
         flex-direction: column;
@@ -345,7 +362,7 @@ export interface BookingDetailModalConfig {
         }
       }
 
-      /* ── Detail rows ── */
+      /* -- Detail rows -- */
       .detail-rows {
         display: flex;
         flex-direction: column;
@@ -402,7 +419,7 @@ export interface BookingDetailModalConfig {
         color: var(--color-text-muted);
       }
 
-      /* ── Footer ── */
+      /* -- Footer -- */
       .modal-footer {
         display: flex;
         align-items: center;
@@ -412,7 +429,7 @@ export interface BookingDetailModalConfig {
         margin-top: 4px;
       }
 
-      /* ── Registration integrated into detail rows ── */
+      /* -- Registration / state icons -- */
       .detail-icon--success {
         background: var(--color-success-surface, #dcfce7);
 
@@ -421,12 +438,12 @@ export interface BookingDetailModalConfig {
         }
       }
 
-      .detail-icon--success {
-        color: var(--color-success, #16a34a);
-      }
-
       .detail-icon--recurring {
-        color: var(--color-primary);
+        background: var(--color-primary-surface);
+
+        svg {
+          stroke: var(--color-primary);
+        }
       }
 
       .detail-primary--recurring {
@@ -446,47 +463,19 @@ export interface BookingDetailModalConfig {
         color: var(--color-text-muted);
       }
 
-      .detail-action {
-        margin-left: auto;
-        flex-shrink: 0;
+      .detail-primary--invitation {
+        color: var(--color-primary);
       }
 
-      .inline-btn {
-        display: inline-flex;
-        align-items: center;
-        padding: 5px 14px;
-        border-radius: 6px;
-        font-size: 0.78rem;
-        font-weight: 600;
-        cursor: pointer;
-        border: 1px solid transparent;
-        transition: all 0.15s ease;
+      .detail-primary--success {
+        color: var(--color-success, #16a34a);
+      }
 
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
+      .detail-icon--invitation {
+        background: var(--color-primary-surface);
 
-        &--register {
-          background: var(--color-primary);
-          color: white;
-
-          &:hover:not(:disabled) {
-            background: var(--color-primary-hover);
-            box-shadow: var(--shadow-sm);
-          }
-        }
-
-        &--unregister {
-          background: transparent;
-          color: var(--color-text-muted);
-          border-color: var(--color-border);
-
-          &:hover:not(:disabled) {
-            color: var(--color-danger, #dc2626);
-            border-color: var(--color-danger, #dc2626);
-            background: var(--color-danger-surface, #fde2e2);
-          }
+        svg {
+          stroke: var(--color-primary);
         }
       }
     `,
@@ -554,7 +543,7 @@ export class BookingDetailModalComponent {
       case BookingStatus.Expired:
         return 'Utgången';
       default:
-        return '—';
+        return '\u2014';
     }
   }
 
