@@ -56,6 +56,16 @@
 
         <div class="filters-group">
           <div class="filter-item">
+            <label class="filter-label">Ort</label>
+            <select (change)="updateCampus($event)" [value]="selectedCampusId()">
+              <option value="All">Alla</option>
+              @for (c of campuses(); track c.id) {
+                <option [value]="c.id">{{ c.city }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="filter-item">
             <label class="filter-label">Rumstyp</label>
             <select (change)="updateType($event)" [value]="selectedTypeId()">
               <option value="All">Alla</option>
