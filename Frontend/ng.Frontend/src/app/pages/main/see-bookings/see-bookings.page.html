@@ -253,66 +253,59 @@
                   (keydown.enter)="openBookingDetail(booking)"
                   (keydown.space)="openBookingDetail(booking)"
                 >
-                  <div
-                    class="row-accent"
-                    [class.row-accent--invitation]="activeTab() === 'upcoming' && booking.isInvitation"
-                    [class.row-accent--declined]="activeTab() === 'upcoming' && (booking.isDeclined || booking.isExpiredInvitation)"
-                  ></div>
+                  <div class="row-card-body">
+                    <!-- Date Badge -->
+                    <div class="row-date">
+                      <span class="row-date-day">{{ booking.startTime | date: 'd' }}</span>
+                      <span class="row-date-month">
+                        {{ booking.startTime | date: 'MMM' : '' : 'sv' }}
+                      </span>
+                    </div>
 
-                  <!-- Date badge -->
-                  <div class="row-date">
-                    <span class="row-date-day">{{ booking.startTime | date: 'd' }}</span>
-                    <span class="row-date-month">
-                      {{ booking.startTime | date: 'MMM' : '' : 'sv' }}
-                    </span>
-                  </div>
+                    <div class="row-content">
+                      <div class="row-two-line">
+                        <!-- Line 1: Weekday + Note indicator -->
+                        <div class="row-primary">
+                          <span class="row-weekday">
+                            {{ booking.startTime | date: 'EEEE' : '' : 'sv' | titlecase }}
+                          </span>
+                          @if (booking.notes) {
+                            <span class="row-note-indicator" title="Har anteckning">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8z" />
+                                <polyline points="16 3 16 8 21 8" />
+                                <line x1="8" y1="13" x2="16" y2="13" />
+                                <line x1="8" y1="17" x2="13" y2="17" />
+                              </svg>
+                            </span>
+                          }
+                        </div>
 
-                  <!-- Main info -->
-                  <div class="row-main">
-                    <div class="row-top">
-                      <h3 class="row-room">{{ booking.roomName ?? '—' }}</h3>
+                        <!-- Line 2: Where + context -->
+                        <div class="row-secondary">
+                          <span class="row-room">{{ booking.roomName ?? '—' }}</span>
+                          @if (booking.inviterName) {
+                            <span class="row-inviter">skapad av {{ booking.inviterName }}</span>
+                          }
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Right side: Status, Time, Chevron (Vertically Centered) -->
+                    <div class="row-right-block">
                       @if (activeTab() === 'upcoming' && booking.isInvitation) {
                         <span class="origin-tag origin-tag--invitation">Ny inbjudan</span>
                       }
-                    </div>
-                    <div class="row-sub">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 6 12 12 16 14" />
+                      <span class="row-time">
+                        {{ booking.startTime | date: 'HH:mm' }} — {{ booking.endTime | date: 'HH:mm' }}
+                      </span>
+                      <svg class="row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="9 18 15 12 9 6" />
                       </svg>
-                      <span
-                        >{{ booking.startTime | date: 'HH:mm' }} —
-                        {{ booking.endTime | date: 'HH:mm' }}</span
-                      >
-                      <span class="sub-dot"></span>
-                      <span>{{ booking.startTime | date: 'EEEE' : '' : 'sv' | titlecase }}</span>
-                      @if (booking.inviterName) {
-                        <span class="sub-dot"></span>
-                        <span class="row-inviter">av {{ booking.inviterName }}</span>
-                      }
                     </div>
                   </div>
 
-                  <!-- Class chips -->
-                  @if (booking.classNames?.length) {
-                    <div class="row-classes">
-                      @for (cls of booking.classNames!; track cls) {
-                        <span class="class-chip">{{ cls }}</span>
-                      }
-                    </div>
-                  }
-
-                  <!-- Notes pill -->
-                  @if (booking.notes && !booking.isInvitation) {
-                    <div class="row-notes">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                      </svg>
-                      <p>{{ booking.notes }}</p>
-                    </div>
-                  }
-
-                  <!-- Invitation actions -->
+                  <!-- Invitation actions (Keep inline as they are actionable) -->
                   @if (booking.isInvitation) {
                     <div class="row-inv-actions">
                       <button

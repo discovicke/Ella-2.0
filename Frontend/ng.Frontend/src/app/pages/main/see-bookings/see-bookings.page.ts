@@ -212,10 +212,17 @@ export class SeeBookingsPage {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const dayAfterTomorrow = new Date(tomorrow);
     dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
-    const endOfWeek = new Date(today);
-    endOfWeek.setDate(endOfWeek.getDate() + 7);
-    const endOfNextWeek = new Date(endOfWeek);
-    endOfNextWeek.setDate(endOfNextWeek.getDate() + 7);
+
+    // Group by calendar week (Monday-Sunday)
+    // JS getDay(): 0=Sun, 1=Mon, ..., 6=Sat
+    const dayOfWeek = today.getDay();
+    const daysUntilNextMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
+
+    const startOfNextWeek = new Date(today);
+    startOfNextWeek.setDate(today.getDate() + daysUntilNextMonday);
+
+    const startOfFollowingWeek = new Date(startOfNextWeek);
+    startOfFollowingWeek.setDate(startOfNextWeek.getDate() + 7);
 
     const groups: BookingGroup[] = [
       { label: 'Idag', key: 'today', bookings: [] },
@@ -234,9 +241,9 @@ export class SeeBookingsPage {
         groups[0].bookings.push(booking);
       } else if (t === tomorrow.getTime()) {
         groups[1].bookings.push(booking);
-      } else if (t > tomorrow.getTime() && t < endOfWeek.getTime()) {
+      } else if (t > tomorrow.getTime() && t < startOfNextWeek.getTime()) {
         groups[2].bookings.push(booking);
-      } else if (t >= endOfWeek.getTime() && t < endOfNextWeek.getTime()) {
+      } else if (t >= startOfNextWeek.getTime() && t < startOfFollowingWeek.getTime()) {
         groups[3].bookings.push(booking);
       } else {
         groups[4].bookings.push(booking);

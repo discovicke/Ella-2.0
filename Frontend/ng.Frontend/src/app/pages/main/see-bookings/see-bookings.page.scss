@@ -606,12 +606,6 @@
   opacity: 0.75;
 }
 
-// Row inviter text
-.row-inviter {
-  font-style: italic;
-  color: rgb(59, 130, 246);
-}
-
 // Attending row slight tint
 .booking-row.attending {
   .row-date-day {
@@ -694,28 +688,32 @@
 .booking-row {
   position: relative;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 14px 18px 14px 20px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 18px;
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
-  border-radius: 14px;
-  transition: all 0.2s ease;
+  border-radius: 12px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 
   @include breakpoint-down('sm') {
-    flex-wrap: wrap;
-    gap: 10px;
-    padding: 12px 14px 12px 16px;
-  }
-
-  &:hover {
-    box-shadow: var(--shadow-md);
-    border-color: rgba(145, 54, 203, 0.3);
+    padding: 12px 14px;
   }
 
   &.clickable {
     cursor: pointer;
+
+    &:hover {
+      border-color: var(--color-primary);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+
+      .row-chevron {
+        transform: translateX(3px);
+        color: var(--color-primary);
+      }
+    }
 
     &:focus-visible {
       outline: 2px solid var(--color-primary);
@@ -726,37 +724,20 @@
   &.cancelled {
     opacity: 0.55;
 
-    .row-accent {
-      background: var(--color-text-muted);
-    }
-
     &:hover {
       box-shadow: var(--shadow-sm);
       border-color: var(--color-border);
+      transform: none;
     }
   }
 }
 
-.row-accent {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--color-border); // Neutral default
-  transition: width 0.2s ease;
-
-  .booking-row:hover & {
-    width: 5px;
-  }
-
-  &--invitation {
-    background: rgb(16, 185, 129); // Green for invitations
-  }
-
-  &--declined {
-    background: var(--color-text-muted, #9ca3af);
-  }
+// Card body with date badge + content
+.row-card-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
 }
 
 // Date badge
@@ -794,149 +775,106 @@
   margin-top: 1px;
 }
 
-// Main info
-.row-main {
+// Two-line content layout
+.row-content {
   flex: 1;
   min-width: 0;
+}
+
+.row-two-line {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-
-  @include breakpoint-down('sm') {
-    flex: 1 1 calc(100% - 60px);
-  }
+  gap: 3px;
+  width: 100%;
 }
 
-.row-top {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.row-room {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-
-  @include breakpoint-down('sm') {
-    font-size: 0.9rem;
-  }
-}
-
-.row-sub {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
-
-  svg {
-    width: 14px;
-    height: 14px;
-    stroke: currentColor;
-    flex-shrink: 0;
-  }
-}
-
-.sub-dot {
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--color-text-muted);
-  flex-shrink: 0;
-}
-
-// Class chips
-.row-classes {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  flex-shrink: 1;
-  min-width: 0;
-}
-
-.class-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  background: var(--color-primary-surface);
-  color: var(--color-primary-on-surface);
-  border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-// Notes pill
-.row-notes {
+// Line 1: Weekday + Note indicator
+.row-primary {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
-  background: var(--color-primary-surface);
-  border: 1px solid rgba(145, 54, 203, 0.15);
-  border-radius: 6px;
-  max-width: 320px;
-  flex-shrink: 1;
-  min-width: 0;
-
-  @include breakpoint-down('sm') {
-    max-width: 100%;
-    flex-basis: 100%;
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-    stroke: var(--color-primary);
-    flex-shrink: 0;
-  }
-
-  p {
-    margin: 0;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--color-text-secondary);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
 }
 
-// Status Badge
-.status-badge {
-  display: inline-flex;
+// Line 2: Room · inviter · note icon
+.row-secondary {
+  display: flex;
   align-items: center;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 0.6rem;
+
+  min-width: 0;
+}
+
+.row-weekday {
+  font-size: 0.95rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.row-room {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.row-inviter {
+  font-size: 0.78rem;
+  font-style: italic;
+  color: rgb(59, 130, 246);
   white-space: nowrap;
   flex-shrink: 0;
 
-  &[data-status='Active'] {
-    background: var(--color-success-surface);
-    color: var(--color-success-hover);
-    border: 1px solid rgba(16, 185, 129, 0.2);
+  &::before {
+    content: '|';
+    margin: 0 10px;
+    color: var(--color-border);
+    font-style: normal;
+    font-size: 0.8rem;
+    opacity: 0.8;
   }
+}
 
-  &[data-status='Cancelled'] {
-    background: var(--color-danger-surface);
-    color: var(--color-danger-hover);
-    border: 1px solid rgba(239, 68, 68, 0.15);
+.row-right-block {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.row-time {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.row-chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--color-border);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+
+  @include breakpoint-down('sm') {
+    display: none;
   }
+}
 
-  &[data-status='Expired'] {
-    background: var(--color-bg-panel);
-    color: var(--color-text-muted);
-    border: 1px solid var(--color-border);
+.row-note-indicator {
+  display: flex;
+  align-items: center;
+  color: var(--color-primary);
+  opacity: 0.7;
+  flex-shrink: 0;
+
+  svg {
+    width: 13px;
+    height: 13px;
+    stroke: currentColor;
   }
 }
 
@@ -950,23 +888,28 @@
 
     &:hover {
       box-shadow: var(--shadow-sm);
+      border-color: var(--color-primary) !important;
+      transform: translateY(-1px);
     }
   }
 
-  // Ensure date text is consistent in history
+  // Ensure date badge day is consistent in history
   .row-date-day {
-    color: var(--color-text-primary) !important;
-  }
-
-  // Uniform accents in history
-  .row-accent {
-    background: var(--color-border) !important;
-    opacity: 0.5;
+    color: var(--color-primary) !important;
   }
 
   // Hide any invitation badges (just in case)
   .origin-tag--invitation {
     display: none !important;
+  }
+
+  .row-note-indicator {
+    color: var(--color-text-muted);
+  }
+
+  // Hide chevron in history if we want to distinguish, but keep it if we want click signaling
+  .row-chevron {
+    opacity: 0.5;
   }
 }
 
