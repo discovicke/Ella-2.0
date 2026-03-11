@@ -27,7 +27,7 @@ import { DatePickerComponent } from '../../../shared/components/date-picker/date
 import { MultiSelectComponent, MultiSelectOption } from '../../../shared/components/multi-select/multi-select.component';
 import { SelectComponent, SelectOption } from '../../../shared/components/select/select.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { NumberPickerComponent } from '../../../shared/components/number-picker/number-picker.component';
+import { SliderComponent } from '../../../shared/components/slider/slider.component';
 
 type DiscoveryView = 'availability' | 'schedule';
 
@@ -42,7 +42,7 @@ interface AvailabilityCandidate {
 
 @Component({
   selector: 'app-book-room-page',
-  imports: [CalendarComponent, DatePipe, FormsModule, MultiSelectComponent, SelectComponent, DatePickerComponent, TimePickerComponent, ButtonComponent, NumberPickerComponent],
+  imports: [CalendarComponent, DatePipe, FormsModule, MultiSelectComponent, SelectComponent, DatePickerComponent, TimePickerComponent, ButtonComponent, SliderComponent],
   templateUrl: './book-room.page.html',
   styleUrl: './book-room.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -113,6 +113,11 @@ export class BookRoomPage implements OnDestroy {
   );
 
   readonly rooms = computed(() => this.roomsResource.value() ?? []);
+  readonly maxRoomCapacity = computed(() => {
+    const allRooms = this.rooms();
+    if (allRooms.length === 0) return 0;
+    return Math.max(...allRooms.map((r) => r.capacity ?? 0));
+  });
   readonly campuses = computed(() => {
     const values = new Set(
       this.rooms()

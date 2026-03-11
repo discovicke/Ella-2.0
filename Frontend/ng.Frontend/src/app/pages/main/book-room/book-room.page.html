@@ -260,13 +260,13 @@
 
           <div class="field">
             <span class="field-label">Kapacitet (minst)</span>
-            <app-number-picker
+            <app-slider
               [value]="minCapacity()"
               (valueChange)="updateCapacity($event)"
               [min]="0"
-              [max]="999"
-              placeholder="Antal personer..."
-            ></app-number-picker>
+              [max]="maxRoomCapacity()"
+              suffix="platser"
+            ></app-slider>
           </div>
 
           <div class="field" style="z-index: 2;">

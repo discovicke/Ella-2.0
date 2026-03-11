@@ -1,0 +1,41 @@
+.custom-slider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  height: 40px;
+  
+  .slider-input {
+    flex: 1;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+    height: 4px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+  }
+
+  .slider-value-display {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    white-space: nowrap;
+    min-width: 65px;
+    justify-content: flex-end;
+
+    .value-text {
+      color: var(--color-text-primary);
+      font-size: 0.875rem;
+      font-weight: 500;
+      min-width: 2ch;
+      text-align: right;
+    }
+    
+    .suffix-text {
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+    }
+  }
+}
