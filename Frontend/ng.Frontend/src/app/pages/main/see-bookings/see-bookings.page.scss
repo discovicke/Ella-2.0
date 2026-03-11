@@ -867,7 +867,8 @@
 .row-note-indicator {
   display: flex;
   align-items: center;
-  color: var(--color-primary);
+  color: var(--color-text-muted);
+
   opacity: 0.7;
   flex-shrink: 0;
 
@@ -901,10 +902,6 @@
   // Hide any invitation badges (just in case)
   .origin-tag--invitation {
     display: none !important;
-  }
-
-  .row-note-indicator {
-    color: var(--color-text-muted);
   }
 
   // Hide chevron in history if we want to distinguish, but keep it if we want click signaling
