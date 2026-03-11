@@ -27,455 +27,479 @@ export interface BookingDetailModalConfig {
   selector: 'app-booking-detail-modal',
   imports: [DatePipe, ButtonComponent],
   template: `
-    <div class="detail-modal">
-      <!-- Hero -->
-      <div class="modal-hero" [attr.data-status]="booking.status">
-        <div class="hero-top">
-          <span class="status-badge" [attr.data-status]="booking.status">
-            {{ statusLabel(booking.status) }}
-          </span>
-          @if (booking.status === BookingStatus.Active) {
-            <span class="countdown">{{ getCountdownLabel() }}</span>
+    <div class="booking-modal">
+      <!-- Header Section -->
+      <header class="modal-header">
+        <div class="header-top">
+          <h3 class="room-name">{{ booking.roomName ?? 'Okänt rum' }}</h3>
+          @if (booking.status !== BookingStatus.Active) {
+            <span class="status-badge" [attr.data-status]="booking.status">
+              {{ statusLabel(booking.status) }}
+            </span>
           }
         </div>
-        <h3 class="hero-room">{{ booking.roomName ?? 'Okänt rum' }}</h3>
-        <div class="hero-meta">
-          <span class="meta-item">{{ booking.roomType ?? '' }}</span>
+        
+        <div class="room-meta">
+          <span class="meta-item">{{ booking.roomType }}</span>
           @if (booking.roomFloor) {
-            <span class="meta-sep">·</span>
+            <span class="meta-dot"></span>
             <span class="meta-item">Våning {{ booking.roomFloor }}</span>
           }
           @if (booking.roomCapacity) {
-            <span class="meta-sep">·</span>
+            <span class="meta-dot"></span>
             <span class="meta-item">{{ booking.roomCapacity }} platser</span>
           }
           @if (booking.campusCity) {
-            <span class="meta-sep">·</span>
+            <span class="meta-dot"></span>
             <span class="meta-item">{{ booking.campusCity }}</span>
           }
         </div>
-        @if (assets.length) {
-          <div class="hero-assets">
+
+        @if (assets.length || classNames.length) {
+          <div class="header-tags">
             @for (asset of assets; track asset) {
-              <span class="asset-chip">{{ asset }}</span>
+              <span class="tag tag--asset">{{ asset }}</span>
             }
-          </div>
-        }
-        @if (classNames.length) {
-          <div class="hero-classes">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 00-3-3.87" />
-              <path d="M16 3.13a4 4 0 010 7.75" />
-            </svg>
             @for (cls of classNames; track cls) {
-              <span class="class-chip">{{ cls }}</span>
+              <span class="tag tag--class">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                </svg>
+                {{ cls }}
+              </span>
             }
           </div>
         }
-      </div>
+      </header>
 
-      <!-- Details -->
-      <div class="detail-rows">
-        <div class="detail-row">
-          <div class="detail-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
+      <!-- Main Content -->
+      <main class="modal-body">
+        <!-- Date & Time Section -->
+        <section class="info-group">
+          <div class="info-row">
+            <div class="info-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+            </div>
+            <div class="info-content">
+              <label>Tid och datum</label>
+              <div class="value-primary">
+                {{ booking.startTime | date: 'EEEE d MMMM' : '' : 'sv' }}
+              </div>
+              <div class="time-cluster">
+                <span class="value-secondary">
+                  {{ booking.startTime | date: 'HH:mm' }} – {{ booking.endTime | date: 'HH:mm' }}
+                </span>
+                @if (booking.status === BookingStatus.Active) {
+                  <span class="value-countdown">
+                    <span class="meta-dot"></span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    {{ getCountdownLabel() }}
+                  </span>
+                }
+              </div>
+            </div>
           </div>
-          <div class="detail-content">
-            <span class="detail-primary">
-              {{ booking.startTime | date: 'EEEE d MMMM yyyy' : '' : 'sv' }}
-            </span>
-            <span class="detail-secondary">
-              {{ booking.startTime | date: 'HH:mm' }} – {{ booking.endTime | date: 'HH:mm' }}
-            </span>
-          </div>
-        </div>
 
+          @if (booking.recurringGroupId) {
+            <div class="info-row info-row--sub">
+              <div class="info-icon info-icon--brand">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+                  <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                </svg>
+              </div>
+              <div class="info-content">
+                <div class="value-brand">Återkommande serie</div>
+              </div>
+            </div>
+          }
+        </section>
+
+        <!-- Organizer Section -->
         @if (booking.userName) {
-          <div class="detail-row">
-            <div class="detail-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
+          <section class="info-group">
+            <div class="info-row">
+              <div class="info-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+                </svg>
+              </div>
+              <div class="info-content">
+                <label>Bokat av</label>
+                <div class="value-primary">{{ booking.userName }}</div>
+                @if (booking.userEmail) {
+                  <div class="value-secondary">{{ booking.userEmail }}</div>
+                }
+              </div>
             </div>
-            <div class="detail-content">
-              <span class="detail-primary">{{ booking.userName }}</span>
-              @if (booking.userEmail) {
-                <span class="detail-secondary">{{ booking.userEmail }}</span>
-              }
-            </div>
-          </div>
+          </section>
         }
 
-        @if (booking.notes) {
-          <div class="detail-row">
-            <div class="detail-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-              </svg>
-            </div>
-            <div class="detail-content">
-              <span class="detail-primary">{{ booking.notes }}</span>
-            </div>
-          </div>
-        }
-
-        @if (booking.recurringGroupId) {
-          <div class="detail-row">
-            <div class="detail-icon detail-icon--recurring">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="23 4 23 10 17 10" />
-                <polyline points="1 20 1 14 7 14" />
-                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
-              </svg>
-            </div>
-            <div class="detail-content">
-              <span class="detail-primary detail-primary--recurring">Återkommande bokning</span>
-              <span class="detail-secondary">Del av en serie</span>
-            </div>
-          </div>
-        }
-
-        <!-- Registration row — show participant count for attended bookings -->
+        <!-- Registration & Status Section -->
         @if (hasRegistration) {
-          <div class="detail-row">
-            @if (config.isInvitation) {
-              <div class="detail-icon detail-icon--invitation">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                </svg>
+          <section class="info-group">
+            <div class="info-row">
+              <div class="info-icon" [class.info-icon--success]="!isDeclined() && !config.isInvitation" 
+                                   [class.info-icon--danger]="isDeclined()"
+                                   [class.info-icon--brand]="config.isInvitation">
+                @if (config.isInvitation) {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                  </svg>
+                } @else if (isDeclined()) {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
+                  </svg>
+                } @else {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                }
               </div>
-              <div class="detail-content">
-                <span class="detail-primary detail-primary--invitation">Inbjudan väntar på svar</span>
-                <span class="detail-secondary">
-                  {{ registrationCountLabel() }}
-                </span>
+              <div class="info-content">
+                <label>Deltagande</label>
+                <div class="value-primary" [class.text--success]="!isDeclined() && !config.isInvitation"
+                                           [class.text--danger]="isDeclined()"
+                                           [class.text--brand]="config.isInvitation">
+                  @if (config.isInvitation) { Inbjudan väntar }
+                  @else if (isDeclined()) { Du har avböjt }
+                  @else { Du deltar }
+                </div>
+                <div class="value-secondary">{{ registrationCountLabel() }}</div>
               </div>
-            } @else if (isDeclined()) {
-              <div class="detail-icon detail-icon--declined">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="15" y1="9" x2="9" y2="15" />
-                  <line x1="9" y1="9" x2="15" y2="15" />
-                </svg>
-              </div>
-              <div class="detail-content">
-                <span class="detail-primary detail-primary--declined">Du har avböjt</span>
-                <span class="detail-secondary">
-                  {{ registrationCountLabel() }}
-                </span>
+            </div>
+          </section>
+        }
+
+        <!-- Notes Section -->
+        @if (booking.notes) {
+          <section class="info-group info-group--notes">
+            <label class="notes-label">Anteckningar</label>
+            <div class="notes-box">
+              {{ booking.notes }}
+            </div>
+          </section>
+        }
+      </main>
+
+      <!-- Action Footer -->
+      <footer class="modal-footer">
+        <div class="footer-left">
+          <app-button variant="tertiary" (clicked)="onClose()">Stäng</app-button>
+        </div>
+        
+        <div class="footer-actions">
+          @if (config.isInvitation && config.onRegister && config.onDecline) {
+            <app-button variant="danger" [disabled]="isRegistering()" (clicked)="onDecline()">
+              {{ isRegistering() ? 'Avböjer...' : 'Avböj' }}
+            </app-button>
+            <app-button variant="primary" [disabled]="isRegistering()" (clicked)="onRegister()">
+              {{ isRegistering() ? 'Accepterar...' : 'Acceptera' }}
+            </app-button>
+          } @else if (config.onRegister && isDeclined()) {
+            <app-button variant="primary" [disabled]="isRegistering()" (clicked)="onRegister()">
+              {{ isRegistering() ? 'Accepterar...' : 'Acceptera inbjudan' }}
+            </app-button>
+          } @else if (config.onUnregister && isRegistered()) {
+            <app-button variant="danger" [disabled]="isRegistering()" (clicked)="onUnregister()">
+              {{ isRegistering() ? 'Avregistrerar...' : 'Avregistrera' }}
+            </app-button>
+          } @else if (config.onCancel && booking.status === BookingStatus.Active && !isDeclined()) {
+            @if (booking.recurringGroupId && config.onCancelWithScope && !showSeriesCancelOptions()) {
+              <app-button variant="danger" (clicked)="showSeriesCancelOptions.set(true)">
+                Avboka…
+              </app-button>
+            } @else if (booking.recurringGroupId && config.onCancelWithScope && showSeriesCancelOptions()) {
+              <div class="series-actions">
+                <app-button variant="danger" [disabled]="isCancelling()" (clicked)="onCancelScope('single')">
+                  {{ isCancelling() ? '...' : 'Denna' }}
+                </app-button>
+                <app-button variant="danger" [disabled]="isCancelling()" (clicked)="onCancelScope('thisAndFollowing')">
+                  {{ isCancelling() ? '...' : 'Följande' }}
+                </app-button>
+                <app-button variant="danger" [disabled]="isCancelling()" (clicked)="onCancelScope('all')">
+                  {{ isCancelling() ? '...' : 'Hela serien' }}
+                </app-button>
               </div>
             } @else {
-              <div class="detail-icon detail-icon--success">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-              </div>
-              <div class="detail-content">
-                <span class="detail-primary detail-primary--success">Du deltar</span>
-                <span class="detail-secondary">
-                  {{ registrationCountLabel() }}
-                </span>
-              </div>
+              <app-button variant="danger" [disabled]="isCancelling()" (clicked)="onCancel()">
+                {{ isCancelling() ? 'Avbokar...' : 'Avboka' }}
+              </app-button>
             }
-          </div>
-        }
-      </div>
-
-      <!-- Footer -->
-      <div class="modal-footer">
-        <app-button variant="tertiary" (clicked)="onClose()">Stäng</app-button>
-        @if (config.isInvitation && config.onRegister && config.onDecline) {
-          <app-button variant="danger" [disabled]="isRegistering()" (clicked)="onDecline()">
-            {{ isRegistering() ? 'Avböjer...' : 'Avböj' }}
-          </app-button>
-          <app-button variant="primary" [disabled]="isRegistering()" (clicked)="onRegister()">
-            {{ isRegistering() ? 'Accepterar...' : 'Acceptera' }}
-          </app-button>
-        } @else if (config.onRegister && isDeclined()) {
-          <app-button variant="primary" [disabled]="isRegistering()" (clicked)="onRegister()">
-            {{ isRegistering() ? 'Accepterar...' : 'Acceptera inbjudan' }}
-          </app-button>
-        } @else if (config.onUnregister && isRegistered()) {
-          <app-button variant="danger" [disabled]="isRegistering()" (clicked)="onUnregister()">
-            {{ isRegistering() ? 'Avregistrerar...' : 'Avregistrera' }}
-          </app-button>
-        } @else if (config.onCancel && booking.status === BookingStatus.Active && !isDeclined()) {
-          @if (booking.recurringGroupId && config.onCancelWithScope && !showSeriesCancelOptions()) {
-            <app-button variant="danger" (clicked)="showSeriesCancelOptions.set(true)">
-              Avboka…
-            </app-button>
-          } @else if (booking.recurringGroupId && config.onCancelWithScope && showSeriesCancelOptions()) {
-            <app-button variant="danger" [disabled]="isCancelling()" (clicked)="onCancelScope('single')">
-              {{ isCancelling() ? '...' : 'Denna' }}
-            </app-button>
-            <app-button variant="danger" [disabled]="isCancelling()" (clicked)="onCancelScope('thisAndFollowing')">
-              {{ isCancelling() ? '...' : 'Denna & kommande' }}
-            </app-button>
-            <app-button variant="danger" [disabled]="isCancelling()" (clicked)="onCancelScope('all')">
-              {{ isCancelling() ? '...' : 'Hela serien' }}
-            </app-button>
-          } @else {
-            <app-button variant="danger" [disabled]="isCancelling()" (clicked)="onCancel()">
-              {{ isCancelling() ? 'Avbokar...' : 'Avboka' }}
-            </app-button>
           }
-        }
-      </div>
+        </div>
+      </footer>
     </div>
   `,
   styles: [
     `
       @use 'styles/mixins' as *;
 
-      .detail-modal {
+      .booking-modal {
         display: flex;
         flex-direction: column;
-      }
-
-      /* -- Hero -- */
-      .modal-hero {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        padding: 20px 24px;
-        margin: -24px -24px 0;
-        background: var(--color-bg-panel);
-        border-bottom: 1px solid var(--color-border);
-      }
-
-      .hero-top {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .hero-room {
-        margin: 0;
-        font-size: 1.15rem;
-        font-weight: 700;
         color: var(--color-text-primary);
-        line-height: 1.3;
+        font-family: var(--font-family);
       }
 
-      .hero-meta {
+      /* -- Header -- */
+      .modal-header {
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .room-name {
+        @include heading(3);
+        margin: 0;
+        line-height: 1.2;
+        color: var(--color-text-primary);
+      }
+
+      .room-meta {
         display: flex;
         align-items: center;
-        gap: 6px;
         flex-wrap: wrap;
+        gap: 8px;
       }
 
       .meta-item {
-        font-size: 0.8rem;
+        font-size: var(--font-sm);
         color: var(--color-text-muted);
+        font-weight: 500;
       }
 
-      .meta-sep {
-        font-size: 0.8rem;
-        color: var(--color-text-muted);
-        opacity: 0.5;
-      }
-
-      .countdown {
-        font-size: 0.72rem;
-        font-weight: 600;
-        color: var(--color-primary);
-        letter-spacing: 0.02em;
-      }
-
-      .hero-assets {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-top: 2px;
-      }
-
-      .asset-chip {
-        display: inline-flex;
-        align-items: center;
-        padding: 2px 10px;
-        background: var(--color-primary-surface);
-        color: var(--color-primary-on-surface);
-        border-radius: 999px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        letter-spacing: 0.02em;
-      }
-
-      .hero-classes {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-top: 2px;
-
-        > svg:first-child {
-          width: 16px;
-          height: 16px;
-          stroke: var(--color-text-muted);
-          flex-shrink: 0;
-        }
-      }
-
-      .class-chip {
-        display: inline-flex;
-        align-items: center;
-        padding: 2px 10px;
-        background: var(--color-primary-surface);
-        color: var(--color-primary-on-surface);
-        border-radius: 999px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        letter-spacing: 0.02em;
+      .meta-dot {
+        width: 3px;
+        height: 3px;
+        background: var(--color-divider);
+        border-radius: 50%;
       }
 
       .status-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 3px 10px;
+        flex-shrink: 0;
+        padding: 4px 12px;
         border-radius: 999px;
-        font-size: 0.7rem;
-        font-weight: 600;
+        font-size: 0.75rem;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.3px;
+        letter-spacing: 0.04em;
 
         &[data-status='Active'] {
-          background: var(--color-success-surface, #dcfce7);
-          color: var(--color-success, #16a34a);
+          background: var(--badge-green-bg);
+          color: var(--badge-green-text);
         }
         &[data-status='Cancelled'] {
-          background: var(--color-danger-surface, #fde2e2);
-          color: var(--color-danger, #dc2626);
+          background: var(--color-danger-surface);
+          color: var(--color-danger);
         }
         &[data-status='Expired'] {
+          background: var(--badge-gray-bg);
+          color: var(--badge-gray-text);
+        }
+      }
+
+      .header-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+
+        &--asset {
+          background: var(--color-asset-bg);
+          color: var(--color-asset-text);
+          border: 1px solid var(--color-asset-border);
+        }
+
+        &--class {
+          background: var(--color-primary-surface);
+          color: var(--color-primary);
+          
+          svg {
+            width: 12px;
+            height: 12px;
+          }
+        }
+      }
+
+      /* -- Body & Info Groups -- */
+      .modal-body {
+        padding: 24px 0;
+        @include stack(24px);
+      }
+
+      .info-group {
+        @include stack(12px);
+
+        &--notes {
+          padding: 16px;
           background: var(--color-bg-panel);
-          color: var(--color-text-muted);
+          border-radius: 12px;
           border: 1px solid var(--color-border);
         }
       }
 
-      /* -- Detail rows -- */
-      .detail-rows {
+      .info-row {
         display: flex;
-        flex-direction: column;
-        padding: 20px 0;
-      }
+        gap: 16px;
 
-      .detail-row {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 10px 0;
-
-        & + .detail-row {
-          border-top: 1px solid var(--color-border);
+        &--sub {
+          margin-left: 36px;
+          margin-top: -8px;
         }
       }
 
-      .detail-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        background: var(--color-primary-surface);
-        border-radius: 8px;
+      .info-icon {
         flex-shrink: 0;
+        width: 20px;
+        height: 20px;
+        margin-top: 2px;
+        color: var(--color-text-muted);
 
         svg {
-          width: 16px;
-          height: 16px;
-          stroke: var(--color-primary);
+          width: 20px;
+          height: 20px;
         }
+
+        &--success { color: var(--color-success); }
+        &--danger { color: var(--color-danger); }
+        &--brand { color: var(--color-primary); }
       }
 
-      .detail-content {
+      .info-content {
         display: flex;
         flex-direction: column;
-        gap: 1px;
+        flex: 1;
         min-width: 0;
-      }
 
-      .detail-primary {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: var(--color-text-primary);
-
-        &::first-letter {
+        label {
+          font-size: 0.7rem;
+          font-weight: 800;
           text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: var(--color-text-muted);
+          margin-bottom: 6px;
         }
       }
 
-      .detail-secondary {
-        font-size: 0.8rem;
+      .time-cluster {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .value-countdown {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--color-primary);
+        font-size: 0.8125rem;
+        font-weight: 700;
+
+        .meta-dot {
+          background: var(--color-divider);
+          opacity: 0.6;
+        }
+
+        svg {
+          width: 12px;
+          height: 12px;
+        }
+      }
+
+      .value-primary {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        margin-bottom: 2px;
+
+        &::first-letter { text-transform: uppercase; }
+      }
+
+      .value-secondary {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+      }
+
+      .value-brand {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--color-primary);
+      }
+
+      .notes-label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
         color: var(--color-text-muted);
       }
+
+      .notes-box {
+        font-size: 0.9375rem;
+        line-height: 1.5;
+        color: var(--color-text-primary);
+        white-space: pre-wrap;
+      }
+
+      .text--success { color: var(--color-success); }
+      .text--danger { color: var(--color-danger); }
+      .text--brand { color: var(--color-primary); }
 
       /* -- Footer -- */
       .modal-footer {
+        padding-top: 24px;
+        border-top: 1px solid var(--color-border);
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        justify-content: flex-end;
-        gap: 10px;
-        padding-top: 16px;
-        margin-top: 4px;
+        gap: 16px;
       }
 
-      /* -- Registration / state icons -- */
-      .detail-icon--success {
-        background: var(--color-success-surface, #dcfce7);
+      .footer-actions {
+        display: flex;
+        gap: 12px;
+      }
 
-        svg {
-          stroke: var(--color-success, #16a34a);
+      .series-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      @include breakpoint-down('sm') {
+        .modal-footer {
+          flex-direction: column-reverse;
+          align-items: stretch;
         }
-      }
-
-      .detail-icon--recurring {
-        background: var(--color-primary-surface);
-
-        svg {
-          stroke: var(--color-primary);
-        }
-      }
-
-      .detail-primary--recurring {
-        color: var(--color-primary);
-        font-weight: 500;
-      }
-
-      .detail-icon--declined {
-        background: var(--color-danger-surface, #fef2f2);
-
-        svg {
-          stroke: var(--color-danger, #dc2626);
-        }
-      }
-
-      .detail-primary--declined {
-        color: var(--color-text-muted);
-      }
-
-      .detail-primary--invitation {
-        color: var(--color-primary);
-      }
-
-      .detail-primary--success {
-        color: var(--color-success, #16a34a);
-      }
-
-      .detail-icon--invitation {
-        background: var(--color-primary-surface);
-
-        svg {
-          stroke: var(--color-primary);
+        .footer-left, .footer-actions, .series-actions {
+          display: flex;
+          flex-direction: column;
         }
       }
     `,
@@ -536,14 +560,12 @@ export class BookingDetailModalComponent {
 
   statusLabel(status?: BookingStatus): string {
     switch (status) {
-      case BookingStatus.Active:
-        return 'Aktiv';
       case BookingStatus.Cancelled:
         return 'Avbokad';
       case BookingStatus.Expired:
         return 'Utgången';
       default:
-        return '\u2014';
+        return '';
     }
   }
 
