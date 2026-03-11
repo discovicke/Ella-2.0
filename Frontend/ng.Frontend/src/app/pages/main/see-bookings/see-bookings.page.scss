@@ -743,23 +743,19 @@
   top: 0;
   bottom: 0;
   width: 3px;
-  background: var(--color-primary);
+  background: var(--color-border); // Neutral default
   transition: width 0.2s ease;
 
   .booking-row:hover & {
     width: 5px;
   }
 
-  &--attending {
-    background: rgb(59, 130, 246);
+  &--invitation {
+    background: rgb(16, 185, 129); // Green for invitations
   }
 
   &--declined {
     background: var(--color-text-muted, #9ca3af);
-  }
-
-  &--invitation {
-    background: rgb(16, 185, 129);
   }
 }
 
@@ -941,6 +937,36 @@
     background: var(--color-bg-panel);
     color: var(--color-text-muted);
     border: 1px solid var(--color-border);
+  }
+}
+
+// ============================================================================
+// HISTORY MODE OVERRIDES (cleaner list)
+// ============================================================================
+.bookings-list.history-mode {
+  .booking-row {
+    opacity: 1 !important; // Force full opacity in history
+    border-color: var(--color-border) !important;
+
+    &:hover {
+      box-shadow: var(--shadow-sm);
+    }
+  }
+
+  // Ensure date text is consistent in history
+  .row-date-day {
+    color: var(--color-text-primary) !important;
+  }
+
+  // Uniform accents in history
+  .row-accent {
+    background: var(--color-border) !important;
+    opacity: 0.5;
+  }
+
+  // Hide any invitation badges (just in case)
+  .origin-tag--invitation {
+    display: none !important;
   }
 }
 

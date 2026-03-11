@@ -223,7 +223,7 @@
       }
 
       <!-- Booking List -->
-      <div class="bookings-list" aria-live="polite">
+      <div class="bookings-list" [class.history-mode]="activeTab() === 'history'" aria-live="polite">
         @for (group of groupedBookings(); track group.key) {
           <section class="group-section">
             <div class="group-header">
@@ -255,14 +255,8 @@
                 >
                   <div
                     class="row-accent"
-                    [class.row-accent--attending]="
-                      !booking.isOwned &&
-                      !booking.isDeclined &&
-                      !booking.isExpiredInvitation &&
-                      !booking.isInvitation
-                    "
-                    [class.row-accent--declined]="booking.isDeclined || booking.isExpiredInvitation"
-                    [class.row-accent--invitation]="booking.isInvitation"
+                    [class.row-accent--invitation]="activeTab() === 'upcoming' && booking.isInvitation"
+                    [class.row-accent--declined]="activeTab() === 'upcoming' && (booking.isDeclined || booking.isExpiredInvitation)"
                   ></div>
 
                   <!-- Date badge -->
@@ -277,19 +271,8 @@
                   <div class="row-main">
                     <div class="row-top">
                       <h3 class="row-room">{{ booking.roomName ?? '—' }}</h3>
-                      @if (booking.isDeclined) {
-                        <span class="origin-tag origin-tag--declined">Avböjd</span>
-                      } @else if (booking.isExpiredInvitation) {
-                        <span class="origin-tag origin-tag--muted">Ej svarad</span>
-                      } @else if (booking.isInvitation) {
+                      @if (activeTab() === 'upcoming' && booking.isInvitation) {
                         <span class="origin-tag origin-tag--invitation">Ny inbjudan</span>
-                      } @else if (!booking.isOwned) {
-                        <span class="origin-tag origin-tag--attending">Deltar</span>
-                      }
-                      @if (statusLabel(booking.status)) {
-                        <span class="status-badge" [attr.data-status]="booking.status">
-                          {{ statusLabel(booking.status) }}
-                        </span>
                       }
                     </div>
                     <div class="row-sub">
