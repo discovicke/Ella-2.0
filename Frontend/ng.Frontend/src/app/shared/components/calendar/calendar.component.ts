@@ -59,7 +59,7 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
 
   get calendarWidth(): string | null {
     if (this.viewMode === 'resources' && this.resources.length > 0) {
-      const minWidth = 160;
+      const minWidth = 130;
       const hourColumnWidth = 50; // Approximation for the time column on the left
       return `${this.resources.length * minWidth + hourColumnWidth}px`;
     }
@@ -229,6 +229,7 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
     return {
       ...this.buildCalendarConfig('Day'),
       viewType: 'Resources',
+      ...({ columnWidth: 130 } as any),
       columns: this.resources.map((r) => ({
         name: r.name || 'Unknown',
         id: r.id,
