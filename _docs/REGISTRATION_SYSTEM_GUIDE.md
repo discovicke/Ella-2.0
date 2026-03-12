@@ -44,12 +44,11 @@ Both "decline an invitation" and "unregister from a confirmed booking" lead to t
 
 ```sql
 CREATE TABLE registrations (
-    id          BIGSERIAL PRIMARY KEY,
-    booking_id  BIGINT NOT NULL REFERENCES bookings(id),
-    user_id     BIGINT NOT NULL REFERENCES users(id),
-    status      registration_status NOT NULL DEFAULT 'invited',
-    created_at  TIMESTAMP NOT NULL DEFAULT NOW(),
-    UNIQUE (booking_id, user_id)
+    user_id    BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    booking_id BIGINT NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+    status     registration_status NOT NULL DEFAULT 'invited',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (user_id, booking_id)
 );
 ```
 
@@ -66,8 +65,8 @@ This composite index supports the unified registration query which filters by `(
 Registration counts are pre-aggregated in `v_bookings_detailed`:
 
 ```sql
-COUNT(DISTINCT CASE WHEN r.status = 'registered' THEN r.id END) AS registration_count,
-COUNT(DISTINCT CASE WHEN r.status = 'invited'    THEN r.id END) AS invitation_count
+COUNT(reg.user_id) FILTER (WHERE reg.status = 'registered') AS registration_count,
+COUNT(reg.user_id) FILTER (WHERE reg.status = 'invited')    AS invitation_count
 ```
 
 ---
@@ -83,32 +82,26 @@ public enum RegistrationStatus { Invited, Registered, Declined }
 
 ### Read Model
 
-`BookingDetailedReadModel` includes an optional `UserRegistrationStatus` field (string: `"invited"`, `"registered"`, `"declined"`, or `null`). This is only populated by the unified registration endpoint — not by general booking queries.
+`BookingDetailedReadModel` includes an optional `UserRegistrationStatus` field (string: `"invited"`, `"registered"`, `"declined"`, or `null`). This is populated by the registration endpoints.
 
 ### Repository (IBookingReadModelRepository)
 
-One parameterised method replaces what was previously three separate methods:
+Supports both standard and paginated retrieval:
 
 ```csharp
-Task<IEnumerable<BookingDetailedReadModel>> GetDetailedBookingsByUserRegistrationAsync(
-    long userId,
-    IEnumerable<RegistrationStatus> statuses,
-    string? timeFilter = null   // "upcoming" | "history" | null
-);
+Task<(IEnumerable<BookingDetailedReadModel> Bookings, int TotalCount)> 
+    GetDetailedBookingsByUserRegistrationPagedAsync(
+        long userId,
+        IEnumerable<RegistrationStatus> statuses,
+        int page,
+        int pageSize,
+        string? timeFilter = null
+    );
 ```
-
-**Implementation details:**
-
-| DB engine  | Status filter                           | Time function     |
-| ---------- | --------------------------------------- | ----------------- |
-| PostgreSQL | `ANY(@Statuses::registration_status[])` | `NOW()`           |
-| SQLite     | `IN @Statuses` (integer array)          | `datetime('now')` |
-
-The query also selects `r.status` as `user_registration_status` so each returned booking carries the user's registration status.
 
 ### Service (RegistrationService)
 
-**Write operations** (unchanged):
+**Write operations**:
 
 | Method                   | Description                                           |
 | ------------------------ | ----------------------------------------------------- |
@@ -117,42 +110,33 @@ The query also selects `r.status` as `user_registration_status` so each returned
 | `InviteUsersAsync`       | Creates rows with status = Invited                    |
 | `RemoveInvitationAsync`  | Deletes the registration row (owner action)           |
 
-**Read operation** (consolidated):
+**Read operation** (Paginated):
 
 ```csharp
-Task<IEnumerable<BookingDetailedReadModel>> GetUserRegistrationBookingsAsync(
-    long userId,
-    IEnumerable<RegistrationStatus> statuses,
-    string? timeFilter = null
-);
+Task<(IEnumerable<BookingDetailedReadModel> Bookings, int TotalCount)> 
+    GetUserRegistrationBookingsPagedAsync(
+        long userId,
+        IEnumerable<RegistrationStatus> statuses,
+        int page,
+        int pageSize,
+        string? timeFilter = null
+    );
 ```
 
 ### API Endpoint
 
-**Unified endpoint** — replaces the previous `/my-registrations`, `/my-invitations`, `/my-declined`:
+**Unified paginated endpoint** — replaces the previous individual list calls:
 
 ```
-GET /api/bookings/my-registration-bookings?statuses=registered,invited,declined&timeFilter=upcoming
+GET /api/bookings/my-registration-bookings?statuses=registered,invited&timeFilter=upcoming&page=1&pageSize=20
 ```
 
 | Query Param  | Type   | Default | Description                                                 |
 | ------------ | ------ | ------- | ----------------------------------------------------------- |
 | `statuses`   | string | all     | Comma-separated: `invited`, `registered`, `declined`        |
-| `timeFilter` | string | all     | `upcoming` (end_time ≥ now, ASC) or `history` (< now, DESC) |
-
-**Other registration endpoints** (unchanged):
-
-| Method | Path                                        | Description                                    |
-| ------ | ------------------------------------------- | ---------------------------------------------- |
-| POST   | `/api/bookings/{id}/register`               | Accept invite / RSVP                           |
-| POST   | `/api/bookings/{id}/decline`                | Decline or unregister (→ declined)             |
-| POST   | `/api/bookings/{id}/invite`                 | Invite users (body: `{ userIds }`)             |
-| POST   | `/api/bookings/{id}/invite-class`           | Mass-invite all members of a class             |
-| POST   | `/api/bookings/{id}/sync-class-invitations` | Sync invitations with current class membership |
-| GET    | `/api/bookings/{id}/class-members`          | List class members and their invitation status |
-| DELETE | `/api/bookings/{id}/invitations/{userId}`   | Remove invitation (owner only)                 |
-| GET    | `/api/bookings/{id}/registrations`          | List confirmed participants                    |
-| GET    | `/api/bookings/{id}/invitations`            | List pending invitations                       |
+| `timeFilter` | string | all     | `upcoming` (end_time ≥ now) or `history` (< now)            |
+| `page`       | int    | 1       | 1-based page number                                         |
+| `pageSize`   | int    | 20      | Items per page (max 100)                                    |
 
 ---
 
@@ -160,72 +144,27 @@ GET /api/bookings/my-registration-bookings?statuses=registered,invited,declined&
 
 ### Service (RegistrationService)
 
-One method replaces the previous three:
-
 ```typescript
 getMyRegistrationBookings(
-  statuses: string[],          // ['registered', 'invited', 'declined']
-  timeFilter?: 'upcoming' | 'history'
-): Observable<BookingDetailedReadModel[]>
+  statuses: string[],
+  timeFilter?: 'upcoming' | 'history',
+  page?: number,
+  pageSize?: number
+): Observable<PagedResult<BookingDetailedReadModel>>
 ```
 
 ### See Bookings Page — Data Loading
 
-The page makes **2 parallel API calls** per load (down from 4):
-
-```
-Promise.all([
-  1. GET /api/bookings/my-owned?page=N&timeFilter=...         ← paged own bookings
-  2. GET /api/bookings/my-registration-bookings?statuses=...  ← unified registrations
-])
-```
-
-The server handles time filtering, so no client-side date comparisons are needed.
-
-### Enrichment
-
-Each booking is enriched with metadata based on `userRegistrationStatus` from the API response:
-
-| `userRegistrationStatus` | Tab      | Enrichment source      | UI treatment                          |
-| ------------------------ | -------- | ---------------------- | ------------------------------------- |
-| `'registered'`           | both     | `'registered'`         | Blue accent, "Du deltar" in modal     |
-| `'invited'`              | upcoming | `'invitation'`         | Green accent, accept/decline buttons  |
-| `'invited'`              | history  | `'expired-invitation'` | Grey accent, no actions               |
-| `'declined'`             | both     | `'declined'`           | Red accent, re-accept option in modal |
-| _(own booking)_          | both     | `'owned'`              | Purple accent, cancel/edit actions    |
-
-### Deduplication
-
-Own bookings and registration bookings can overlap (user is owner AND has a registration). The merge logic deduplicates by `bookingId`, preferring the "owned" enrichment since it carries edit/cancel capabilities.
-
-### Visual Indicators
-
-Each registration status has distinct styling in the booking list:
-
-| Status     | Left accent color | Origin tag    |
-| ---------- | ----------------- | ------------- |
-| Owned      | Purple (default)  | —             |
-| Registered | Blue              | "Du deltar"   |
-| Invitation | Green             | "Ny inbjudan" |
-| Declined   | Red               | "Avböjd"      |
-
-Invitations show inline **Acceptera** / **Avböj** buttons directly in the booking row.
+The page uses the **Load-more** pattern, fetching pages as the user clicks "Ladda fler". It makes parallel calls for owned bookings and registration bookings, then merges and deduplicates them in the signal.
 
 ---
 
 ## Design Decisions
 
-### Why one unified endpoint instead of three?
+### Why paginated registration bookings?
 
-1. **Fewer HTTP round-trips** — 1 request instead of 3 for the same data
-2. **Server-side time filtering** — DB only returns relevant rows, no wasted transfer
-3. **DRY** — one repo method, one service method, one endpoint instead of three near-identical copies
-4. **Composable** — caller decides which statuses to include; the backend doesn't need a new endpoint for each combination
+As of March 2026, we implemented server-side pagination for registrations to support users with high event volume (e.g., active students or managers attending many meetings). This ensures the "See Bookings" page remains performant even with thousands of registrations.
 
 ### Why keep `userRegistrationStatus` on the read model?
 
-The unified endpoint returns mixed-status bookings. Without this field, the frontend would need a separate way to determine which bookings are invited vs registered vs declined. Adding it to the response (populated only by the registration query) lets the frontend partition results in a single pass.
-
-### Why not paginate registration bookings?
-
-Registration counts per user are naturally bounded — a user can realistically have at most ~50-100 active registrations across all bookings. The own-bookings endpoint is paginated because users can create hundreds of bookings over time. If registration volume grows, pagination can be added to the unified endpoint without changing the frontend contract.
+The unified endpoint returns mixed-status bookings. Without this field, the frontend would need a separate way to determine which bookings are invited vs registered vs declined. Adding it to the response lets the frontend partition results in a single pass.

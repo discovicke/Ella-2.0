@@ -71,6 +71,14 @@ Returns `PagedResult<BookingDetailedReadModel>`.
 
 Returns `PagedResult<BookingDetailedReadModel>`.
 
+#### `GET /api/bookings` (Grouped)
+
+When the `groupBy` parameter is used, the endpoint returns a `GroupedPagedResult`. This paginates by unique groups (e.g., 10 rooms per page) and returns all bookings for those groups.
+
+| Query Param | Type   | Description                                      |
+| ----------- | ------ | ------------------------------------------------ |
+| `groupBy`   | string | `room`, `user`, `campus`, `day`, `week`, `month` |
+
 ### Architecture Flow
 
 ```

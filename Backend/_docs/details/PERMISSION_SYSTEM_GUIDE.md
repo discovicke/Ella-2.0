@@ -90,6 +90,7 @@ public class UserPermissions
     public bool ManageBookings { get; set; }
     public bool ManageCampuses { get; set; }
     public bool ManageRoles { get; set; }
+    public bool ManageResources { get; set; }
 
     /// <summary>
     /// Helper to check permission by key name dynamically.
@@ -105,6 +106,7 @@ public class UserPermissions
             "ManageBookings" => ManageBookings,
             "ManageCampuses" => ManageCampuses,
             "ManageRoles" => ManageRoles,
+            "ManageResources" => ManageResources,
             _ => false
         };
     }
@@ -128,7 +130,7 @@ public class UserPermissions
 
 ## 5. Schema Reference
 
-- `system_permissions`: Registry of all valid permission keys (e.g., `ManageUsers`).
+- `system_permissions`: Registry of all valid permission keys (e.g., `ManageUsers`, `ManageResources`).
 - `permission_templates`: Definitions of roles (e.g., "Student").
 - `users.permission_template_id`: Links `User` -> `Template` directly.
 - `user_permission_overrides`: Specific exceptions for a user.

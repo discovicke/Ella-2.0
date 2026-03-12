@@ -13,10 +13,15 @@ users >── user_campus >── campus
 users >── user_class  >── class
 users ──> permission_templates ──< permission_template_flags >── system_permissions
 users ──< user_permission_overrides >── system_permissions
+users ──< user_booking_slugs
 
 users ──< bookings >── rooms
 bookings ──< booking_class >── class
 bookings ──< registrations (status: invited/registered/declined) >── users
+
+resource_categories ──< bookable_resources ──< resource_bookings >── users
+                                  │
+                               campus
 ```
 
 ### Användarhantering
@@ -45,11 +50,22 @@ Det innebär att en administratör kan ge en enskild elev en specifik behörighe
 - Varje rum tillhör ett campus och en rumstyp, och kan ha utrustning (assets) registrerad (projektor, whiteboard, TV etc.).
 - Rum har kapacitet, våningsplan och fritext-anteckningar.
 
+### Resurshantering (Mobila resurser)
+
+- Systemet hanterar även bokningsbara resurser som inte är bundna till ett specifikt rum, t.ex. skolbilar eller laptopvagnar.
+- Resurser är kategoriserade (t.ex. "Fordon") och kopplade till en specifik ort (campus).
+- Behörigheten `ManageResources` krävs för att administrera dessa.
+
+### Boknings-slugs (Publik identifiering)
+
+- Användare kan generera en unik **slug** (t.ex. `john-doe-123`).
+- Denna slug kan användas i publika bokningsformulär för att identifiera bokaren utan att användaren behöver dela sin e-postadress öppet.
+
 ### Bokning av rum
 
 - Inloggade användare kan söka efter lediga rum och boka dem för ett givet tidsintervall.
-- En bokning har status `active`, `cancelled` eller `expired` (expired beräknas dynamiskt baserat på sluttid).
-- Överlappande bokningar för samma rum förhindras.
+- En bokning har status `active`, `cancelled`, `pending` eller `expired` (expired beräknas dynamiskt baserat på sluttid).
+- Överlappande bokningar för samma rum förhindras. Systemet tar hänsyn till användarens "permission level" vid vissa typer av konflikthantering.
 
 ### Registreringar och inbjudningar
 
@@ -65,11 +81,11 @@ Flödet fungerar så här:
 
 - En bokningsägare kan **bjuda in** andra användare till sin bokning.
 - Den inbjudne kan **acceptera** (→ Registered), **avböja** (→ Declined), eller låta inbjudan vara (förblir Invited).
-- En registrerad användare kan **avregistrera** sig (→ återgår till Invited).
+- En registrerad användare kan **avregistrera** sig (→ återgår till Declined).
 - En avböjd inbjudan kan **accepteras i efterhand** (→ Registered).
 - Bokningsägaren kan **ta bort** en inbjudan helt (raderar registreringsraden).
 
-Registreringar visas i "Mina bokningar"-vyn, där inbjudningar, bekräftade och avböjda bokningar hämtas via ett enda API-anrop med server-side tidsfiltrering.
+Registreringar visas i "Mina bokningar"-vyn, där inbjudningar, bekräftade och avböjda bokningar hämtas via ett server-side paginerat API.
 
 Se [REGISTRATION_SYSTEM_GUIDE.md](./REGISTRATION_SYSTEM_GUIDE.md) för fullständig teknisk dokumentation.
 
