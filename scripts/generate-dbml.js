@@ -181,8 +181,7 @@ if (!process.env.DBDOCS_TOKEN) {
 function updateDocLinks(url) {
   const MARKER_START = "<!-- dbdocs-link:start -->";
   const MARKER_END = "<!-- dbdocs-link:end -->";
-  const date = new Date().toISOString().split("T")[0];
-  const replacement = `${MARKER_START}\n📊 **[View live schema diagram](${url})** — *auto-updated ${date}*\n${MARKER_END}`;
+  const replacement = `${MARKER_START}\n📊 **[View live schema diagram](${url})** — _auto-updated via GitHub Actions_\n${MARKER_END}`;
 
   for (const docPath of [DATABASE_DOC_PATH, README_PATH]) {
     try {
