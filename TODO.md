@@ -17,7 +17,6 @@ Detta dokument spårar projektets framsteg. Uppdaterat: 2026-03-12.
 - [ ] **Frontend: Overview-sida**: Implementera admin-dashboards med statistik och sammanfattningar.
 
 ### Priority: LOW / Polish
-- [ ] **DatePicker library**: Utforska ett bättre alternativ till standard-datepicker för bokningsmodalen.
 - [ ] **Modal UX**: Fixa fördröjning vid ut-animation och shake-animation vid felaktiga klick.
 - [ ] **Soft deletes**: Lägg till `IsDeleted`-flaggor för att undvika permanent dataförlust.
 - [ ] **Banned Toast**: Fixa felaktig text i toasten när en bannlyst användare försöker logga in.
@@ -62,6 +61,7 @@ Detta dokument spårar projektets framsteg. Uppdaterat: 2026-03-12.
 - [x] Server-side pagination för alla tunga listor (användare, bokningar, registreringar).
 
 ### Frontend
+- [x] Egen DatePicker-komponent för bokningsmodalen.
 - [x] Integration av **DayPilot-Lite** för kalendervyer.
 - [x] "Mina Bokningar"-vy med avancerad filtrering och paginering.
 - [x] Dynamisk RBAC-styrd sidebar och access-guards.
