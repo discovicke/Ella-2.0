@@ -1,59 +1,47 @@
-# ELLAFrontend
+# ELLA Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.1.
+This project is the Angular frontend for the ELLA booking system. It follows a **Standalone Component** architecture with strict separation between Layouts and Pages.
 
-## Development server
+## 🚀 Getting Started
 
-To start a local development server, run:
-
+The frontend is usually started via the root orchestration script:
 ```bash
-ng serve
+# From the project root
+npm start
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
+If you need to work strictly on the frontend:
 ```bash
-ng generate component component-name
+# From Frontend/ng.Frontend
+npm start
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## 🛠️ Developer Workflow
 
+### Custom Generators
+We use custom scripts to enforce naming conventions and architecture. **Do not use `ng generate component` for pages or layouts.**
+
+- **Generate a Page:** `npm run g-page <path/name>`
+- **Generate a Layout:** `npm run g-layout <path/name>`
+
+### API Synchronization
+TypeScript models are automatically generated from the Backend's OpenAPI spec. To manualy sync:
 ```bash
-ng generate --help
+# From the project root
+npm run sync:models
+```
+This runs `swagger-typescript-api` and updates `src/app/models/models.ts` and `input-limits.ts`.
+
+## 🧪 Testing
+We use **Vitest** for unit testing.
+```bash
+npm test
 ```
 
-## Building
+## 🏗️ Architecture
+- **Pages:** Routable components located in `src/app/pages`.
+- **Layouts:** Shell components containing sidebars/topbars and a `<router-outlet>`.
+- **Shared:** Reusable dumb components, services, and pipes.
+- **Core:** Auth guards, interceptors, and global session management.
 
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+For more details, see the [MASTER_GUIDE.md](./_docs/MASTER_GUIDE.md).
