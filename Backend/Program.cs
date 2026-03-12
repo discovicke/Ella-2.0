@@ -42,7 +42,6 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 // 3. SETUP
 ConfigureDatabase(builder);
 ConfigureCoreServices(builder.Services);
-builder.Services.AddScoped<IBookingSlugRepository, PostgresBookingSlugRepo>(); // TODO: move into provider switch when SqliteBookingSlugRepo exists
 builder.Services.AddScoped<BookingSlugService>();
 ConfigureRateLimiting(builder.Services);
 
@@ -268,6 +267,7 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
             services.AddScoped<ICampusRepository, SqliteCampusRepo>();
             services.AddScoped<IClassRepository, SqliteClassRepo>();
             services.AddScoped<IResourceRepository, SqliteResourceRepo>();
+            services.AddScoped<IBookingSlugRepository, SqliteBookingSlugRepo>();
             break;
 
         case DbProviders.Postgres:
@@ -285,6 +285,7 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
             services.AddScoped<ICampusRepository, PostgresCampusRepo>();
             services.AddScoped<IClassRepository, PostgresClassRepo>();
             services.AddScoped<IResourceRepository, PostgresResourceRepo>();
+            services.AddScoped<IBookingSlugRepository, PostgresBookingSlugRepo>();
             break;
 
         case DbProviders.SqlServer:
