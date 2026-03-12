@@ -10,7 +10,6 @@ import { ResourceCategoryDto, CreateResourceCategoryDto } from '../../../models/
 
 @Component({
   selector: 'app-category-form-modal',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, ButtonComponent],
   template: `
     <div class="category-manager">

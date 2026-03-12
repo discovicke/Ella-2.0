@@ -8,7 +8,6 @@ import { BookingSlugResponseDto } from '../../../models/models';
 
 @Component({
   selector: 'app-manage-slugs-page',
-  standalone: true,
   imports: [CommonModule, TableComponent],
   template: `
     <div class="page-container">

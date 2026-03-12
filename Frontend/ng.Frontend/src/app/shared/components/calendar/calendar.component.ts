@@ -1,13 +1,12 @@
 import {
   Component,
-  Input,
-  Output,
-  EventEmitter,
   ChangeDetectionStrategy,
-  OnChanges,
-  SimpleChanges,
   AfterViewInit,
   ViewEncapsulation,
+  input,
+  output,
+  effect,
+  untracked,
 } from '@angular/core';
 import { DayPilot, DayPilotModule } from '@daypilot/daypilot-lite-angular';
 import { BookingDetailedReadModel, BookingStatus } from '../../../models/models';
@@ -27,47 +26,78 @@ export type EventHtmlFn = (booking: BookingDetailedReadModel) => string;
 
 @Component({
   selector: 'app-calendar',
-  standalone: true,
   imports: [DayPilotModule],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })
-export class CalendarComponent implements OnChanges, AfterViewInit {
-  @Input() viewMode: CalendarViewMode = 'week';
-  @Input() date: Date = new Date();
-  @Input() bookings: BookingDetailedReadModel[] = [];
-  @Input() resources: DayPilot.ResourceData[] = [];
-  @Input() isLoading = false;
-  @Input() hasError = false;
-  @Input() allowTimeRangeSelection = false;
-  @Input() businessBeginsHour = 7;
-  @Input() businessEndsHour = 19;
+export class CalendarComponent implements AfterViewInit {
+  viewMode = input<CalendarViewMode>('week');
+  date = input<Date>(new Date());
+  bookings = input<BookingDetailedReadModel[]>([]);
+  resources = input<DayPilot.ResourceData[]>([]);
+  isLoading = input<boolean>(false);
+  hasError = input<boolean>(false);
+  allowTimeRangeSelection = input<boolean>(false);
+  businessBeginsHour = input<number>(7);
+  businessEndsHour = input<number>(19);
 
-  @Input() eventCssClassFn?: EventCssClassFn;
-  @Input() eventHtmlFn?: EventHtmlFn;
+  eventCssClassFn = input<EventCssClassFn | undefined>();
+  eventHtmlFn = input<EventHtmlFn | undefined>();
 
-  @Output() dateChange = new EventEmitter<Date>();
-
-  @Output() timeRangeSelected = new EventEmitter<{ start: Date; end: Date; resourceId?: number }>();
-  @Output() eventClicked = new EventEmitter<BookingDetailedReadModel>();
+  dateChange = output<Date>();
+  timeRangeSelected = output<{ start: Date; end: Date; resourceId?: number }>();
+  eventClicked = output<BookingDetailedReadModel>();
 
   /** Internal navigation date — synced from @Input date, then owned by nav buttons. */
-  currentDate: DayPilot.Date = this.toDpDate(this.date);
+  currentDate: DayPilot.Date;
 
-  configDay: DayPilot.CalendarConfig = this.buildCalendarConfig('Day');
-  configWeek: DayPilot.CalendarConfig = this.buildCalendarConfig('Week');
-  configResources: DayPilot.CalendarConfig = this.buildResourcesConfig();
-  configMonth: DayPilot.MonthConfig = this.buildMonthConfig();
+  configDay!: DayPilot.CalendarConfig;
+  configWeek!: DayPilot.CalendarConfig;
+  configResources!: DayPilot.CalendarConfig;
+  configMonth!: DayPilot.MonthConfig;
 
   events: DayPilot.EventData[] = [];
 
+  constructor() {
+    this.currentDate = this.toDpDate(new Date());
+    
+    // React to changes in date input
+    effect(() => {
+      const d = this.date();
+      untracked(() => {
+        this.currentDate = this.toDpDate(d);
+        this.applyDateToConfigs();
+      });
+    });
+
+    // React to changes in configuration inputs
+    effect(() => {
+      this.date();
+      this.resources();
+      this.allowTimeRangeSelection();
+      this.businessBeginsHour();
+      this.businessEndsHour();
+      untracked(() => {
+        this.refreshConfigs();
+      });
+    });
+
+    // React to changes in bookings
+    effect(() => {
+      this.bookings();
+      untracked(() => {
+        this.updateEvents();
+      });
+    });
+  }
+
   get calendarWidth(): string | null {
-    if (this.viewMode === 'resources' && this.resources.length > 0) {
+    if (this.viewMode() === 'resources' && this.resources().length > 0) {
       const minWidth = 130;
       const hourColumnWidth = 50; // Approximation for the time column on the left
-      return `${this.resources.length * minWidth + hourColumnWidth}px`;
+      return `${this.resources().length * minWidth + hourColumnWidth}px`;
     }
     return null;
   }
@@ -78,7 +108,7 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
 
   get navigationLabel(): string {
     const d = this.currentDate;
-    switch (this.viewMode) {
+    switch (this.viewMode()) {
       case 'day':
       case 'resources':
         return d.toString('d MMMM yyyy', 'sv-se');
@@ -127,7 +157,7 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
 
   private shiftDate(direction: 1 | -1): DayPilot.Date {
     const d = this.currentDate;
-    switch (this.viewMode) {
+    switch (this.viewMode()) {
       case 'day':
       case 'resources':
         return d.addDays(direction);
@@ -141,26 +171,6 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
   // ---------------------------------------------------------------------------
   // Lifecycle
   // ---------------------------------------------------------------------------
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['date']) {
-      this.currentDate = this.toDpDate(this.date);
-    }
-
-    if (
-      changes['date'] ||
-      changes['resources'] ||
-      changes['allowTimeRangeSelection'] ||
-      changes['businessBeginsHour'] ||
-      changes['businessEndsHour']
-    ) {
-      this.refreshConfigs();
-    }
-
-    if (changes['bookings']) {
-      this.updateEvents();
-    }
-  }
 
   ngAfterViewInit(): void {
     this.updateEvents();
@@ -185,14 +195,14 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
       weekStarts: 1,
       locale: 'sv-se',
       hourWidth: 50,
-      businessBeginsHour: this.businessBeginsHour,
-      businessEndsHour: this.businessEndsHour,
+      businessBeginsHour: this.businessBeginsHour(),
+      businessEndsHour: this.businessEndsHour(),
       cellHeight: 28,
       heightSpec: 'BusinessHoursNoScroll',
       eventMoveHandling: 'Disabled',
       eventResizeHandling: 'Disabled',
       eventDeleteHandling: 'Disabled',
-      timeRangeSelectedHandling: this.allowTimeRangeSelection ? 'Enabled' : 'Disabled',
+      timeRangeSelectedHandling: this.allowTimeRangeSelection() ? 'Enabled' : 'Disabled',
       onTimeRangeSelected: (args) => {
         this.timeRangeSelected.emit({
           start: new Date(args.start.toString()),
@@ -236,7 +246,7 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
       ...this.buildCalendarConfig('Day'),
       viewType: 'Resources',
       ...({ columnWidth: 130 } as any),
-      columns: this.resources.map((r) => ({
+      columns: this.resources().map((r) => ({
         name: r.name || 'Unknown',
         id: r.id,
       })) as DayPilot.CalendarColumnData[],
@@ -287,7 +297,8 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
   // ---------------------------------------------------------------------------
 
   private getEventCssClass(b: BookingDetailedReadModel): string {
-    if (this.eventCssClassFn) return this.eventCssClassFn(b);
+    const customFn = this.eventCssClassFn();
+    if (customFn) return customFn(b);
 
     if (b.status === BookingStatus.Cancelled || b.status === BookingStatus.Expired) {
       return 'event-cancelled';
@@ -316,7 +327,7 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
   private updateEvents(): void {
     // Deduplicate by bookingId — own booking (first occurrence) wins over registration copy.
     const seen = new Set<number>();
-    const unique = this.bookings.filter((b) => {
+    const unique = this.bookings().filter((b) => {
       const id = b.bookingId ?? 0;
       if (id > 0 && seen.has(id)) return false;
       seen.add(id);
@@ -333,8 +344,9 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
       const timeStr = `${start.toString('HH:mm')}–${end.toString('HH:mm')}`;
       
       let html = '';
-      if (this.eventHtmlFn) {
-        html = this.eventHtmlFn(b);
+      const htmlFn = this.eventHtmlFn();
+      if (htmlFn) {
+        html = htmlFn(b);
       } else {
         const label = `${b.roomName} ${timeStr}`;
         html = isCancelledOrExpired

@@ -1,9 +1,8 @@
-import { Component, Input, model, signal } from '@angular/core';
+import { Component, input, model, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-slider',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div class="custom-slider">
@@ -12,13 +11,13 @@ import { CommonModule } from '@angular/common';
         [value]="isDragging() ? dragValue() : (value() || 0)" 
         (input)="onDrag($event)"
         (change)="onChange($event)"
-        [min]="min"
-        [max]="max"
+        [min]="min()"
+        [max]="max()"
         class="slider-input"
       />
       <div class="slider-value-display">
         <span class="value-text">{{ isDragging() ? dragValue() : (value() || 0) }}</span>
-        <span *ngIf="suffix" class="suffix-text">{{ suffix }}</span>
+        <span *ngIf="suffix()" class="suffix-text">{{ suffix() }}</span>
       </div>
     </div>
   `,
@@ -26,9 +25,9 @@ import { CommonModule } from '@angular/common';
 })
 export class SliderComponent {
   value = model<number>(0);
-  @Input() min: number = 0;
-  @Input() max: number = 100;
-  @Input() suffix: string = '';
+  min = input<number>(0);
+  max = input<number>(100);
+  suffix = input<string>('');
 
   isDragging = signal(false);
   dragValue = signal(0);

@@ -11,7 +11,6 @@ import { ResourceCategoryDto, CampusResponseDto, CreateResourceDto } from '../..
 
 @Component({
   selector: 'app-resource-form-modal',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, ButtonComponent],
   template: `
     <form [formGroup]="resourceForm" class="modal-form" (ngSubmit)="onSubmit()">

@@ -15,7 +15,6 @@ import {
 
 @Component({
   selector: 'app-book-resource-page',
-  standalone: true,
   imports: [CommonModule, ButtonComponent, ReactiveFormsModule],
   template: `
     <div class="page-container">

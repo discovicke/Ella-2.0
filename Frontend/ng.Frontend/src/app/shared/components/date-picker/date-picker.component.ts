@@ -1,9 +1,8 @@
-import { Component, ElementRef, HostListener, Input, OnInit, computed, model, signal } from '@angular/core';
+import { Component, ElementRef, OnInit, computed, model, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-date-picker',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div class="custom-select" [class.is-open]="isOpen()" (click)="toggleOpen()">
@@ -69,7 +68,10 @@ import { CommonModule } from '@angular/common';
       }
     </div>
   `,
-  styleUrl: './date-picker.component.scss'
+  styleUrl: './date-picker.component.scss',
+  host: {
+    '(document:click)': 'clickOutside($event)'
+  }
 })
 export class DatePickerComponent implements OnInit {
   value = model<string | null>(null); // Format: YYYY-MM-DD
@@ -122,7 +124,7 @@ export class DatePickerComponent implements OnInit {
     return days;
   });
 
-  constructor(private elementRef: ElementRef) {}
+  private elementRef = inject(ElementRef);
 
   ngOnInit() {
     if (this.value()) {
@@ -140,7 +142,6 @@ export class DatePickerComponent implements OnInit {
     return `${y}-${m}-${d}`;
   }
 
-  @HostListener('document:click', ['$event'])
   clickOutside(event: Event) {
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.isOpen.set(false);

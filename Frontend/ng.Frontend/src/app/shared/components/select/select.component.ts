@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, Input, ModelSignal, model, signal } from '@angular/core';
+import { Component, ElementRef, input, model, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export interface SelectOption {
@@ -8,14 +8,13 @@ export interface SelectOption {
 
 @Component({
   selector: 'app-select',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div class="custom-select" [class.is-open]="isOpen()" (click)="toggleOpen()">
       <div class="select-trigger">
         <div class="selected-text">
           @if (value() == null || value() === '') {
-            <span class="placeholder">{{ placeholder }}</span>
+            <span class="placeholder">{{ placeholder() }}</span>
           } @else {
             <span>{{ getLabelForId(value()!) }}</span>
           }
@@ -27,7 +26,7 @@ export interface SelectOption {
 
       @if (isOpen()) {
         <div class="dropdown-menu" (click)="$event.stopPropagation()">
-          @for (option of options; track option.id) {
+          @for (option of options(); track option.id) {
             <div 
               class="dropdown-item" 
               [class.selected]="String(option.id) === String(value())"
@@ -41,18 +40,21 @@ export interface SelectOption {
               }
             </div>
           }
-          @if (options.length === 0) {
+          @if (options().length === 0) {
             <div class="dropdown-item empty">Inga alternativ</div>
           }
         </div>
       }
     </div>
   `,
-  styleUrl: './select.component.scss'
+  styleUrl: './select.component.scss',
+  host: {
+    '(document:click)': 'clickOutside($event)'
+  }
 })
 export class SelectComponent {
-  @Input({ required: true }) options: SelectOption[] = [];
-  @Input() placeholder = 'Välj...';
+  options = input.required<SelectOption[]>();
+  placeholder = input('Välj...');
   
   value = model<string | number | null>(null);
   isOpen = signal(false);
@@ -60,9 +62,8 @@ export class SelectComponent {
   // Helper string casting for template comparisons
   readonly String = String;
 
-  constructor(private elementRef: ElementRef) {}
+  private elementRef = inject(ElementRef);
 
-  @HostListener('document:click', ['$event'])
   clickOutside(event: Event) {
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.isOpen.set(false);
@@ -80,6 +81,6 @@ export class SelectComponent {
 
   getLabelForId(id: string | number): string {
     const stringId = String(id);
-    return this.options.find(o => String(o.id) === stringId)?.label || stringId;
+    return this.options().find(o => String(o.id) === stringId)?.label || stringId;
   }
 }

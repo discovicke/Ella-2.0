@@ -7,7 +7,6 @@ import { BookingSlugResponseDto } from '../../../models/models';
 
 @Component({
   selector: 'app-booking-slug-modal',
-  standalone: true,
   imports: [CommonModule, ButtonComponent],
   template: `
     <div class="slug-modal-content">

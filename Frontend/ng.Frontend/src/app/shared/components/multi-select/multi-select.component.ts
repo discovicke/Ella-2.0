@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, Input, ModelSignal, computed, model, signal } from '@angular/core';
+import { Component, ElementRef, input, computed, model, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export interface MultiSelectOption {
@@ -8,14 +8,13 @@ export interface MultiSelectOption {
 
 @Component({
   selector: 'app-multi-select',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div class="custom-multiselect" [class.is-open]="isOpen()" (click)="toggleOpen()">
       <div class="select-trigger">
         <div class="selected-text">
           @if (selectedIds().length === 0) {
-            <span class="placeholder">{{ placeholder }}</span>
+            <span class="placeholder">{{ placeholder() }}</span>
           } @else if (selectedIds().length === 1) {
             <span>{{ getLabelForId(selectedIds()[0]) }}</span>
           } @else {
@@ -29,7 +28,7 @@ export interface MultiSelectOption {
 
       @if (isOpen()) {
         <div class="dropdown-menu" (click)="$event.stopPropagation()">
-          @for (option of options; track option.id) {
+          @for (option of options(); track option.id) {
             <label class="dropdown-item" [class.selected]="isSelected(option.id)">
               <div class="checkbox-box">
                 @if (isSelected(option.id)) {
@@ -47,25 +46,27 @@ export interface MultiSelectOption {
               />
             </label>
           }
-          @if (options.length === 0) {
+          @if (options().length === 0) {
             <div class="dropdown-item empty">Inga alternativ</div>
           }
         </div>
       }
     </div>
   `,
-  styleUrl: './multi-select.component.scss'
+  styleUrl: './multi-select.component.scss',
+  host: {
+    '(document:click)': 'clickOutside($event)'
+  }
 })
 export class MultiSelectComponent {
-  @Input({ required: true }) options: MultiSelectOption[] = [];
-  @Input() placeholder = 'Välj...';
+  options = input.required<MultiSelectOption[]>();
+  placeholder = input('Välj...');
   
   selectedIds = model<string[]>([]);
   isOpen = signal(false);
 
-  constructor(private elementRef: ElementRef) {}
+  private elementRef = inject(ElementRef);
 
-  @HostListener('document:click', ['$event'])
   clickOutside(event: Event) {
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.isOpen.set(false);
@@ -93,6 +94,6 @@ export class MultiSelectComponent {
 
   getLabelForId(id: string | number): string {
     const stringId = String(id);
-    return this.options.find(o => String(o.id) === stringId)?.label || stringId;
+    return this.options().find(o => String(o.id) === stringId)?.label || stringId;
   }
 }

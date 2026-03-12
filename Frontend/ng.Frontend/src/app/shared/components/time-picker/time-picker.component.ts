@@ -1,9 +1,8 @@
-import { Component, ElementRef, HostListener, Input, ModelSignal, OnInit, model, signal } from '@angular/core';
+import { Component, ElementRef, OnInit, model, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-time-picker',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div class="custom-select" [class.is-open]="isOpen()" (click)="toggleOpen()">
@@ -40,14 +39,17 @@ import { CommonModule } from '@angular/common';
       }
     </div>
   `,
-  styleUrl: './time-picker.component.scss'
+  styleUrl: './time-picker.component.scss',
+  host: {
+    '(document:click)': 'clickOutside($event)'
+  }
 })
 export class TimePickerComponent implements OnInit {
   value = model<string | null>(null); // Format: HH:mm
   isOpen = signal(false);
   timeOptions: string[] = [];
 
-  constructor(private elementRef: ElementRef) {}
+  private elementRef = inject(ElementRef);
 
   ngOnInit() {
     this.generateTimeOptions();
@@ -65,7 +67,6 @@ export class TimePickerComponent implements OnInit {
     this.timeOptions = options;
   }
 
-  @HostListener('document:click', ['$event'])
   clickOutside(event: Event) {
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.isOpen.set(false);

@@ -6,7 +6,6 @@ import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 
 @Component({
   selector: 'app-reset-password',
-  standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="auth-container">

@@ -17,7 +17,6 @@ import { CategoryFormModalComponent } from './category-form-modal.component';
 
 @Component({
   selector: 'app-manage-resources-page',
-  standalone: true,
   imports: [CommonModule, TableComponent, ButtonComponent],
   template: `
     <div class="page-container">
