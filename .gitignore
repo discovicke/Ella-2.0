@@ -9,9 +9,6 @@
 
 wwwroot
 
-# DBML hash cache (auto-generated)
-_tools/dbml/.schema.hash
-
 wwwroot/
 
 # User-specific files
