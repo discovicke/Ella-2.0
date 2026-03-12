@@ -229,6 +229,8 @@ static void ConfigureDatabase(WebApplicationBuilder builder)
 {
     // Global Dapper Settings
     Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+    Dapper.SqlMapper.AddTypeHandler(new UtcDateTimeHandler());
+    Dapper.SqlMapper.AddTypeHandler(new NullableUtcDateTimeHandler());
 
     var services = builder.Services;
     var configuration = builder.Configuration;
