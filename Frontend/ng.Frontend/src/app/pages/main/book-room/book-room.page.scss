@@ -23,19 +23,6 @@
   &::-webkit-scrollbar {
     display: none;
   }
-
-  &--fixed {
-    overflow: hidden;
-    height: 100vh;
-
-    .page-content {
-      padding-top: 8px;
-    }
-
-    .filter-panel {
-      margin-bottom: 8px;
-    }
-  }
 }
 
 .page-content {
