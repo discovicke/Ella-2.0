@@ -1,318 +1,391 @@
 <div class="page-container">
   <div class="page-content">
-    <!-- Filter Bar -->
-    <div class="filter-bar">
-      <div class="filter-left">
-        <div class="tabs">
-          <button
-            class="tab"
-            [class.active]="activeTab() === 'upcoming'"
-            (click)="setActiveTab('upcoming')"
-          >
-            <span>Kommande</span>
-            @if (activeTab() === 'upcoming' && totalCount() > 0) {
-              <span class="count-badge">{{ totalCount() }}</span>
-            }
-          </button>
-
-          <button
-            class="tab"
-            [class.active]="activeTab() === 'history'"
-            (click)="setActiveTab('history')"
-          >
-            <span>Historik</span>
+    <!-- Filter Panel -->
+    <div class="filter-panel">
+      @if (bookingView() === 'invitations') {
+        <div class="filter-panel__invitation-header">
+          <div class="invitation-header__title">
+            <svg class="invitation-header__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            <h2>Inbjudningar</h2>
+            <span class="invitation-header__count">{{ pendingInvitationCount() }}</span>
+          </div>
+          <button class="invitation-header__back" (click)="clearFilter()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Tillbaka
           </button>
         </div>
-      </div>
+      } @else {
+        <!-- Primary row: View mode + Invitation badge -->
+        <div class="filter-panel__primary">
+          <div class="view-mode-toggle">
+            <button
+              class="pill"
+              [class.pill--active]="viewMode() === 'agenda'"
+              (click)="setViewMode('agenda')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              Agenda
+            </button>
+            <button
+              class="pill"
+              [class.pill--active]="viewMode() === 'week'"
+              (click)="setViewMode('week')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+                <line x1="8" y1="10" x2="8" y2="22"></line>
+              </svg>
+              Vecka
+            </button>
+            <button
+              class="pill"
+              [class.pill--active]="viewMode() === 'month'"
+              (click)="setViewMode('month')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              Månad
+            </button>
+          </div>
 
-      <label class="checkbox-filter">
-        <input type="checkbox" [checked]="showCancelled()" (change)="toggleCancelled($event)" />
-        <span>Visa avbokade</span>
-      </label>
+          @if (pendingInvitationCount() > 0) {
+            <button class="invitation-cta" (click)="goToInvitations()">
+              <svg class="invitation-cta__bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+              <span class="invitation-cta__text">{{ pendingInvitationCount() }} inbjudan{{ pendingInvitationCount() === 1 ? '' : 'ingar' }}</span>
+              <svg class="invitation-cta__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          }
+        </div>
+
+        <!-- Secondary row: Agenda-only filters -->
+        @if (!isCalendarView()) {
+          <div class="filter-panel__secondary">
+            <div class="tabs">
+              <button
+                class="tab"
+                [class.active]="activeTab() === 'upcoming'"
+                (click)="setActiveTab('upcoming')"
+              >
+                Kommande
+              </button>
+              <button
+                class="tab"
+                [class.active]="activeTab() === 'history'"
+                (click)="setActiveTab('history')"
+              >
+                Historik
+              </button>
+            </div>
+          </div>
+        }
+      }
     </div>
 
-    <!-- Hero: Next Booking -->
-    @if (activeTab() === 'upcoming' && nextBooking(); as next) {
-      <section class="hero-section">
-        <h2 class="section-label">Nästa bokning</h2>
-        <div
-          class="hero-card"
-          [class.hero-card--attending]="!next.isOwned && !next.isDeclined"
-          [class.hero-card--declined]="next.isDeclined"
-        >
-          <div class="hero-body">
-            <div class="hero-top">
-              <div class="hero-countdown">
-                <span class="countdown-dot"></span>
-                {{ getCountdownLabel(next) }}
-              </div>
-              @if (next.isDeclined) {
-                <span class="origin-tag origin-tag--declined">Avböjd</span>
-              } @else if (!next.isOwned) {
-                <span class="origin-tag origin-tag--attending">Inbjuden</span>
-              }
-            </div>
-
-            <h3 class="hero-room">{{ next.roomName ?? 'Okänt rum' }}</h3>
-            <p class="hero-meta">
-              {{ next.roomType ?? '' }}
-              @if (next.roomCapacity) {
-                <span class="meta-sep">·</span> {{ next.roomCapacity }} platser
-              }
-              @if (next.campusCity) {
-                <span class="meta-sep">·</span> {{ next.campusCity }}
-              }
-            </p>
-
-            <div class="hero-details">
-              <div class="hero-detail">
-                <span class="hero-detail-label">Tid</span>
-                <span class="hero-detail-value">
-                  {{ next.startTime | date: 'HH:mm' }} — {{ next.endTime | date: 'HH:mm' }}
-                </span>
-              </div>
-              @if (next.notes) {
-                <div class="hero-detail">
-                  <span class="hero-detail-label">Anteckning</span>
-                  <span class="hero-detail-value">{{ next.notes }}</span>
+    @if (isCalendarView()) {
+      <div class="calendar-container-wrapper">
+        <app-calendar
+          [viewMode]="calendarViewMode()"
+          [date]="calendarDate()"
+          [bookings]="filteredBookings()"
+          [isLoading]="isLoading()"
+          (dateChange)="onCalendarDateChange($event)"
+          (eventClicked)="openBookingDetail($event)"
+        ></app-calendar>
+      </div>
+    } @else {
+      <!-- Hero: Next Booking -->
+      @if (activeTab() === 'upcoming' && nextBooking(); as next) {
+        <section class="hero-section">
+          <h2 class="section-label">Nästa bokning</h2>
+          <div
+            class="hero-card"
+            [class.hero-card--attending]="!next.isOwned"
+          >
+            <div class="hero-body">
+              <div class="hero-top">
+                <div class="hero-countdown">
+                  <span class="countdown-dot"></span>
+                  {{ getCountdownLabel(next) }}
                 </div>
-              }
-              @if (next.inviterName) {
-                <div class="hero-detail">
-                  <span class="hero-detail-label">Inbjuden av</span>
-                  <span class="hero-detail-value">{{ next.inviterName }}</span>
-                </div>
-              }
-            </div>
-
-            @if (next.roomAssets?.length) {
-              <div class="hero-assets">
-                @for (asset of next.roomAssets!; track asset) {
-                  <span class="asset-chip">{{ asset }}</span>
+                @if (!next.isOwned) {
+                  <span class="origin-tag origin-tag--attending">Deltar</span>
                 }
               </div>
-            }
 
-            <div class="hero-actions">
-              @if (next.isOwned) {
-                <button class="hero-btn hero-btn--cancel" (click)="onCancelBooking(next, $event)">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="15" y1="9" x2="9" y2="15" />
-                    <line x1="9" y1="9" x2="15" y2="15" />
-                  </svg>
-                  Avboka
-                </button>
+              <h3 class="hero-room">{{ next.roomName ?? 'Okänt rum' }}</h3>
+              <p class="hero-meta">
+                {{ next.roomType ?? '' }}
+                @if (next.roomCapacity) {
+                  <span class="meta-sep">·</span> {{ next.roomCapacity }} platser
+                }
+                @if (next.campusCity) {
+                  <span class="meta-sep">·</span> {{ next.campusCity }}
+                }
+              </p>
+
+              <div class="hero-details">
+                <div class="hero-detail">
+                  <span class="hero-detail-label">Tid</span>
+                  <span class="hero-detail-value">
+                    {{ next.startTime | date: 'HH:mm' }} — {{ next.endTime | date: 'HH:mm' }}
+                  </span>
+                </div>
+                @if (next.notes) {
+                  <div class="hero-detail">
+                    <span class="hero-detail-label">Anteckning</span>
+                    <span class="hero-detail-value">{{ next.notes }}</span>
+                  </div>
+                }
+                @if (next.inviterName) {
+                  <div class="hero-detail">
+                    <span class="hero-detail-label">Inbjuden av</span>
+                    <span class="hero-detail-value">{{ next.inviterName }}</span>
+                  </div>
+                }
+              </div>
+
+              @if (next.roomAssets?.length) {
+                <div class="hero-assets">
+                  @for (asset of next.roomAssets!; track asset) {
+                    <span class="asset-chip">{{ asset }}</span>
+                  }
+                </div>
               }
+
+              <div class="hero-actions">
+                @if (next.isOwned) {
+                  <button class="hero-btn hero-btn--cancel" (click)="onCancelBooking(next, $event)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="15" y1="9" x2="9" y2="15" />
+                      <line x1="9" y1="9" x2="15" y2="15" />
+                    </svg>
+                    Avboka
+                  </button>
+                } @else {
+                  <button class="hero-btn hero-btn--cancel" (click)="onUnregisterBooking(next, $event)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="15" y1="9" x2="9" y2="15" />
+                      <line x1="9" y1="9" x2="15" y2="15" />
+                    </svg>
+                    Avregistrera
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="hero-date-panel">
+              <span class="hero-date-label">
+                {{ next.startTime | date: 'EEEE' : '' : 'sv' | titlecase }}
+              </span>
+              <span class="hero-date-day">{{ next.startTime | date: 'd' }}</span>
+              <span class="hero-date-month">
+                {{ next.startTime | date: 'MMM' : '' : 'sv' | titlecase }}
+              </span>
             </div>
           </div>
+        </section>
+      }
 
-          <div class="hero-date-panel">
-            <span class="hero-date-label">
-              {{ next.startTime | date: 'EEEE' : '' : 'sv' | titlecase }}
-            </span>
-            <span class="hero-date-day">{{ next.startTime | date: 'd' }}</span>
-            <span class="hero-date-month">
-              {{ next.startTime | date: 'MMM' : '' : 'sv' | titlecase }}
-            </span>
-          </div>
-        </div>
-      </section>
-    }
+      <!-- Booking List -->
+      <div class="bookings-list" [class.history-mode]="activeTab() === 'history'" aria-live="polite">
+        @for (group of groupedBookings(); track group.key) {
+          <section class="group-section">
+            <div class="group-header">
+              <h2>{{ group.label }}</h2>
+              <span class="group-count">{{ group.bookings.length }}</span>
+              <div class="group-line"></div>
+            </div>
 
-    <!-- Booking List -->
-    <div class="bookings-list" aria-live="polite">
-      @for (group of groupedBookings(); track group.key) {
-        <section class="group-section">
-          <div class="group-header">
-            <h2>{{ group.label }}</h2>
-            <span class="group-count">{{ group.bookings.length }}</span>
-            <div class="group-line"></div>
-          </div>
-
-          <div class="group-items">
-            @for (booking of group.bookings; track booking.bookingId) {
-              <article
-                class="booking-row clickable"
-                [class.cancelled]="booking.status === BookingStatus.Cancelled"
-                [class.attending]="
-                  !booking.isOwned &&
-                  !booking.isDeclined &&
-                  !booking.isExpiredInvitation &&
-                  !booking.isInvitation
-                "
-                [class.declined]="booking.isDeclined"
-                [class.expired-invitation]="booking.isExpiredInvitation"
-                [class.invitation]="booking.isInvitation"
-                [class.busy]="booking.isInvitation && isInvitationBusy(booking.bookingId)"
-                (click)="openBookingDetail(booking)"
-              >
-                <div
-                  class="row-accent"
-                  [class.row-accent--attending]="
+            <div class="group-items">
+              @for (booking of group.bookings; track booking.bookingId) {
+                <article
+                  class="booking-row clickable"
+                  [class.cancelled]="booking.status === BookingStatus.Cancelled"
+                  [class.attending]="
                     !booking.isOwned &&
                     !booking.isDeclined &&
                     !booking.isExpiredInvitation &&
                     !booking.isInvitation
                   "
-                  [class.row-accent--declined]="booking.isDeclined || booking.isExpiredInvitation"
-                  [class.row-accent--invitation]="booking.isInvitation"
-                ></div>
-
-                <!-- Date badge -->
-                <div class="row-date">
-                  <span class="row-date-day">{{ booking.startTime | date: 'd' }}</span>
-                  <span class="row-date-month">
-                    {{ booking.startTime | date: 'MMM' : '' : 'sv' }}
-                  </span>
-                </div>
-
-                <!-- Main info -->
-                <div class="row-main">
-                  <div class="row-top">
-                    <h3 class="row-room">{{ booking.roomName ?? '—' }}</h3>
-                    @if (booking.isDeclined) {
-                      <span class="origin-tag origin-tag--declined">Avböjd</span>
-                    } @else if (booking.isExpiredInvitation) {
-                      <span class="origin-tag origin-tag--muted">Ej svarad</span>
-                    } @else if (booking.isInvitation) {
-                      <span class="origin-tag origin-tag--invitation">Ny inbjudan</span>
-                    } @else if (!booking.isOwned) {
-                      <span class="origin-tag origin-tag--attending">Inbjuden</span>
-                    }
-                    @if (statusLabel(booking.status)) {
-                      <span class="status-badge" [attr.data-status]="booking.status">
-                        {{ statusLabel(booking.status) }}
+                  [class.declined]="booking.isDeclined"
+                  [class.expired-invitation]="booking.isExpiredInvitation"
+                  [class.invitation]="booking.isInvitation"
+                  [class.busy]="booking.isInvitation && isInvitationBusy(booking.bookingId)"
+                  tabindex="0"
+                  role="button"
+                  (click)="openBookingDetail(booking)"
+                  (keydown.enter)="openBookingDetail(booking)"
+                  (keydown.space)="openBookingDetail(booking)"
+                >
+                  <div class="row-card-body">
+                    <!-- Date Badge -->
+                    <div class="row-date">
+                      <span class="row-date-day">{{ booking.startTime | date: 'd' }}</span>
+                      <span class="row-date-month">
+                        {{ booking.startTime | date: 'MMM' : '' : 'sv' }}
                       </span>
-                    }
-                  </div>
-                  <div class="row-sub">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="12" cy="12" r="10" />
-                      <polyline points="12 6 12 12 16 14" />
-                    </svg>
-                    <span
-                      >{{ booking.startTime | date: 'HH:mm' }} —
-                      {{ booking.endTime | date: 'HH:mm' }}</span
-                    >
-                    <span class="sub-dot"></span>
-                    <span>{{ booking.startTime | date: 'EEEE' : '' : 'sv' | titlecase }}</span>
-                    @if (booking.inviterName) {
-                      <span class="sub-dot"></span>
-                      <span class="row-inviter">av {{ booking.inviterName }}</span>
-                    }
-                  </div>
-                </div>
+                    </div>
 
-                <!-- Class chips -->
-                @if (booking.classNames?.length) {
-                  <div class="row-classes">
-                    @for (cls of booking.classNames!; track cls) {
-                      <span class="class-chip">{{ cls }}</span>
-                    }
-                  </div>
-                }
+                    <div class="row-content">
+                      <div class="row-two-line">
+                        <!-- Line 1: Weekday + Note indicator -->
+                        <div class="row-primary">
+                          <span class="row-weekday">
+                            {{ booking.startTime | date: 'EEEE' : '' : 'sv' | titlecase }}
+                          </span>
+                          @if (booking.notes) {
+                            <span class="row-note-indicator" title="Har anteckning">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8z" />
+                                <polyline points="16 3 16 8 21 8" />
+                                <line x1="8" y1="13" x2="16" y2="13" />
+                                <line x1="8" y1="17" x2="13" y2="17" />
+                              </svg>
+                            </span>
+                          }
+                        </div>
 
-                <!-- Notes pill -->
-                @if (booking.notes && !booking.isInvitation) {
-                  <div class="row-notes">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                    </svg>
-                    <p>{{ booking.notes }}</p>
-                  </div>
-                }
+                        <!-- Line 2: Where + context -->
+                        <div class="row-secondary">
+                          <span class="row-room">{{ booking.roomName ?? '—' }}</span>
+                          @if (booking.inviterName) {
+                            <span class="row-inviter">skapad av {{ booking.inviterName }}</span>
+                          }
+                        </div>
+                      </div>
+                    </div>
 
-                <!-- Invitation actions -->
-                @if (booking.isInvitation) {
-                  <div class="row-inv-actions">
-                    <button
-                      class="inv-btn inv-btn--accept"
-                      [disabled]="isInvitationBusy(booking.bookingId)"
-                      (click)="acceptInvitation(booking, $event)"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <polyline points="20 6 9 17 4 12" />
+                    <!-- Right side: Status, Time, Chevron (Vertically Centered) -->
+                    <div class="row-right-block">
+                      @if (activeTab() === 'upcoming' && booking.isInvitation) {
+                        <span class="origin-tag origin-tag--invitation">Ny inbjudan</span>
+                      }
+                      <span class="row-time">
+                        {{ booking.startTime | date: 'HH:mm' }} — {{ booking.endTime | date: 'HH:mm' }}
+                      </span>
+                      <svg class="row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="9 18 15 12 9 6" />
                       </svg>
-                      Acceptera
-                    </button>
-                    <button
-                      class="inv-btn inv-btn--decline"
-                      [disabled]="isInvitationBusy(booking.bookingId)"
-                      (click)="declineInvitation(booking, $event)"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                      </svg>
-                      Avböj
-                    </button>
+                    </div>
                   </div>
-                }
-              </article>
-            }
-          </div>
-        </section>
-      } @empty {
-        <div class="empty-state">
-          @if (isLoading()) {
-            <div class="loading">
-              <div class="spinner"></div>
-              <p>Laddar bokningar...</p>
-            </div>
-          } @else {
-            <div class="empty-content">
-              <svg
-                class="empty-icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <rect x="3" y="4" width="18" height="18" rx="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-              <h2>
-                @switch (activeTab()) {
-                  @case ('upcoming') {
-                    Inga kommande bokningar
+
+                  <!-- Invitation actions (Keep inline as they are actionable) -->
+                  @if (booking.isInvitation) {
+                    <div class="row-inv-actions">
+                      <button
+                        class="inv-btn inv-btn--accept"
+                        [disabled]="isInvitationBusy(booking.bookingId)"
+                        (click)="acceptInvitation(booking, $event)"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Acceptera
+                      </button>
+                      <button
+                        class="inv-btn inv-btn--decline"
+                        [disabled]="isInvitationBusy(booking.bookingId)"
+                        (click)="declineInvitation(booking, $event)"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                        Avböj
+                      </button>
+                    </div>
                   }
-                  @case ('history') {
-                    Ingen historik
-                  }
-                }
-              </h2>
-              <p>
-                @switch (activeTab()) {
-                  @case ('upcoming') {
-                    Du har inga aktiva bokningar just nu.
-                  }
-                  @case ('history') {
-                    Inga tidigare bokningar hittades.
-                  }
-                }
-              </p>
-              @if (activeTab() === 'upcoming') {
-                <a class="btn-primary" routerLink="/book-room">Boka ett rum</a>
+                </article>
               }
             </div>
-          }
+          </section>
+        } @empty {
+          <div class="empty-state">
+            @if (isLoading()) {
+              <div class="loading">
+                <div class="spinner"></div>
+                <p>Laddar bokningar...</p>
+              </div>
+            } @else {
+              <div class="empty-content">
+                <svg
+                  class="empty-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                <h2>
+                  @switch (activeTab()) {
+                    @case ('upcoming') {
+                      Inga kommande bokningar
+                    }
+                    @case ('history') {
+                      Ingen bokningshistorik
+                    }
+                  }
+                </h2>
+                <p>
+                  @switch (activeTab()) {
+                    @case ('upcoming') {
+                      Du har inga aktiva bokningar just nu.
+                    }
+                    @case ('history') {
+                      Inga tidigare bokningar hittades.
+                    }
+                  }
+                </p>
+                @if (activeTab() === 'upcoming') {
+                  <a class="btn-primary" routerLink="/book-room">Boka ett rum</a>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Load More -->
+      @if (hasMore() && !isLoading()) {
+        <div class="load-more">
+          <button class="btn-load-more" (click)="loadMore()">Visa fler bokningar</button>
         </div>
       }
-    </div>
-
-    <!-- Load More -->
-    @if (hasMore() && !isLoading()) {
-      <div class="load-more">
-        <button class="btn-load-more" (click)="loadMore()">Ladda fler bokningar</button>
-      </div>
-    }
-    @if (isLoading() && bookings().length > 0) {
-      <div class="load-more">
-        <div class="spinner"></div>
-      </div>
+      @if (isLoading() && bookings().length > 0) {
+        <div class="load-more">
+          <div class="spinner"></div>
+        </div>
+      }
     }
   </div>
 </div>

@@ -180,7 +180,7 @@ export class BookResourcePage implements OnInit {
   selectedResource = signal<ResourceResponseDto | null>(null);
   
   isSubmitting = signal(false);
-  today = new Date().toISOString().split('T')[0];
+  today = this.toDateInputValue(new Date());
 
   // Computed: Filtered list
   filteredResources = computed(() => {
@@ -264,5 +264,10 @@ export class BookResourcePage implements OnInit {
         }
       }
     });
+  }
+
+  private toDateInputValue(date: Date): string {
+    const pad = (value: number) => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   }
 }

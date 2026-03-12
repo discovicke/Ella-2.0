@@ -4,22 +4,116 @@
 .booking-modal-content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
-.room-info {
-  background: var(--color-bg-panel);
+/* ── Room Info Banner ── */
+.room-info-banner {
+  display: flex;
+  gap: 16px;
   padding: 16px;
-  border-radius: map.get($radii, 'md');
+  background: color-mix(in srgb, var(--color-bg-panel) 50%, var(--color-bg-card));
   border: 1px solid var(--color-border);
+  border-radius: map.get($radii, 'lg');
+  margin-bottom: 4px;
 
-  p {
-    margin: 4px 0;
+  .room-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: var(--color-primary-surface);
+    color: var(--color-primary);
+    border-radius: map.get($radii, 'md');
+    flex-shrink: 0;
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .room-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .room-main-meta {
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    font-size: var(--font-base);
+    color: var(--color-text-primary);
+  }
+
+  .meta-sep {
+    display: inline-flex;
+    align-items: center;
+
+    &::before {
+      content: '|';
+      margin: 0 10px;
+      color: var(--color-border);
+      font-style: normal;
+      font-size: 0.85rem;
+      opacity: 0.6;
+      font-weight: 400;
+    }
+  }
+
+  .room-sub-meta {
     font-size: var(--font-sm);
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  .room-assets-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .asset-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: var(--font-xs);
+    font-weight: 600;
     color: var(--color-text-secondary);
 
-    strong {
-      color: var(--color-text-primary);
+    svg {
+      width: 12px;
+      height: 12px;
+      color: var(--color-success);
+    }
+  }
+
+  .room-header-notes {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: var(--color-warning-surface);
+    border-radius: 6px;
+    color: var(--color-warning-hover);
+    font-size: var(--font-xs);
+    font-weight: 500;
+    line-height: 1.4;
+
+    svg {
+      width: 14px;
+      height: 14px;
+      margin-top: 2px;
+      flex-shrink: 0;
     }
   }
 }
@@ -30,20 +124,10 @@
   gap: 16px;
 }
 
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
-}
-
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 
   label {
     font-weight: 600;
@@ -52,25 +136,107 @@
   }
 
   input,
+  select,
   textarea {
-    padding: 10px 12px;
+    padding: 9px 12px;
     border: 1px solid var(--color-border);
     border-radius: map.get($radii, 'md');
     font-family: inherit;
     font-size: var(--font-base);
     background: var(--color-bg-card);
     color: var(--color-text-primary);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+
+    &:hover {
+      border-color: color-mix(in srgb, var(--color-primary) 60%, var(--color-border));
+    }
 
     &:focus {
       outline: none;
       border-color: var(--color-primary);
+      background: var(--color-bg-card);
       box-shadow: var(--focus-ring);
     }
   }
 
   textarea {
     resize: vertical;
-    min-height: 80px;
+    min-height: 72px;
+  }
+}
+
+/* ── Compact time row: date | start → end (+ optional end-date) ── */
+.time-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  app-date-picker {
+    flex: 1 1 140px;
+    min-width: 140px;
+  }
+
+  app-time-picker {
+    flex: 0 0 auto;
+    width: 108px;
+  }
+}
+
+.time-sep {
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+/* End-date is hidden when it equals start-date; shown only when multi-day */
+.end-date {
+  display: none;
+
+  &.end-date--visible {
+    display: block;
+  }
+}
+
+/* ── Recurrence section ── */
+.recurrence-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+  }
+}
+
+.recurrence-options {
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: map.get($radii, 'md');
+  padding: 12px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -81,6 +247,15 @@
   margin-top: 8px;
   padding-top: 16px;
   border-top: 1px solid var(--color-border);
+}
+
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
 }
 
 /* ── Invite section ── */
@@ -112,10 +287,21 @@
 
 .search-wrapper {
   position: relative;
+  display: flex;
+  align-items: center;
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    width: 16px;
+    height: 16px;
+    color: var(--color-text-muted);
+    pointer-events: none;
+  }
 
   input {
     width: 100%;
-    padding: 10px 12px;
+    padding: 10px 12px 10px 36px;
     border: 1px solid var(--color-border);
     border-radius: map.get($radii, 'md');
     font-family: inherit;
@@ -123,18 +309,55 @@
     background: var(--color-bg-card);
     color: var(--color-text-primary);
     box-sizing: border-box;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+
+    &:hover {
+      border-color: color-mix(in srgb, var(--color-primary) 60%, var(--color-border));
+    }
 
     &:focus {
       outline: none;
       border-color: var(--color-primary);
+      background: var(--color-bg-card);
       box-shadow: var(--focus-ring);
+    }
+    
+    &.has-text {
+      padding-right: 36px;
+    }
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: color-mix(in srgb, var(--color-bg-panel) 80%, transparent);
+      color: var(--color-text-primary);
+    }
+
+    svg {
+      width: 14px;
+      height: 14px;
     }
   }
 }
 
 .search-spinner {
   position: absolute;
-  right: 12px;
+  right: 40px;
   top: 50%;
   transform: translateY(-50%);
   width: 16px;
@@ -163,7 +386,7 @@
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
   border-radius: map.get($radii, 'md');
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+  box-shadow: var(--shadow-lg);
   max-height: 200px;
   overflow-y: auto;
 

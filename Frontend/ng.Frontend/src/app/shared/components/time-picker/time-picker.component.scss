@@ -1,0 +1,115 @@
+.custom-select {
+  position: relative;
+  width: 100%;
+  font-family: inherit;
+}
+
+.select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg-body);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  padding: 9px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  min-height: 40px;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--color-primary) 60%, var(--color-border));
+  }
+
+  .selected-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .placeholder {
+    color: var(--color-text-muted);
+  }
+}
+
+.is-open .select-trigger {
+  border-color: var(--color-primary);
+  background: var(--color-bg-card);
+  box-shadow: var(--focus-ring);
+}
+
+.clock-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-muted);
+}
+
+.chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-muted);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+
+  &.rotated {
+    transform: rotate(180deg);
+  }
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 10px;
+  }
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  margin: 0 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-bg-panel) 60%, transparent);
+  }
+
+  &.selected {
+    background-color: var(--color-primary-surface);
+    color: var(--color-primary);
+    font-weight: 600;
+    
+    &:hover {
+      background-color: color-mix(in srgb, var(--color-primary-surface) 80%, var(--color-primary));
+    }
+  }
+}

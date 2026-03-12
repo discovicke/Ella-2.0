@@ -3,6 +3,7 @@ using Backend.app.Core.Models.DTO;
 using Backend.app.Core.Models.Entities;
 using Backend.app.Core.Models.Enums;
 using Backend.app.Core.Models.ReadModels;
+using System.Text.RegularExpressions;
 
 namespace Backend.app.Core.Services;
 
@@ -11,6 +12,7 @@ public class BookingService(
     IBookingReadModelRepository readModelRepo,
     IUserRepository userRepo,
     IRoomRepository roomRepo,
+    IRoomReadModelRepository roomReadModelRepo,
     IClassRepository classRepo,
     IRegistrationRepository registrationRepo
 )
@@ -72,6 +74,102 @@ public class BookingService(
             status
         );
         return new PagedResult<BookingDetailedReadModel>(bookings, totalCount, page, pageSize);
+    }
+
+    public async Task<IEnumerable<RoomAvailabilityResultDto>> GetRoomAvailabilityAsync(
+        BookingAvailabilityQueryDto query
+    )
+    {
+        if (query.EndTime <= query.StartTime)
+            throw new InvalidOperationException("End time must be after start time.");
+
+        var rooms = (await roomReadModelRepo.GetAllRoomDetailsAsync()).ToList();
+        var normalizedQuery = query.Query?.Trim();
+        var normalizedCampus = query.Campus?.Trim();
+        var assetTerms = (query.Assets ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(t => t.ToLowerInvariant())
+            .ToArray();
+
+        var candidateRooms = rooms
+            .Where(room =>
+            {
+                var matchesCampus =
+                    string.IsNullOrWhiteSpace(normalizedCampus)
+                    || string.Equals(room.CampusCity, normalizedCampus, StringComparison.OrdinalIgnoreCase);
+                var matchesRoomType = !query.RoomTypeId.HasValue || room.RoomTypeId == query.RoomTypeId.Value;
+                var matchesCapacity = !query.MinCapacity.HasValue || (room.Capacity ?? 0) >= query.MinCapacity.Value;
+                var matchesQuery =
+                    string.IsNullOrWhiteSpace(normalizedQuery)
+                    || room.Name.Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase)
+                    || room.CampusCity.Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase)
+                    || (!string.IsNullOrWhiteSpace(room.Notes)
+                        && room.Notes.Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase));
+                var roomAssets = room.Assets ?? [];
+                var matchesAssets = assetTerms.All(term => roomAssets.Any(asset => AssetMatchesTerm(asset, term)));
+
+                return matchesCampus
+                    && matchesRoomType
+                    && matchesCapacity
+                    && matchesQuery
+                    && matchesAssets;
+            })
+            .ToList();
+
+        if (candidateRooms.Count == 0)
+            return [];
+
+        var bookings = (
+            await readModelRepo.GetDetailedBookingsFilteredAsync(
+                startDate: query.StartTime.Date,
+                endDate: query.StartTime.Date.AddDays(1)
+            )
+        )
+            .Where(b => b.Status is not BookingStatus.Cancelled and not BookingStatus.Expired)
+            .ToList();
+
+        return candidateRooms
+            .Select(room =>
+            {
+                var conflicts = bookings
+                    .Where(b => b.RoomId == room.RoomId)
+                    .Where(b => b.StartTime < query.EndTime && b.EndTime > query.StartTime)
+                    .OrderBy(b => b.StartTime)
+                    .Select(b => new AvailabilityConflictDto(
+                        b.BookingId,
+                        b.StartTime,
+                        b.EndTime,
+                        b.UserName,
+                        b.UserEmail,
+                        b.Status
+                    ))
+                    .ToList();
+
+                var matchReasons = BuildMatchReasons(room, query, assetTerms);
+                var matchScore = CalculateMatchScore(room, query, assetTerms);
+
+                return new RoomAvailabilityResultDto(
+                    room.RoomId,
+                    room.Name,
+                    room.CampusCity,
+                    room.Capacity,
+                    room.RoomTypeId,
+                    room.RoomTypeName,
+                    room.Floor,
+                    room.Notes,
+                    room.Assets,
+                    conflicts.Count == 0,
+                    matchScore,
+                    matchReasons,
+                    conflicts.FirstOrDefault(),
+                    conflicts
+                );
+            })
+            .OrderByDescending(r => r.IsAvailable)
+            .ThenByDescending(r => r.MatchScore)
+            .ThenBy(r => r.Capacity ?? int.MaxValue)
+            .ThenBy(r => r.RoomName, StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 
     /// <summary>
@@ -404,5 +502,64 @@ public class BookingService(
         booking.RecurringGroupId = null;
         await repo.UpdateBookingAsync(bookingId, booking);
         return booking;
+    }
+
+    private static int CalculateMatchScore(
+        RoomDetailModel room,
+        BookingAvailabilityQueryDto query,
+        string[] assetTerms
+    )
+    {
+        var score = 0;
+        if (!string.IsNullOrWhiteSpace(query.Campus) && string.Equals(room.CampusCity, query.Campus, StringComparison.OrdinalIgnoreCase))
+            score += 30;
+        if (query.RoomTypeId.HasValue && room.RoomTypeId == query.RoomTypeId.Value)
+            score += 25;
+        if (query.MinCapacity.HasValue && room.Capacity.HasValue)
+        {
+            score += Math.Max(0, 20 - Math.Abs(room.Capacity.Value - query.MinCapacity.Value));
+        }
+
+        if (assetTerms.Length > 0)
+        {
+            var roomAssets = room.Assets ?? [];
+            score += assetTerms.Count(term => roomAssets.Any(asset => AssetMatchesTerm(asset, term))) * 10;
+        }
+
+        return score;
+    }
+
+    private static List<string> BuildMatchReasons(
+        RoomDetailModel room,
+        BookingAvailabilityQueryDto query,
+        string[] assetTerms
+    )
+    {
+        var reasons = new List<string> { room.CampusCity, room.RoomTypeName };
+        if (room.Capacity.HasValue)
+            reasons.Add($"{room.Capacity.Value} platser");
+
+        if (!string.IsNullOrWhiteSpace(query.Query) && room.Name.Contains(query.Query, StringComparison.OrdinalIgnoreCase))
+            reasons.Add("Matchar sökning");
+
+        return reasons.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    private static bool AssetMatchesTerm(string asset, string term)
+    {
+        if (string.IsNullOrWhiteSpace(asset) || string.IsNullOrWhiteSpace(term))
+            return false;
+
+        var normalizedAsset = asset.Trim();
+        var normalizedTerm = term.Trim();
+
+        if (normalizedAsset.Equals(normalizedTerm, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return Regex.IsMatch(
+            normalizedAsset,
+            $@"(^|[^\p{{L}}\p{{Nd}}]){Regex.Escape(normalizedTerm)}($|[^\p{{L}}\p{{Nd}}])",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
+        );
     }
 }

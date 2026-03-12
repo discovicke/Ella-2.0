@@ -14,6 +14,9 @@ import { ToastService } from '../../../../shared/services/toast.service';
 import { ClassService } from '../../../../shared/services/class.service';
 import { RegistrationService } from '../../../../shared/services/registration.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { TimePickerComponent } from '../../../../shared/components/time-picker/time-picker.component';
+import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
+import { SelectComponent, SelectOption } from '../../../../shared/components/select/select.component';
 import {
   CreateBookingDto,
   BookingStatus,
@@ -28,9 +31,17 @@ interface UserSearchResult {
   email: string;
 }
 
+/** Extended modal data shape — includes optional calendar prefill times and post-create callback. */
+interface BookingModalData extends RoomDetailModel {
+  prefillStart?: Date;
+  prefillEnd?: Date;
+  /** Called after a booking is successfully created so callers can refresh their data. */
+  onBookingCreated?: () => void;
+}
+
 @Component({
   selector: 'app-booking-modal',
-  imports: [ReactiveFormsModule, ButtonComponent],
+  imports: [ReactiveFormsModule, ButtonComponent, TimePickerComponent, DatePickerComponent, SelectComponent],
   templateUrl: './booking-modal.component.html',
   styleUrl: './booking-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,8 +54,8 @@ export class BookingModalComponent implements OnInit, OnDestroy {
   private readonly classService = inject(ClassService);
   private readonly registrationService = inject(RegistrationService);
 
-  // Get the room from modal data
-  readonly room = this.modalService.modalData() as RoomDetailModel;
+  // Get the room (and optional prefill times) from modal data
+  readonly room = this.modalService.modalData() as BookingModalData;
 
   // ─── Permission check ─────────────────────────────
   readonly canManageClasses = this.sessionService.hasPermission('bookRoom');
@@ -65,6 +76,23 @@ export class BookingModalComponent implements OnInit, OnDestroy {
   readonly classMembers = signal<UserSearchResult[]>([]);
   readonly isLoadingMembers = signal(false);
   readonly showClassPicker = signal(false);
+
+  getRoomIconType(typeName: string | null | undefined): string {
+    if (!typeName) return 'room';
+    const lower = typeName.toLowerCase();
+    if (lower.includes('labb') || lower.includes('lab')) return 'lab';
+    if (lower.includes('klassrum') || lower.includes('klass') || lower.includes('sal')) return 'classroom';
+    if (lower.includes('konferens') || lower.includes('möte') || lower.includes('grupprum')) return 'meeting';
+    if (lower.includes('dator') || lower.includes('it')) return 'computer';
+    return 'room';
+  }
+
+  readonly recurrenceOptions: SelectOption[] = [
+    { id: 'daily', label: 'Varje dag' },
+    { id: 'weekly', label: 'Varje vecka' },
+    { id: 'biweekly', label: 'Varannan vecka' },
+    { id: 'monthly', label: 'Varje månad' },
+  ];
 
   ngOnInit(): void {
     // Only load classes if the user has ManageClasses
@@ -103,6 +131,18 @@ export class BookingModalComponent implements OnInit, OnDestroy {
         },
         error: () => this.isSearching.set(false),
       });
+
+    // Pre-fill form from calendar time-range selection (if available)
+    if (this.room.prefillStart && this.room.prefillEnd) {
+      const start = new Date(this.room.prefillStart);
+      const end = new Date(this.room.prefillEnd);
+      this.bookingForm.patchValue({
+        startDate: this.formatDate(start),
+        startTime: this.formatTime(start),
+        endDate: this.formatDate(end),
+        endTime: this.formatTime(end),
+      });
+    }
   }
 
   ngOnDestroy(): void {
@@ -136,6 +176,13 @@ export class BookingModalComponent implements OnInit, OnDestroy {
     }, 200);
   }
 
+  clearSearchQuery(): void {
+    this.searchQuery.set('');
+    this.searchSubject.next('');
+    this.showSearchResults.set(false);
+    this.noSearchResults.set(false);
+  }
+
   // ─── Class picker methods ─────────────────────────
   isClassSelected(id: number): boolean {
     return this.selectedClassIds().has(id);
@@ -167,6 +214,15 @@ export class BookingModalComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ─── Date / time formatting helpers ────────────────
+  private formatDate(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  private formatTime(d: Date): string {
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  }
+
   // Set default dates (today) - Local time
   private readonly today = (() => {
     const now = new Date();
@@ -191,6 +247,33 @@ export class BookingModalComponent implements OnInit, OnDestroy {
     recurrencePattern: new FormControl('weekly', { nonNullable: true }),
     recurrenceEnd: new FormControl('', { nonNullable: false }),
   });
+
+  updateStartDate(date: string | null) {
+    if (date) {
+      this.bookingForm.controls.startDate.setValue(date);
+      this.bookingForm.controls.endDate.setValue(date);
+    }
+  }
+
+  updateStartTime(time: string | null) {
+    if (time) this.bookingForm.controls.startTime.setValue(time);
+  }
+
+  updateEndTime(time: string | null) {
+    if (time) this.bookingForm.controls.endTime.setValue(time);
+  }
+
+  updateEndDate(date: string | null) {
+    if (date) this.bookingForm.controls.endDate.setValue(date);
+  }
+
+  updateRecurrencePattern(pattern: string | number | null) {
+    if (pattern) this.bookingForm.controls.recurrencePattern.setValue(String(pattern));
+  }
+
+  updateRecurrenceEnd(date: string | null) {
+    this.bookingForm.controls.recurrenceEnd.setValue(date || '');
+  }
 
   readonly isSubmitting = signal(false);
 
@@ -240,13 +323,15 @@ export class BookingModalComponent implements OnInit, OnDestroy {
     const booking: CreateBookingDto = {
       userId: user.id,
       roomId: this.room.roomId,
-      startTime: startDateTime.toISOString(),
-      endTime: endDateTime.toISOString(),
+      startTime: this.toLocalIsoString(startDateTime),
+      endTime: this.toLocalIsoString(endDateTime),
       notes: formValue.notes || '',
       status: BookingStatus.Active,
       classIds,
       recurrencePattern: formValue.isRecurring ? formValue.recurrencePattern : null,
-      recurrenceEnd: formValue.isRecurring && formValue.recurrenceEnd ? new Date(formValue.recurrenceEnd).toISOString() : null,
+      recurrenceEnd: formValue.isRecurring && formValue.recurrenceEnd
+        ? this.toLocalDateEndOfDayIsoString(formValue.recurrenceEnd)
+        : null,
     };
 
     this.bookingService.createBooking(booking).subscribe({
@@ -256,17 +341,20 @@ export class BookingModalComponent implements OnInit, OnDestroy {
           this.registrationService.inviteUsers(result.id, individualUserIds).subscribe({
             next: () => {
               this.toastService.showSuccess(`Bokning för ${this.room.name} skapad!`);
+              this.room.onBookingCreated?.();
               this.modalService.close();
             },
             error: () => {
               this.toastService.showSuccess(
                 `Bokning skapad, men kunde inte bjuda in alla användare.`,
               );
+              this.room.onBookingCreated?.();
               this.modalService.close();
             },
           });
         } else {
           this.toastService.showSuccess(`Bokning för ${this.room.name} skapad!`);
+          this.room.onBookingCreated?.();
           this.modalService.close();
         }
       },
@@ -276,5 +364,15 @@ export class BookingModalComponent implements OnInit, OnDestroy {
         this.isSubmitting.set(false);
       },
     });
+  }
+
+  private toLocalIsoString(date: Date): string {
+    const pad = (value: number) => String(value).padStart(2, '0');
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  }
+
+  private toLocalDateEndOfDayIsoString(dateInput: string): string {
+    return `${dateInput}T23:59:59`;
   }
 }

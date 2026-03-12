@@ -1,0 +1,61 @@
+<div class="app-calendar-host">
+  <!-- Navigation Bar -->
+  <div class="cal-nav">
+    <div class="cal-nav__controls">
+      <button class="cal-nav__btn" (click)="navigatePrev()" aria-label="Föregående">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+      <button class="cal-nav__btn cal-nav__btn--today" (click)="navigateToday()">Idag</button>
+      <button class="cal-nav__btn" (click)="navigateNext()" aria-label="Nästa">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
+    </div>
+    <span class="cal-nav__label">{{ navigationLabel }}</span>
+  </div>
+
+  <!-- Calendar Grid -->
+  <div class="cal-grid-wrapper">
+    @switch (viewMode) {
+      @case ('day') {
+        <daypilot-calendar [config]="configDay" [events]="events"></daypilot-calendar>
+      }
+      @case ('week') {
+        <daypilot-calendar [config]="configWeek" [events]="events"></daypilot-calendar>
+      }
+      @case ('month') {
+        <daypilot-month [config]="configMonth" [events]="events"></daypilot-month>
+      }
+      @case ('resources') {
+        <daypilot-calendar 
+          [config]="configResources" 
+          [events]="events"
+          [style.width]="calendarWidth"
+          style="min-width: 100%"
+        ></daypilot-calendar>
+      }
+    }
+
+    <!-- Loading overlay -->
+    @if (isLoading) {
+      <div class="cal-overlay" role="status" aria-label="Laddar...">
+        <div class="cal-spinner"></div>
+      </div>
+    }
+
+    <!-- Error overlay -->
+    @if (hasError && !isLoading) {
+      <div class="cal-overlay cal-overlay--error" role="alert">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <span>Kunde inte hämta bokningar</span>
+      </div>
+    }
+  </div>
+</div>

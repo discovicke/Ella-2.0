@@ -1,397 +1,599 @@
 <div class="manage-bookings-container">
-  <!-- Filter Panel -->
-  <div class="filter-panel">
-    <div class="filter-header">
-      <div class="header-left">
-        <svg
-          class="header-icon"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <rect x="3" y="4" width="18" height="18" rx="2" />
-          <line x1="16" y1="2" x2="16" y2="6" />
-          <line x1="8" y1="2" x2="8" y2="6" />
-          <line x1="3" y1="10" x2="21" y2="10" />
-        </svg>
-        <h2>Bokningar</h2>
-      </div>
-      <div class="header-right">
-        <div class="filter-actions" [class.filter-actions--visible]="hasActiveFilters()">
-          <span class="result-count">{{ totalBookings() }} träffar</span>
-          <button class="btn-reset" (click)="resetFilters()" title="Rensa filter">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="1 4 1 10 7 10" />
-              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-            </svg>
-            Rensa
-          </button>
+  <div class="page-content">
+    <!-- ─── Main Content (Left) ─────────────────────────────────────── -->
+    <main class="main-content">
+      @if (presentationMode() === 'schedule') {
+        <div class="calendar-view-container">
+          <app-calendar
+            [viewMode]="calendarViewMode()"
+            [date]="calendarDate()"
+            [resources]="calendarViewMode() === 'resources' ? calendarResources() : []"
+            [bookings]="bookings()"
+            [isLoading]="bookingsResource.isLoading()"
+            [hasError]="bookingsResource.error() !== undefined"
+            [allowTimeRangeSelection]="allowScheduleSelection()"
+            [eventHtmlFn]="adminEventHtmlFn"
+            (dateChange)="onCalendarDateChange($event)"
+            (eventClicked)="openBookingModal($event)"
+            (timeRangeSelected)="onTimeRangeSelected($event)"
+          ></app-calendar>
         </div>
-        @if (isBookingFormEnabled() !== null) {
-          <button
-            class="btn-form-toggle"
-            [class.btn-form-toggle--enabled]="isBookingFormEnabled()"
-            [class.btn-form-toggle--disabled]="!isBookingFormEnabled()"
-            [disabled]="isTogglingForm()"
-            (click)="toggleBookingForm()"
-            [title]="
-              isBookingFormEnabled() ? 'Stäng bokningsformuläret' : 'Öppna bokningsformuläret'
-            "
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              @if (isBookingFormEnabled()) {
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <path d="M9 9l6 6M15 9l-6 6" />
-              } @else {
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <path d="M9 12l2 2 4-4" />
+      } @else {
+        <div class="groups-container">
+          @if (bookingsResource.isLoading()) {
+            <div class="loading-state">
+              <div class="spinner"></div>
+              <span>Laddar bokningar...</span>
+            </div>
+          } @else if (groupedBookings().length === 0) {
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <p>Inga bokningar hittades.</p>
+              @if (hasActiveFilters()) {
+                <button class="btn-reset" (click)="resetFilters()">Rensa filter</button>
               }
-            </svg>
-            {{ isBookingFormEnabled() ? 'Formulär på' : 'Formulär av' }}
-          </button>
-        }
-      </div>
-    </div>
-
-    <div class="filter-body">
-      <div class="search-field">
-        <label class="filter-label">Sök</label>
-        <div class="search-input">
-          <svg
-            class="field-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.35-4.35" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Sök på användare, rum, campus eller anteckning..."
-            (input)="updateSearch($event)"
-            [value]="searchQuery()"
-          />
-        </div>
-      </div>
-
-      <div class="filters-group">
-        <div class="filter-item">
-          <label class="filter-label">Status</label>
-          <select (change)="updateStatus($event)" [value]="selectedStatus()">
-            <option value="All">Alla</option>
-            <option value="Active">Aktiv</option>
-            <option value="Pending">Väntande</option>
-            <option value="Cancelled">Avbokad</option>
-            <option value="Expired">Utgången</option>
-          </select>
-        </div>
-
-        <div class="filter-item view-mode-filter">
-          <label class="filter-label">Vy</label>
-          <div class="view-mode-pills">
-            <button
-              class="pill"
-              [class.pill--active]="viewMode() === 'today'"
-              (click)="setView('today')"
-            >
-              Idag
-            </button>
-            <button
-              class="pill"
-              [class.pill--active]="viewMode() === 'week'"
-              (click)="setView('week')"
-            >
-              Vecka
-            </button>
-            <button
-              class="pill"
-              [class.pill--active]="viewMode() === 'month'"
-              (click)="setView('month')"
-            >
-              Månad
-            </button>
-            <button
-              class="pill"
-              [class.pill--active]="viewMode() === 'all'"
-              (click)="setView('all')"
-            >
-              Alla
-            </button>
-            <span class="pills-divider"></span>
-            <button
-              class="pill"
-              [class.pill--active]="viewMode() === 'room'"
-              (click)="setView('room')"
-            >
-              Rum
-            </button>
-            <button
-              class="pill"
-              [class.pill--active]="viewMode() === 'user'"
-              (click)="setView('user')"
-            >
-              Användare
-            </button>
-            <button
-              class="pill"
-              [class.pill--active]="viewMode() === 'campus'"
-              (click)="setView('campus')"
-            >
-              Campus
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Pending Requests Banner -->
-  @if (pendingCount() > 0) {
-    <button class="pending-banner" (click)="filterPending()">
-      <div class="pending-banner__icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10" />
-          <polyline points="12 6 12 12 16 14" />
-        </svg>
-      </div>
-      <div class="pending-banner__text">
-        <span class="pending-banner__title">Väntande förfrågningar</span>
-        <span class="pending-banner__desc"
-          >{{ pendingCount() }} bokning{{ pendingCount() === 1 ? '' : 'ar' }} väntar på
-          godkännande</span
-        >
-      </div>
-      <span class="pending-banner__count">{{ pendingCount() }}</span>
-      <svg
-        class="pending-banner__arrow"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <polyline points="9 18 15 12 9 6" />
-      </svg>
-    </button>
-  }
-
-  <!-- Groups Container -->
-  <div class="groups-container">
-    @if (bookingsResource.isLoading()) {
-      <div class="loading-state">
-        <div class="spinner"></div>
-        <span>Laddar bokningar...</span>
-      </div>
-    } @else if (groupedBookings().length === 0) {
-      <div class="empty-state">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <rect x="3" y="4" width="18" height="18" rx="2" />
-          <line x1="16" y1="2" x2="16" y2="6" />
-          <line x1="8" y1="2" x2="8" y2="6" />
-          <line x1="3" y1="10" x2="21" y2="10" />
-        </svg>
-        <p>Inga bokningar hittades.</p>
-        @if (hasActiveFilters()) {
-          <button class="btn-reset" (click)="resetFilters()">Rensa filter</button>
-        }
-      </div>
-    } @else {
-      <div class="groups-toolbar">
-        <button class="btn-toggle-all" (click)="toggleAllCollapse()">
-          @if (defaultCollapsed()) {
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="7 13 12 18 17 13" />
-              <polyline points="7 6 12 11 17 6" />
-            </svg>
-            Expandera alla
+            </div>
           } @else {
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="17 11 12 6 7 11" />
-              <polyline points="17 18 12 13 7 18" />
-            </svg>
-            Minimera alla
-          }
-        </button>
-      </div>
-      <div class="groups-list">
-        @for (group of groupedBookings(); track group.key) {
-          <div class="group-card" [class.group-card--collapsed]="isGroupCollapsed(group.key)">
-            <!-- Group Header -->
-            <button
-              class="group-header"
-              (click)="toggleGroupCollapse(group.key)"
-              [attr.aria-expanded]="!isGroupCollapsed(group.key)"
-            >
-              <div class="group-header__left">
-                <div class="group-icon">
-                  @if (isTimeGrouping()) {
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <rect x="3" y="4" width="18" height="18" rx="2" />
-                      <line x1="16" y1="2" x2="16" y2="6" />
-                      <line x1="8" y1="2" x2="8" y2="6" />
-                      <line x1="3" y1="10" x2="21" y2="10" />
-                    </svg>
-                  } @else if (groupBy() === 'room') {
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-                      <polyline points="9 22 9 12 15 12 15 22" />
-                    </svg>
-                  } @else if (groupBy() === 'user') {
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                      <circle cx="12" cy="7" r="4" />
-                    </svg>
-                  } @else {
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <rect x="4" y="2" width="16" height="20" rx="2" />
-                      <line x1="9" y1="6" x2="15" y2="6" />
-                      <line x1="9" y1="10" x2="15" y2="10" />
-                      <line x1="9" y1="14" x2="15" y2="14" />
-                    </svg>
-                  }
-                </div>
-                <div class="group-info">
-                  <h3>{{ group.label }}</h3>
-                  @if (group.subtitle) {
-                    <span class="group-subtitle">{{ group.subtitle }}</span>
-                  }
-                </div>
+            <div class="groups-toolbar">
+              <div class="results-info">
+                <span class="result-count">{{ totalBookings() }} bokningar</span>
               </div>
-
-              <div class="group-header__right">
-                <span class="group-count">{{ group.totalCount }}</span>
-                <svg
-                  class="chevron"
-                  [class.chevron--collapsed]="isGroupCollapsed(group.key)"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </div>
-            </button>
-
-            <!-- Group Body -->
-            @if (!isGroupCollapsed(group.key)) {
-              <div class="group-body">
-                @for (booking of group.bookings; track booking.bookingId) {
-                  <div
-                    class="booking-row"
-                    [class.booking-row--cancelled]="booking.status === BookingStatus.Cancelled"
-                    [class.booking-row--expired]="booking.status === BookingStatus.Expired"
-                    [class.booking-row--pending]="booking.status === BookingStatus.Pending"
-                    (click)="openBookingModal(booking)"
+              <button class="btn-toggle-all" (click)="toggleAllCollapse()">
+                @if (defaultCollapsed()) {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="7 13 12 18 17 13" />
+                    <polyline points="7 6 12 11 17 6" />
+                  </svg>
+                  Expandera alla
+                } @else {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="17 11 12 6 7 11" />
+                    <polyline points="17 18 12 13 7 18" />
+                  </svg>
+                  Minimera alla
+                }
+              </button>
+            </div>
+            
+            <div class="groups-list">
+              @for (group of groupedBookings(); track group.key) {
+                <div class="group-card" [class.group-card--collapsed]="isGroupCollapsed(group.key)">
+                  <!-- Group Header -->
+                  <button
+                    class="group-header"
+                    (click)="toggleGroupCollapse(group.key)"
+                    [attr.aria-expanded]="!isGroupCollapsed(group.key)"
                   >
-                    <div class="booking-row__user">
-                      <div class="avatar" [attr.data-status]="booking.status">
-                        {{
-                          getInitials(groupBy() === 'user' ? booking.roomName : booking.userName)
-                        }}
-                      </div>
-                      <div class="user-info">
-                        @if (groupBy() === 'user') {
-                          <span class="user-name">{{ booking.roomName ?? '—' }}</span>
-                          <span class="user-email">{{ booking.roomType ?? '' }}</span>
-                        } @else if (isTimeGrouping()) {
-                          <span
-                            class="user-name"
-                            [class.line-through]="booking.status === BookingStatus.Cancelled"
-                            >{{ booking.userName ?? '—' }}</span
-                          >
-                          <span class="user-email">{{ booking.roomName ?? '' }}</span>
+                    <div class="group-header__left">
+                      <div class="group-icon">
+                        @if (isTimeGrouping()) {
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                          </svg>
+                        } @else if (groupBy() === 'room') {
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                            <polyline points="9 22 9 12 15 12 15 22" />
+                          </svg>
+                        } @else if (groupBy() === 'user') {
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                          </svg>
                         } @else {
-                          <span
-                            class="user-name"
-                            [class.line-through]="booking.status === BookingStatus.Cancelled"
-                            >{{ booking.userName ?? '—' }}</span
-                          >
-                          <span class="user-email">{{ booking.userEmail ?? '' }}</span>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="4" y="2" width="16" height="20" rx="2" />
+                            <line x1="9" y1="6" x2="15" y2="6" />
+                            <line x1="9" y1="10" x2="15" y2="10" />
+                            <line x1="9" y1="14" x2="15" y2="14" />
+                          </svg>
+                        }
+                      </div>
+                      <div class="group-info">
+                        <h3>{{ group.label }}</h3>
+                        @if (group.subtitle) {
+                          <span class="group-subtitle">{{ group.subtitle }}</span>
                         }
                       </div>
                     </div>
 
-                    <div class="booking-row__datetime">
-                      <span class="booking-date">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <rect x="3" y="4" width="18" height="18" rx="2" />
-                          <line x1="16" y1="2" x2="16" y2="6" />
-                          <line x1="8" y1="2" x2="8" y2="6" />
-                          <line x1="3" y1="10" x2="21" y2="10" />
-                        </svg>
-                        {{ booking.startTime | date: 'yyyy-MM-dd' }}
-                      </span>
-                      <span class="booking-time">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <circle cx="12" cy="12" r="10" />
-                          <polyline points="12 6 12 12 16 14" />
-                        </svg>
-                        {{ booking.startTime | date: 'HH:mm' }} –
-                        {{ booking.endTime | date: 'HH:mm' }}
-                      </span>
+                    <div class="group-header__right">
+                      <span class="group-count">{{ group.totalCount }}</span>
+                      <svg
+                        class="chevron"
+                        [class.chevron--collapsed]="isGroupCollapsed(group.key)"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
                     </div>
+                  </button>
 
-                    @if (groupBy() !== 'campus') {
-                      <span class="booking-row__campus">{{ booking.campusCity ?? '' }}</span>
+                  <!-- Group Body -->
+                  @if (!isGroupCollapsed(group.key)) {
+                    <div class="group-body">
+                      @for (booking of group.bookings; track booking.bookingId) {
+                        <div
+                          class="booking-row"
+                          [class.booking-row--cancelled]="booking.status === BookingStatus.Cancelled"
+                          [class.booking-row--expired]="booking.status === BookingStatus.Expired"
+                          [class.booking-row--pending]="booking.status === BookingStatus.Pending"
+                          (click)="openBookingModal(booking)"
+                        >
+                          <div class="booking-row__user">
+                            <div class="avatar" [attr.data-status]="booking.status">
+                              {{
+                                getInitials(groupBy() === 'user' ? booking.roomName : booking.userName)
+                              }}
+                            </div>
+                            <div class="user-info">
+                              @if (groupBy() === 'user') {
+                                <span class="user-name">{{ booking.roomName ?? '—' }}</span>
+                                <span class="user-email">{{ booking.roomType ?? '' }}</span>
+                              } @else if (isTimeGrouping()) {
+                                <span
+                                  class="user-name"
+                                  [class.line-through]="booking.status === BookingStatus.Cancelled"
+                                  >{{ booking.userName ?? '—' }}</span
+                                >
+                                <span class="user-email">{{ booking.roomName ?? '' }}</span>
+                              } @else {
+                                <span
+                                  class="user-name"
+                                  [class.line-through]="booking.status === BookingStatus.Cancelled"
+                                  >{{ booking.userName ?? '—' }}</span
+                                >
+                                <span class="user-email">{{ booking.userEmail ?? '' }}</span>
+                              }
+                            </div>
+                          </div>
+
+                          <div class="booking-row__datetime">
+                            <span class="booking-date">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" />
+                                <line x1="16" y1="2" x2="16" y2="6" />
+                                <line x1="8" y1="2" x2="8" y2="6" />
+                                <line x1="3" y1="10" x2="21" y2="10" />
+                              </svg>
+                              {{ booking.startTime | date: 'yyyy-MM-dd' }}
+                            </span>
+                            <span class="booking-time">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                              </svg>
+                              {{ booking.startTime | date: 'HH:mm' }} –
+                              {{ booking.endTime | date: 'HH:mm' }}
+                            </span>
+                          </div>
+
+                          @if (groupBy() !== 'campus') {
+                            <span class="booking-row__campus">{{ booking.campusCity ?? '' }}</span>
+                          }
+
+                          <div class="booking-row__status">
+                            <span class="status-badge" [attr.data-status]="booking.status">
+                              {{ statusLabel(booking.status) }}
+                            </span>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Pagination -->
+            @if (totalPages() > 1) {
+              <div class="pagination-footer">
+                <span class="pagination-info">
+                  Sida {{ pageIndex() + 1 }} av {{ totalPages() }}
+                </span>
+                <div class="pagination-controls">
+                  <button
+                    class="page-btn"
+                    [disabled]="pageIndex() === 0"
+                    (click)="handlePageChange(pageIndex() - 1)"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                  </button>
+                  @for (p of visiblePages(); track p) {
+                    @if (p === -1) {
+                      <span class="page-ellipsis">…</span>
+                    } @else {
+                      <button
+                        class="page-btn"
+                        [class.page-btn--active]="p === pageIndex()"
+                        (click)="handlePageChange(p)"
+                      >
+                        {{ p + 1 }}
+                      </button>
                     }
+                  }
+                  <button
+                    class="page-btn"
+                    [disabled]="pageIndex() >= totalPages() - 1"
+                    (click)="handlePageChange(pageIndex() + 1)"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      }
+    </main>
 
-                    <div class="booking-row__status">
-                      <span class="status-badge" [attr.data-status]="booking.status">
-                        {{ statusLabel(booking.status) }}
-                      </span>
-                    </div>
+    <!-- ─── Sidebar (Right) ─────────────────────────────────────────── -->
+    <aside class="sidebar-filters">
+      <section class="filter-card">
+        <!-- Sök Section -->
+        <div class="filter-section filter-section--search">
+          <label class="field">
+            <span class="field-label">Sök bokningar</span>
+            <div class="search-input-wrapper search-input-wrapper--elevated">
+              <svg
+                class="search-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input
+                type="text"
+                [value]="searchQuery()"
+                (input)="updateSearch($event)"
+                placeholder="Användare, rum, campus..."
+              />
+              @if (searchQuery()) {
+                <button type="button" class="clear-btn" (click)="resetFilters()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              }
+            </div>
+          </label>
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <!-- Status Section -->
+        <div class="filter-section">
+          <button
+            class="filter-section__header"
+            (click)="toggleSection('status')"
+            [attr.aria-expanded]="!isSectionCollapsed('status')"
+            type="button"
+          >
+            <h4 class="filter-section__title">Status</h4>
+            <svg
+              class="chevron"
+              [class.chevron--collapsed]="isSectionCollapsed('status')"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          @if (!isSectionCollapsed('status')) {
+            <div class="filter-section__content">
+              <div class="field">
+                <app-select
+                  [options]="statusOptions"
+                  [value]="selectedStatus()"
+                  (valueChange)="updateStatus($event)"
+                ></app-select>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <!-- Vy Mode Section -->
+        <div class="filter-section">
+          <button
+            class="filter-section__header"
+            (click)="toggleSection('view')"
+            [attr.aria-expanded]="!isSectionCollapsed('view')"
+            type="button"
+          >
+            <h4 class="filter-section__title">Läge</h4>
+            <svg
+              class="chevron"
+              [class.chevron--collapsed]="isSectionCollapsed('view')"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          @if (!isSectionCollapsed('view')) {
+            <div class="filter-section__content">
+              <div class="view-mode-pills sidebar-pills">
+                <button
+                  class="pill"
+                  [class.pill--active]="presentationMode() === 'schedule'"
+                  (click)="setPresentationMode('schedule')"
+                >
+                  Kalendervy
+                </button>
+                <button
+                  class="pill"
+                  [class.pill--active]="presentationMode() === 'list'"
+                  (click)="setPresentationMode('list')"
+                >
+                  Listvy
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <!-- Tid Section (Contextual) -->
+        <div class="filter-section">
+          <button
+            class="filter-section__header"
+            (click)="toggleSection('time')"
+            [attr.aria-expanded]="!isSectionCollapsed('time')"
+            type="button"
+          >
+            <h4 class="filter-section__title">Tid</h4>
+            <svg
+              class="chevron"
+              [class.chevron--collapsed]="isSectionCollapsed('time')"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          @if (!isSectionCollapsed('time')) {
+            <div class="filter-section__content">
+              @if (presentationMode() === 'schedule') {
+                <div class="field">
+                  <span class="field-label">Datum</span>
+                  <app-date-picker
+                    [value]="formattedCalendarDate()"
+                    (valueChange)="updateCalendarDate($event)"
+                  ></app-date-picker>
+                </div>
+                <div class="field">
+                  <span class="field-label">Tidskala</span>
+                  <div class="view-mode-pills sidebar-pills">
+                    <button
+                      class="pill"
+                      [class.pill--active]="scheduleTimeScale() === 'day'"
+                      (click)="setScheduleTimeScale('day')"
+                    >
+                      Dag
+                    </button>
+                    <button
+                      class="pill"
+                      [class.pill--active]="scheduleTimeScale() === 'week'"
+                      (click)="setScheduleTimeScale('week')"
+                    >
+                      Vecka
+                    </button>
+                    <button
+                      class="pill"
+                      [class.pill--active]="scheduleTimeScale() === 'month'"
+                      (click)="setScheduleTimeScale('month')"
+                    >
+                      Månad
+                    </button>
                   </div>
-                }
+                </div>
+              } @else {
+                <div class="field">
+                  <span class="field-label">Period</span>
+                  <div class="view-mode-pills sidebar-pills">
+                    <button
+                      class="pill"
+                      [class.pill--active]="listDateRange() === 'all'"
+                      (click)="setListDateRange('all')"
+                    >
+                      Alla
+                    </button>
+                    <button
+                      class="pill"
+                      [class.pill--active]="listDateRange() === 'today'"
+                      (click)="setListDateRange('today')"
+                    >
+                      Idag
+                    </button>
+                    <button
+                      class="pill"
+                      [class.pill--active]="listDateRange() === 'week'"
+                      (click)="setListDateRange('week')"
+                    >
+                      Vecka
+                    </button>
+                    <button
+                      class="pill"
+                      [class.pill--active]="listDateRange() === 'month'"
+                      (click)="setListDateRange('month')"
+                    >
+                      Månad
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <!-- Gruppera Section (List only) -->
+        @if (presentationMode() === 'list') {
+          <div class="filter-section">
+            <button
+              class="filter-section__header"
+              (click)="toggleSection('group')"
+              [attr.aria-expanded]="!isSectionCollapsed('group')"
+              type="button"
+            >
+              <h4 class="filter-section__title">Gruppera</h4>
+              <svg
+                class="chevron"
+                [class.chevron--collapsed]="isSectionCollapsed('group')"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+
+            @if (!isSectionCollapsed('group')) {
+              <div class="filter-section__content">
+                <div class="view-mode-pills sidebar-pills sidebar-pills--wrap">
+                  <button
+                    class="pill"
+                    [class.pill--active]="listGroupBy() === 'month'"
+                    (click)="setListGroupBy('month')"
+                  >
+                    Månad
+                  </button>
+                  <button
+                    class="pill"
+                    [class.pill--active]="listGroupBy() === 'week'"
+                    (click)="setListGroupBy('week')"
+                  >
+                    Vecka
+                  </button>
+                  <button
+                    class="pill"
+                    [class.pill--active]="listGroupBy() === 'day'"
+                    (click)="setListGroupBy('day')"
+                  >
+                    Dag
+                  </button>
+                  <button
+                    class="pill"
+                    [class.pill--active]="listGroupBy() === 'room'"
+                    (click)="setListGroupBy('room')"
+                  >
+                    Rum
+                  </button>
+                  <button
+                    class="pill"
+                    [class.pill--active]="listGroupBy() === 'user'"
+                    (click)="setListGroupBy('user')"
+                  >
+                    Användare
+                  </button>
+                  <button
+                    class="pill"
+                    [class.pill--active]="listGroupBy() === 'campus'"
+                    (click)="setListGroupBy('campus')"
+                  >
+                    Campus
+                  </button>
+                </div>
               </div>
             }
           </div>
+          <div class="filter-divider"></div>
         }
-      </div>
 
-      <!-- Pagination -->
-      @if (totalPages() > 1) {
-        <div class="pagination-footer">
-          <span class="pagination-info">
-            Sida {{ pageIndex() + 1 }} av {{ totalPages() }} ({{ totalBookings() }} bokningar)
-          </span>
-          <div class="pagination-controls">
-            <button
-              class="page-btn"
-              [disabled]="pageIndex() === 0"
-              (click)="handlePageChange(pageIndex() - 1)"
+        <!-- Formulär Section -->
+        <div class="filter-section">
+          <button
+            class="filter-section__header"
+            (click)="toggleSection('form')"
+            [attr.aria-expanded]="!isSectionCollapsed('form')"
+            type="button"
+          >
+            <h4 class="filter-section__title">Inställningar</h4>
+            <svg
+              class="chevron"
+              [class.chevron--collapsed]="isSectionCollapsed('form')"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-            </button>
-            @for (p of visiblePages(); track p) {
-              @if (p === -1) {
-                <span class="page-ellipsis">…</span>
-              } @else {
-                <button
-                  class="page-btn"
-                  [class.page-btn--active]="p === pageIndex()"
-                  (click)="handlePageChange(p)"
-                >
-                  {{ p + 1 }}
-                </button>
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          @if (!isSectionCollapsed('form')) {
+            <div class="filter-section__content">
+              @if (isBookingFormEnabled() !== null) {
+                <div class="field">
+                  <button
+                    class="btn-form-toggle sidebar-btn"
+                    [class.btn-form-toggle--enabled]="isBookingFormEnabled()"
+                    [class.btn-form-toggle--disabled]="!isBookingFormEnabled()"
+                    [disabled]="isTogglingForm()"
+                    (click)="toggleBookingForm()"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      @if (isBookingFormEnabled()) {
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <path d="M9 9l6 6M15 9l-6 6" />
+                      } @else {
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <path d="M9 12l2 2 4-4" />
+                      }
+                    </svg>
+                    {{ isBookingFormEnabled() ? 'Formulär öppet' : 'Formulär stängt' }}
+                  </button>
+                </div>
               }
-            }
-            <button
-              class="page-btn"
-              [disabled]="pageIndex() >= totalPages() - 1"
-              (click)="handlePageChange(pageIndex() + 1)"
-            >
+            </div>
+          }
+        </div>
+
+        @if (hasActiveFilters()) {
+          <div class="filter-actions">
+            <button class="btn-reset" type="button" (click)="resetFilters()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="9 18 15 12 9 6" />
+                <polyline points="1 4 1 10 7 10" />
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
               </svg>
+              Nollställ filter
             </button>
           </div>
-        </div>
-      }
-    }
+        }
+      </section>
+    </aside>
   </div>
 </div>

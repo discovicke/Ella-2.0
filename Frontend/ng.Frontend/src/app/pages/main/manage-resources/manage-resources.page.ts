@@ -87,8 +87,16 @@ export class ManageResourcesPage implements OnInit {
   });
 
   // Categories & Campuses (Static lists for dropdowns)
-  categories = signal<ResourceCategoryDto[]>([]);
-  campuses = signal<CampusResponseDto[]>([]);
+  categoriesResource = resource({
+    loader: () => firstValueFrom(this.resourceService.getCategories())
+  });
+
+  campusesResource = resource({
+    loader: () => firstValueFrom(this.campusService.getAll())
+  });
+
+  categories = computed(() => this.categoriesResource.value() ?? []);
+  campuses = computed(() => this.campusesResource.value() ?? []);
 
   ngOnInit() {
     this.columns = [
@@ -97,21 +105,6 @@ export class ManageResourcesPage implements OnInit {
       { header: 'Ort', field: 'campusCity' },
       { header: '', template: this.actionsTpl, width: '60px', align: 'right' }
     ];
-
-    this.loadDropdownData();
-  }
-
-  async loadDropdownData() {
-    try {
-      const [cats, cams] = await Promise.all([
-        firstValueFrom(this.resourceService.getCategories()),
-        firstValueFrom(this.campusService.getAll())
-      ]);
-      this.categories.set(cats);
-      this.campuses.set(cams);
-    } catch (err) {
-      console.error('Failed to load dropdown data', err);
-    }
   }
 
   openCreateResourceModal() {
@@ -132,7 +125,7 @@ export class ManageResourcesPage implements OnInit {
       width: '450px',
       data: {
         categories: this.categories(),
-        onRefresh: () => this.loadDropdownData()
+        onRefresh: () => this.categoriesResource.reload()
       }
     });
   }

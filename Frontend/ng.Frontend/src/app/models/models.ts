@@ -383,6 +383,27 @@ export interface ResourceResponseDto {
   isActive: boolean;
 }
 
+export interface RoomAvailabilityResultDto {
+  /** @format int64 */
+  roomId: number;
+  roomName: string;
+  campusCity: string;
+  /** @format int32 */
+  capacity: number | null;
+  /** @format int64 */
+  roomTypeId: number;
+  roomTypeName: string;
+  floor: string | null;
+  notes: string | null;
+  assets: string[] | null;
+  isAvailable: boolean;
+  /** @format int32 */
+  matchScore: number;
+  matchReasons: string[];
+  nextConflict: AvailabilityConflictDto;
+  conflicts: AvailabilityConflictDto2[];
+}
+
 export interface RoomDetailModel {
   /** @format int64 */
   roomId?: number;

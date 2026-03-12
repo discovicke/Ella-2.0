@@ -20,12 +20,15 @@ import { SessionService } from '../../../core/session.service';
 import {
   BookingDetailModalComponent,
   BookingDetailModalConfig,
-} from './booking-detail-modal.component';
+} from '../../../shared/components/booking-detail-modal/booking-detail-modal.component';
+import { CalendarComponent } from '../../../shared/components/calendar/calendar.component';
 
 /** A booking enriched with ownership/source info for the merged view */
 interface EnrichedBooking extends BookingDetailedReadModel {
   /** True if the current user created this booking */
   isOwned: boolean;
+  /** True if the user accepted this invitation (registered, not own) */
+  isAttending: boolean;
   /** True if the user declined this invitation */
   isDeclined: boolean;
   /** True if this is a past invitation the user never responded to */
@@ -42,9 +45,12 @@ interface BookingGroup {
   bookings: EnrichedBooking[];
 }
 
+type PersonalScheduleView = 'agenda' | 'week' | 'month';
+type BookingView = 'all' | 'invitations';
+
 @Component({
   selector: 'app-see-bookings-page',
-  imports: [DatePipe, TitleCasePipe, RouterLink],
+  imports: [DatePipe, TitleCasePipe, RouterLink, CalendarComponent],
   templateUrl: './see-bookings.page.html',
   styleUrl: './see-bookings.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -59,42 +65,93 @@ export class SeeBookingsPage {
   private readonly sessionService = inject(SessionService);
 
   // --- STATE ---
+  viewMode = signal<PersonalScheduleView>('agenda');
+  calendarDate = signal<Date>(new Date());
   activeTab = signal<'upcoming' | 'history'>('upcoming');
-  showCancelled = signal<boolean>(false);
+  bookingView = signal<BookingView>('all');
 
   // Merged bookings (own + confirmed registrations)
   bookings = signal<EnrichedBooking[]>([]);
-  totalCount = signal<number>(0);
   currentPage = signal<number>(1);
   isLoading = signal<boolean>(false);
   private readonly PAGE_SIZE = 8;
+
+  // Track whether each source API still has more pages
+  private ownHasMore = signal<boolean>(false);
+  private regHasMore = signal<boolean>(false);
+
+  // Stable pending invitation count — only written on upcoming reset fetches
+  readonly pendingInvitationCount = signal<number>(0);
 
   // Invitation action busy state
   invitationBusy = signal<Set<number>>(new Set());
 
   constructor() {
-    // Auto-fetch when tab or showCancelled changes
+    // Auto-fetch when state changes
     effect(() => {
-      const _tab = this.activeTab();
-      const _cancelled = this.showCancelled();
+      this.activeTab();
+      this.viewMode();
+      this.calendarDate();
       untracked(() => this.loadBookings(true));
     });
   }
 
   // --- COMPUTED ---
 
-  hasMore = computed(() => this.bookings().length < this.totalCount());
+  readonly isCalendarView = computed(() => this.viewMode() !== 'agenda');
 
+  readonly calendarViewMode = computed<'week' | 'month'>(() =>
+    this.viewMode() === 'week' ? 'week' : 'month',
+  );
+
+  /**
+   * True when there are more pages to load from the server.
+   * View-aware: if we're in a filter that only uses one source, only that
+   * source's hasMore is checked so the button doesn't show spuriously.
+   */
+  readonly hasMore = computed(() => {
+    const view = this.bookingView();
+    switch (view) {
+      case 'invitations':
+        // Invitations only come from the registrations API
+        return this.regHasMore();
+      case 'all':
+      default:
+        // All needs both sources to be exhausted
+        return this.ownHasMore() || this.regHasMore();
+    }
+  });
+
+  readonly filteredBookings = computed(() => {
+    if (this.isCalendarView()) {
+      return this.bookings();
+    }
+    const view = this.bookingView();
+    if (view === 'all') {
+      return this.bookings();
+    }
+    return this.bookings().filter((booking) => booking.isInvitation);
+  });
+
+  /** Raw count of pending invitations — always from unfiltered list so the badge is honest */
   /** The soonest upcoming active booking — from own OR registered bookings */
   nextBooking = computed(() => {
     if (this.activeTab() !== 'upcoming') return null;
+    const now = new Date().getTime();
     return (
-      this.bookings().find((b) => b.status === BookingStatus.Active && !b.isInvitation) ?? null
+      this.filteredBookings().find(
+        (b) =>
+          b.status === BookingStatus.Active &&
+          !b.isInvitation &&
+          !b.isDeclined &&
+          !b.isExpiredInvitation &&
+          new Date(b.endTime ?? 0).getTime() > now
+      ) ?? null
     );
   });
 
   groupedBookings = computed(() => {
-    const bookings = this.bookings();
+    const bookings = this.filteredBookings();
     const tab = this.activeTab();
 
     if (tab === 'upcoming') {
@@ -122,8 +179,11 @@ export class SeeBookingsPage {
       return remainMins > 0 ? `Startar om ${hours}h ${remainMins}m` : `Startar om ${hours}h`;
     }
 
-    const days = Math.floor(hours / 24);
-    return days === 1 ? 'Startar imorgon' : `Startar om ${days} dagar`;
+    const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const calendarDaysDiff = Math.round((startDate.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    return calendarDaysDiff === 1 ? 'Startar imorgon' : `Startar om ${calendarDaysDiff} dagar`;
   }
 
   statusLabel(status: BookingStatus | undefined): string {
@@ -145,6 +205,7 @@ export class SeeBookingsPage {
     return bookings.map((b) => ({
       ...b,
       isOwned: source === 'owned' || b.userId === userId,
+      isAttending: source === 'registered',
       isDeclined: source === 'declined',
       isExpiredInvitation: source === 'expired-invitation',
       isInvitation: source === 'invitation',
@@ -160,10 +221,17 @@ export class SeeBookingsPage {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const dayAfterTomorrow = new Date(tomorrow);
     dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
-    const endOfWeek = new Date(today);
-    endOfWeek.setDate(endOfWeek.getDate() + 7);
-    const endOfNextWeek = new Date(endOfWeek);
-    endOfNextWeek.setDate(endOfNextWeek.getDate() + 7);
+
+    // Group by calendar week (Monday-Sunday)
+    // JS getDay(): 0=Sun, 1=Mon, ..., 6=Sat
+    const dayOfWeek = today.getDay();
+    const daysUntilNextMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
+
+    const startOfNextWeek = new Date(today);
+    startOfNextWeek.setDate(today.getDate() + daysUntilNextMonday);
+
+    const startOfFollowingWeek = new Date(startOfNextWeek);
+    startOfFollowingWeek.setDate(startOfNextWeek.getDate() + 7);
 
     const groups: BookingGroup[] = [
       { label: 'Idag', key: 'today', bookings: [] },
@@ -182,9 +250,9 @@ export class SeeBookingsPage {
         groups[0].bookings.push(booking);
       } else if (t === tomorrow.getTime()) {
         groups[1].bookings.push(booking);
-      } else if (t > tomorrow.getTime() && t < endOfWeek.getTime()) {
+      } else if (t > tomorrow.getTime() && t < startOfNextWeek.getTime()) {
         groups[2].bookings.push(booking);
-      } else if (t >= endOfWeek.getTime() && t < endOfNextWeek.getTime()) {
+      } else if (t >= startOfNextWeek.getTime() && t < startOfFollowingWeek.getTime()) {
         groups[3].bookings.push(booking);
       } else {
         groups[4].bookings.push(booking);
@@ -224,44 +292,69 @@ export class SeeBookingsPage {
 
   // --- ACTIONS ---
 
-  setActiveTab(tab: 'upcoming' | 'history') {
-    this.activeTab.set(tab);
+  setViewMode(mode: PersonalScheduleView) {
+    this.viewMode.set(mode);
+    this.bookingView.set('all');
   }
 
-  toggleCancelled(event: Event) {
-    const checked = (event.target as HTMLInputElement).checked;
-    this.showCancelled.set(checked);
+  setBookingView(view: BookingView): void {
+    this.bookingView.set(view);
+  }
+
+  onCalendarDateChange(date: Date): void {
+    this.calendarDate.set(date);
+  }
+
+  setActiveTab(tab: 'upcoming' | 'history') {
+    this.activeTab.set(tab);
+    this.bookingView.set('all');
   }
 
   async loadBookings(reset: boolean) {
     if (reset) {
       this.currentPage.set(1);
       this.bookings.set([]);
-      this.totalCount.set(0);
+      this.ownHasMore.set(false);
+      this.regHasMore.set(false);
+      // Always return to the default view when data is refreshed so stale
+      // filters (e.g. 'invitations') don't show empty results after a reload
+      this.bookingView.set('all');
     }
 
     this.isLoading.set(true);
     try {
+      const isCalendar = this.isCalendarView();
       const isUpcoming = this.activeTab() === 'upcoming';
       const timeFilter = isUpcoming ? 'upcoming' : 'history';
       const userId = this.sessionService.currentUser()?.id;
+      const page = isCalendar ? 1 : this.currentPage();
+      const pageSize = isCalendar ? 1000 : this.PAGE_SIZE;
+
+      let startDate: string | undefined;
+      let endDate: string | undefined;
+
+      if (isCalendar) {
+        const d = this.calendarDate();
+        startDate = new Date(d.getFullYear(), d.getMonth() - 1, 1).toISOString();
+        endDate = new Date(d.getFullYear(), d.getMonth() + 2, 0).toISOString();
+      }
 
       // Two parallel calls: paged own bookings + paged registration bookings
       const [ownResult, regResult] = await Promise.all([
         firstValueFrom(
           this.bookingService.getBookingsByUserId({
-            page: this.currentPage(),
-            pageSize: this.PAGE_SIZE,
-            timeFilter: this.activeTab(),
-            includeCancelled: this.showCancelled(),
+            page,
+            pageSize,
+            timeFilter: isCalendar ? undefined : this.activeTab(),
+            includeCancelled: isCalendar ? false : !isUpcoming,
           }),
         ),
         firstValueFrom(
           this.registrationService.getMyRegistrationBookings(
             ['registered', 'invited', 'declined'],
-            timeFilter,
-            this.currentPage(),
-            this.PAGE_SIZE,
+            isCalendar ? undefined : timeFilter,
+            page,
+            pageSize,
           ),
         ),
       ]);
@@ -269,14 +362,18 @@ export class SeeBookingsPage {
       const ownBookings = this.enrichBookings(ownResult.items, 'owned');
 
       // Enrich registration bookings based on userRegistrationStatus from the server
-      const regBookings = regResult.items;
-      const enrichedReg = regBookings
+      const now = new Date();
+      const enrichedReg = regResult.items
         .filter((b) => b.userId !== userId) // exclude own bookings (already in ownBookings)
         .map((b) => {
           const status = b.userRegistrationStatus;
+          // In calendar view the API returns all time periods, so we cannot rely on
+          // the active tab to decide whether an 'invited' booking is still pending.
+          // Use the actual start time: a booking in the past is an expired invitation.
+          const bookingIsFuture = new Date(b.startTime ?? 0) >= now;
           const source: 'registered' | 'invitation' | 'declined' | 'expired-invitation' =
             status === 'invited'
-              ? isUpcoming
+              ? bookingIsFuture
                 ? 'invitation'
                 : 'expired-invitation'
               : status === 'declined'
@@ -312,7 +409,16 @@ export class SeeBookingsPage {
       }
 
       this.bookings.set(deduped);
-      this.totalCount.set(ownResult.totalCount + regResult.totalCount);
+
+      // Only count pending invitations on a fresh upcoming fetch — stays frozen
+      // on load-more and when switching to Historik, so it never flickers or grows.
+      if (isUpcoming && reset) {
+        this.pendingInvitationCount.set(deduped.filter((b) => b.isInvitation).length);
+      }
+
+      // Track whether each source has more pages remaining
+      this.ownHasMore.set(page * pageSize < ownResult.totalCount);
+      this.regHasMore.set(page * pageSize < regResult.totalCount);
     } catch (err) {
       console.error('Failed to load bookings', err);
     } finally {
@@ -375,7 +481,26 @@ export class SeeBookingsPage {
 
   // ─── Booking detail modal ─────────────────────────────
 
-  openBookingDetail(booking: EnrichedBooking): void {
+  openBookingDetail(bookingInput: BookingDetailedReadModel): void {
+    // Calendar emits plain BookingDetailedReadModel without enriched flags — fill them in
+    const booking = ('isOwned' in bookingInput && bookingInput.isOwned !== undefined)
+      ? (bookingInput as EnrichedBooking)
+      : (() => {
+          const userId = this.sessionService.currentUser()?.id;
+          const isOwned = bookingInput.userId === userId;
+          const reg = this.bookings().find((b) => b.bookingId === bookingInput.bookingId);
+          // Re-use the already-enriched version if available; otherwise synthesise
+          if (reg) return reg;
+          return {
+            ...bookingInput,
+            isOwned,
+            isAttending: !isOwned,
+            isDeclined: false,
+            isExpiredInvitation: false,
+            isInvitation: false,
+            inviterName: !isOwned ? (bookingInput.userName ?? undefined) : undefined,
+          } as EnrichedBooking;
+        })();
     const isHistory = this.activeTab() === 'history';
 
     const config: BookingDetailModalConfig = {
@@ -479,6 +604,12 @@ export class SeeBookingsPage {
     if (!booking.bookingId) return;
     if (booking.status !== BookingStatus.Active) return;
 
+    // Recurring bookings need scope selection — delegate to the detail modal
+    if (booking.recurringGroupId) {
+      this.openBookingDetail(booking);
+      return;
+    }
+
     const confirmed = await this.confirmService.show('Vill du avboka bokningen?', {
       title: 'Avboka bokning',
       icon: 'warning' as const,
@@ -491,9 +622,42 @@ export class SeeBookingsPage {
     try {
       await firstValueFrom(this.bookingService.cancelBooking(booking.bookingId));
       this.loadBookings(true);
-    } catch (error) {
+      } catch (error) {
       console.error('Failed to cancel booking', error);
       this.toastService.showError('Kunde inte avboka. Försök igen.');
     }
+  }
+
+  async onUnregisterBooking(booking: BookingDetailedReadModel, event?: Event) {
+    event?.stopPropagation();
+    if (!booking.bookingId) return;
+
+    const confirmed = await this.confirmService.show('Vill du avregistrera dig från bokningen?', {
+      title: 'Avregistrera',
+      icon: 'warning' as const,
+      confirmText: 'Avregistrera',
+      cancelText: 'Behåll',
+      dangerConfirm: true,
+    });
+    if (!confirmed) return;
+
+    try {
+      await firstValueFrom(this.registrationService.declineInvitation(booking.bookingId));
+      this.toastService.showSuccess('Du har avregistrerats.');
+      this.loadBookings(true);
+    } catch (error) {
+      console.error('Failed to unregister', error);
+      this.toastService.showError('Kunde inte avregistrera. Försök igen.');
+    }
+  }
+
+  goToInvitations(): void {
+    this.viewMode.set('agenda');
+    this.activeTab.set('upcoming');
+    this.bookingView.set('invitations');
+  }
+
+  clearFilter(): void {
+    this.bookingView.set('all');
   }
 }

@@ -5,7 +5,11 @@ import {
   inject,
   resource,
   signal,
+  effect,
 } from '@angular/core';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import {
@@ -17,8 +21,16 @@ import { BookingService, BookingPagedFilterParams } from '../../../shared/servic
 import { ModalService } from '../../../shared/services/modal.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { BookingEditModalComponent } from './booking-edit-modal.component';
+import { RoomService } from '../../../shared/services/room.service';
+import { DayPilot } from '@daypilot/daypilot-lite-angular';
+import { BookingModalComponent } from '../book-room/booking-modal/booking-modal.component';
 
-export type ViewMode = 'today' | 'week' | 'month' | 'all' | 'room' | 'user' | 'campus';
+import { CalendarComponent } from '../../../shared/components/calendar/calendar.component';
+import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
+import { SelectComponent, SelectOption } from '../../../shared/components/select/select.component';
+
+export type PresentationMode = 'schedule' | 'list';
+export type ScheduleTimeScale = 'day' | 'week' | 'month';
 export type GroupByMode = 'day' | 'week' | 'month' | 'room' | 'user' | 'campus';
 export type DateRange = 'today' | 'week' | 'month' | 'all';
 
@@ -32,7 +44,7 @@ export interface BookingGroup {
 
 @Component({
   selector: 'app-manage-bookings-page',
-  imports: [DatePipe],
+  imports: [DatePipe, CalendarComponent, DatePickerComponent, SelectComponent],
   templateUrl: './manage-bookings.page.html',
   styleUrl: './manage-bookings.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,17 +54,51 @@ export class ManageBookingsPage {
   private readonly bookingService = inject(BookingService);
   private readonly modalService = inject(ModalService);
   private readonly toastService = inject(ToastService);
+  private readonly roomService = inject(RoomService);
 
   // --- Booking form kill switch ---
   readonly isBookingFormEnabled = signal<boolean | null>(null);
   readonly isTogglingForm = signal(false);
 
-  // --- Pending count ---
-  readonly pendingCount = signal(0);
+  // --- Sidebar Collapse State ---
+  readonly collapsedSections = signal<Set<string>>(new Set());
+
+  toggleSection(section: string): void {
+    const current = new Set(this.collapsedSections());
+    if (current.has(section)) {
+      current.delete(section);
+    } else {
+      current.add(section);
+    }
+    this.collapsedSections.set(current);
+  }
+
+  isSectionCollapsed(section: string): boolean {
+    return this.collapsedSections().has(section);
+  }
+
+  // --- Rooms (for resource scheduler) ---
+  readonly roomsResource = resource({
+    loader: () => firstValueFrom(this.roomService.getAllRooms()),
+  });
+
+  readonly calendarResources = computed<DayPilot.ResourceData[]>(() =>
+    (this.roomsResource.value() ?? []).map(r => ({
+      id: r.roomId!.toString(),
+      name: r.name || 'Okänt rum',
+    }))
+  );
 
   constructor() {
     this.loadFormStatus();
-    this.loadPendingCount();
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntilDestroyed()
+    ).subscribe(value => {
+      this.debouncedSearch.set(value);
+      this.pageIndex.set(0);
+    });
   }
 
   private loadFormStatus(): void {
@@ -78,27 +124,44 @@ export class ManageBookingsPage {
     });
   }
 
-  private loadPendingCount(): void {
-    this.bookingService.getAllBookings({ status: BookingStatus.Pending, pageSize: 1 }).subscribe({
-      next: (res) => this.pendingCount.set(res.totalCount),
-      error: () => this.pendingCount.set(0),
-    });
-  }
-
-  filterPending(): void {
-    this.selectedStatus.set(BookingStatus.Pending);
-    this.viewMode.set('all');
-    this.pageIndex.set(0);
-  }
-
   // --- Filter state ---
   searchQuery = signal('');
   debouncedSearch = signal('');
-  private searchDebounceTimer: ReturnType<typeof setTimeout> | undefined;
-  selectedStatus = signal<BookingStatus | 'All'>(BookingStatus.Active);
-  viewMode = signal<ViewMode>('week');
+  private searchSubject = new Subject<string>();
+  selectedStatus = signal<BookingStatus | 'All'>('All');
+  presentationMode = signal<PresentationMode>('schedule');
+  scheduleTimeScale = signal<ScheduleTimeScale>('month');
+  listDateRange = signal<DateRange>('all');
+  listGroupBy = signal<GroupByMode>('month');
+  calendarDate = signal<Date>(new Date());
+
+  readonly formattedCalendarDate = computed(() => this.toDateInputValue(this.calendarDate()));
+
+  readonly statusOptions: SelectOption[] = [
+    { id: 'All', label: 'Alla statusar' },
+    { id: BookingStatus.Active, label: 'Aktiv' },
+    { id: BookingStatus.Pending, label: 'Väntande' },
+    { id: BookingStatus.Cancelled, label: 'Avbokad' },
+    { id: BookingStatus.Expired, label: 'Utgången' },
+  ];
+
+  private toDateInputValue(date: Date): string {
+
+    const offset = date.getTimezoneOffset();
+    const adjusted = new Date(date.getTime() - offset * 60 * 1000);
+    return adjusted.toISOString().split('T')[0];
+  }
+
+  updateCalendarDate(val: string | null): void {
+    if (val) {
+      const parts = val.split('-').map(Number);
+      this.calendarDate.set(new Date(parts[0], parts[1] - 1, parts[2]));
+    }
+  }
+
   /** Sticky preference: should groups default to collapsed? Survives filter/page changes. */
-  defaultCollapsed = signal(false);
+
+  defaultCollapsed = signal(true);
   /** Per-group overrides that differ from the default. Reset on filter/page change. */
   private groupOverrides = signal<Set<string>>(new Set());
   pageIndex = signal(0);
@@ -113,40 +176,86 @@ export class ManageBookingsPage {
     return range === 'all' ? 10 : 1_000;
   });
 
-  // Derived from viewMode
   readonly selectedDateRange = computed((): DateRange => {
-    const vm = this.viewMode();
-    switch (vm) {
-      case 'today':
-        return 'today';
-      case 'week':
-        return 'week';
-      case 'month':
-        return 'month';
-      case 'all':
-        return 'all';
-      default:
-        return 'all'; // entity modes show all time
+    if (this.presentationMode() === 'schedule') {
+      switch (this.scheduleTimeScale()) {
+        case 'day':
+          return 'today';
+        case 'week':
+          return 'week';
+        case 'month':
+          return 'month';
+      }
     }
+
+    return this.listDateRange();
   });
 
   readonly groupBy = computed((): GroupByMode => {
-    const vm = this.viewMode();
-    switch (vm) {
-      case 'today':
+    if (this.presentationMode() === 'schedule') {
+      switch (this.scheduleTimeScale()) {
+        case 'day':
+          return 'day';
+        case 'week':
+          return 'week';
+        case 'month':
+          return 'month';
+      }
+    }
+
+    switch (this.listGroupBy()) {
+      case 'day':
         return 'day';
       case 'week':
-        return 'day';
-      case 'month':
         return 'week';
-      case 'all':
+      case 'month':
         return 'month';
       default:
-        return vm; // 'room' | 'user' | 'campus'
+        return this.listGroupBy();
     }
   });
 
+  readonly calendarViewMode = computed<'resources' | 'week' | 'month'>(() => {
+    switch (this.scheduleTimeScale()) {
+      case 'day':
+        return 'resources';
+      case 'week':
+        return 'week';
+      case 'month':
+        return 'month';
+      default:
+        return 'resources';
+    }
+  });
+
+
+  readonly allowScheduleSelection = computed(() => this.scheduleTimeScale() === 'day');
+
   private getDateBounds(range: DateRange): { start: Date; end: Date } | null {
+    if (this.presentationMode() === 'schedule') {
+      const d = this.calendarDate();
+      if (this.scheduleTimeScale() === 'day') {
+        const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+        return { start, end };
+      }
+
+      if (this.scheduleTimeScale() === 'week') {
+        const day = d.getDay();
+        const diff = day === 0 ? 6 : day - 1;
+        const monday = new Date(d.getFullYear(), d.getMonth(), d.getDate() - diff);
+        return {
+          start: monday,
+          end: new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 7),
+        };
+      }
+
+      return {
+        start: new Date(d.getFullYear(), d.getMonth(), 1),
+        end: new Date(d.getFullYear(), d.getMonth() + 1, 1),
+      };
+    }
+
     if (range === 'all') return null;
     const now = new Date();
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -164,6 +273,8 @@ export class ManageBookingsPage {
           start: new Date(now.getFullYear(), now.getMonth(), 1),
           end: new Date(now.getFullYear(), now.getMonth() + 1, 1),
         };
+      default:
+        return null;
     }
   }
 
@@ -196,29 +307,19 @@ export class ManageBookingsPage {
   });
 
   // Keep previous data visible while loading to avoid flash
-  private lastBookings: BookingDetailedReadModel[] = [];
-  private lastTotalGroups = 0;
-  private lastTotalBookings = 0;
+  readonly bookings = signal<BookingDetailedReadModel[]>([]);
+  readonly totalGroups = signal(0);
+  readonly totalBookings = signal(0);
 
-  readonly bookings = computed(() => {
+  private _syncBookings = effect(() => {
     const val = this.bookingsResource.value();
     if (val) {
-      this.lastBookings = val.items;
-      this.lastTotalGroups = val.totalGroups;
-      this.lastTotalBookings = val.totalItemCount;
+      this.bookings.set(val.items);
+      this.totalGroups.set(val.totalGroups);
+      this.totalBookings.set(val.totalItemCount);
     }
-    return this.lastBookings;
   });
-  readonly totalGroups = computed(() => {
-    const val = this.bookingsResource.value();
-    if (val) return val.totalGroups;
-    return this.lastTotalGroups;
-  });
-  readonly totalBookings = computed(() => {
-    const val = this.bookingsResource.value();
-    if (val) return val.totalItemCount;
-    return this.lastTotalBookings;
-  });
+
   readonly totalPages = computed(() => Math.ceil(this.totalGroups() / this.groupsPerPage()));
 
   /** Returns page indices to render, with -1 as ellipsis placeholder. Max ~7 buttons. */
@@ -242,7 +343,10 @@ export class ManageBookingsPage {
     () =>
       this.searchQuery() !== '' ||
       this.selectedStatus() !== BookingStatus.Active ||
-      this.viewMode() !== 'week',
+      this.presentationMode() !== 'schedule' ||
+      this.scheduleTimeScale() !== 'day' ||
+      this.listDateRange() !== 'all' ||
+      this.listGroupBy() !== 'month',
   );
 
   // --- Grouping helpers ---
@@ -390,31 +494,55 @@ export class ManageBookingsPage {
   updateSearch(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.searchQuery.set(value);
-    clearTimeout(this.searchDebounceTimer);
-    this.searchDebounceTimer = setTimeout(() => {
-      this.debouncedSearch.set(value);
-      this.pageIndex.set(0);
-    }, 300);
+    this.searchSubject.next(value);
   }
 
-  updateStatus(event: Event): void {
-    this.selectedStatus.set((event.target as HTMLSelectElement).value as BookingStatus | 'All');
+  updateStatus(val: string | number | null): void {
+    if (val === null) return;
+    this.selectedStatus.set(val as BookingStatus | 'All');
     this.pageIndex.set(0);
   }
 
   resetFilters(): void {
+
     this.searchQuery.set('');
-    this.debouncedSearch.set('');
-    this.selectedStatus.set(BookingStatus.Active);
-    this.viewMode.set('week');
+    this.searchSubject.next('');
+    this.selectedStatus.set('All');
+    this.presentationMode.set('schedule');
+    this.scheduleTimeScale.set('month');
+
+    this.listDateRange.set('all');
+    this.listGroupBy.set('month');
+    this.calendarDate.set(new Date());
+    this.defaultCollapsed.set(true);
     this.pageIndex.set(0);
-    clearTimeout(this.searchDebounceTimer);
   }
 
-  setView(mode: ViewMode): void {
-    this.viewMode.set(mode);
+  setPresentationMode(mode: PresentationMode): void {
+    this.presentationMode.set(mode);
     this.pageIndex.set(0);
     this.groupOverrides.set(new Set());
+  }
+
+  setScheduleTimeScale(scale: ScheduleTimeScale): void {
+    this.scheduleTimeScale.set(scale);
+    this.pageIndex.set(0);
+  }
+
+  setListDateRange(range: DateRange): void {
+    this.listDateRange.set(range);
+    this.pageIndex.set(0);
+    this.groupOverrides.set(new Set());
+  }
+
+  setListGroupBy(groupBy: GroupByMode): void {
+    this.listGroupBy.set(groupBy);
+    this.pageIndex.set(0);
+    this.groupOverrides.set(new Set());
+  }
+
+  onCalendarDateChange(date: Date): void {
+    this.calendarDate.set(date);
   }
 
   toggleGroupCollapse(key: string): void {
@@ -469,6 +597,51 @@ export class ManageBookingsPage {
     }
   }
 
+  readonly adminEventHtmlFn = (b: BookingDetailedReadModel): string => {
+    const isCancelled = b.status === BookingStatus.Cancelled || b.status === BookingStatus.Expired;
+    const userName = b.userName || b.userEmail || '—';
+    const roomName = b.roomName || '—';
+    
+    // Status color indicator
+    let statusDot = '';
+    if (b.status === BookingStatus.Pending) {
+      statusDot = '<span class="admin-event-status admin-event-status--pending"></span>';
+    } else if (b.status === BookingStatus.Active) {
+      statusDot = '<span class="admin-event-status admin-event-status--active"></span>';
+    }
+
+    const initials = this.getInitials(userName);
+    
+    return `
+      <div class="admin-event-card ${isCancelled ? 'admin-event-card--cancelled' : ''}">
+        <div class="admin-event-header">
+          ${statusDot}
+          <span class="admin-event-user" title="${userName}">${initials}</span>
+          <span class="admin-event-room" title="${roomName}">${roomName}</span>
+        </div>
+      </div>
+    `;
+  };
+
+  onTimeRangeSelected(event: { start: Date; end: Date; resourceId?: number }): void {
+    if (event.resourceId === undefined) return;
+    const resourceIdStr = event.resourceId.toString();
+    const rooms = this.roomsResource.value() ?? [];
+    const room = rooms.find(r => r.roomId?.toString() === resourceIdStr);
+    if (!room) return;
+
+    this.modalService.open(BookingModalComponent, {
+      title: `Boka ${room.name}`,
+      data: {
+        ...room,
+        prefillStart: event.start,
+        prefillEnd: event.end,
+        onBookingCreated: () => this.bookingsResource.reload(),
+      },
+      width: '600px',
+    });
+  }
+
   // --- Modal ---
   openBookingModal(booking: BookingDetailedReadModel, event?: Event): void {
     if (event) event.stopPropagation();
@@ -481,6 +654,7 @@ export class ManageBookingsPage {
           this.handleStatusChange(bookingId, newStatus),
         onCancelWithScope: (bookingId: number, scope: 'single' | 'thisAndFollowing' | 'all') =>
           this.handleCancelWithScope(bookingId, scope),
+        onDetailsUpdated: () => this.bookingsResource.reload(),
       },
       width: '520px',
     });
@@ -496,7 +670,6 @@ export class ManageBookingsPage {
       this.toastService.showSuccess(`Bokningen har ${label}.`);
       this.modalService.close();
       this.bookingsResource.reload();
-      this.loadPendingCount();
     } catch (err) {
       console.error('Failed updating booking status', err);
       this.toastService.showError('Kunde inte uppdatera bokningens status.');
@@ -511,7 +684,6 @@ export class ManageBookingsPage {
       this.toastService.showSuccess(`${label} har avbokats (${result.cancelledCount} st).`);
       this.modalService.close();
       this.bookingsResource.reload();
-      this.loadPendingCount();
     } catch (err) {
       console.error('Failed cancelling with scope', err);
       this.toastService.showError('Kunde inte avboka.');
