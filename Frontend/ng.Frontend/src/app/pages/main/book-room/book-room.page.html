@@ -1,4 +1,4 @@
-<div class="page-container">
+<div class="page-container" [class.page-container--fixed]="discoveryView() === 'schedule'">
   <div class="page-content">
     <!-- ─── Main Content (Left) ─────────────────────────────────────── -->
     <main class="main-content">
@@ -38,6 +38,17 @@
               Kalendervy
             </button>
           </div>
+
+          @if (discoveryView() === 'schedule') {
+            <div class="schedule-hint-inline">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+              <span>Markera en ledig yta för att boka direkt</span>
+            </div>
+          }
         </div>
 
         <!-- Validation error integrated into panel if exists -->
@@ -84,51 +95,48 @@
                     (keydown.enter)="onBookRoom(candidate.room)"
                     (keydown.space)="onBookRoom(candidate.room)"
                   >
-                    <div class="row-accent row-accent--available"></div>
-
                     <div class="row-card-body">
-                      <div class="row-main">
-                        <h3 class="row-room">{{ candidate.room.name }}</h3>
-
-                        <div class="row-meta">
-                          <span class="meta-item">{{ candidate.room.capacity }} platser</span>
-                          <span class="meta-sep">·</span>
-                          <span class="meta-item">{{ candidate.room.campusCity }}</span>
-                          @if (candidate.room.roomTypeName) {
-                            <span class="meta-sep">·</span>
-                            <span class="meta-item">{{ candidate.room.roomTypeName }}</span>
-                          }
-                        </div>
-
-                        @if (candidate.room.assets?.length) {
-                          <div class="row-assets">
-                            @for (asset of candidate.room.assets; track asset) {
-                              <span class="asset-chip">{{ asset }}</span>
-                            }
-                          </div>
-                        }
-
-                        @if (candidate.room.notes) {
-                          <div class="row-notes">
-                            <svg
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="2"
-                            >
-                              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                            </svg>
-                            <p>{{ candidate.room.notes }}</p>
-                          </div>
-                        }
+                      <!-- Capacity Badge -->
+                      <div class="row-capacity">
+                        <span class="row-capacity-num">{{ candidate.room.capacity }}</span>
+                        <span class="row-capacity-label">Pers.</span>
                       </div>
 
-                      <div class="row-action">
-                        <app-button
-                          variant="primary"
-                          (clicked)="onBookRoom(candidate.room); $event.stopPropagation()"
-                          >Boka</app-button
-                        >
+                      <div class="row-content">
+                        <div class="row-two-line">
+                          <!-- Line 1: Room name + Note indicator -->
+                          <div class="row-primary">
+                            <span class="row-room">{{ candidate.room.name }}</span>
+                            @if (candidate.room.notes) {
+                              <span class="row-note-indicator" title="Har anteckning">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                                </svg>
+                              </span>
+                            }
+                          </div>
+
+                          <!-- Line 2: Meta info -->
+                          <div class="row-secondary">
+                            <span class="row-meta-text">{{ candidate.room.campusCity }}</span>
+                            @if (candidate.room.roomTypeName) {
+                              <span class="meta-sep"></span>
+                              <span class="row-meta-text">{{ candidate.room.roomTypeName }}</span>
+                            }
+                            @if (candidate.room.assets?.length) {
+                              <span class="meta-sep"></span>
+                              <span class="row-meta-text row-meta-accent">+{{ candidate.room.assets!.length }} utr.</span>
+                            }
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Right side: Action -->
+                      <div class="row-right-block">
+                        <span class="row-action-text">Välj</span>
+                        <svg class="row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
                       </div>
                     </div>
                   </article>
@@ -160,45 +168,52 @@
               <div class="room-results room-results--compact">
                 @for (candidate of unavailableRooms(); track candidate.room.roomId) {
                   <article class="booking-row busy">
-                    <div class="row-accent row-accent--busy"></div>
-
                     <div class="row-card-body">
-                      <div class="row-main">
-                        <div class="row-top">
-                          <h3 class="row-room">{{ candidate.room.name }}</h3>
-                          <span class="busy-badge">Upptagen</span>
-                        </div>
+                      <!-- Capacity Badge -->
+                      <div class="row-capacity">
+                        <span class="row-capacity-num">{{ candidate.room.capacity }}</span>
+                        <span class="row-capacity-label">Pers.</span>
+                      </div>
 
-                        <div class="row-meta">
-                          <span class="meta-item">{{ candidate.room.capacity }} platser</span>
-                          <span class="meta-sep">·</span>
-                          <span class="meta-item">{{ candidate.room.campusCity }}</span>
-                        </div>
-
-                        @if (candidate.nextConflict; as conflict) {
-                          <div class="conflict-box">
-                            <svg
-                              class="conflict-icon"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="2"
-                            >
-                              <circle cx="12" cy="12" r="10" />
-                              <line x1="12" y1="8" x2="12" y2="12" />
-                              <line x1="12" y1="16" x2="12.01" y2="16" />
-                            </svg>
-                            <div class="conflict-info">
-                              <span class="conflict-time"
-                                >{{ conflict.startTime | date: 'HH:mm' }} –
-                                {{ conflict.endTime | date: 'HH:mm' }}</span
-                              >
-                              <span class="conflict-user">{{
-                                conflict.userName ?? conflict.userEmail ?? 'Upptaget'
-                              }}</span>
-                            </div>
+                      <div class="row-content">
+                        <div class="row-two-line">
+                          <!-- Line 1: Room name + Note indicator -->
+                          <div class="row-primary">
+                            <span class="row-room">{{ candidate.room.name }}</span>
+                            @if (candidate.room.notes) {
+                              <span class="row-note-indicator" title="Har anteckning">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                                </svg>
+                              </span>
+                            }
                           </div>
-                        }
+
+                          <!-- Line 2: Conflict info -->
+                          @if (candidate.nextConflict; as conflict) {
+                            <div class="row-secondary row-secondary--conflict">
+                              <svg class="conflict-mini-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                              </svg>
+                              <span class="row-meta-text">
+                                Upptagen {{ conflict.startTime | date: 'HH:mm' }} – {{ conflict.endTime | date: 'HH:mm' }}
+                                <span class="meta-sep"></span>
+                                {{ conflict.userName ?? conflict.userEmail ?? 'Upptaget' }}
+                              </span>
+                            </div>
+                          } @else {
+                            <div class="row-secondary">
+                              <span class="row-meta-text">Upptagen under vald period</span>
+                            </div>
+                          }
+                        </div>
+                      </div>
+
+                      <!-- Right side: Status -->
+                      <div class="row-right-block">
+                        <span class="busy-badge">Upptagen</span>
                       </div>
                     </div>
                   </article>
@@ -213,9 +228,6 @@
         </div>
       } @else {
         <div class="schedule-shell">
-          <p class="schedule-hint">
-            Markera en ledig yta i dagsvyn för att boka direkt med förifylld tid.
-          </p>
           <app-calendar
             viewMode="resources"
             [date]="selectionStart()"

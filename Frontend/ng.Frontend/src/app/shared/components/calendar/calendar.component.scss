@@ -95,19 +95,33 @@ app-calendar {
 .cal-grid-wrapper {
   position: relative;
   flex: 1;
-  min-height: 480px;
-  max-height: 720px;
+  min-height: 520px;
+  max-height: 800px;
   overflow-x: auto;
-  overflow-y: hidden; // Vertical scroll handled by DayPilot internal
+  overflow-y: hidden;
+
+  // Visual cue for horizontal scroll (non-gradient)
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 30px;
+    pointer-events: none;
+    box-shadow: inset -15px 0 12px -12px rgba(0, 0, 0, 0.15);
+    z-index: 5;
+  }
 
   daypilot-calendar, 
   daypilot-month {
     display: block;
-    width: 100%;
+    min-width: 100%;
   }
 
-  // Custom scrollbar for horizontal scrolling
+  // Custom scrollbar for scrolling
   &::-webkit-scrollbar {
+    width: 8px;
     height: 8px;
   }
   &::-webkit-scrollbar-track {

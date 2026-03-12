@@ -39,7 +39,9 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
   @Input() allowTimeRangeSelection = false;
   @Input() businessBeginsHour = 7;
   @Input() businessEndsHour = 19;
+  @Input() calendarHeight = 650;
   /** Optional override for event CSS class logic. */
+
   @Input() eventCssClassFn?: EventCssClassFn;
 
   @Output() dateChange = new EventEmitter<Date>();
@@ -59,7 +61,8 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
   get calendarWidth(): string | null {
     if (this.viewMode === 'resources' && this.resources.length > 0) {
       const minWidth = 160;
-      return `${this.resources.length * minWidth}px`;
+      const hourColumnWidth = 50; // Approximation for the time column on the left
+      return `${this.resources.length * minWidth + hourColumnWidth}px`;
     }
     return null;
   }
@@ -143,7 +146,9 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
       changes['date'] ||
       changes['resources'] ||
       changes['allowTimeRangeSelection'] ||
+      changes['calendarHeight'] ||
       changes['businessBeginsHour'] ||
+
       changes['businessEndsHour']
     ) {
       this.refreshConfigs();
@@ -176,8 +181,10 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
       startDate,
       weekStarts: 1,
       locale: 'sv-se',
+      hourWidth: 50,
       businessBeginsHour: this.businessBeginsHour,
       businessEndsHour: this.businessEndsHour,
+      cellHeight: 28,
       heightSpec: 'BusinessHoursNoScroll',
       eventMoveHandling: 'Disabled',
       eventResizeHandling: 'Disabled',
