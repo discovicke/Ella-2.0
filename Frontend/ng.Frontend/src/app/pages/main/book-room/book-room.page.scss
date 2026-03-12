@@ -53,7 +53,7 @@
 .main-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+
   min-width: 0; // Prevent flex/grid blowout
 }
 
@@ -183,7 +183,7 @@
     border: none;
     cursor: pointer;
     text-align: left;
-    
+
     &:hover:not(&--static) {
       .filter-section__title {
         color: var(--color-primary);
@@ -227,22 +227,27 @@
   height: 16px;
   color: var(--color-text-muted);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   &--collapsed {
     transform: rotate(-90deg);
   }
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .search-input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
-
 
   .search-icon {
     position: absolute;
@@ -267,8 +272,12 @@
     transition: all 0.15s ease;
     font: inherit;
 
-    &::placeholder { color: var(--color-text-muted); }
-    &:hover { border-color: color-mix(in srgb, var(--color-primary) 60%, var(--color-border)); }
+    &::placeholder {
+      color: var(--color-text-muted);
+    }
+    &:hover {
+      border-color: color-mix(in srgb, var(--color-primary) 60%, var(--color-border));
+    }
     &:focus {
       outline: none;
       border-color: var(--color-primary);
@@ -319,7 +328,10 @@
       color: var(--color-text-primary);
     }
 
-    svg { width: 14px; height: 14px; }
+    svg {
+      width: 14px;
+      height: 14px;
+    }
   }
 }
 
@@ -386,7 +398,11 @@
   transition: all 0.15s ease;
   font: inherit;
 
-  svg { width: 14px; height: 14px; stroke: currentColor; }
+  svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+  }
 
   &:hover {
     color: var(--color-danger);
@@ -415,7 +431,11 @@
   border: 1px solid color-mix(in srgb, var(--color-danger) 25%, var(--color-border));
   font-size: 0.875rem;
 
-  svg { width: 18px; height: 18px; flex-shrink: 0; }
+  svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
 }
 
 /* ─── Availability Layout ────────────────────────────────────────── */
@@ -447,8 +467,12 @@
     white-space: nowrap;
   }
 
-  &--available h2 { color: var(--color-primary); }
-  &--busy h2 { color: var(--color-warning-hover); }
+  &--available h2 {
+    color: var(--color-primary);
+  }
+  &--busy h2 {
+    color: var(--color-warning-hover);
+  }
 }
 
 .group-count {
@@ -526,9 +550,9 @@
   &.busy {
     opacity: 0.7;
     background: color-mix(in srgb, var(--color-bg-body) 96%, transparent);
-    
-    &:hover { 
-      border-color: var(--color-warning); 
+
+    &:hover {
+      border-color: var(--color-warning);
       opacity: 1;
     }
   }
@@ -611,7 +635,7 @@
   color: var(--color-text-muted);
   opacity: 0.7;
   flex-shrink: 0;
-  
+
   svg {
     width: 13px;
     height: 13px;
@@ -627,7 +651,7 @@
   &--conflict {
     gap: 6px;
     color: var(--color-warning-hover);
-    
+
     .row-meta-text {
       color: inherit;
     }
@@ -698,7 +722,9 @@
   width: 16px;
   height: 16px;
   color: var(--color-border);
-  transition: transform 0.2s ease, color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease;
   flex-shrink: 0;
 
   @include breakpoint-down('sm') {
@@ -720,7 +746,11 @@
 }
 
 /* ─── Skeleton loading ───────────────────────────────────────────── */
-.skeleton-list { display: flex; flex-direction: column; gap: 12px; }
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 .skeleton-card {
   height: 140px;
   border-radius: 12px;
@@ -732,12 +762,18 @@
   );
   background-size: 200% 100%;
   animation: shimmer 1.4s ease-in-out infinite;
-  &--sm { height: 90px; }
+  &--sm {
+    height: 90px;
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* ─── Empty state ────────────────────────────────────────────────── */
@@ -764,9 +800,16 @@
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 110px); // Claim even more space
-  min-height: 640px;
+  height: calc(100vh - 140px);
+  min-height: 480px;
+  max-height: 700px;
   overflow: hidden;
+
+  @include breakpoint-down('md') {
+    height: auto;
+    max-height: none;
+    min-height: 520px;
+  }
 
   app-calendar {
     flex: 1;
@@ -799,7 +842,9 @@
 
 /* ─── Reduced motion ─────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }

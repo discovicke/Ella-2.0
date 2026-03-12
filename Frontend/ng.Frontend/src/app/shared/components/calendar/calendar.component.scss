@@ -99,7 +99,11 @@ app-calendar {
   min-height: 520px;
   max-height: 800px;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: auto;
+
+  @media (min-width: 1025px) {
+    overflow-y: hidden;
+  }
 
   daypilot-calendar, 
   daypilot-month {

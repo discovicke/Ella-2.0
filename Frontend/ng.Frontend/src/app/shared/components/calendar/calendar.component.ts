@@ -8,6 +8,7 @@ import {
   SimpleChanges,
   AfterViewInit,
   ViewEncapsulation,
+  HostListener,
 } from '@angular/core';
 import { DayPilot, DayPilotModule } from '@daypilot/daypilot-lite-angular';
 import { BookingDetailedReadModel, BookingStatus } from '../../../models/models';
@@ -45,6 +46,11 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
   @Input() eventCssClassFn?: EventCssClassFn;
 
   @Output() dateChange = new EventEmitter<Date>();
+
+  /** Track if we're on mobile viewport */
+  private isMobileViewport(): boolean {
+    return window.innerWidth <= 1024;
+  }
   @Output() timeRangeSelected = new EventEmitter<{ start: Date; end: Date; resourceId?: number }>();
   @Output() eventClicked = new EventEmitter<BookingDetailedReadModel>();
 
@@ -163,6 +169,11 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
     this.updateEvents();
   }
 
+  @HostListener('window:resize')
+  onResize(): void {
+    this.refreshConfigs();
+  }
+
   // ---------------------------------------------------------------------------
   // Config builders
   // ---------------------------------------------------------------------------
@@ -184,8 +195,8 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
       hourWidth: 50,
       businessBeginsHour: this.businessBeginsHour,
       businessEndsHour: this.businessEndsHour,
-      cellHeight: 28,
-      heightSpec: 'BusinessHoursNoScroll',
+      cellHeight: this.isMobileViewport() ? 26 : 28,
+      heightSpec: this.isMobileViewport() ? 'BusinessHours' : 'BusinessHoursNoScroll',
       eventMoveHandling: 'Disabled',
       eventResizeHandling: 'Disabled',
       eventDeleteHandling: 'Disabled',
