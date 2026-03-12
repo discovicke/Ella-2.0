@@ -243,6 +243,22 @@ export class BookRoomPage implements OnDestroy {
       this.endTime() !== '10:00',
   );
 
+  getFormattedAssets(assets: string[] | null | undefined): string {
+    if (!assets || assets.length === 0) return '';
+    if (assets.length < 3) return assets.join(', ');
+    return `+${assets.length} utr.`;
+  }
+
+  getRoomIconType(typeName: string | undefined): string {
+    if (!typeName) return 'room';
+    const lower = typeName.toLowerCase();
+    if (lower.includes('labb') || lower.includes('lab')) return 'lab';
+    if (lower.includes('klassrum') || lower.includes('klass') || lower.includes('sal')) return 'classroom';
+    if (lower.includes('konferens') || lower.includes('möte') || lower.includes('grupprum')) return 'meeting';
+    if (lower.includes('dator') || lower.includes('it')) return 'computer';
+    return 'room';
+  }
+
   readonly calendarResources = computed<DayPilot.ResourceData[]>(() =>
     this.availabilityCandidates().map((c) => ({
       id: c.room.roomId!.toString(),

@@ -77,6 +77,16 @@ export class BookingModalComponent implements OnInit, OnDestroy {
   readonly isLoadingMembers = signal(false);
   readonly showClassPicker = signal(false);
 
+  getRoomIconType(typeName: string | undefined): string {
+    if (!typeName) return 'room';
+    const lower = typeName.toLowerCase();
+    if (lower.includes('labb') || lower.includes('lab')) return 'lab';
+    if (lower.includes('klassrum') || lower.includes('klass') || lower.includes('sal')) return 'classroom';
+    if (lower.includes('konferens') || lower.includes('möte') || lower.includes('grupprum')) return 'meeting';
+    if (lower.includes('dator') || lower.includes('it')) return 'computer';
+    return 'room';
+  }
+
   readonly recurrenceOptions: SelectOption[] = [
     { id: 'daily', label: 'Varje dag' },
     { id: 'weekly', label: 'Varje vecka' },

@@ -566,38 +566,41 @@
   width: 100%;
 }
 
-// Capacity badge (matches see-bookings date badge)
-.row-capacity {
+// Room Type Icon Wrapper (Replaces capacity badge)
+.row-type-icon-wrapper {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   min-width: 52px;
   height: 52px;
   background: var(--color-bg-panel);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 12px;
   flex-shrink: 0;
+  color: var(--color-primary);
+  transition: all 0.2s ease;
+
+  svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2;
+  }
+
+  &.busy {
+    background: var(--color-bg-body);
+    color: var(--color-text-muted);
+    opacity: 0.6;
+  }
 
   @include breakpoint-down('sm') {
     min-width: 44px;
     height: 44px;
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
   }
-}
-
-.row-capacity-num {
-  font-size: 1.35rem;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--color-primary);
-}
-
-.row-capacity-label {
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--color-text-muted);
-  margin-top: 1px;
 }
 
 // Content layout
