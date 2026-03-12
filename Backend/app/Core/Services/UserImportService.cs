@@ -73,7 +73,7 @@ public class UserImportService(
                 var createdUser = await userService.CreateUserAsync(dto);
 
                 await userRepository.SetClassesForUserAsync(createdUser.Id, new[] { classId });
-
+                
                 if (!string.IsNullOrWhiteSpace(student.CampusName))
                 {
                     var matchedCampus = campuses.FirstOrDefault(c =>

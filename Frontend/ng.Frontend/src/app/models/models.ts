@@ -43,30 +43,6 @@ export interface AuthResponseDto {
   user: AuthedUserResponseDto;
 }
 
-export type AvailabilityConflictDto = {
-  /** @format int64 */
-  bookingId: number;
-  /** @format date-time */
-  startTime: string;
-  /** @format date-time */
-  endTime: string;
-  userName: string | null;
-  userEmail: string | null;
-  status: BookingStatus;
-};
-
-export interface AvailabilityConflictDto2 {
-  /** @format int64 */
-  bookingId: number;
-  /** @format date-time */
-  startTime: string;
-  /** @format date-time */
-  endTime: string;
-  userName: string | null;
-  userEmail: string | null;
-  status: BookingStatus;
-}
-
 export interface Booking {
   /** @format int64 */
   id?: number;

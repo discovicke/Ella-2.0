@@ -143,6 +143,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/main/book-room/book-room.page').then((m) => m.BookRoomPage),
       },
+      {
+        path: 'book-resource',
+        canActivate: [permissionGuard],
+        data: { permission: 'manageResources'},
+        loadComponent: () =>
+          import('./pages/main/book-resource/book-resource.page').then((m) => m.BookResourcePage),
+      },
       // Redirect root of authenticated area to see-bookings
       {
         path: '',
