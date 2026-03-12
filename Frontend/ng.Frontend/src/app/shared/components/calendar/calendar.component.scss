@@ -8,6 +8,68 @@ app-calendar {
   display: block;
 }
 
+/* ─── Admin Specific Event Styles ─── */
+.admin-event-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 2px 4px;
+  overflow: hidden;
+  font-size: 0.7rem;
+  line-height: 1.2;
+
+  &--cancelled {
+    opacity: 0.6;
+    text-decoration: line-through;
+  }
+}
+
+.admin-event-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.admin-event-status {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &--active {
+    background-color: var(--color-success);
+    box-shadow: 0 0 4px var(--color-success);
+  }
+
+  &--pending {
+    background-color: var(--color-warning);
+    box-shadow: 0 0 4px var(--color-warning);
+  }
+}
+
+.admin-event-user {
+  font-weight: 800;
+  color: inherit;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.admin-event-room {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+// Ensure events in month view have enough height
+.month_default_event {
+  border-radius: 4px !important;
+  border: 1px solid rgba(0,0,0,0.05) !important;
+}
+
 .app-calendar-host {
   display: flex;
   flex-direction: column;

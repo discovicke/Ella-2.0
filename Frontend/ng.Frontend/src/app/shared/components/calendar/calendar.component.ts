@@ -20,6 +20,11 @@ export type CalendarViewMode = 'day' | 'week' | 'month' | 'resources';
  */
 export type EventCssClassFn = (booking: BookingDetailedReadModel) => string;
 
+/**
+ * Optional callback for determining the HTML content of a calendar event.
+ */
+export type EventHtmlFn = (booking: BookingDetailedReadModel) => string;
+
 @Component({
   selector: 'app-calendar',
   standalone: true,
@@ -39,11 +44,12 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
   @Input() allowTimeRangeSelection = false;
   @Input() businessBeginsHour = 7;
   @Input() businessEndsHour = 19;
-  /** Optional override for event CSS class logic. */
 
   @Input() eventCssClassFn?: EventCssClassFn;
+  @Input() eventHtmlFn?: EventHtmlFn;
 
   @Output() dateChange = new EventEmitter<Date>();
+
   @Output() timeRangeSelected = new EventEmitter<{ start: Date; end: Date; resourceId?: number }>();
   @Output() eventClicked = new EventEmitter<BookingDetailedReadModel>();
 
@@ -325,23 +331,29 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
       const start = this.toEventDateTime(b.startTime);
       const end = this.toEventDateTime(b.endTime);
       const timeStr = `${start.toString('HH:mm')}–${end.toString('HH:mm')}`;
-      const label = `${b.roomName} ${timeStr}`;
-
-      const html = isCancelledOrExpired
-        ? `<div style="text-decoration: line-through;">${label}</div>`
-        : `<div>${label}</div>`;
+      
+      let html = '';
+      if (this.eventHtmlFn) {
+        html = this.eventHtmlFn(b);
+      } else {
+        const label = `${b.roomName} ${timeStr}`;
+        html = isCancelledOrExpired
+          ? `<div style="text-decoration: line-through;">${label}</div>`
+          : `<div>${label}</div>`;
+      }
 
       return {
         id: b.bookingId!,
         start,
         end,
-        text: label,
+        text: b.roomName ?? '',
         html,
         resource: b.roomId?.toString(),
         tags: { booking: b },
         cssClass,
       };
     });
+
   }
 
   private toDpDate(d: Date): DayPilot.Date {
