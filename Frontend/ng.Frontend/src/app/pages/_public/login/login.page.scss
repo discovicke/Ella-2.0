@@ -149,7 +149,7 @@ input {
   user-select: none;
 
   &:hover:not(:disabled) {
-    box-shadow: 0 10px 15px -3px rgba(145, 54, 203, 0.3);
+    box-shadow: var(--shadow-lg);
     transform: translateY(-2px);
   }
 

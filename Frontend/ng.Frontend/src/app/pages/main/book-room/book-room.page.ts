@@ -2,11 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  OnDestroy,
   inject,
+  OnDestroy,
   resource,
   signal,
 } from '@angular/core';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DayPilot } from '@daypilot/daypilot-lite-angular';
@@ -46,13 +49,13 @@ interface AvailabilityCandidate {
   styleUrl: './book-room.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BookRoomPage implements OnDestroy {
+export class BookRoomPage {
   private readonly roomService = inject(RoomService);
   private readonly bookingService = inject(BookingService);
   private readonly modalService = inject(ModalService);
-  private roomQueryDebounceTimer?: ReturnType<typeof setTimeout>;
-  private capacityDebounceTimer?: ReturnType<typeof setTimeout>;
-  private readonly filterDebounceMs = 300;
+  
+  private roomQuerySubject = new Subject<string>();
+  private capacitySubject = new Subject<number>();
 
   readonly selectedDate = signal(this.toDateInputValue(new Date()));
   readonly startTime = signal('09:00');
@@ -66,6 +69,20 @@ export class BookRoomPage implements OnDestroy {
   readonly debouncedRoomQuery = signal('');
   readonly discoveryView = signal<DiscoveryView>('availability');
   readonly collapsedSections = signal<Set<string>>(new Set([]));
+
+  constructor() {
+    this.roomQuerySubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntilDestroyed()
+    ).subscribe(val => this.debouncedRoomQuery.set(val));
+
+    this.capacitySubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntilDestroyed()
+    ).subscribe(val => this.debouncedMinCapacity.set(val));
+  }
 
   readonly roomsResource = resource({
     loader: () => firstValueFrom(this.roomService.getAllRooms()),
@@ -288,12 +305,12 @@ export class BookRoomPage implements OnDestroy {
   updateRoomQuery(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.roomQuery.set(value);
-    this.scheduleRoomQueryDebounce(value);
+    this.roomQuerySubject.next(value);
   }
 
   clearRoomQuery(): void {
     this.roomQuery.set('');
-    this.scheduleRoomQueryDebounce('');
+    this.roomQuerySubject.next('');
   }
 
   toggleAsset(assetDescription: string): void {
@@ -307,14 +324,7 @@ export class BookRoomPage implements OnDestroy {
 
   updateCapacity(value: number): void {
     this.minCapacity.set(value);
-    
-    if (this.capacityDebounceTimer) {
-      clearTimeout(this.capacityDebounceTimer);
-    }
-    this.capacityDebounceTimer = setTimeout(() => {
-      this.debouncedMinCapacity.set(value);
-      this.capacityDebounceTimer = undefined;
-    }, this.filterDebounceMs);
+    this.capacitySubject.next(value);
   }
 
   updateCampus(campus: string | number | null): void {
@@ -354,15 +364,14 @@ export class BookRoomPage implements OnDestroy {
     this.selectedCampus.set('All');
     this.selectedTypeId.set('All');
     this.minCapacity.set(0);
-    this.debouncedMinCapacity.set(0);
+    this.capacitySubject.next(0);
     this.selectedAssets.set([]);
     this.roomQuery.set('');
-    this.debouncedRoomQuery.set('');
-    this.clearFilterDebounceTimers();
+    this.roomQuerySubject.next('');
   }
 
   ngOnDestroy(): void {
-    this.clearFilterDebounceTimers();
+    // cleanup handled by takeUntilDestroyed
   }
 
   useSuggestedSlot(date: Date): void {
@@ -417,27 +426,5 @@ export class BookRoomPage implements OnDestroy {
 
   private toTimeInputValue(date: Date): string {
     return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-  }
-
-  private scheduleRoomQueryDebounce(value: string): void {
-    if (this.roomQueryDebounceTimer) {
-      clearTimeout(this.roomQueryDebounceTimer);
-    }
-
-    this.roomQueryDebounceTimer = setTimeout(() => {
-      this.debouncedRoomQuery.set(value);
-      this.roomQueryDebounceTimer = undefined;
-    }, this.filterDebounceMs);
-  }
-
-  private clearFilterDebounceTimers(): void {
-    if (this.roomQueryDebounceTimer) {
-      clearTimeout(this.roomQueryDebounceTimer);
-      this.roomQueryDebounceTimer = undefined;
-    }
-    if (this.capacityDebounceTimer) {
-      clearTimeout(this.capacityDebounceTimer);
-      this.capacityDebounceTimer = undefined;
-    }
   }
 }

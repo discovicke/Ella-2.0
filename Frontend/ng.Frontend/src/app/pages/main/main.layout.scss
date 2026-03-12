@@ -195,7 +195,7 @@
       background: var(--color-primary);
       color: white;
       border-color: var(--color-primary);
-      box-shadow: 0 2px 8px rgba(145, 54, 203, 0.3);
+      box-shadow: var(--shadow-sm);
 
       .nav-icon {
         color: white;
@@ -350,7 +350,7 @@
     padding: 0 map.get($spacing, '4');
     background: var(--color-bg-card);
     border-bottom: 1px solid var(--color-border);
-    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: var(--shadow-sm);
     position: sticky;
     top: 0;
     z-index: map.get($z-layers, 'sticky') + 1;
@@ -452,7 +452,7 @@
 
     &.open {
       transform: translateX(0);
-      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2);
+      box-shadow: var(--shadow-xl);
     }
   }
 

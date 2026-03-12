@@ -11,7 +11,7 @@
   flex-direction: column;
   height: 100%;
   background:
-    radial-gradient(circle at top right, rgba(145, 54, 203, 0.08), transparent 26%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 26%),
     linear-gradient(
       180deg,
       color-mix(in srgb, var(--color-primary-surface) 24%, var(--color-bg-body)) 0%,
@@ -282,7 +282,7 @@
       outline: none;
       border-color: var(--color-primary);
       background: var(--color-bg-card);
-      box-shadow: 0 0 0 3px var(--color-primary-surface);
+      box-shadow: var(--focus-ring);
     }
   }
 
@@ -302,7 +302,7 @@
 
       &:focus {
         border-color: var(--color-primary);
-        box-shadow: 0 0 0 4px var(--color-primary-surface);
+        box-shadow: var(--focus-ring);
       }
     }
   }

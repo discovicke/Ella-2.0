@@ -266,33 +266,33 @@ app-calendar {
   --dp-month-cell-border-color: var(--color-border);
 
   // Default event chip — will be overridden per-state below
-  --dp-calendar-event-color: #ffffff;
+  --dp-calendar-event-color: white;
   --dp-calendar-event-background: var(--color-primary);
   --dp-calendar-event-bg-top-color: var(--color-primary);
   --dp-calendar-event-bg-bottom-color: var(--color-primary);
-  --dp-calendar-event-border-color: #7326a3;
+  --dp-calendar-event-border-color: var(--color-primary-active);
   --dp-calendar-event-border-radius: 6px;
-  --dp-calendar-event-box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  --dp-calendar-event-box-shadow: var(--shadow-sm);
   --dp-calendar-event-padding: 3px;
   --dp-calendar-event-padding-left: 10px;
   // Keep the left accent bar but colour it with a darker primary shade
   // (hardcoded hex — DayPilot reads these vars via JS/getComputedStyle so
   //  color-mix() would not survive the round-trip)
   --dp-calendar-event-bar-display: block;
-  --dp-calendar-event-bar-color: #5a1f82;
+  --dp-calendar-event-bar-color: var(--color-primary-dark);
   --dp-calendar-event-bar-width: 4px;
 
-  --dp-month-event-color: #ffffff;
+  --dp-month-event-color: white;
   --dp-month-event-background: var(--color-primary);
   --dp-month-event-bg-top-color: var(--color-primary);
   --dp-month-event-bg-bottom-color: var(--color-primary);
-  --dp-month-event-border-color: #7326a3;
+  --dp-month-event-border-color: var(--color-primary-active);
   --dp-month-event-border-radius: 6px;
-  --dp-month-event-box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+  --dp-month-event-box-shadow: var(--shadow-sm);
   --dp-month-event-padding: 2px;
   --dp-month-event-padding-left: 8px;
   --dp-month-event-bar-display: block;
-  --dp-month-event-bar-color: #5a1f82;
+  --dp-month-event-bar-color: var(--color-primary-dark);
   --dp-month-event-bar-width: 4px;
 
   // "Now" line — ELLA primary
@@ -443,7 +443,7 @@ app-calendar {
 // Month today cell styling
 .cal-month-today-badge {
   background: var(--color-primary) !important;
-  color: #ffffff !important;
+  color: white !important;
   border-radius: 50% !important;
   width: 24px !important;
   height: 24px !important;
@@ -489,7 +489,7 @@ app-calendar {
 .calendar_default_event,
 .month_default_event {
   border-radius: 6px !important;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1) !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
 .calendar_default_event_inner,
@@ -497,7 +497,7 @@ app-calendar {
   background: var(--color-primary) !important;
   border: none !important;
   border-radius: 6px !important;
-  color: #ffffff !important;
+  color: white !important;
   padding: 3px 6px 3px 10px !important;
   font-family: var(--font-family, 'Nunito Sans', system-ui, sans-serif) !important;
   font-size: 0.76rem !important;
@@ -510,7 +510,7 @@ app-calendar {
 // Left accent bar — darker shade of primary (#5a1f82 ≈ primary 55% + black)
 .calendar_default_event_bar_inner,
 .month_default_event_bar_inner {
-  background: #5a1f82 !important;
+  background: var(--color-primary-dark) !important;
 }
 
 // =============================================================================
@@ -523,7 +523,7 @@ app-calendar {
 .event-default .calendar_default_event_inner,
 .event-default .month_default_event_inner {
   background: var(--color-primary) !important;
-  color: #ffffff !important;
+  color: white !important;
   border: none !important;
 }
 
@@ -531,14 +531,14 @@ app-calendar {
 .event-active .month_default_event_bar_inner,
 .event-default .calendar_default_event_bar_inner,
 .event-default .month_default_event_bar_inner {
-  background: #5a1f82 !important;
+  background: var(--color-primary-dark) !important;
 }
 
 // Pending — warm amber, dashed border
 .event-pending .calendar_default_event_inner,
 .event-pending .month_default_event_inner {
   background: var(--color-warning-surface, #fef3c7) !important;
-  color: #92400e !important;
+  color: var(--color-warning-active) !important;
   border: 1.5px dashed var(--color-warning, #f59e0b) !important;
 }
 
@@ -565,27 +565,27 @@ app-calendar {
 // Invitation — action needed (emerald green, matches list "Ny inbjudan" accent)
 .event-invitation .calendar_default_event_inner,
 .event-invitation .month_default_event_inner {
-  background: rgba(16, 185, 129, 0.12) !important;
-  color: rgb(6, 95, 70) !important;
-  border: 1.5px dashed rgb(16, 185, 129) !important;
+  background: var(--color-success-surface) !important;
+  color: var(--color-success-hover) !important;
+  border: 1.5px dashed var(--color-success) !important;
 }
 
 .event-invitation .calendar_default_event_bar_inner,
 .event-invitation .month_default_event_bar_inner {
-  background: rgb(16, 185, 129) !important;
+  background: var(--color-success) !important;
 }
 
 // Attending — accepted invitation (blue, matches list "Inbjuden" accent)
 .event-attending .calendar_default_event_inner,
 .event-attending .month_default_event_inner {
   background: rgba(59, 130, 246, 0.15) !important;
-  color: rgb(30, 64, 175) !important;
+  color: var(--color-info-active) !important;
   border: none !important;
 }
 
 .event-attending .calendar_default_event_bar_inner,
 .event-attending .month_default_event_bar_inner {
-  background: rgb(59, 130, 246) !important;
+  background: var(--color-info) !important;
 }
 
 // Declined invitation (red surface, matches list)
@@ -649,8 +649,8 @@ app-calendar {
 @media (prefers-color-scheme: dark) {
   .calendar_default_main,
   .month_default_main {
-    --dp-calendar-event-box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
-    --dp-month-event-box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
+    --dp-calendar-event-box-shadow: var(--shadow-md);
+    --dp-month-event-box-shadow: var(--shadow-md);
   }
 
   .calendar_default_cell_inner {

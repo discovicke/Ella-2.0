@@ -5,7 +5,11 @@ import {
   inject,
   resource,
   signal,
+  effect,
 } from '@angular/core';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import {
@@ -87,6 +91,14 @@ export class ManageBookingsPage {
 
   constructor() {
     this.loadFormStatus();
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntilDestroyed()
+    ).subscribe(value => {
+      this.debouncedSearch.set(value);
+      this.pageIndex.set(0);
+    });
   }
 
   private loadFormStatus(): void {
@@ -115,7 +127,7 @@ export class ManageBookingsPage {
   // --- Filter state ---
   searchQuery = signal('');
   debouncedSearch = signal('');
-  private searchDebounceTimer: ReturnType<typeof setTimeout> | undefined;
+  private searchSubject = new Subject<string>();
   selectedStatus = signal<BookingStatus | 'All'>('All');
   presentationMode = signal<PresentationMode>('schedule');
   scheduleTimeScale = signal<ScheduleTimeScale>('month');
@@ -295,29 +307,19 @@ export class ManageBookingsPage {
   });
 
   // Keep previous data visible while loading to avoid flash
-  private lastBookings: BookingDetailedReadModel[] = [];
-  private lastTotalGroups = 0;
-  private lastTotalBookings = 0;
+  readonly bookings = signal<BookingDetailedReadModel[]>([]);
+  readonly totalGroups = signal(0);
+  readonly totalBookings = signal(0);
 
-  readonly bookings = computed(() => {
+  private _syncBookings = effect(() => {
     const val = this.bookingsResource.value();
     if (val) {
-      this.lastBookings = val.items;
-      this.lastTotalGroups = val.totalGroups;
-      this.lastTotalBookings = val.totalItemCount;
+      this.bookings.set(val.items);
+      this.totalGroups.set(val.totalGroups);
+      this.totalBookings.set(val.totalItemCount);
     }
-    return this.lastBookings;
   });
-  readonly totalGroups = computed(() => {
-    const val = this.bookingsResource.value();
-    if (val) return val.totalGroups;
-    return this.lastTotalGroups;
-  });
-  readonly totalBookings = computed(() => {
-    const val = this.bookingsResource.value();
-    if (val) return val.totalItemCount;
-    return this.lastTotalBookings;
-  });
+
   readonly totalPages = computed(() => Math.ceil(this.totalGroups() / this.groupsPerPage()));
 
   /** Returns page indices to render, with -1 as ellipsis placeholder. Max ~7 buttons. */
@@ -492,11 +494,7 @@ export class ManageBookingsPage {
   updateSearch(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.searchQuery.set(value);
-    clearTimeout(this.searchDebounceTimer);
-    this.searchDebounceTimer = setTimeout(() => {
-      this.debouncedSearch.set(value);
-      this.pageIndex.set(0);
-    }, 300);
+    this.searchSubject.next(value);
   }
 
   updateStatus(val: string | number | null): void {
@@ -508,7 +506,7 @@ export class ManageBookingsPage {
   resetFilters(): void {
 
     this.searchQuery.set('');
-    this.debouncedSearch.set('');
+    this.searchSubject.next('');
     this.selectedStatus.set('All');
     this.presentationMode.set('schedule');
     this.scheduleTimeScale.set('month');
@@ -518,8 +516,6 @@ export class ManageBookingsPage {
     this.calendarDate.set(new Date());
     this.defaultCollapsed.set(true);
     this.pageIndex.set(0);
-
-    clearTimeout(this.searchDebounceTimer);
   }
 
   setPresentationMode(mode: PresentationMode): void {

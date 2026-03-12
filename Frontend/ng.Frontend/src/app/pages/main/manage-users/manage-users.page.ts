@@ -8,7 +8,11 @@ import {
   OnInit,
   signal,
   computed,
+  effect,
 } from '@angular/core';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { firstValueFrom } from 'rxjs';
@@ -71,7 +75,19 @@ export class ManageUsersPage implements OnInit {
   selectedRole = signal<RoleLabel | 'All'>('All');
   selectedStatus = signal<BannedStatus | 'All'>('All');
   filtersOpen = signal(typeof window !== 'undefined' ? window.innerWidth > 768 : true);
-  private searchDebounceTimer: ReturnType<typeof setTimeout> | undefined;
+  
+  private searchSubject = new Subject<string>();
+
+  constructor() {
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntilDestroyed()
+    ).subscribe(value => {
+      this.debouncedSearch.set(value);
+      this.pageIndex.set(0);
+    });
+  }
 
   readonly roleLabels = computed(() => [...getTemplateLabels(), 'Custom']);
   readonly templateOptions = computed<PermissionTemplateDto[]>(() =>
@@ -133,21 +149,15 @@ export class ManageUsersPage implements OnInit {
 
   // --- COMPUTED (server provides filtered + paginated data) ---
   // Keep previous data visible while loading to avoid flash
-  private lastUsers: UserResponseDto[] = [];
-  private lastTotal = 0;
+  paginatedUsers = signal<UserResponseDto[]>([]);
+  totalUsers = signal(0);
 
-  paginatedUsers = computed(() => {
+  private _syncUsers = effect(() => {
     const val = this.userResource.value();
     if (val) {
-      this.lastUsers = val.items;
-      this.lastTotal = val.totalCount;
+      this.paginatedUsers.set(val.items);
+      this.totalUsers.set(val.totalCount);
     }
-    return this.lastUsers;
-  });
-  totalUsers = computed(() => {
-    const val = this.userResource.value();
-    if (val) return val.totalCount;
-    return this.lastTotal;
   });
 
   hasActiveFilters = computed(
@@ -190,11 +200,7 @@ export class ManageUsersPage implements OnInit {
   updateSearch(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.searchQuery.set(value);
-    clearTimeout(this.searchDebounceTimer);
-    this.searchDebounceTimer = setTimeout(() => {
-      this.debouncedSearch.set(value);
-      this.pageIndex.set(0);
-    }, 300);
+    this.searchSubject.next(value);
   }
 
   updateStatus(event: Event) {
@@ -209,11 +215,10 @@ export class ManageUsersPage implements OnInit {
 
   resetFilters() {
     this.searchQuery.set('');
-    this.debouncedSearch.set('');
+    this.searchSubject.next('');
     this.selectedRole.set('All');
     this.selectedStatus.set('All');
     this.pageIndex.set(0);
-    clearTimeout(this.searchDebounceTimer);
   }
 
   toggleFilters() {
