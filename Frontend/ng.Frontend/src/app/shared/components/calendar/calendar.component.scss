@@ -95,15 +95,8 @@ app-calendar {
 
 .cal-grid-wrapper {
   position: relative;
-  flex: 1;
   min-height: 520px;
-  max-height: 800px;
   overflow-x: auto;
-  overflow-y: auto;
-
-  @media (min-width: 1025px) {
-    overflow-y: hidden;
-  }
 
   daypilot-calendar, 
   daypilot-month {

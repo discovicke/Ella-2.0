@@ -37,7 +37,7 @@
   grid-template-columns: 1fr 320px;
   gap: 24px;
   align-items: start;
-  padding-bottom: 40px; // Reasonable breathing room
+  padding-bottom: 80px; // Generous breathing room at bottom
 
   @include breakpoint-down('lg') {
     grid-template-columns: 1fr;
@@ -794,27 +794,12 @@
 
 /* ─── Schedule shell ─────────────────────────────────────────────── */
 .schedule-shell {
-  background: color-mix(in srgb, var(--color-bg-card) 92%, var(--color-primary-surface));
-  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
   border-radius: 14px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 140px);
-  min-height: 480px;
-  max-height: 700px;
-  overflow: hidden;
-
-  @include breakpoint-down('md') {
-    height: auto;
-    max-height: none;
-    min-height: 520px;
-  }
-
-  app-calendar {
-    flex: 1;
-    min-height: 0;
-  }
+  min-height: 600px;
 }
 
 .schedule-hint-inline {
