@@ -95,7 +95,31 @@ app-calendar {
 .cal-grid-wrapper {
   position: relative;
   flex: 1;
-  min-height: 0;
+  min-height: 480px;
+  max-height: 720px;
+  overflow-x: auto;
+  overflow-y: hidden; // Vertical scroll handled by DayPilot internal
+
+  daypilot-calendar, 
+  daypilot-month {
+    display: block;
+    width: 100%;
+  }
+
+  // Custom scrollbar for horizontal scrolling
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: var(--color-bg-panel);
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 4px;
+    &:hover {
+      background: var(--color-text-muted);
+    }
+  }
 }
 
 .cal-overlay {
@@ -281,6 +305,15 @@ app-calendar {
   opacity: 0.7;
   font-size: 0.68rem;
   color: var(--color-text-secondary);
+}
+
+.cal-header-resource {
+  font-weight: 700;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 8px;
 }
 
 .cal-header-today {

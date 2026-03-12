@@ -30,7 +30,12 @@
         <daypilot-month [config]="configMonth" [events]="events"></daypilot-month>
       }
       @case ('resources') {
-        <daypilot-calendar [config]="configResources" [events]="events"></daypilot-calendar>
+        <daypilot-calendar 
+          [config]="configResources" 
+          [events]="events"
+          [style.width]="calendarWidth"
+          style="min-width: 100%"
+        ></daypilot-calendar>
       }
     }
 

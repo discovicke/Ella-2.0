@@ -56,6 +56,14 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
 
   events: DayPilot.EventData[] = [];
 
+  get calendarWidth(): string | null {
+    if (this.viewMode === 'resources' && this.resources.length > 0) {
+      const minWidth = 160;
+      return `${this.resources.length * minWidth}px`;
+    }
+    return null;
+  }
+
   // ---------------------------------------------------------------------------
   // Navigation
   // ---------------------------------------------------------------------------
@@ -217,12 +225,18 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
     return {
       ...this.buildCalendarConfig('Day'),
       viewType: 'Resources',
-      columns: this.resources.map(r => ({
+      columns: this.resources.map((r) => ({
         name: r.name || 'Unknown',
         id: r.id,
       })) as DayPilot.CalendarColumnData[],
+      onBeforeHeaderRender: (args) => {
+        args.header.html = `<div class="cal-header-content">
+          <span class="cal-header-resource" title="${args.column.name}">${args.column.name}</span>
+        </div>`;
+      },
     };
   }
+
 
   private buildMonthConfig(): DayPilot.MonthConfig {
     const todayStr = this.toDpDate(new Date()).toString('yyyy-MM-dd');
