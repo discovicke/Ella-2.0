@@ -22,6 +22,8 @@ import { DayPilot } from '@daypilot/daypilot-lite-angular';
 import { BookingModalComponent } from '../book-room/booking-modal/booking-modal.component';
 
 import { CalendarComponent } from '../../../shared/components/calendar/calendar.component';
+import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
+import { SelectComponent, SelectOption } from '../../../shared/components/select/select.component';
 
 export type PresentationMode = 'schedule' | 'list';
 export type ScheduleTimeScale = 'day' | 'week' | 'month';
@@ -38,7 +40,7 @@ export interface BookingGroup {
 
 @Component({
   selector: 'app-manage-bookings-page',
-  imports: [DatePipe, CalendarComponent],
+  imports: [DatePipe, CalendarComponent, DatePickerComponent, SelectComponent],
   templateUrl: './manage-bookings.page.html',
   styleUrl: './manage-bookings.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,8 +56,22 @@ export class ManageBookingsPage {
   readonly isBookingFormEnabled = signal<boolean | null>(null);
   readonly isTogglingForm = signal(false);
 
-  // --- Pending count ---
-  readonly pendingCount = signal(0);
+  // --- Sidebar Collapse State ---
+  readonly collapsedSections = signal<Set<string>>(new Set());
+
+  toggleSection(section: string): void {
+    const current = new Set(this.collapsedSections());
+    if (current.has(section)) {
+      current.delete(section);
+    } else {
+      current.add(section);
+    }
+    this.collapsedSections.set(current);
+  }
+
+  isSectionCollapsed(section: string): boolean {
+    return this.collapsedSections().has(section);
+  }
 
   // --- Rooms (for resource scheduler) ---
   readonly roomsResource = resource({
@@ -71,7 +87,6 @@ export class ManageBookingsPage {
 
   constructor() {
     this.loadFormStatus();
-    this.loadPendingCount();
   }
 
   private loadFormStatus(): void {
@@ -97,32 +112,44 @@ export class ManageBookingsPage {
     });
   }
 
-  private loadPendingCount(): void {
-    this.bookingService.getAllBookings({ status: BookingStatus.Pending, pageSize: 1 }).subscribe({
-      next: (res) => this.pendingCount.set(res.totalCount),
-      error: () => this.pendingCount.set(0),
-    });
-  }
-
-  filterPending(): void {
-    this.selectedStatus.set(BookingStatus.Pending);
-    this.presentationMode.set('list');
-    this.listDateRange.set('all');
-    this.pageIndex.set(0);
-  }
-
   // --- Filter state ---
   searchQuery = signal('');
   debouncedSearch = signal('');
   private searchDebounceTimer: ReturnType<typeof setTimeout> | undefined;
-  selectedStatus = signal<BookingStatus | 'All'>(BookingStatus.Active);
+  selectedStatus = signal<BookingStatus | 'All'>('All');
   presentationMode = signal<PresentationMode>('schedule');
-  scheduleTimeScale = signal<ScheduleTimeScale>('day');
+  scheduleTimeScale = signal<ScheduleTimeScale>('month');
   listDateRange = signal<DateRange>('all');
   listGroupBy = signal<GroupByMode>('month');
   calendarDate = signal<Date>(new Date());
+
+  readonly formattedCalendarDate = computed(() => this.toDateInputValue(this.calendarDate()));
+
+  readonly statusOptions: SelectOption[] = [
+    { id: 'All', label: 'Alla statusar' },
+    { id: BookingStatus.Active, label: 'Aktiv' },
+    { id: BookingStatus.Pending, label: 'Väntande' },
+    { id: BookingStatus.Cancelled, label: 'Avbokad' },
+    { id: BookingStatus.Expired, label: 'Utgången' },
+  ];
+
+  private toDateInputValue(date: Date): string {
+
+    const offset = date.getTimezoneOffset();
+    const adjusted = new Date(date.getTime() - offset * 60 * 1000);
+    return adjusted.toISOString().split('T')[0];
+  }
+
+  updateCalendarDate(val: string | null): void {
+    if (val) {
+      const parts = val.split('-').map(Number);
+      this.calendarDate.set(new Date(parts[0], parts[1] - 1, parts[2]));
+    }
+  }
+
   /** Sticky preference: should groups default to collapsed? Survives filter/page changes. */
-  defaultCollapsed = signal(false);
+
+  defaultCollapsed = signal(true);
   /** Per-group overrides that differ from the default. Reset on filter/page change. */
   private groupOverrides = signal<Set<string>>(new Set());
   pageIndex = signal(0);
@@ -184,8 +211,11 @@ export class ManageBookingsPage {
         return 'week';
       case 'month':
         return 'month';
+      default:
+        return 'resources';
     }
   });
+
 
   readonly allowScheduleSelection = computed(() => this.scheduleTimeScale() === 'day');
 
@@ -231,6 +261,8 @@ export class ManageBookingsPage {
           start: new Date(now.getFullYear(), now.getMonth(), 1),
           end: new Date(now.getFullYear(), now.getMonth() + 1, 1),
         };
+      default:
+        return null;
     }
   }
 
@@ -467,21 +499,26 @@ export class ManageBookingsPage {
     }, 300);
   }
 
-  updateStatus(event: Event): void {
-    this.selectedStatus.set((event.target as HTMLSelectElement).value as BookingStatus | 'All');
+  updateStatus(val: string | number | null): void {
+    if (val === null) return;
+    this.selectedStatus.set(val as BookingStatus | 'All');
     this.pageIndex.set(0);
   }
 
   resetFilters(): void {
+
     this.searchQuery.set('');
     this.debouncedSearch.set('');
-    this.selectedStatus.set(BookingStatus.Active);
+    this.selectedStatus.set('All');
     this.presentationMode.set('schedule');
-    this.scheduleTimeScale.set('day');
+    this.scheduleTimeScale.set('month');
+
     this.listDateRange.set('all');
     this.listGroupBy.set('month');
     this.calendarDate.set(new Date());
+    this.defaultCollapsed.set(true);
     this.pageIndex.set(0);
+
     clearTimeout(this.searchDebounceTimer);
   }
 
@@ -564,6 +601,32 @@ export class ManageBookingsPage {
     }
   }
 
+  readonly adminEventHtmlFn = (b: BookingDetailedReadModel): string => {
+    const isCancelled = b.status === BookingStatus.Cancelled || b.status === BookingStatus.Expired;
+    const userName = b.userName || b.userEmail || '—';
+    const roomName = b.roomName || '—';
+    
+    // Status color indicator
+    let statusDot = '';
+    if (b.status === BookingStatus.Pending) {
+      statusDot = '<span class="admin-event-status admin-event-status--pending"></span>';
+    } else if (b.status === BookingStatus.Active) {
+      statusDot = '<span class="admin-event-status admin-event-status--active"></span>';
+    }
+
+    const initials = this.getInitials(userName);
+    
+    return `
+      <div class="admin-event-card ${isCancelled ? 'admin-event-card--cancelled' : ''}">
+        <div class="admin-event-header">
+          ${statusDot}
+          <span class="admin-event-user" title="${userName}">${initials}</span>
+          <span class="admin-event-room" title="${roomName}">${roomName}</span>
+        </div>
+      </div>
+    `;
+  };
+
   onTimeRangeSelected(event: { start: Date; end: Date; resourceId?: number }): void {
     if (event.resourceId === undefined) return;
     const resourceIdStr = event.resourceId.toString();
@@ -611,7 +674,6 @@ export class ManageBookingsPage {
       this.toastService.showSuccess(`Bokningen har ${label}.`);
       this.modalService.close();
       this.bookingsResource.reload();
-      this.loadPendingCount();
     } catch (err) {
       console.error('Failed updating booking status', err);
       this.toastService.showError('Kunde inte uppdatera bokningens status.');
@@ -626,7 +688,6 @@ export class ManageBookingsPage {
       this.toastService.showSuccess(`${label} har avbokats (${result.cancelledCount} st).`);
       this.modalService.close();
       this.bookingsResource.reload();
-      this.loadPendingCount();
     } catch (err) {
       console.error('Failed cancelling with scope', err);
       this.toastService.showError('Kunde inte avboka.');
