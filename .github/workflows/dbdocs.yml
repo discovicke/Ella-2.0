@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths:
       - "Backend/app/Infrastructure/Data/PostgresSchema.sql"
+      - "scripts/generate-dbml.js"
+      - ".github/workflows/dbdocs.yml"
+
+permissions:
+  contents: write
 
 jobs:
   publish:
@@ -15,11 +20,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: "npm"
 
-      - name: Install DBML tools
-        run: npm install --no-save @dbml/cli dbdocs
+      - name: Install dependencies
+        run: npm ci || npm install
 
       - name: Generate DBML and publish
         env:
           DBDOCS_TOKEN: ${{ secrets.DBDOCS_TOKEN }}
-        run: node scripts/generate-dbml.js
+        run: npm run dbml:generate
+
+      - name: Commit documentation changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add README.md Backend/_docs/details/DATABASE_DOC.md _tools/dbml/.schema.hash
+          git diff --staged --quiet || (git commit -m "docs: update database schema links [skip ci]" && git push)

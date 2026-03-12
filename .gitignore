@@ -509,7 +509,6 @@ Frontend/ng.Frontend/openapi/models.json
 .env-example
 
 # DBML generation artifacts
-_tools/dbml/schema.dbml
 _tools/dbml/.schema-clean.sql
 _tools/dbml/dbml-error.log
 

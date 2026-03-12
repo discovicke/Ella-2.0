@@ -106,7 +106,10 @@ fs.mkdirSync(path.dirname(TEMP_SQL), { recursive: true });
 fs.writeFileSync(TEMP_SQL, sql, "utf-8");
 
 // --- Run sql2dbml ---
-const sql2dbmlBin = path.join(ROOT, "node_modules", ".bin", "sql2dbml");
+const sql2dbmlBin = fs.existsSync(path.join(ROOT, "node_modules", ".bin", "sql2dbml"))
+  ? path.join(ROOT, "node_modules", ".bin", "sql2dbml")
+  : "sql2dbml";
+
 try {
   execSync(`"${sql2dbmlBin}" "${TEMP_SQL}" --postgres -o "${OUTPUT_PATH}"`, {
     stdio: "pipe",
@@ -143,8 +146,12 @@ if (!process.env.DBDOCS_TOKEN) {
   } else {
     try {
       ui.info("Publishing schema to dbdocs...");
+      const dbdocsBin = fs.existsSync(path.join(ROOT, "node_modules", ".bin", "dbdocs"))
+        ? path.join(ROOT, "node_modules", ".bin", "dbdocs")
+        : "dbdocs";
+
       const result = execSync(
-        `dbdocs build "${OUTPUT_PATH}" --project ${DBDOCS_PROJECT}`,
+        `"${dbdocsBin}" build "${OUTPUT_PATH}" --project ${DBDOCS_PROJECT}`,
         {
           cwd: ROOT,
           encoding: "utf-8",

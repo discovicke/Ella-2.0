@@ -1,0 +1,259 @@
+Enum "booking_status" {
+  "active"
+  "cancelled"
+  "expired"
+  "pending"
+}
+
+Enum "registration_status" {
+  "invited"
+  "registered"
+  "declined"
+}
+
+Table "database_versions" {
+  "version" INTEGER [pk]
+  "name" TEXT [unique, not null]
+  "applied_at" TIMESTAMPTZ [not null, default: `NOW()`]
+}
+
+Table "campus" {
+  "id" BIGINT [pk, increment]
+  "street" TEXT [not null]
+  "zip" TEXT
+  "city" TEXT [not null]
+  "country" TEXT [not null]
+  "contact" TEXT
+}
+
+Table "room_types" {
+  "id" BIGINT [pk, increment]
+  "name" TEXT [unique, not null]
+}
+
+Table "rooms" {
+  "id" BIGINT [pk, not null, increment]
+  "campus_id" BIGINT [not null]
+  "name" TEXT [not null]
+  "capacity" INTEGER
+  "room_type_id" BIGINT [not null]
+  "floor" TEXT
+  "notes" TEXT
+}
+
+Table "asset_types" {
+  "id" BIGINT [pk, increment]
+  "description" TEXT [unique, not null]
+}
+
+Table "room_assets" {
+  "id" BIGINT [pk, increment]
+  "room_id" BIGINT [not null]
+  "asset_type_id" BIGINT [not null]
+  "notes" TEXT
+}
+
+Table "system_permissions" {
+  "key" TEXT [pk]
+  "description" TEXT [not null]
+}
+
+Table "permission_templates" {
+  "id" BIGINT [pk, increment]
+  "name" TEXT [unique, not null]
+  "label" TEXT [not null]
+  "css_class" TEXT
+  "sort_order" INTEGER [default: 0]
+}
+
+Table "permission_template_flags" {
+  "template_id" BIGINT [not null]
+  "permission_key" TEXT [not null]
+  "value" BOOLEAN [not null]
+
+  Indexes {
+    (template_id, permission_key) [pk]
+  }
+}
+
+Table "class" {
+  "id" BIGINT [pk, increment]
+  "class_name" TEXT [not null]
+}
+
+Table "users" {
+  "id" BIGINT [pk, increment]
+  "email" TEXT [not null]
+  "password_hash" TEXT [not null]
+  "display_name" TEXT
+  "is_banned" BOOLEAN [not null, default: false]
+  "is_active" BOOLEAN [not null, default: true]
+  "permission_level" INTEGER [not null, check: `permission_level >= 1 AND permission_level <= 10`, default: 1]
+  "reset_token_hash" TEXT
+  "reset_token_expires" TIMESTAMPTZ
+  "tokens_valid_after" TIMESTAMPTZ [not null, default: `NOW()`]
+  "permission_template_id" BIGINT
+}
+
+Table "user_permission_overrides" {
+  "user_id" BIGINT [not null]
+  "permission_key" TEXT [not null]
+  "value" BOOLEAN
+
+  Indexes {
+    (user_id, permission_key) [pk]
+  }
+}
+
+Table "user_campus" {
+  "id" BIGINT [pk, increment]
+  "user_id" BIGINT [not null]
+  "campus_id" BIGINT [not null]
+
+  Indexes {
+    (user_id, campus_id) [unique]
+  }
+}
+
+Table "user_class" {
+  "id" BIGINT [pk, increment]
+  "user_id" BIGINT [not null]
+  "class_id" BIGINT [not null]
+
+  Indexes {
+    (user_id, class_id) [unique]
+  }
+}
+
+Table "class_campus" {
+  "id" BIGINT [pk, increment]
+  "class_id" BIGINT [not null]
+  "campus_id" BIGINT [not null]
+
+  Indexes {
+    (class_id, campus_id) [unique]
+  }
+}
+
+Table "user_booking_slugs" {
+  "id" BIGINT [pk, increment]
+  "user_id" BIGINT [not null]
+  "slug" TEXT [unique, not null]
+  "is_active" BOOLEAN [not null, default: true]
+  "created_at" TIMESTAMPTZ [not null, default: `NOW()`]
+}
+
+Table "bookings" {
+  "id" BIGINT [pk, increment]
+  "user_id" BIGINT [not null]
+  "room_id" BIGINT [not null]
+  "start_time" TIMESTAMPTZ [not null]
+  "end_time" TIMESTAMPTZ [not null]
+  "status" booking_status [not null, default: 'active']
+  "is_lesson" BOOLEAN [not null, default: false]
+  "notes" TEXT
+  "booker_name" TEXT
+  "recurring_group_id" UUID
+  "created_at" TIMESTAMPTZ [not null, default: `NOW()`]
+  "updated_at" TIMESTAMPTZ
+
+  Checks {
+    `end_time > start_time` [name: 'chk_booking_times']
+  }
+}
+
+Table "booking_class" {
+  "booking_id" BIGINT [not null]
+  "class_id" BIGINT [not null]
+
+  Indexes {
+    (booking_id, class_id) [pk]
+  }
+}
+
+Table "registrations" {
+  "user_id" BIGINT [not null]
+  "booking_id" BIGINT [not null]
+  "status" registration_status [not null, default: 'invited']
+  "created_at" TIMESTAMPTZ [not null, default: `NOW()`]
+
+  Indexes {
+    (user_id, booking_id) [pk]
+  }
+}
+
+Table "resource_categories" {
+  "id" BIGINT [pk, increment]
+  "name" TEXT [unique, not null]
+}
+
+Table "bookable_resources" {
+  "id" BIGINT [pk, not null, increment]
+  "category_id" BIGINT [not null]
+  "campus_id" BIGINT [not null]
+  "name" TEXT [not null]
+  "description" TEXT
+  "is_active" BOOLEAN [not null, default: true]
+}
+
+Table "resource_bookings" {
+  "id" BIGINT [pk, increment]
+  "resource_id" BIGINT [not null]
+  "user_id" BIGINT [not null]
+  "start_time" TIMESTAMPTZ [not null]
+  "end_time" TIMESTAMPTZ [not null]
+  "notes" TEXT
+  "created_at" TIMESTAMPTZ [not null, default: `NOW()`]
+}
+
+Ref:"campus"."id" < "rooms"."campus_id" [delete: restrict]
+
+Ref:"room_types"."id" < "rooms"."room_type_id" [delete: restrict]
+
+Ref:"rooms"."id" < "room_assets"."room_id" [delete: cascade]
+
+Ref:"asset_types"."id" < "room_assets"."asset_type_id" [delete: restrict]
+
+Ref:"permission_templates"."id" < "permission_template_flags"."template_id" [delete: cascade]
+
+Ref:"system_permissions"."key" < "permission_template_flags"."permission_key" [delete: cascade]
+
+Ref:"permission_templates"."id" < "users"."permission_template_id" [delete: set null]
+
+Ref:"users"."id" < "user_permission_overrides"."user_id" [delete: cascade]
+
+Ref:"system_permissions"."key" < "user_permission_overrides"."permission_key" [delete: cascade]
+
+Ref:"users"."id" < "user_campus"."user_id" [delete: cascade]
+
+Ref:"campus"."id" < "user_campus"."campus_id" [delete: cascade]
+
+Ref:"users"."id" < "user_class"."user_id" [delete: cascade]
+
+Ref:"class"."id" < "user_class"."class_id" [delete: cascade]
+
+Ref:"class"."id" < "class_campus"."class_id" [delete: cascade]
+
+Ref:"campus"."id" < "class_campus"."campus_id" [delete: cascade]
+
+Ref:"users"."id" < "user_booking_slugs"."user_id" [delete: cascade]
+
+Ref:"users"."id" < "bookings"."user_id" [delete: restrict]
+
+Ref:"rooms"."id" < "bookings"."room_id" [delete: restrict]
+
+Ref:"bookings"."id" < "booking_class"."booking_id" [delete: cascade]
+
+Ref:"class"."id" < "booking_class"."class_id" [delete: cascade]
+
+Ref:"users"."id" < "registrations"."user_id" [delete: cascade]
+
+Ref:"bookings"."id" < "registrations"."booking_id" [delete: cascade]
+
+Ref:"resource_categories"."id" < "bookable_resources"."category_id" [delete: restrict]
+
+Ref:"campus"."id" < "bookable_resources"."campus_id" [delete: restrict]
+
+Ref:"bookable_resources"."id" < "resource_bookings"."resource_id" [delete: cascade]
+
+Ref:"users"."id" < "resource_bookings"."user_id" [delete: restrict]
