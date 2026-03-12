@@ -61,6 +61,7 @@ Detta dokument spårar projektets framsteg. Uppdaterat: 2026-03-12.
 - [x] Server-side pagination för alla tunga listor (användare, bokningar, registreringar).
 
 ### Frontend
+- [x] Custom UI Design System (`app-button`, `app-slider`, `app-time-picker`, etc).
 - [x] Egen DatePicker-komponent för bokningsmodalen.
 - [x] Integration av **DayPilot-Lite** för kalendervyer.
 - [x] "Mina Bokningar"-vy med avancerad filtrering och paginering.
