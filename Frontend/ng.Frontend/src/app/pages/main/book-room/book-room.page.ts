@@ -26,7 +26,6 @@ import { TimePickerComponent } from '../../../shared/components/time-picker/time
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 import { MultiSelectComponent, MultiSelectOption } from '../../../shared/components/multi-select/multi-select.component';
 import { SelectComponent, SelectOption } from '../../../shared/components/select/select.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { SliderComponent } from '../../../shared/components/slider/slider.component';
 
 type DiscoveryView = 'availability' | 'schedule';
@@ -42,7 +41,7 @@ interface AvailabilityCandidate {
 
 @Component({
   selector: 'app-book-room-page',
-  imports: [CalendarComponent, DatePipe, FormsModule, MultiSelectComponent, SelectComponent, DatePickerComponent, TimePickerComponent, ButtonComponent, SliderComponent],
+  imports: [CalendarComponent, DatePipe, FormsModule, MultiSelectComponent, SelectComponent, DatePickerComponent, TimePickerComponent, SliderComponent],
   templateUrl: './book-room.page.html',
   styleUrl: './book-room.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -249,7 +248,7 @@ export class BookRoomPage implements OnDestroy {
     return `+${assets.length} utr.`;
   }
 
-  getRoomIconType(typeName: string | undefined): string {
+  getRoomIconType(typeName: string | null | undefined): string {
     if (!typeName) return 'room';
     const lower = typeName.toLowerCase();
     if (lower.includes('labb') || lower.includes('lab')) return 'lab';

@@ -77,7 +77,7 @@ export class BookingModalComponent implements OnInit, OnDestroy {
   readonly isLoadingMembers = signal(false);
   readonly showClassPicker = signal(false);
 
-  getRoomIconType(typeName: string | undefined): string {
+  getRoomIconType(typeName: string | null | undefined): string {
     if (!typeName) return 'room';
     const lower = typeName.toLowerCase();
     if (lower.includes('labb') || lower.includes('lab')) return 'lab';
