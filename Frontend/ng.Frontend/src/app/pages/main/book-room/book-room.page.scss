@@ -463,15 +463,15 @@
     margin: 0;
     font-size: 1rem;
     font-weight: 700;
-    color: var(--color-text-primary);
+    color: var(--color-text-secondary);
     white-space: nowrap;
   }
 
   &--available h2 {
-    color: var(--color-primary);
+    color: var(--color-text-secondary);
   }
   &--busy h2 {
-    color: var(--color-warning-hover);
+    color: var(--color-text-secondary);
   }
 }
 

@@ -31,18 +31,17 @@ app-calendar {
 .cal-nav__controls {
   display: flex;
   align-items: center;
-  gap: 4px;
+
   background: var(--color-bg-panel);
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  padding: 4px;
 }
 
 .cal-nav__btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 12px;
+  padding: 6px 10px;
   background: transparent;
   border: none;
   border-radius: 6px;
@@ -98,7 +97,7 @@ app-calendar {
   min-height: 520px;
   overflow-x: auto;
 
-  daypilot-calendar, 
+  daypilot-calendar,
   daypilot-month {
     display: block;
     min-width: 100%;
@@ -276,7 +275,9 @@ app-calendar {
   letter-spacing: 0.04em !important;
   border-right-color: var(--color-border) !important;
   border-bottom-color: var(--color-border) !important;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 // Today highlight in header

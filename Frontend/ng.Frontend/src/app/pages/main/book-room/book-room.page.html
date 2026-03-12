@@ -109,8 +109,17 @@
                             <span class="row-room">{{ candidate.room.name }}</span>
                             @if (candidate.room.notes) {
                               <span class="row-note-indicator" title="Har anteckning">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  stroke-width="2"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                >
+                                  <path
+                                    d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"
+                                  />
                                 </svg>
                               </span>
                             }
@@ -125,7 +134,9 @@
                             }
                             @if (candidate.room.assets?.length) {
                               <span class="meta-sep"></span>
-                              <span class="row-meta-text row-meta-accent">+{{ candidate.room.assets!.length }} utr.</span>
+                              <span class="row-meta-text row-meta-accent"
+                                >+{{ candidate.room.assets!.length }} utr.</span
+                              >
                             }
                           </div>
                         </div>
@@ -134,7 +145,13 @@
                       <!-- Right side: Action -->
                       <div class="row-right-block">
                         <span class="row-action-text">Välj</span>
-                        <svg class="row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <svg
+                          class="row-chevron"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2.5"
+                        >
                           <polyline points="9 18 15 12 9 6" />
                         </svg>
                       </div>
@@ -182,8 +199,17 @@
                             <span class="row-room">{{ candidate.room.name }}</span>
                             @if (candidate.room.notes) {
                               <span class="row-note-indicator" title="Har anteckning">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  stroke-width="2"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                >
+                                  <path
+                                    d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"
+                                  />
                                 </svg>
                               </span>
                             }
@@ -192,13 +218,20 @@
                           <!-- Line 2: Conflict info -->
                           @if (candidate.nextConflict; as conflict) {
                             <div class="row-secondary row-secondary--conflict">
-                              <svg class="conflict-mini-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <svg
+                                class="conflict-mini-icon"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                              >
                                 <circle cx="12" cy="12" r="10" />
                                 <line x1="12" y1="8" x2="12" y2="12" />
                                 <line x1="12" y1="16" x2="12.01" y2="16" />
                               </svg>
                               <span class="row-meta-text">
-                                Upptagen {{ conflict.startTime | date: 'HH:mm' }} – {{ conflict.endTime | date: 'HH:mm' }}
+                                Upptagen {{ conflict.startTime | date: 'HH:mm' }} –
+                                {{ conflict.endTime | date: 'HH:mm' }}
                                 <span class="meta-sep"></span>
                                 {{ conflict.userName ?? conflict.userEmail ?? 'Upptaget' }}
                               </span>
@@ -284,56 +317,11 @@
         <div class="filter-section">
           <button
             class="filter-section__header"
-            (click)="toggleSection('location')"
-            [attr.aria-expanded]="!isSectionCollapsed('location')"
-            type="button"
-          >
-            <h4 class="filter-section__title">Var</h4>
-            <svg
-              class="chevron"
-              [class.chevron--collapsed]="isSectionCollapsed('location')"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
-
-          @if (!isSectionCollapsed('location')) {
-            <div class="filter-section__content">
-              <div class="field">
-                <span class="field-label">Campus</span>
-                <app-select
-                  [options]="[ { id: 'All', label: 'Alla campus' }, ...campusOptions() ]"
-                  [value]="selectedCampus()"
-                  (valueChange)="updateCampus($event)"
-                ></app-select>
-              </div>
-
-              <div class="field">
-                <span class="field-label">Rumstyp</span>
-                <app-select
-                  [options]="[ { id: 'All', label: 'Alla typer' }, ...roomTypeOptions() ]"
-                  [value]="selectedTypeId()"
-                  (valueChange)="updateType($event)"
-                ></app-select>
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="filter-divider"></div>
-
-        <div class="filter-section">
-          <button
-            class="filter-section__header"
             (click)="toggleSection('time')"
             [attr.aria-expanded]="!isSectionCollapsed('time')"
             type="button"
           >
-            <h4 class="filter-section__title">När</h4>
+            <h4 class="filter-section__title">Var</h4>
             <svg
               class="chevron"
               [class.chevron--collapsed]="isSectionCollapsed('time')"
@@ -369,6 +357,51 @@
                     (valueChange)="updateEndTime($event)"
                   ></app-time-picker>
                 </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <div class="filter-section">
+          <button
+            class="filter-section__header"
+            (click)="toggleSection('location')"
+            [attr.aria-expanded]="!isSectionCollapsed('location')"
+            type="button"
+          >
+            <h4 class="filter-section__title">När</h4>
+            <svg
+              class="chevron"
+              [class.chevron--collapsed]="isSectionCollapsed('location')"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          @if (!isSectionCollapsed('location')) {
+            <div class="filter-section__content">
+              <div class="field">
+                <span class="field-label">Campus</span>
+                <app-select
+                  [options]="[ { id: 'All', label: 'Alla campus' }, ...campusOptions() ]"
+                  [value]="selectedCampus()"
+                  (valueChange)="updateCampus($event)"
+                ></app-select>
+              </div>
+
+              <div class="field">
+                <span class="field-label">Rumstyp</span>
+                <app-select
+                  [options]="[ { id: 'All', label: 'Alla typer' }, ...roomTypeOptions() ]"
+                  [value]="selectedTypeId()"
+                  (valueChange)="updateType($event)"
+                ></app-select>
               </div>
             </div>
           }
