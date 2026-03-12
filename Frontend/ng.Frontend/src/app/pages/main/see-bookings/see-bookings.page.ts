@@ -139,8 +139,16 @@ export class SeeBookingsPage {
   /** The soonest upcoming active booking — from own OR registered bookings */
   nextBooking = computed(() => {
     if (this.activeTab() !== 'upcoming') return null;
+    const now = new Date().getTime();
     return (
-      this.filteredBookings().find((b) => b.status === BookingStatus.Active && !b.isInvitation) ?? null
+      this.filteredBookings().find(
+        (b) =>
+          b.status === BookingStatus.Active &&
+          !b.isInvitation &&
+          !b.isDeclined &&
+          !b.isExpiredInvitation &&
+          new Date(b.endTime ?? 0).getTime() > now
+      ) ?? null
     );
   });
 
@@ -173,8 +181,11 @@ export class SeeBookingsPage {
       return remainMins > 0 ? `Startar om ${hours}h ${remainMins}m` : `Startar om ${hours}h`;
     }
 
-    const days = Math.floor(hours / 24);
-    return days === 1 ? 'Startar imorgon' : `Startar om ${days} dagar`;
+    const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const calendarDaysDiff = Math.round((startDate.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    return calendarDaysDiff === 1 ? 'Startar imorgon' : `Startar om ${calendarDaysDiff} dagar`;
   }
 
   statusLabel(status: BookingStatus | undefined): string {
@@ -612,9 +623,32 @@ export class SeeBookingsPage {
     try {
       await firstValueFrom(this.bookingService.cancelBooking(booking.bookingId));
       this.loadBookings(true);
-    } catch (error) {
+      } catch (error) {
       console.error('Failed to cancel booking', error);
       this.toastService.showError('Kunde inte avboka. Försök igen.');
+    }
+  }
+
+  async onUnregisterBooking(booking: BookingDetailedReadModel, event?: Event) {
+    event?.stopPropagation();
+    if (!booking.bookingId) return;
+
+    const confirmed = await this.confirmService.show('Vill du avregistrera dig från bokningen?', {
+      title: 'Avregistrera',
+      icon: 'warning' as const,
+      confirmText: 'Avregistrera',
+      cancelText: 'Behåll',
+      dangerConfirm: true,
+    });
+    if (!confirmed) return;
+
+    try {
+      await firstValueFrom(this.registrationService.declineInvitation(booking.bookingId));
+      this.toastService.showSuccess('Du har avregistrerats.');
+      this.loadBookings(true);
+    } catch (error) {
+      console.error('Failed to unregister', error);
+      this.toastService.showError('Kunde inte avregistrera. Försök igen.');
     }
   }
 }

@@ -139,8 +139,7 @@
           <h2 class="section-label">Nästa bokning</h2>
           <div
             class="hero-card"
-            [class.hero-card--attending]="!next.isOwned && !next.isDeclined"
-            [class.hero-card--declined]="next.isDeclined"
+            [class.hero-card--attending]="!next.isOwned"
           >
             <div class="hero-body">
               <div class="hero-top">
@@ -148,10 +147,8 @@
                   <span class="countdown-dot"></span>
                   {{ getCountdownLabel(next) }}
                 </div>
-                @if (next.isDeclined) {
-                  <span class="origin-tag origin-tag--declined">Avböjd</span>
-                } @else if (!next.isOwned) {
-                          <span class="origin-tag origin-tag--attending">Deltar</span>
+                @if (!next.isOwned) {
+                  <span class="origin-tag origin-tag--attending">Deltar</span>
                 }
               </div>
 
@@ -204,6 +201,15 @@
                       <line x1="9" y1="9" x2="15" y2="15" />
                     </svg>
                     Avboka
+                  </button>
+                } @else {
+                  <button class="hero-btn hero-btn--cancel" (click)="onUnregisterBooking(next, $event)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="15" y1="9" x2="9" y2="15" />
+                      <line x1="9" y1="9" x2="15" y2="15" />
+                    </svg>
+                    Avregistrera
                   </button>
                 }
               </div>
