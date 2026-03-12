@@ -245,7 +245,7 @@ app-calendar {
 .calendar_default_corner_inner,
 .calendar_default_cornerright_inner,
 .calendar_default_alldayheader_inner {
-  background: var(--color-bg-panel) !important;
+  background: var(--color-bg-panel);
   color: var(--color-text-secondary) !important;
   font-size: 0.72rem !important;
   font-weight: 700 !important;
@@ -311,7 +311,7 @@ app-calendar {
 // Month: day-of-week header row
 .month_default_header_inner {
   background: var(--color-bg-panel) !important;
-  color: var(--color-text-secondary) !important;
+  color: var(--color-text-primary) !important;
   font-size: 0.72rem !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
@@ -325,25 +325,45 @@ app-calendar {
 // =============================================================================
 
 .calendar_default_cell_inner {
-  background: var(--color-bg-panel) !important;
+  background: var(--color-bg-panel);
   border-right-color: var(--color-border) !important;
   border-bottom-color: var(--color-border) !important;
 }
 
 .calendar_default_cell_business .calendar_default_cell_inner {
-  background: var(--color-bg-card) !important;
+  background: var(--color-bg-card);
 }
 
 .month_default_cell_inner {
-  background: var(--color-bg-card) !important;
+  background: var(--color-bg-panel);
   border-right-color: var(--color-border) !important;
   border-bottom-color: var(--color-border) !important;
 }
 
 // Month weekend (non-business) cells — subtle tint
 .month_default_cell_business .month_default_cell_inner {
-  background: var(--color-bg-panel) !important;
+  background: var(--color-bg-card);
 }
+
+// Month today cell styling
+.cal-month-today-badge {
+  background: var(--color-primary) !important;
+  color: #ffffff !important;
+  border-radius: 50% !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 700 !important;
+  font-size: 0.75rem !important;
+  margin: 2px 2px 2px auto !important;
+  line-height: 1 !important;
+  padding-right: 1px !important;
+}
+
+// Ensure the cell background is also highlighted for today
+// (Uses a very specific selector if we can, or we can just hope headerHtml is enough)
 
 // Month cell date number
 .month_default_cell_header {

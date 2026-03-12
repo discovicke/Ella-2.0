@@ -167,6 +167,7 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
       viewType,
       startDate,
       weekStarts: 1,
+      locale: 'sv-se',
       businessBeginsHour: this.businessBeginsHour,
       businessEndsHour: this.businessEndsHour,
       heightSpec: 'BusinessHoursNoScroll',
@@ -228,6 +229,8 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
     return {
       startDate: this.currentDate,
       weekStarts: 1,
+      locale: 'sv-se',
+      timeRangeSelectedHandling: 'Disabled',
       eventMoveHandling: 'Disabled',
       eventResizeHandling: 'Disabled',
       eventDeleteHandling: 'Disabled',
@@ -239,6 +242,8 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
       onBeforeCellRender: (args) => {
         if (args.cell.start.toString('yyyy-MM-dd') === todayStr) {
           args.cell.properties.backColor = 'var(--color-primary-surface, #f4eafb)';
+          const dayNum = args.cell.start.getDay();
+          args.cell.properties.headerHtml = `<div class="cal-month-today-badge">${dayNum}</div>`;
         }
       },
     };
