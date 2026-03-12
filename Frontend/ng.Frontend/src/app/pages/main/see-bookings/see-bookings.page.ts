@@ -123,6 +123,9 @@ export class SeeBookingsPage {
   });
 
   readonly filteredBookings = computed(() => {
+    if (this.isCalendarView()) {
+      return this.bookings();
+    }
     const view = this.bookingView();
     return this.bookings().filter((booking) => {
       switch (view) {
@@ -347,7 +350,7 @@ export class SeeBookingsPage {
             page,
             pageSize,
             timeFilter: isCalendar ? undefined : this.activeTab(),
-            includeCancelled: !isUpcoming,
+            includeCancelled: isCalendar ? false : !isUpcoming,
           }),
         ),
         firstValueFrom(
@@ -650,5 +653,11 @@ export class SeeBookingsPage {
       console.error('Failed to unregister', error);
       this.toastService.showError('Kunde inte avregistrera. Försök igen.');
     }
+  }
+
+  goToInvitations(): void {
+    this.viewMode.set('agenda');
+    this.activeTab.set('upcoming');
+    this.bookingView.set('invitations');
   }
 }

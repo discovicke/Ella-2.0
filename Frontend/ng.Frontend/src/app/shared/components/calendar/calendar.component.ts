@@ -67,11 +67,24 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
       case 'resources':
         return d.toString('d MMMM yyyy', 'sv-se');
       case 'week': {
+        const today = DayPilot.Date.today();
         const weekStart = d.firstDayOfWeek(1); // Monday-based (ISO)
         const weekEnd = weekStart.addDays(6);
+        const weekNumber = weekStart.weekNumber();
+
+        const currentWeekStart = today.firstDayOfWeek(1);
+        const isCurrentWeek = weekStart.getTime() === currentWeekStart.getTime();
+        const isNextWeek = weekStart.getTime() === currentWeekStart.addDays(7).getTime();
+        const isPrevWeek = weekStart.getTime() === currentWeekStart.addDays(-7).getTime();
+
+        let prefix = `Vecka ${weekNumber}`;
+        if (isCurrentWeek) prefix = 'Denna vecka';
+        else if (isNextWeek) prefix = 'Nästa vecka';
+        else if (isPrevWeek) prefix = 'Förra veckan';
+
         const startStr = weekStart.toString('d MMM', 'sv-se');
         const endStr = weekEnd.toString('d MMM yyyy', 'sv-se');
-        return `${startStr} – ${endStr}`;
+        return `${prefix}: ${startStr} – ${endStr}`;
       }
       case 'month':
         return d.toString('MMMM yyyy', 'sv-se');
@@ -149,9 +162,10 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
   }
 
   private buildCalendarConfig(viewType: 'Day' | 'Week'): DayPilot.CalendarConfig {
+    const startDate = viewType === 'Week' ? this.currentDate.firstDayOfWeek(1) : this.currentDate;
     return {
       viewType,
-      startDate: this.currentDate,
+      startDate,
       weekStarts: 1,
       businessBeginsHour: this.businessBeginsHour,
       businessEndsHour: this.businessEndsHour,
@@ -172,6 +186,28 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
       onEventClick: (args) => {
         const booking = args.e.data.tags?.booking as BookingDetailedReadModel;
         if (booking) this.eventClicked.emit(booking);
+      },
+      onBeforeHeaderRender: (args) => {
+        const date = args.column.start;
+        const today = DayPilot.Date.today();
+        const isToday = date.toString('yyyy-MM-dd') === today.toString('yyyy-MM-dd');
+
+        // Swedish abbreviated weekdays: 0=Sön, 1=Mån, ..., 6=Lör
+        const weekdays = ['Sön', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör'];
+        const dayIndex = date.getDayOfWeek();
+        const weekdayName = weekdays[dayIndex];
+        const dayNum = date.getDay();
+        const monthNum = date.getMonth(); // 1-12 in DayPilot.Date
+
+        args.header.html = `<div class="cal-header-content">
+          <span class="cal-header-weekday">${weekdayName}</span>
+          <span class="cal-header-date">${dayNum}/${monthNum}</span>
+        </div>`;
+
+        if (isToday) {
+          args.header.backColor = 'var(--color-primary-surface, #f4eafb)';
+          args.header.cssClass = 'cal-header-today';
+        }
       },
     };
   }
@@ -211,7 +247,7 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
   private applyDateToConfigs(): void {
     const d = this.currentDate;
     this.configDay = { ...this.configDay, startDate: d };
-    this.configWeek = { ...this.configWeek, startDate: d };
+    this.configWeek = { ...this.configWeek, startDate: d.firstDayOfWeek(1) };
     this.configMonth = { ...this.configMonth, startDate: d };
     this.configResources = { ...this.configResources, startDate: d };
   }

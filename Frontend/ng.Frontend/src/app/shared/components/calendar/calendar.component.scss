@@ -253,6 +253,44 @@ app-calendar {
   letter-spacing: 0.04em !important;
   border-right-color: var(--color-border) !important;
   border-bottom-color: var(--color-border) !important;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+// Today highlight in header
+.cal-header-today {
+  color: var(--color-primary) !important;
+  font-weight: 800 !important;
+  border-bottom: 2px solid var(--color-primary) !important;
+}
+
+.cal-header-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.cal-header-weekday {
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.cal-header-date {
+  font-weight: 600;
+  opacity: 0.7;
+  font-size: 0.68rem;
+  color: var(--color-text-secondary);
+}
+
+.cal-header-today {
+  .cal-header-weekday {
+    color: var(--color-primary);
+  }
+  .cal-header-date {
+    color: var(--color-primary);
+    opacity: 0.85;
+  }
 }
 
 // Hour labels on the left
