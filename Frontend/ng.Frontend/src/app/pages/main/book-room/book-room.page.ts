@@ -66,6 +66,7 @@ export class BookRoomPage implements OnDestroy {
   readonly roomQuery = signal('');
   readonly debouncedRoomQuery = signal('');
   readonly discoveryView = signal<DiscoveryView>('availability');
+  readonly collapsedSections = signal<Set<string>>(new Set([]));
 
   readonly roomsResource = resource({
     loader: () => firstValueFrom(this.roomService.getAllRooms()),
@@ -251,6 +252,22 @@ export class BookRoomPage implements OnDestroy {
 
   setDiscoveryView(view: DiscoveryView): void {
     this.discoveryView.set(view);
+  }
+
+  isSectionCollapsed(sectionId: string): boolean {
+    return this.collapsedSections().has(sectionId);
+  }
+
+  toggleSection(sectionId: string): void {
+    this.collapsedSections.update((set) => {
+      const newSet = new Set(set);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
   }
 
   updateRoomQuery(event: Event): void {

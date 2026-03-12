@@ -1,67 +1,70 @@
 <div class="page-container">
   <div class="page-content">
-
     <!-- ─── Main Content (Left) ─────────────────────────────────────── -->
     <main class="main-content">
-      <!-- Section header with view toggle -->
-      <div class="results-section__header">
-        <div class="view-mode-toggle">
-          <button
-            class="pill"
-            [class.pill--active]="discoveryView() === 'availability'"
-            (click)="setDiscoveryView('availability')"
-            type="button"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="8" y1="6" x2="21" y2="6"></line>
-              <line x1="8" y1="12" x2="21" y2="12"></line>
-              <line x1="8" y1="18" x2="21" y2="18"></line>
-              <line x1="3" y1="6" x2="3.01" y2="6"></line>
-              <line x1="3" y1="12" x2="3.01" y2="12"></line>
-              <line x1="3" y1="18" x2="3.01" y2="18"></line>
-            </svg>
-            Listvy
-          </button>
-          <button
-            class="pill"
-            [class.pill--active]="discoveryView() === 'schedule'"
-            (click)="setDiscoveryView('schedule')"
-            type="button"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-              <line x1="8" y1="10" x2="8" y2="22"></line>
-            </svg>
-            Kalendervy
-          </button>
+      <!-- Top control panel -->
+      <div class="filter-panel">
+        <div class="filter-panel__primary">
+          <div class="view-mode-toggle">
+            <button
+              class="pill"
+              [class.pill--active]="discoveryView() === 'availability'"
+              (click)="setDiscoveryView('availability')"
+              type="button"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              Listvy
+            </button>
+            <button
+              class="pill"
+              [class.pill--active]="discoveryView() === 'schedule'"
+              (click)="setDiscoveryView('schedule')"
+              type="button"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+                <line x1="8" y1="10" x2="8" y2="22"></line>
+              </svg>
+              Kalendervy
+            </button>
+          </div>
         </div>
-      </div>
 
-      <!-- Time validation error moved above results if exists -->
-      @if (timeValidationError(); as timeError) {
-        <div class="validation-banner">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
-          <span>{{ timeError }}</span>
-        </div>
-      }
+        <!-- Validation error integrated into panel if exists -->
+        @if (timeValidationError(); as timeError) {
+          <div class="filter-panel__error">
+            <div class="validation-banner">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span>{{ timeError }}</span>
+            </div>
+          </div>
+        }
+      </div>
 
       @if (discoveryView() === 'availability') {
         <div class="availability-layout">
-
           <!-- Available rooms -->
           <section class="availability-column">
-            <div class="section-title-row">
-              <h3>Lediga rum</h3>
+            <div class="group-header group-header--available">
+              <h2>Lediga rum</h2>
               @if (!availabilityResource.isLoading()) {
-                <span class="section-count">{{ availableRooms().length }}</span>
+                <span class="group-count">{{ availableRooms().length }}</span>
               }
+              <div class="group-line"></div>
             </div>
 
             @if (availabilityResource.isLoading()) {
@@ -73,44 +76,60 @@
             } @else {
               <div class="room-results">
                 @for (candidate of availableRooms(); track candidate.room.roomId) {
-                  <article 
-                    class="booking-row clickable" 
-                    tabindex="0" 
-                    role="button" 
-                    (click)="onBookRoom(candidate.room)" 
-                    (keydown.enter)="onBookRoom(candidate.room)" 
+                  <article
+                    class="booking-row clickable"
+                    tabindex="0"
+                    role="button"
+                    (click)="onBookRoom(candidate.room)"
+                    (keydown.enter)="onBookRoom(candidate.room)"
                     (keydown.space)="onBookRoom(candidate.room)"
                   >
                     <div class="row-accent row-accent--available"></div>
-                    
-                    <div class="row-main">
-                      <div class="row-top">
-                        <h3 class="row-room">{{ candidate.room.name }}</h3>
-                      </div>
-                      <div class="row-sub">
-                        <span>{{ candidate.matchReasons.join(' · ') }}</span>
-                      </div>
 
-                      @if (candidate.room.assets?.length) {
-                        <div class="row-classes" style="margin-top: 4px;">
-                          @for (asset of candidate.room.assets; track asset) {
-                            <span class="class-chip">{{ asset }}</span>
+                    <div class="row-card-body">
+                      <div class="row-main">
+                        <h3 class="row-room">{{ candidate.room.name }}</h3>
+
+                        <div class="row-meta">
+                          <span class="meta-item">{{ candidate.room.capacity }} platser</span>
+                          <span class="meta-sep">·</span>
+                          <span class="meta-item">{{ candidate.room.campusCity }}</span>
+                          @if (candidate.room.roomTypeName) {
+                            <span class="meta-sep">·</span>
+                            <span class="meta-item">{{ candidate.room.roomTypeName }}</span>
                           }
                         </div>
-                      }
 
-                      @if (candidate.room.notes) {
-                        <div class="row-notes" style="margin-top: 4px;">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                          </svg>
-                          <p>{{ candidate.room.notes }}</p>
-                        </div>
-                      }
-                    </div>
+                        @if (candidate.room.assets?.length) {
+                          <div class="row-assets">
+                            @for (asset of candidate.room.assets; track asset) {
+                              <span class="asset-chip">{{ asset }}</span>
+                            }
+                          </div>
+                        }
 
-                    <div class="row-action">
-                      <app-button variant="primary" (clicked)="onBookRoom(candidate.room); $event.stopPropagation()">Boka</app-button>
+                        @if (candidate.room.notes) {
+                          <div class="row-notes">
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                            >
+                              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                            </svg>
+                            <p>{{ candidate.room.notes }}</p>
+                          </div>
+                        }
+                      </div>
+
+                      <div class="row-action">
+                        <app-button
+                          variant="primary"
+                          (clicked)="onBookRoom(candidate.room); $event.stopPropagation()"
+                          >Boka</app-button
+                        >
+                      </div>
                     </div>
                   </article>
                 } @empty {
@@ -124,11 +143,12 @@
 
           <!-- Unavailable rooms -->
           <section class="availability-column availability-column--secondary">
-            <div class="section-title-row">
-              <h3>Upptagna</h3>
+            <div class="group-header group-header--busy">
+              <h2>Upptagna</h2>
               @if (!availabilityResource.isLoading()) {
-                <span class="section-count">{{ unavailableRooms().length }}</span>
+                <span class="group-count">{{ unavailableRooms().length }}</span>
               }
+              <div class="group-line"></div>
             </div>
 
             @if (availabilityResource.isLoading()) {
@@ -142,27 +162,44 @@
                   <article class="booking-row busy">
                     <div class="row-accent row-accent--busy"></div>
 
-                    <div class="row-main">
-                      <div class="row-top">
-                        <h3 class="row-room">{{ candidate.room.name }}</h3>
-                      </div>
-                      <div class="row-sub">
-                        <span>{{ candidate.matchReasons.join(' · ') }}</span>
-                      </div>
-
-                      @if (candidate.nextConflict; as conflict) {
-                        <div class="conflict-box">
-                          <svg class="conflict-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10" />
-                            <line x1="12" y1="8" x2="12" y2="12" />
-                            <line x1="12" y1="16" x2="12.01" y2="16" />
-                          </svg>
-                          <div class="conflict-info">
-                            <span class="conflict-time">{{ conflict.startTime | date: 'HH:mm' }} – {{ conflict.endTime | date: 'HH:mm' }}</span>
-                            <span class="conflict-user">{{ conflict.userName ?? conflict.userEmail ?? 'Upptaget' }}</span>
-                          </div>
+                    <div class="row-card-body">
+                      <div class="row-main">
+                        <div class="row-top">
+                          <h3 class="row-room">{{ candidate.room.name }}</h3>
+                          <span class="busy-badge">Upptagen</span>
                         </div>
-                      }
+
+                        <div class="row-meta">
+                          <span class="meta-item">{{ candidate.room.capacity }} platser</span>
+                          <span class="meta-sep">·</span>
+                          <span class="meta-item">{{ candidate.room.campusCity }}</span>
+                        </div>
+
+                        @if (candidate.nextConflict; as conflict) {
+                          <div class="conflict-box">
+                            <svg
+                              class="conflict-icon"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                            >
+                              <circle cx="12" cy="12" r="10" />
+                              <line x1="12" y1="8" x2="12" y2="12" />
+                              <line x1="12" y1="16" x2="12.01" y2="16" />
+                            </svg>
+                            <div class="conflict-info">
+                              <span class="conflict-time"
+                                >{{ conflict.startTime | date: 'HH:mm' }} –
+                                {{ conflict.endTime | date: 'HH:mm' }}</span
+                              >
+                              <span class="conflict-user">{{
+                                conflict.userName ?? conflict.userEmail ?? 'Upptaget'
+                              }}</span>
+                            </div>
+                          </div>
+                        }
+                      </div>
                     </div>
                   </article>
                 } @empty {
@@ -173,11 +210,12 @@
               </div>
             }
           </section>
-
         </div>
       } @else {
         <div class="schedule-shell">
-          <p class="schedule-hint">Markera en ledig yta i dagsvyn för att boka direkt med förifylld tid.</p>
+          <p class="schedule-hint">
+            Markera en ledig yta i dagsvyn för att boka direkt med förifylld tid.
+          </p>
           <app-calendar
             viewMode="resources"
             [date]="selectionStart()"
@@ -197,91 +235,17 @@
     <!-- ─── Sidebar (Right) ─────────────────────────────────────────── -->
     <aside class="sidebar-filters">
       <section class="filter-card">
-        
-        <div class="filter-section" style="z-index: 3;">
-          <h4 class="filter-section__title">Tid & Datum</h4>
-          
-          <div class="field" style="z-index: 4;">
-            <span class="field-label">Datum</span>
-            <app-date-picker
-              [value]="selectedDate()"
-              (valueChange)="updateDate($event)"
-            ></app-date-picker>
-          </div>
-
-          <div class="field-row" style="z-index: 3;">
-            <div class="field">
-              <span class="field-label">Starttid</span>
-              <app-time-picker
-                [value]="startTime()"
-                (valueChange)="updateStartTime($event)"
-              ></app-time-picker>
-            </div>
-
-            <div class="field">
-              <span class="field-label">Sluttid</span>
-              <app-time-picker
-                [value]="endTime()"
-                (valueChange)="updateEndTime($event)"
-              ></app-time-picker>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="filter-divider"></div>
-
-        <div class="filter-section" style="z-index: 2;">
-          <h4 class="filter-section__title">Plats & Typ</h4>
-          
-          <div class="field">
-            <span class="field-label">Campus</span>
-            <app-select
-              [options]="[ { id: 'All', label: 'Alla campus' }, ...campusOptions() ]"
-              [value]="selectedCampus()"
-              (valueChange)="updateCampus($event)"
-            ></app-select>
-          </div>
-
-          <div class="field" style="z-index: 1;">
-            <span class="field-label">Rumstyp</span>
-            <app-select
-              [options]="[ { id: 'All', label: 'Alla typer' }, ...roomTypeOptions() ]"
-              [value]="selectedTypeId()"
-              (valueChange)="updateType($event)"
-            ></app-select>
-          </div>
-        </div>
-
-        <div class="filter-divider"></div>
-
-        <div class="filter-section" style="z-index: 1;">
-          <h4 class="filter-section__title">Krav & Detaljer</h4>
-
-          <div class="field">
-            <span class="field-label">Kapacitet (minst)</span>
-            <app-slider
-              [value]="minCapacity()"
-              (valueChange)="updateCapacity($event)"
-              [min]="0"
-              [max]="maxRoomCapacity()"
-              suffix="platser"
-            ></app-slider>
-          </div>
-
-          <div class="field" style="z-index: 2;">
-            <span class="field-label">Utrustning</span>
-            <app-multi-select 
-              [options]="assetTypeOptions()" 
-              [(selectedIds)]="selectedAssets" 
-              placeholder="Skärm, whiteboard…"
-            ></app-multi-select>
-          </div>
-
+        <div class="filter-section filter-section--search">
           <label class="field">
             <span class="field-label">Sök specifikt rum</span>
-            <div class="search-input-wrapper">
-              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="search-input-wrapper search-input-wrapper--elevated">
+              <svg
+                class="search-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
@@ -303,6 +267,148 @@
           </label>
         </div>
 
+        <div class="filter-divider"></div>
+
+        <div class="filter-section">
+          <button
+            class="filter-section__header"
+            (click)="toggleSection('location')"
+            [attr.aria-expanded]="!isSectionCollapsed('location')"
+            type="button"
+          >
+            <h4 class="filter-section__title">Var</h4>
+            <svg
+              class="chevron"
+              [class.chevron--collapsed]="isSectionCollapsed('location')"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          @if (!isSectionCollapsed('location')) {
+            <div class="filter-section__content">
+              <div class="field">
+                <span class="field-label">Campus</span>
+                <app-select
+                  [options]="[ { id: 'All', label: 'Alla campus' }, ...campusOptions() ]"
+                  [value]="selectedCampus()"
+                  (valueChange)="updateCampus($event)"
+                ></app-select>
+              </div>
+
+              <div class="field">
+                <span class="field-label">Rumstyp</span>
+                <app-select
+                  [options]="[ { id: 'All', label: 'Alla typer' }, ...roomTypeOptions() ]"
+                  [value]="selectedTypeId()"
+                  (valueChange)="updateType($event)"
+                ></app-select>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <div class="filter-section">
+          <button
+            class="filter-section__header"
+            (click)="toggleSection('time')"
+            [attr.aria-expanded]="!isSectionCollapsed('time')"
+            type="button"
+          >
+            <h4 class="filter-section__title">När</h4>
+            <svg
+              class="chevron"
+              [class.chevron--collapsed]="isSectionCollapsed('time')"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          @if (!isSectionCollapsed('time')) {
+            <div class="filter-section__content filter-section__content--compact">
+              <div class="field">
+                <span class="field-label">Datum</span>
+                <app-date-picker
+                  [value]="selectedDate()"
+                  (valueChange)="updateDate($event)"
+                ></app-date-picker>
+              </div>
+
+              <div class="field">
+                <span class="field-label">Tid</span>
+                <div class="time-range-inputs">
+                  <app-time-picker
+                    [value]="startTime()"
+                    (valueChange)="updateStartTime($event)"
+                  ></app-time-picker>
+                  <span class="time-separator">—</span>
+                  <app-time-picker
+                    [value]="endTime()"
+                    (valueChange)="updateEndTime($event)"
+                  ></app-time-picker>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <div class="filter-section">
+          <button
+            class="filter-section__header"
+            (click)="toggleSection('requirements')"
+            [attr.aria-expanded]="!isSectionCollapsed('requirements')"
+            type="button"
+          >
+            <h4 class="filter-section__title">Behov</h4>
+            <svg
+              class="chevron"
+              [class.chevron--collapsed]="isSectionCollapsed('requirements')"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          @if (!isSectionCollapsed('requirements')) {
+            <div class="filter-section__content">
+              <div class="field">
+                <span class="field-label">Kapacitet (minst)</span>
+                <app-slider
+                  [value]="minCapacity()"
+                  (valueChange)="updateCapacity($event)"
+                  [min]="0"
+                  [max]="maxRoomCapacity()"
+                  suffix="platser"
+                ></app-slider>
+              </div>
+
+              <div class="field">
+                <span class="field-label">Utrustning</span>
+                <app-multi-select
+                  [options]="assetTypeOptions()"
+                  [(selectedIds)]="selectedAssets"
+                  placeholder="Skärm, whiteboard…"
+                ></app-multi-select>
+              </div>
+            </div>
+          }
+        </div>
+
         @if (hasAnyActiveFilter()) {
           <div class="filter-actions">
             <button class="btn-reset" type="button" (click)="resetFilters()">
@@ -314,9 +420,7 @@
             </button>
           </div>
         }
-
       </section>
     </aside>
-
   </div>
 </div>
