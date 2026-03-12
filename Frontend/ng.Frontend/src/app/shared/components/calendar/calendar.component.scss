@@ -408,6 +408,8 @@ app-calendar {
   font-size: 0.76rem !important;
   line-height: 1.35 !important;
   overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
 }
 
 // Left accent bar — darker shade of primary (#5a1f82 ≈ primary 55% + black)

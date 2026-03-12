@@ -302,15 +302,20 @@ export class CalendarComponent implements OnChanges, AfterViewInit {
       const cssClass = this.getEventCssClass(b);
       const isCancelledOrExpired =
         b.status === BookingStatus.Cancelled || b.status === BookingStatus.Expired;
-      const label = `${b.roomName} - ${b.userName || b.userEmail}`;
+
+      const start = this.toEventDateTime(b.startTime);
+      const end = this.toEventDateTime(b.endTime);
+      const timeStr = `${start.toString('HH:mm')}–${end.toString('HH:mm')}`;
+      const label = `${b.roomName} ${timeStr}`;
+
       const html = isCancelledOrExpired
         ? `<div style="text-decoration: line-through;">${label}</div>`
         : `<div>${label}</div>`;
 
       return {
         id: b.bookingId!,
-        start: this.toEventDateTime(b.startTime),
-        end: this.toEventDateTime(b.endTime),
+        start,
+        end,
         text: label,
         html,
         resource: b.roomId?.toString(),
