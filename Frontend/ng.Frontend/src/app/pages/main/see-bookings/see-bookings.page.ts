@@ -127,15 +127,10 @@ export class SeeBookingsPage {
       return this.bookings();
     }
     const view = this.bookingView();
-    return this.bookings().filter((booking) => {
-      switch (view) {
-        case 'invitations':
-          return booking.isInvitation;
-        case 'all':
-        default:
-          return !booking.isInvitation;
-      }
-    });
+    if (view === 'all') {
+      return this.bookings();
+    }
+    return this.bookings().filter((booking) => booking.isInvitation);
   });
 
   /** Raw count of pending invitations — always from unfiltered list so the badge is honest */
@@ -299,6 +294,7 @@ export class SeeBookingsPage {
 
   setViewMode(mode: PersonalScheduleView) {
     this.viewMode.set(mode);
+    this.bookingView.set('all');
   }
 
   setBookingView(view: BookingView): void {
@@ -659,5 +655,9 @@ export class SeeBookingsPage {
     this.viewMode.set('agenda');
     this.activeTab.set('upcoming');
     this.bookingView.set('invitations');
+  }
+
+  clearFilter(): void {
+    this.bookingView.set('all');
   }
 }

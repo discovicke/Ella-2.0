@@ -2,114 +2,106 @@
   <div class="page-content">
     <!-- Filter Panel -->
     <div class="filter-panel">
-      <!-- Primary row: View mode + Invitation badge -->
-      <div class="filter-panel__primary">
-        <div class="view-mode-toggle">
-          <button
-            class="pill"
-            [class.pill--active]="viewMode() === 'agenda'"
-            (click)="setViewMode('agenda')"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="8" y1="6" x2="21" y2="6"></line>
-              <line x1="8" y1="12" x2="21" y2="12"></line>
-              <line x1="8" y1="18" x2="21" y2="18"></line>
-              <line x1="3" y1="6" x2="3.01" y2="6"></line>
-              <line x1="3" y1="12" x2="3.01" y2="12"></line>
-              <line x1="3" y1="18" x2="3.01" y2="18"></line>
-            </svg>
-            Agenda
-          </button>
-          <button
-            class="pill"
-            [class.pill--active]="viewMode() === 'week'"
-            (click)="setViewMode('week')"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-              <line x1="8" y1="10" x2="8" y2="22"></line>
-            </svg>
-            Vecka
-          </button>
-          <button
-            class="pill"
-            [class.pill--active]="viewMode() === 'month'"
-            (click)="setViewMode('month')"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            Månad
-          </button>
-        </div>
-
-        @if (pendingInvitationCount() > 0) {
-          <button class="invitation-cta" (click)="goToInvitations()">
-            <svg class="invitation-cta__bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      @if (bookingView() === 'invitations') {
+        <div class="filter-panel__invitation-header">
+          <div class="invitation-header__title">
+            <svg class="invitation-header__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
-            <span class="invitation-cta__text">{{ pendingInvitationCount() }} inbjudan{{ pendingInvitationCount() === 1 ? '' : 'ingar' }}</span>
-            <svg class="invitation-cta__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="9 18 15 12 9 6" />
+            <h2>Inbjudningar</h2>
+            <span class="invitation-header__count">{{ pendingInvitationCount() }}</span>
+          </div>
+          <button class="invitation-header__back" (click)="clearFilter()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="15 18 9 12 15 6" />
             </svg>
+            Tillbaka
           </button>
-        }
-      </div>
-
-      <!-- Secondary row: Agenda-only filters -->
-      @if (!isCalendarView()) {
-        <div class="filter-panel__secondary">
-          <div class="tabs">
+        </div>
+      } @else {
+        <!-- Primary row: View mode + Invitation badge -->
+        <div class="filter-panel__primary">
+          <div class="view-mode-toggle">
             <button
-              class="tab"
-              [class.active]="activeTab() === 'upcoming'"
-              (click)="setActiveTab('upcoming')"
+              class="pill"
+              [class.pill--active]="viewMode() === 'agenda'"
+              (click)="setViewMode('agenda')"
             >
-              Kommande
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              Agenda
             </button>
             <button
-              class="tab"
-              [class.active]="activeTab() === 'history'"
-              (click)="setActiveTab('history')"
+              class="pill"
+              [class.pill--active]="viewMode() === 'week'"
+              (click)="setViewMode('week')"
             >
-              Historik
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+                <line x1="8" y1="10" x2="8" y2="22"></line>
+              </svg>
+              Vecka
+            </button>
+            <button
+              class="pill"
+              [class.pill--active]="viewMode() === 'month'"
+              (click)="setViewMode('month')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              Månad
             </button>
           </div>
 
-          @if (activeTab() === 'upcoming') {
-            <div class="filter-divider"></div>
-            <div class="view-pills">
-              <button
-                class="pill"
-                [class.pill--active]="bookingView() === 'all'"
-                (click)="setBookingView('all')"
-                type="button"
-              >
-                Alla
-              </button>
-              <button
-                class="pill"
-                [class.pill--active]="bookingView() === 'invitations'"
-                (click)="setBookingView('invitations')"
-                type="button"
-              >
-                Inbjudningar
-                @if (pendingInvitationCount() > 0) {
-                  <span class="pill-badge" [class.pill-badge--active]="bookingView() === 'invitations'">
-                    {{ pendingInvitationCount() }}
-                  </span>
-                }
-              </button>
-            </div>
+          @if (pendingInvitationCount() > 0) {
+            <button class="invitation-cta" (click)="goToInvitations()">
+              <svg class="invitation-cta__bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+              <span class="invitation-cta__text">{{ pendingInvitationCount() }} inbjudan{{ pendingInvitationCount() === 1 ? '' : 'ingar' }}</span>
+              <svg class="invitation-cta__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
           }
         </div>
+
+        <!-- Secondary row: Agenda-only filters -->
+        @if (!isCalendarView()) {
+          <div class="filter-panel__secondary">
+            <div class="tabs">
+              <button
+                class="tab"
+                [class.active]="activeTab() === 'upcoming'"
+                (click)="setActiveTab('upcoming')"
+              >
+                Kommande
+              </button>
+              <button
+                class="tab"
+                [class.active]="activeTab() === 'history'"
+                (click)="setActiveTab('history')"
+              >
+                Historik
+              </button>
+            </div>
+          </div>
+        }
       }
     </div>
 

@@ -92,15 +92,20 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 14px;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%);
-  border: 1.5px solid rgba(16, 185, 129, 0.3);
-  border-radius: 9px;
-  color: rgb(6, 95, 70);
-  font-size: 0.825rem;
-  font-weight: 700;
+  padding: 7px 16px;
+  background: var(--color-success-surface);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 7px;
+  color: var(--color-success-hover);
+  font-size: 0.8rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  transition:
+    background var(--transition-base) var(--ease-smooth),
+    border-color var(--transition-base) var(--ease-smooth),
+    color var(--transition-base) var(--ease-smooth),
+    transform var(--transition-base) var(--ease-smooth);
   white-space: nowrap;
 
   @include breakpoint-down('sm') {
@@ -110,23 +115,25 @@
   &__bell {
     width: 17px;
     height: 17px;
-    stroke: rgb(16, 185, 129);
-    animation: bell-ring 3s ease-in-out infinite;
+    stroke: currentColor;
+    animation: bell-ring 5s ease-in-out infinite;
     transform-origin: top center;
   }
 
   &__arrow {
     width: 14px;
     height: 14px;
+    stroke: currentColor;
     opacity: 0.5;
-    transition: transform 0.2s ease;
+    transition:
+      transform var(--transition-base) var(--ease-smooth),
+      opacity var(--transition-base) var(--ease-smooth);
   }
 
   &:hover {
-    background: rgba(16, 185, 129, 0.18);
-    border-color: rgba(16, 185, 129, 0.5);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.12);
+    background: var(--color-success);
+    border-color: var(--color-success);
+    color: white;
 
     .invitation-cta__arrow {
       transform: translateX(3px);
@@ -135,15 +142,23 @@
   }
 
   &:active {
-    transform: translateY(0);
+    transform: scale(0.97);
   }
 }
 
 @keyframes bell-ring {
-  0%, 100% { transform: rotate(0); }
-  5%, 15% { transform: rotate(15deg); }
-  10%, 20% { transform: rotate(-15deg); }
-  25% { transform: rotate(0); }
+  0%,
+  80%,
+  100% {
+    transform: rotate(0);
+  }
+  85%,
+  95% {
+    transform: rotate(6deg);
+  }
+  90% {
+    transform: rotate(-6deg);
+  }
 }
 
 // Divider between tab groups
@@ -193,6 +208,91 @@
     color: white;
     background: var(--color-primary);
     box-shadow: var(--shadow-sm);
+  }
+}
+
+// Unified invitation header (Option A)
+.filter-panel__invitation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  gap: 16px;
+
+  @include breakpoint-down('sm') {
+    padding: 12px 16px;
+  }
+}
+
+.invitation-header__title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-success-hover);
+
+  h2 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+}
+
+.invitation-header__icon {
+  width: 18px;
+  height: 18px;
+  stroke: var(--color-success);
+  opacity: 0.9;
+}
+
+.invitation-header__count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 8px;
+  background: var(--color-success);
+  color: white;
+  border-radius: 11px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  box-shadow: 0 2px 4px color-mix(in srgb, var(--color-success) 20%, transparent);
+}
+
+.invitation-header__back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s var(--ease-smooth);
+
+  svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    transition: transform 0.2s var(--ease-smooth);
+  }
+
+  &:hover {
+    border-color: var(--color-success);
+    color: var(--color-success);
+    background: var(--color-success-surface);
+
+    svg {
+      transform: translateX(-3px);
+    }
+  }
+
+  &:active {
+    transform: scale(0.97);
   }
 }
 
@@ -566,9 +666,36 @@
 // Invitation row — highlighted border
 .booking-row.invitation {
   border-color: rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.03); // Very subtle green tint
+
+  // "Greyed out" look for primary text but with green hint
+  .row-date-day,
+  .row-weekday,
+  .row-time {
+    color: color-mix(in srgb, var(--color-text-muted) 70%, rgb(16, 185, 129)) !important;
+  }
+
+  .row-content {
+    opacity: 0.85;
+  }
 
   &:hover {
-    border-color: rgba(16, 185, 129, 0.4);
+    border-color: rgba(16, 185, 129, 0.45);
+    background: rgba(16, 185, 129, 0.06);
+
+    .row-date-day,
+    .row-weekday,
+    .row-time {
+      color: rgb(16, 185, 129) !important;
+    }
+
+    .row-content {
+      opacity: 1;
+    }
+
+    .row-chevron {
+      color: rgb(16, 185, 129) !important;
+    }
   }
 
   &.busy {
@@ -640,6 +767,15 @@
 .booking-row.attending {
   .row-date-day {
     color: rgb(59, 130, 246);
+  }
+
+  &:hover {
+    border-color: rgba(59, 130, 246, 0.35);
+    background: rgba(59, 130, 246, 0.04);
+
+    .row-chevron {
+      color: rgb(59, 130, 246) !important;
+    }
   }
 }
 
@@ -735,13 +871,14 @@
     cursor: pointer;
 
     &:hover {
-      border-color: var(--color-primary);
+      border-color: color-mix(in srgb, var(--color-border) 70%, var(--color-text-muted));
       box-shadow: var(--shadow-md);
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      background: var(--color-bg-card);
 
       .row-chevron {
         transform: translateX(3px);
-        color: var(--color-primary);
+        color: var(--color-text-secondary);
       }
     }
 
