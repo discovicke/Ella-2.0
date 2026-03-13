@@ -52,6 +52,9 @@ public class SqlitePermissionRepo(
                     case "BookRoom":
                         permissions.BookRoom = val;
                         break;
+                    case "BookResource":
+                        permissions.BookResource = val;
+                        break;
                     case "ManageUsers":
                         permissions.ManageUsers = val;
                         break;
@@ -127,6 +130,9 @@ public class SqlitePermissionRepo(
                 {
                     case "BookRoom":
                         perms.BookRoom = val;
+                        break;
+                    case "BookResource":
+                        perms.BookResource = val;
                         break;
                     case "ManageUsers":
                         perms.ManageUsers = val;
@@ -333,6 +339,9 @@ public class SqlitePermissionRepo(
                 {
                     case "BookRoom":
                         permissions.BookRoom = val;
+                        break;
+                    case "BookResource":
+                        permissions.BookResource = val;
                         break;
                     case "ManageUsers":
                         permissions.ManageUsers = val;

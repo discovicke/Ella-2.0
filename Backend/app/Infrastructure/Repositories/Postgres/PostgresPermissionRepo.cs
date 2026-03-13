@@ -50,6 +50,9 @@ public class PostgresPermissionRepo(
                     case "BookRoom":
                         permissions.BookRoom = granted;
                         break;
+                    case "BookResource":
+                        permissions.BookResource = granted;
+                        break;
                     case "ManageUsers":
                         permissions.ManageUsers = granted;
                         break;
@@ -124,6 +127,9 @@ public class PostgresPermissionRepo(
                 {
                     case "BookRoom":
                         perms.BookRoom = granted;
+                        break;
+                    case "BookResource":
+                        perms.BookResource = granted;
                         break;
                     case "ManageUsers":
                         perms.ManageUsers = granted;
@@ -332,6 +338,9 @@ public class PostgresPermissionRepo(
                 {
                     case "BookRoom":
                         permissions.BookRoom = granted;
+                        break;
+                    case "BookResource":
+                        permissions.BookResource = granted;
                         break;
                     case "ManageUsers":
                         permissions.ManageUsers = granted;

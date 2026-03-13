@@ -46,11 +46,13 @@ public static class ResourceEndpoints
             var result = await service.CreateBookingAsync(userId, dto);
             return result != null ? Results.Ok(result) : Results.Conflict("Resource is already booked for this time.");
         })
+        .RequirePermission("BookResource")
         .Produces<ResourceBookingResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status409Conflict);
 
         group.MapDelete("/bookings/{id:long}", async (long id, ResourceService service) => 
             await service.DeleteBookingAsync(id) ? Results.Ok() : Results.NotFound())
+            .RequirePermission("BookResource")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 

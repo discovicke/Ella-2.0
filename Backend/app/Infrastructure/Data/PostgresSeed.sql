@@ -23,13 +23,15 @@ VALUES (1, 'Simulation data v1.2 - Normalized tables');
 
 INSERT INTO system_permissions (key, description)
 VALUES ('BookRoom', 'Can book rooms'),
+       ('BookResource', 'Can book movable resources like vehicles'),
        ('ManageUsers', 'Can manage users'),
        ('ManageClasses', 'Can manage classes'),
        ('ManageRooms', 'Can manage rooms'),
        ('ManageBookings', 'Can manage all bookings'),
        ('ManageCampuses', 'Can manage campuses'),
        ('ManageRoles', 'Can manage roles/permissions'),
-       ('ManageResources', 'Manage and book movable resources like vehicles');
+       ('ManageResources', 'Can manage movable resources like vehicles')
+ON CONFLICT (key) DO NOTHING;
 
 
 -- -------------------------------------------------------------

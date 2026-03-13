@@ -12,6 +12,7 @@ public class UserPermissions
 
     // Permission Flags
     public bool BookRoom { get; set; }
+    public bool BookResource { get; set; }
     public bool ManageUsers { get; set; }
     public bool ManageClasses { get; set; }
     public bool ManageRooms { get; set; }
@@ -28,6 +29,7 @@ public class UserPermissions
         return key switch
         {
             "BookRoom" => BookRoom,
+            "BookResource" => BookResource,
             "ManageUsers" => ManageUsers,
             "ManageClasses" => ManageClasses,
             "ManageRooms" => ManageRooms,

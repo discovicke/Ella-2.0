@@ -7,17 +7,18 @@ VALUES
     (1, 'Simulation data v1.2 - Normalized tables');
 
 -- 1. System Permissions Registry (Must be first for FKs)
-INSERT INTO system_permissions
+INSERT OR IGNORE INTO system_permissions
     (key, description)
 VALUES
     ('BookRoom', 'Can book rooms'),
+    ('BookResource', 'Can book movable resources like vehicles'),
     ('ManageUsers', 'Can manage users'),
     ('ManageClasses', 'Can manage classes'),
     ('ManageRooms', 'Can manage rooms'),
     ('ManageBookings', 'Can manage all bookings'),
     ('ManageCampuses', 'Can manage campuses'),
     ('ManageRoles', 'Can manage roles/permissions'),
-    ('ManageResources', 'Manage and book movable resources like vehicles');
+    ('ManageResources', 'Can manage movable resources like vehicles');
 
 -- 2. Permission Templates (Roles)
 -- Keeping IDs consistent: 1=Student, 2=Educator, 3=Admin
