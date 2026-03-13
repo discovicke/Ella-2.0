@@ -17,12 +17,12 @@ export type CalendarViewMode = 'day' | 'week' | 'month' | 'resources';
  * Optional callback for determining the CSS class of a calendar event.
  * If provided, overrides the built-in status-based logic.
  */
-export type EventCssClassFn = (booking: BookingDetailedReadModel) => string;
+export type EventCssClassFn = (booking: any) => string;
 
 /**
  * Optional callback for determining the HTML content of a calendar event.
  */
-export type EventHtmlFn = (booking: BookingDetailedReadModel) => string;
+export type EventHtmlFn = (booking: any) => string;
 
 @Component({
   selector: 'app-calendar',
@@ -35,7 +35,8 @@ export type EventHtmlFn = (booking: BookingDetailedReadModel) => string;
 export class CalendarComponent implements AfterViewInit {
   viewMode = input<CalendarViewMode>('week');
   date = input<Date>(new Date());
-  bookings = input<BookingDetailedReadModel[]>([]);
+  bookings = input<any[]>([]); // Accepts both Room and Resource bookings
+  isResourceBooking = input<boolean>(false); // Flag for Resource bookings mapping
   resources = input<DayPilot.ResourceData[]>([]);
   isLoading = input<boolean>(false);
   hasError = input<boolean>(false);
@@ -48,7 +49,7 @@ export class CalendarComponent implements AfterViewInit {
 
   dateChange = output<Date>();
   timeRangeSelected = output<{ start: Date; end: Date; resourceId?: number }>();
-  eventClicked = output<BookingDetailedReadModel>();
+  eventClicked = output<any>(); // Emits either Room or Resource booking
 
   /** Internal navigation date — synced from @Input date, then owned by nav buttons. */
   currentDate: DayPilot.Date;
@@ -87,6 +88,7 @@ export class CalendarComponent implements AfterViewInit {
     // React to changes in bookings
     effect(() => {
       this.bookings();
+      this.isResourceBooking();
       untracked(() => {
         this.updateEvents();
       });
@@ -213,7 +215,7 @@ export class CalendarComponent implements AfterViewInit {
       },
       eventClickHandling: 'Enabled',
       onEventClick: (args) => {
-        const booking = args.e.data.tags?.booking as BookingDetailedReadModel;
+        const booking = args.e.data.tags?.booking;
         if (booking) this.eventClicked.emit(booking);
       },
       onBeforeHeaderRender: (args) => {
@@ -271,7 +273,7 @@ export class CalendarComponent implements AfterViewInit {
       eventDeleteHandling: 'Disabled',
       eventClickHandling: 'Enabled',
       onEventClick: (args) => {
-        const booking = args.e.data.tags?.booking as BookingDetailedReadModel;
+        const booking = args.e.data.tags?.booking;
         if (booking) this.eventClicked.emit(booking);
       },
       onBeforeCellRender: (args) => {
@@ -296,9 +298,13 @@ export class CalendarComponent implements AfterViewInit {
   // Events
   // ---------------------------------------------------------------------------
 
-  private getEventCssClass(b: BookingDetailedReadModel): string {
+  private getEventCssClass(b: any): string {
     const customFn = this.eventCssClassFn();
     if (customFn) return customFn(b);
+
+    if (this.isResourceBooking()) {
+      return 'event-active';
+    }
 
     if (b.status === BookingStatus.Cancelled || b.status === BookingStatus.Expired) {
       return 'event-cancelled';
@@ -325,10 +331,12 @@ export class CalendarComponent implements AfterViewInit {
   }
 
   private updateEvents(): void {
+    const isResource = this.isResourceBooking();
+
     // Deduplicate by bookingId — own booking (first occurrence) wins over registration copy.
     const seen = new Set<number>();
     const unique = this.bookings().filter((b) => {
-      const id = b.bookingId ?? 0;
+      const id = isResource ? b.id : (b.bookingId ?? 0);
       if (id > 0 && seen.has(id)) return false;
       seen.add(id);
       return true;
@@ -336,8 +344,8 @@ export class CalendarComponent implements AfterViewInit {
 
     this.events = unique.map((b) => {
       const cssClass = this.getEventCssClass(b);
-      const isCancelledOrExpired =
-        b.status === BookingStatus.Cancelled || b.status === BookingStatus.Expired;
+      const isCancelledOrExpired = !isResource &&
+        (b.status === BookingStatus.Cancelled || b.status === BookingStatus.Expired);
 
       const start = this.toEventDateTime(b.startTime);
       const end = this.toEventDateTime(b.endTime);
@@ -348,19 +356,19 @@ export class CalendarComponent implements AfterViewInit {
       if (htmlFn) {
         html = htmlFn(b);
       } else {
-        const label = `${b.roomName} ${timeStr}`;
+        const label = `${isResource ? b.userName : (b.roomName ?? '')} ${timeStr}`;
         html = isCancelledOrExpired
           ? `<div style="text-decoration: line-through;">${label}</div>`
           : `<div>${label}</div>`;
       }
 
       return {
-        id: b.bookingId!,
+        id: isResource ? b.id : b.bookingId!,
         start,
         end,
-        text: b.roomName ?? '',
+        text: isResource ? b.resourceName : b.roomName ?? '',
         html,
-        resource: b.roomId?.toString(),
+        resource: isResource ? b.resourceId?.toString() : b.roomId?.toString(),
         tags: { booking: b },
         cssClass,
       };

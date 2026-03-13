@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, resource } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ResourceService } from '../../../core/services/resource.service';
@@ -8,13 +8,16 @@ import { BadgeComponent } from '../../../shared/components/badge/badge.component
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 import { TimePickerComponent } from '../../../shared/components/time-picker/time-picker.component';
 import { SelectComponent, SelectOption } from '../../../shared/components/select/select.component';
+import { CalendarComponent, CalendarViewMode } from '../../../shared/components/calendar/calendar.component';
 import { ToastService } from '../../../shared/services/toast.service';
 import { firstValueFrom } from 'rxjs';
+import { DayPilot } from '@daypilot/daypilot-lite-angular';
 import { 
   ResourceResponseDto, 
   ResourceCategoryDto, 
   CampusResponseDto,
-  CreateResourceBookingDto
+  CreateResourceBookingDto,
+  ResourceBookingResponseDto
 } from '../../../models/models';
 
 @Component({
@@ -27,6 +30,7 @@ import {
     DatePickerComponent,
     TimePickerComponent,
     SelectComponent,
+    CalendarComponent,
     ReactiveFormsModule
   ],
   templateUrl: './book-resource.page.html',
@@ -47,9 +51,18 @@ export class BookResourcePage implements OnInit {
   selectedCategoryId = signal<number>(0);
   selectedResource = signal<ResourceResponseDto | null>(null);
   
+  discoveryView = signal<'availability' | 'schedule'>('availability');
+  selectedDate = signal<Date>(new Date());
+  
   isLoading = signal(true);
   isSubmitting = signal(false);
   today = this.toDateInputValue(new Date());
+
+  readonly bookingsResource = resource({
+    loader: () => firstValueFrom(this.resourceService.getBookings())
+  });
+
+  readonly bookings = computed(() => this.bookingsResource.value() ?? []);
 
   // Computed: Filtered list
   filteredResources = computed(() => {
@@ -58,6 +71,13 @@ export class BookResourcePage implements OnInit {
       const matchCategory = this.selectedCategoryId() === 0 || r.categoryId === this.selectedCategoryId();
       return matchCampus && matchCategory && r.isActive;
     });
+  });
+
+  calendarResources = computed<DayPilot.ResourceData[]>(() => {
+    return this.filteredResources().map(r => ({
+      id: r.id.toString(),
+      name: r.name
+    }));
   });
 
   campusOptions = computed<SelectOption[]>(() => [
@@ -100,6 +120,14 @@ export class BookResourcePage implements OnInit {
     }
   }
 
+  setDiscoveryView(view: 'availability' | 'schedule') {
+    this.discoveryView.set(view);
+  }
+
+  onCalendarDateChange(date: Date) {
+    this.selectedDate.set(date);
+  }
+
   onCampusChange(value: string | number | null) {
     this.selectedCampusId.set(Number(value || 0));
   }
@@ -135,6 +163,27 @@ export class BookResourcePage implements OnInit {
     });
   }
 
+  onTimeRangeSelected(range: { start: Date; end: Date; resourceId?: number }) {
+    if (!range.resourceId) return;
+
+    const res = this.allResources().find(r => r.id === range.resourceId);
+    if (!res) return;
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+    
+    this.selectedResource.set(res);
+    this.bookingForm.patchValue({
+      date: `${range.start.getFullYear()}-${pad(range.start.getMonth() + 1)}-${pad(range.start.getDate())}`,
+      startTime: `${pad(range.start.getHours())}:${pad(range.start.getMinutes())}`,
+      endTime: `${pad(range.end.getHours())}:${pad(range.end.getMinutes())}`,
+      notes: ''
+    });
+  }
+
+  onEventClicked(booking: ResourceBookingResponseDto) {
+    // Optionally show a detail modal for resource bookings
+  }
+
   async submitBooking() {
     if (this.bookingForm.invalid || !this.selectedResource()) return;
 
@@ -157,6 +206,7 @@ export class BookResourcePage implements OnInit {
       await firstValueFrom(this.resourceService.createBooking(dto));
       this.toastService.showSuccess(`Bokning av ${res.name} klar!`);
       this.selectedResource.set(null);
+      this.bookingsResource.reload();
     } catch (err: any) {
       if (err.status === 409) {
         this.toastService.showError('Resursen är redan bokad under denna tid.');
