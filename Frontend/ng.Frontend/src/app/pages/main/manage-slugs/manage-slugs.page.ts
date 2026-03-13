@@ -78,7 +78,7 @@ import { BookingSlugResponseDto } from '../../../models/models';
       svg { width: 1.1rem; height: 1.1rem; }
     }
 
-    .icon-btn { color: var(--color-text-muted); &:hover { color: var(--color-primary); background: var(--color-primary-surface); } }
+    .icon-btn { color: var(--color-text-muted); &:hover { color: var(--color-primary-on-surface); background: var(--color-primary-surface); } }
     .delete-btn { color: var(--color-danger); &:hover { background: var(--color-danger-surface); } }
   `]
 })

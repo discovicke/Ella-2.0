@@ -310,7 +310,7 @@ export interface BookingEditModalConfig {
         width: 40px;
         height: 40px;
         background: var(--color-primary-surface);
-        color: var(--color-primary);
+        color: var(--color-primary-on-surface);
         border-radius: 10px;
         border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
 
