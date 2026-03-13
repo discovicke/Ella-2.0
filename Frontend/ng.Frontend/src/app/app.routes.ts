@@ -146,7 +146,7 @@ export const routes: Routes = [
       {
         path: 'book-resource',
         canActivate: [permissionGuard],
-        data: { permission: 'manageResources'},
+        data: { permission: 'bookResource'},
         loadComponent: () =>
           import('./pages/main/book-resource/book-resource.page').then((m) => m.BookResourcePage),
       },

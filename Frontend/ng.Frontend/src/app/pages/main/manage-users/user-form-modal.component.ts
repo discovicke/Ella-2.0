@@ -22,6 +22,7 @@ import { SelectablePillComponent } from '../../../shared/components/selectable-p
 
 export interface CustomPermissionsPayload {
   bookRoom: boolean;
+  bookResource: boolean;
   manageUsers: boolean;
   manageClasses: boolean;
   manageRooms: boolean;
@@ -358,6 +359,7 @@ export class UserFormModalComponent {
     label: string;
   }> = [
     { key: 'bookRoom', label: 'Boka rum' },
+    { key: 'bookResource', label: 'Boka resurs' },
     { key: 'manageUsers', label: 'Hantera användare' },
     { key: 'manageClasses', label: 'Hantera klasser' },
     { key: 'manageRooms', label: 'Hantera rum' },
@@ -385,6 +387,9 @@ export class UserFormModalComponent {
       }),
       templateId: new FormControl<number | null>(this.initialTemplateId),
       bookRoom: new FormControl<boolean>(this.initialPermissions?.bookRoom ?? true, {
+        nonNullable: true,
+      }),
+      bookResource: new FormControl<boolean>(this.initialPermissions?.bookResource ?? true, {
         nonNullable: true,
       }),
       manageUsers: new FormControl<boolean>(this.initialPermissions?.manageUsers ?? false, {
@@ -479,6 +484,7 @@ export class UserFormModalComponent {
       confirmPassword,
       templateId,
       bookRoom,
+      bookResource,
       manageUsers,
       manageClasses,
       manageRooms,
@@ -495,6 +501,7 @@ export class UserFormModalComponent {
       selectedTemplateId: templateId ?? null,
       customPermissions: {
         bookRoom,
+        bookResource,
         manageUsers,
         manageClasses,
         manageRooms,
