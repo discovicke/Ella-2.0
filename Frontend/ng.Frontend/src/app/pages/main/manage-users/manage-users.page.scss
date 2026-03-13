@@ -484,7 +484,7 @@
   &:hover {
     background: var(--color-primary-surface);
     border-color: var(--color-primary);
-    color: var(--color-primary);
+    color: var(--color-primary-on-surface);
   }
 
   &:active {
@@ -503,7 +503,7 @@
   height: 2.5rem;
   border-radius: 50%;
   background: var(--color-primary-surface);
-  color: var(--color-primary);
+  color: var(--color-primary-on-surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -533,3 +533,4 @@
   gap: 0.5rem;
   justify-content: flex-end;
 }
+

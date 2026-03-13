@@ -496,7 +496,7 @@
   height: 38px;
   background: var(--color-primary-surface);
   border-radius: 8px;
-  svg { width: 18px; height: 18px; stroke: var(--color-primary); }
+  svg { width: 18px; height: 18px; stroke: var(--color-primary-on-surface); }
 }
 
 .group-info {
@@ -561,7 +561,7 @@
   align-items: center;
   justify-content: center;
   background: var(--color-primary-surface);
-  color: var(--color-primary);
+  color: var(--color-primary-on-surface);
   font-size: 0.75rem;
   font-weight: 700;
 

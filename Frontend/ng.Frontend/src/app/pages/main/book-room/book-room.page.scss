@@ -573,11 +573,11 @@
   justify-content: center;
   min-width: 52px;
   height: 52px;
-  background: var(--color-bg-panel);
-  border: 1px solid var(--color-border);
+  background: var(--color-primary-surface);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
   border-radius: 12px;
   flex-shrink: 0;
-  color: var(--color-primary);
+  color: var(--color-primary-on-surface);
   transition: all 0.2s ease;
 
   svg {

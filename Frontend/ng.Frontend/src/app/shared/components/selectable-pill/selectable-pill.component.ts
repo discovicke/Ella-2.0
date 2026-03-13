@@ -51,7 +51,7 @@ import { CommonModule } from '@angular/common';
     .pill--selected {
       background: var(--color-primary-surface);
       border-color: var(--color-primary);
-      color: var(--color-primary);
+      color: var(--color-primary-on-surface);
       font-weight: 600;
     }
   `]
@@ -64,3 +64,4 @@ export class SelectablePillComponent {
     this.toggle.emit();
   }
 }
+

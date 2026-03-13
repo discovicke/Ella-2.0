@@ -329,7 +329,7 @@
   padding: 0 7px;
   font-size: 0.72rem;
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--color-primary-on-surface);
   background: var(--color-primary-surface);
   border-radius: 999px;
 }
@@ -410,7 +410,7 @@
   font-weight: 700;
   flex-shrink: 0;
   background: var(--color-primary-surface);
-  color: var(--color-primary);
+  color: var(--color-primary-on-surface);
 }
 
 .room-info {

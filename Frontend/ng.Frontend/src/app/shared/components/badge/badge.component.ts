@@ -59,7 +59,7 @@ export type BadgeVariant = 'success' | 'danger' | 'warning' | 'info' | 'neutral'
 
     .badge--brand {
       background: var(--color-primary-surface);
-      color: var(--color-primary);
+      color: var(--color-primary-on-surface);
     }
 
     .badge--asset {
@@ -70,10 +70,11 @@ export type BadgeVariant = 'success' | 'danger' | 'warning' | 'info' | 'neutral'
 
     .badge--class {
       background: var(--color-primary-surface);
-      color: var(--color-primary);
+      color: var(--color-primary-on-surface);
     }
   `]
 })
 export class BadgeComponent {
   @Input() variant: BadgeVariant = 'neutral';
 }
+

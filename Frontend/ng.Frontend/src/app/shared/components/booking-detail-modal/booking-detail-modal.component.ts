@@ -295,7 +295,7 @@ export interface BookingDetailModalConfig {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        color: var(--color-primary);
+        color: var(--color-primary-on-surface);
         font-size: 0.8125rem;
         font-weight: 700;
 
@@ -317,7 +317,7 @@ export interface BookingDetailModalConfig {
       .value-brand {
         font-size: 0.875rem;
         font-weight: 700;
-        color: var(--color-primary);
+        color: var(--color-primary-on-surface);
       }
 
       .notes-label {
