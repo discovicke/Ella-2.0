@@ -57,6 +57,23 @@ public class ResourceService(
         return (await GetAllResourcesAsync()).FirstOrDefault(r => r.Id == id);
     }
 
+    public async Task<ResourceResponseDto?> UpdateResourceAsync(long id, CreateResourceDto dto)
+    {
+        var resource = new BookableResource
+        {
+            CategoryId = dto.CategoryId,
+            CampusId = dto.CampusId,
+            Name = dto.Name,
+            Description = dto.Description,
+            IsActive = true // We could also make this part of the DTO if needed
+        };
+        
+        var success = await resourceRepo.UpdateResourceAsync(id, resource);
+        if (!success) return null;
+        
+        return (await GetAllResourcesAsync()).FirstOrDefault(r => r.Id == id);
+    }
+
     public async Task<bool> DeleteResourceAsync(long id) => await resourceRepo.DeleteResourceAsync(id);
 
     // Bookings

@@ -30,6 +30,14 @@ public static class ResourceEndpoints
             .RequirePermission("ManageResources")
             .Produces<ResourceResponseDto>(StatusCodes.Status200OK);
 
+        group.MapPut("/{id:long}", async (long id, CreateResourceDto dto, ResourceService service) => {
+            var result = await service.UpdateResourceAsync(id, dto);
+            return result != null ? Results.Ok(result) : Results.NotFound();
+        })
+        .RequirePermission("ManageResources")
+        .Produces<ResourceResponseDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
         group.MapDelete("/{id:long}", async (long id, ResourceService service) => 
             await service.DeleteResourceAsync(id) ? Results.Ok() : Results.NotFound())
             .RequirePermission("ManageResources")
