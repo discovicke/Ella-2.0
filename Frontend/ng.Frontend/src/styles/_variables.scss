@@ -67,9 +67,9 @@ $spacing: (
 $radii: (
   'none': 0,
   'sm': 0.25rem,
-  'md': 0.5rem,
-  'lg': 0.75rem,
-  'xl': 1rem,
+  'md': 0.75rem,
+  'lg': 1.25rem,
+  'xl': 1.5rem,
   'full': 9999px,
 );
 
@@ -244,6 +244,13 @@ $sidebar-collapsed: 80px;
 
   // Focus ring
   --focus-ring: 0 0 0 3px rgba(145, 54, 203, 0.4);
+
+  // Expose radii map elements to root level CSS properties
+  --radii-sm: #{map.get($radii, 'sm')};
+  --radii-md: #{map.get($radii, 'md')};
+  --radii-lg: #{map.get($radii, 'lg')};
+  --radii-xl: #{map.get($radii, 'xl')};
+  --radii-full: #{map.get($radii, 'full')};
 }
 
 // ---------------------------------------------
@@ -293,3 +300,4 @@ $sidebar-collapsed: 80px;
     --focus-ring: 0 0 0 3px rgba(145, 54, 203, 0.4);
   }
 }
+
