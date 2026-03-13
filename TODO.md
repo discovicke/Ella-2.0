@@ -1,6 +1,6 @@
 # ELLA v2 - Projektstatus & TODO
 
-Detta dokument spårar projektets framsteg. Uppdaterat: 2026-03-12.
+Detta dokument spårar projektets framsteg. Uppdaterat: 2026-03-13.
 
 ---
 
@@ -8,13 +8,13 @@ Detta dokument spårar projektets framsteg. Uppdaterat: 2026-03-12.
 
 ### Priority: HIGH
 - [ ] **Escalation guard for permissions**: Förhindra att användare ger behörigheter de inte själva har (i `UserService.cs`).
-- [ ] **Frontend: Registreringssida**: Implementera den publika registreringssidan (`register.page.ts`). Backend är klar.
-- [ ] **Säkerhet för publika formulär**: Implementera rate limiting och CSRF-skydd för det fristående bokningsformuläret.
+- [ ] **Frontend: Registreringssida**: Implementera den publika registreringssidan (`register.page.ts`). Backend är klar men frontend-sidan är tom.
+- [ ] **CSRF-skydd för publika formulär**: Lägg till CSRF-skydd för det fristående bokningsformuläret.
 
 ### Priority: MEDIUM
 - [ ] **Background Clean-up worker**: En tjänst som rensar gamla rader och uppdaterar historik för att hålla index snabba.
-- [ ] **Arkitektur: AddressRepository**: Normalisera adresser till en egen tabell istället för att ha dem i `campus`/`rooms`.
-- [ ] **Frontend: Overview-sida**: Implementera admin-dashboards med statistik och sammanfattningar.
+- [ ] **Arkitektur: AddressRepository**: Normalisera adresser till en egen tabell istället för att ha den i `campus`/`rooms`.
+- [ ] **Frontend: Overview-sida**: Implementera admin-dashboards med statistik och sammanfattningar (`system-overview.page.ts` är tomt).
 
 ### Priority: LOW / Polish
 - [ ] **Modal UX**: Fixa fördröjning vid ut-animation och shake-animation vid felaktiga klick.
@@ -29,8 +29,9 @@ Detta dokument spårar projektets framsteg. Uppdaterat: 2026-03-12.
 - [x] JWT-baserad auth med cookies.
 - [x] Rollmallar (Templates) och Custom Overrides.
 - [x] Lösenordsåterställning & kontoaktivering via mail.
+- [x] Rate Limiting middleware.
 - [ ] **PENDING:** Refresh Tokens för längre sessioner.
-- [ ] **PENDING:** Rate Limiting middleware.
+- [ ] **PENDING:** CSRF-skydd för publika formulär.
 
 ### Bokningssystemet
 - [x] Dynamisk tillgänglighetskontroll av rum.
@@ -42,6 +43,8 @@ Detta dokument spårar projektets framsteg. Uppdaterat: 2026-03-12.
 ### Resurshantering (Mobila resurser)
 - [x] Hantering av kategorier (fordon, laptopvagnar etc).
 - [x] Bokningsflöde för mobila resurser bundna till campus.
+- [x] **NYTT:** BookResource permission (separerad från ManageResources).
+- [x] **NYTT:** Edit/delete-funktionalitet i resursmodalen.
 
 ### Data & Import
 - [x] CSV-import för studenter (Excel-format).
@@ -59,6 +62,8 @@ Detta dokument spårar projektets framsteg. Uppdaterat: 2026-03-12.
 - [x] Koppla klasser till campus (tidigare städer).
 - [x] CRUD för Rum, Campus, Klasser och Assets.
 - [x] Server-side pagination för alla tunga listor (användare, bokningar, registreringar).
+- [x] Rate Limiting middleware implementation.
+- [x] DayPilot-Lite kalenderintegration för resursbokning.
 
 ### Frontend
 - [x] Custom UI Design System (`app-button`, `app-slider`, `app-time-picker`, etc).
@@ -70,6 +75,11 @@ Detta dokument spårar projektets framsteg. Uppdaterat: 2026-03-12.
 - [x] Automatiskt genererad OpenAPI-klient (`npm run api:sync`).
 - [x] Custom schematics för sidor och layouts (`npm run g-page`).
 - [x] Sorterad rumlista i bokningsformuläret.
+- [x] BadgeComponent och SelectablePillComponent.
+- [x] Unified modal styling och komponenter.
+- [x] Resource booking med kalendervy.
+- [x] Resource management med edit/delete-funktionalitet.
+- [x] BookResource permission stöd i UI (Manage Roles, Manage Users).
 
 ### Infrastruktur
 - [x] Docker-compose för Postgres och Adminer.
