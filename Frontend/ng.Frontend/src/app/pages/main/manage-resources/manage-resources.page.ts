@@ -6,6 +6,7 @@ import { TableComponent, TableColumn } from '../../../shared/components/table/ta
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { ConfirmService } from '../../../shared/services/confirm.service';
 import { firstValueFrom } from 'rxjs';
 import { 
   ResourceResponseDto, 
@@ -17,64 +18,17 @@ import { CategoryFormModalComponent } from './category-form-modal.component';
 
 @Component({
   selector: 'app-manage-resources-page',
+  standalone: true,
   imports: [CommonModule, TableComponent, ButtonComponent],
-  template: `
-    <div class="page-container">
-      <div class="page-header">
-        <div class="header-text">
-          <h1>Hantera Resurser</h1>
-          <p>Skapa och hantera bokningsbara resurser som fordon och utrustning.</p>
-        </div>
-        <div class="header-actions">
-          <app-button variant="secondary" (clicked)="openCategoryModal()">Hantera Kategorier</app-button>
-          <app-button variant="primary" (clicked)="openCreateResourceModal()">Ny Resurs</app-button>
-        </div>
-      </div>
-
-      <div class="page-content">
-        <app-table
-          [data]="resourcesResource.value() || []"
-          [columns]="columns"
-          [isLoading]="resourcesResource.isLoading()"
-          [total]="(resourcesResource.value() || []).length"
-          emptyMessage="Inga resurser hittades."
-        >
-        </app-table>
-      </div>
-    </div>
-
-    <!-- Templates -->
-    <ng-template #actionsTpl let-res>
-      <div class="table-actions">
-        <button class="delete-btn" (click)="deleteResource(res)" title="Ta bort resurs">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-        </button>
-      </div>
-    </ng-template>
-  `,
-  styles: [`
-    .page-container { padding: 2rem; display: flex; flex-direction: column; gap: 2rem; }
-    .page-header { display: flex; justify-content: space-between; align-items: flex-start; }
-    .header-text h1 { margin: 0; font-size: 1.5rem; color: var(--color-text-primary); }
-    .header-text p { margin: 0.5rem 0 0; color: var(--color-text-secondary); }
-    .header-actions { display: flex; gap: 0.75rem; }
-
-    .modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem; }
-    
-    .table-actions { display: flex; justify-content: flex-end; }
-    .delete-btn {
-      background: transparent; border: none; cursor: pointer; padding: 4px; border-radius: 4px;
-      color: var(--color-danger); transition: all 0.2s;
-      &:hover { background: var(--color-danger-surface); }
-      svg { width: 1.1rem; height: 1.1rem; }
-    }
-  `]
+  templateUrl: './manage-resources.page.html',
+  styleUrl: './manage-resources.page.scss'
 })
 export class ManageResourcesPage implements OnInit {
   private resourceService = inject(ResourceService);
   private campusService = inject(CampusService);
   private modalService = inject(ModalService);
   private toastService = inject(ToastService);
+  private confirmService = inject(ConfirmService);
 
   @ViewChild('actionsTpl', { static: true }) actionsTpl!: TemplateRef<any>;
 
@@ -130,7 +84,12 @@ export class ManageResourcesPage implements OnInit {
   }
 
   async deleteResource(res: ResourceResponseDto) {
-    if (confirm(`Är du säker på att du vill ta bort resursen "${res.name}"?`)) {
+    const confirmed = await this.confirmService.danger(
+      `Är du säker på att du vill ta bort resursen "${res.name}"? Denna åtgärd kan inte ångras.`,
+      'Ta bort resurs'
+    );
+    
+    if (confirmed) {
       this.resourceService.deleteResource(res.id).subscribe({
         next: () => {
           this.toastService.showSuccess('Resursen borttagen.');
