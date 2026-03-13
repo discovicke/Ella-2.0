@@ -1,0 +1,166 @@
+<div class="page-container">
+  <div class="page-content">
+    <!-- ─── Main Content (Left) ─────────────────────────────────────── -->
+    <main class="main-content">
+      @if (selectedResource(); as resource) {
+        <div class="booking-form-card animate-fade-in">
+          <header class="form-card-header">
+            <div class="hero-top">
+              <button class="back-link" (click)="selectedResource.set(null)" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Tillbaka
+              </button>
+              <app-badge variant="brand">{{ resource.categoryName }}</app-badge>
+            </div>
+            
+            <h3 class="hero-room">Boka {{ resource.name }}</h3>
+            
+            <div class="hero-meta">
+              <span class="hero-detail">{{ resource.campusCity }}</span>
+              @if (resource.description) {
+                <span class="meta-sep"></span>
+                <span class="hero-detail">{{ resource.description }}</span>
+              }
+            </div>
+          </header>
+
+          <form [formGroup]="bookingForm" (ngSubmit)="submitBooking()" class="booking-form">
+            <div class="form-body">
+              <div class="form-group z-10">
+                <label>Datum</label>
+                <app-date-picker
+                  [value]="bookingForm.controls.date.value"
+                  (valueChange)="updateDate($event)"
+                ></app-date-picker>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group z-9">
+                  <label>Starttid</label>
+                  <app-time-picker
+                    [value]="bookingForm.controls.startTime.value"
+                    (valueChange)="updateStartTime($event)"
+                  ></app-time-picker>
+                </div>
+                <div class="form-group z-8">
+                  <label>Sluttid</label>
+                  <app-time-picker
+                    [value]="bookingForm.controls.endTime.value"
+                    (valueChange)="updateEndTime($event)"
+                  ></app-time-picker>
+                </div>
+              </div>
+
+              <div class="form-group z-1">
+                <label>Noteringar</label>
+                <textarea 
+                  formControlName="notes" 
+                  rows="3" 
+                  placeholder="Syfte med bokningen..."
+                  maxlength="500"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="form-footer">
+              <app-button variant="tertiary" (clicked)="selectedResource.set(null)" type="button">Avbryt</app-button>
+              <app-button type="submit" variant="primary" [disabled]="bookingForm.invalid || isSubmitting()">
+                {{ isSubmitting() ? 'Bokar...' : 'Slutför bokning' }}
+              </app-button>
+            </div>
+          </form>
+        </div>
+      } @else {
+        <div class="resource-grid">
+          @if (isLoading()) {
+            @for (i of [1,2,3,4,5,6]; track i) {
+              <div class="skeleton-card"></div>
+            }
+          } @else {
+            @for (res of filteredResources(); track res.id) {
+              <article class="resource-card" (click)="selectResource(res)">
+                <div class="res-card-content">
+                  <div class="res-header">
+                    <h3>{{ res.name }}</h3>
+                    <app-badge variant="brand" size="sm">{{ res.categoryName }}</app-badge>
+                  </div>
+                  <p class="res-desc">{{ res.description || 'Ingen beskrivning tillgänglig.' }}</p>
+                  <div class="res-footer">
+                    <div class="res-meta">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
+                      {{ res.campusCity }}
+                    </div>
+                    <app-button variant="secondary" size="sm">Boka</app-button>
+                  </div>
+                </div>
+              </article>
+            } @empty {
+              <div class="empty-state">
+                <div class="empty-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                  </svg>
+                </div>
+                <h3>Inga resurser hittades</h3>
+                <p>Prova att ändra dina filter för att se fler alternativ.</p>
+                <app-button variant="tertiary" (clicked)="resetFilters()" type="button">Rensa filter</app-button>
+              </div>
+            }
+          }
+        </div>
+      }
+    </main>
+
+    <!-- ─── Sidebar (Right) ─────────────────────────────────────────── -->
+    <aside class="sidebar-filters">
+      <section class="filter-card">
+        <div class="filter-header-main">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+          </svg>
+          <h4>Filtrera</h4>
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <div class="filter-section">
+          <div class="field">
+            <span class="field-label">Ort</span>
+            <app-select
+              [options]="campusOptions()"
+              [value]="selectedCampusId()"
+              (valueChange)="onCampusChange($event)"
+            ></app-select>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Kategori</span>
+            <app-select
+              [options]="categoryOptions()"
+              [value]="selectedCategoryId()"
+              (valueChange)="onCategoryChange($event)"
+            ></app-select>
+          </div>
+        </div>
+
+        @if (selectedCampusId() !== 0 || selectedCategoryId() !== 0) {
+          <div class="filter-actions">
+            <button class="btn-reset" (click)="resetFilters()" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="1 4 1 10 7 10" />
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+              </svg>
+              Nollställ filter
+            </button>
+          </div>
+        }
+      </section>
+    </aside>
+  </div>
+</div>
