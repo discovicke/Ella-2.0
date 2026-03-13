@@ -35,6 +35,10 @@ export class ResourceService {
     return this.http.post<ResourceResponseDto>(this.baseUrl, dto);
   }
 
+  updateResource(id: number, dto: CreateResourceDto): Observable<ResourceResponseDto> {
+    return this.http.put<ResourceResponseDto>(`${this.baseUrl}/${id}`, dto);
+  }
+
   deleteResource(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }

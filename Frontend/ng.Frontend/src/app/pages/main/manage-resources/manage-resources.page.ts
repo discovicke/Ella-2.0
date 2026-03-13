@@ -7,8 +7,6 @@ import { TableComponent, TableColumn } from '../../../shared/components/table/ta
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { BadgeComponent } from '../../../shared/components/badge/badge.component';
 import { ModalService } from '../../../shared/services/modal.service';
-import { ToastService } from '../../../shared/services/toast.service';
-import { ConfirmService } from '../../../shared/services/confirm.service';
 import { firstValueFrom } from 'rxjs';
 import { 
   ResourceResponseDto, 
@@ -29,8 +27,6 @@ export class ManageResourcesPage implements OnInit {
   private resourceService = inject(ResourceService);
   private campusService = inject(CampusService);
   private modalService = inject(ModalService);
-  private toastService = inject(ToastService);
-  private confirmService = inject(ConfirmService);
 
   @ViewChild('resourceIconTpl', { static: true }) resourceIconTpl!: TemplateRef<any>;
   @ViewChild('categoryTpl', { static: true }) categoryTpl!: TemplateRef<any>;
@@ -171,7 +167,6 @@ export class ManageResourcesPage implements OnInit {
     if (event) {
       event.stopPropagation();
     }
-    // We reuse the create modal but pass the resource to edit
     this.modalService.open(ResourceFormModalComponent, { 
       title: 'Redigera resurs', 
       width: '500px',
@@ -179,8 +174,7 @@ export class ManageResourcesPage implements OnInit {
         resource: res,
         categories: this.categories(),
         campuses: this.campuses(),
-        onSave: () => this.resourcesResource.reload(),
-        onDelete: () => this.deleteResource(res)
+        onSave: () => this.resourcesResource.reload()
       }
     });
   }
@@ -194,23 +188,6 @@ export class ManageResourcesPage implements OnInit {
         onRefresh: () => this.categoriesResource.reload()
       }
     });
-  }
-
-  async deleteResource(res: ResourceResponseDto) {
-    const confirmed = await this.confirmService.danger(
-      `Är du säker på att du vill ta bort resursen "${res.name}"? Denna åtgärd kan inte ångras.`,
-      'Ta bort resurs'
-    );
-    
-    if (confirmed) {
-      this.resourceService.deleteResource(res.id).subscribe({
-        next: () => {
-          this.toastService.showSuccess('Resursen borttagen.');
-          this.resourcesResource.reload();
-        },
-        error: () => this.toastService.showError('Kunde inte ta bort resursen.')
-      });
-    }
   }
 }
 

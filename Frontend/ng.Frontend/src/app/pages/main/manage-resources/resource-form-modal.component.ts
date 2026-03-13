@@ -3,11 +3,18 @@ import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { ModalService } from '../../../shared/services/modal.service';
+import { ConfirmService } from '../../../shared/services/confirm.service';
 import { ResourceService } from '../../../core/services/resource.service';
-import { CampusService } from '../../../shared/services/campus.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { firstValueFrom } from 'rxjs';
-import { ResourceCategoryDto, CampusResponseDto, CreateResourceDto } from '../../../models/models';
+import { ResourceCategoryDto, CampusResponseDto, CreateResourceDto, ResourceResponseDto } from '../../../models/models';
+
+export interface ResourceFormModalConfig {
+  resource?: ResourceResponseDto;
+  categories: ResourceCategoryDto[];
+  campuses: CampusResponseDto[];
+  onSave: () => void;
+}
 
 @Component({
   selector: 'app-resource-form-modal',
@@ -49,9 +56,14 @@ import { ResourceCategoryDto, CampusResponseDto, CreateResourceDto } from '../..
       </div>
 
       <div class="modal-footer">
-        <app-button variant="secondary" (clicked)="close()">Avbryt</app-button>
-        <app-button type="submit" [disabled]="resourceForm.invalid || isSubmitting()">
-          {{ isSubmitting() ? 'Sparar...' : 'Spara' }}
+        <app-button variant="tertiary" (clicked)="close()">Avbryt</app-button>
+        @if (initialData) {
+          <app-button variant="danger" (clicked)="onDelete()" [disabled]="isSubmitting()">
+            Ta bort
+          </app-button>
+        }
+        <app-button type="submit" variant="primary" [disabled]="resourceForm.invalid || isSubmitting()">
+          {{ isSubmitting() ? 'Sparar...' : initialData ? 'Spara ändringar' : 'Skapa resurs' }}
         </app-button>
       </div>
     </form>
@@ -62,22 +74,28 @@ import { ResourceCategoryDto, CampusResponseDto, CreateResourceDto } from '../..
       width: 100%; padding: 0.6rem; border-radius: var(--radii-md); border: 1px solid var(--color-border);
       background: var(--color-bg-panel); color: var(--color-text-primary); box-sizing: border-box;
     }
+    .form-row { display: flex; gap: 1rem; }
+    .form-row .form-group { flex: 1; }
   `]
 })
 export class ResourceFormModalComponent {
   private modalService = inject(ModalService);
   private resourceService = inject(ResourceService);
   private toastService = inject(ToastService);
+  private confirmService = inject(ConfirmService);
 
-  readonly categories = signal<ResourceCategoryDto[]>(this.modalService.modalData().categories);
-  readonly campuses = signal<CampusResponseDto[]>(this.modalService.modalData().campuses);
+  private config: ResourceFormModalConfig = this.modalService.modalData();
+  protected initialData = this.config?.resource;
+
+  readonly categories = signal<ResourceCategoryDto[]>(this.config?.categories ?? []);
+  readonly campuses = signal<CampusResponseDto[]>(this.config?.campuses ?? []);
   readonly isSubmitting = signal(false);
 
   readonly resourceForm = new FormGroup({
-    name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    categoryId: new FormControl<number | null>(null, { validators: [Validators.required] }),
-    campusId: new FormControl<number | null>(null, { validators: [Validators.required] }),
-    description: new FormControl('', { nonNullable: true })
+    name: new FormControl(this.initialData?.name ?? '', { nonNullable: true, validators: [Validators.required] }),
+    categoryId: new FormControl<number | null>(this.initialData?.categoryId ?? null, { validators: [Validators.required] }),
+    campusId: new FormControl<number | null>(this.initialData?.campusId ?? null, { validators: [Validators.required] }),
+    description: new FormControl<string | null>(this.initialData?.description ?? null)
   });
 
   async onSubmit() {
@@ -85,13 +103,49 @@ export class ResourceFormModalComponent {
     this.isSubmitting.set(true);
 
     try {
-      const dto = this.resourceForm.getRawValue() as CreateResourceDto;
-      await firstValueFrom(this.resourceService.createResource(dto));
-      this.toastService.showSuccess('Resurs skapad!');
-      this.modalService.modalData().onSave();
+      const formValue = this.resourceForm.getRawValue();
+      const dto: CreateResourceDto = {
+        name: formValue.name,
+        categoryId: formValue.categoryId!,
+        campusId: formValue.campusId!,
+        description: formValue.description || null
+      };
+
+      if (this.initialData) {
+        await firstValueFrom(this.resourceService.updateResource(this.initialData.id, dto));
+        this.toastService.showSuccess('Resurs uppdaterad!');
+      } else {
+        await firstValueFrom(this.resourceService.createResource(dto));
+        this.toastService.showSuccess('Resurs skapad!');
+      }
+      
+      this.config.onSave();
       this.close();
     } catch (err) {
-      this.toastService.showError('Kunde inte skapa resurs.');
+      this.toastService.showError(this.initialData ? 'Kunde inte uppdatera resurs.' : 'Kunde inte skapa resurs.');
+    } finally {
+      this.isSubmitting.set(false);
+    }
+  }
+
+  async onDelete() {
+    if (!this.initialData) return;
+    
+    const confirmed = await this.confirmService.danger(
+      `Är du säker på att du vill ta bort resursen "${this.initialData.name}"? Denna åtgärd kan inte ångras.`,
+      'Ta bort resurs'
+    );
+    
+    if (!confirmed) return;
+    
+    this.isSubmitting.set(true);
+    try {
+      await firstValueFrom(this.resourceService.deleteResource(this.initialData.id));
+      this.toastService.showSuccess('Resursen borttagen.');
+      this.config.onSave();
+      this.close();
+    } catch {
+      this.toastService.showError('Kunde inte ta bort resursen.');
     } finally {
       this.isSubmitting.set(false);
     }
