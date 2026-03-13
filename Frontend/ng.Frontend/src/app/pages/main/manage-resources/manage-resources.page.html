@@ -1,52 +1,171 @@
-<div class="page-container">
-  <div class="page-content">
-    <div class="page-header">
-      <div class="header-text">
-        <h1>Hantera Resurser</h1>
-        <p>Skapa och hantera bokningsbara resurser som fordon och utrustning.</p>
+<div class="manage-resources-container">
+  <!-- Filter Panel -->
+  <div class="filter-panel" [class.collapsed]="!filtersOpen()">
+    <div class="filter-header" (click)="toggleFilters()">
+      <div class="header-left">
+        <svg
+          class="header-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+        </svg>
+        <h2>Sök &amp; Filtrera</h2>
       </div>
-      <div class="header-actions">
-        <app-button variant="secondary" (clicked)="openCategoryModal()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; margin-right: 6px; display: inline-block; vertical-align: middle;">
-            <line x1="8" y1="6" x2="21" y2="6"></line>
-            <line x1="8" y1="12" x2="21" y2="12"></line>
-            <line x1="8" y1="18" x2="21" y2="18"></line>
-            <line x1="3" y1="6" x2="3.01" y2="6"></line>
-            <line x1="3" y1="12" x2="3.01" y2="12"></line>
-            <line x1="3" y1="18" x2="3.01" y2="18"></line>
-          </svg>
+      <div class="header-right" (click)="$event.stopPropagation()">
+        @if (hasActiveFilters()) {
+          <span class="result-count">Visar {{ totalResources() }} av {{ totalAllResources() }} resurser</span>
+          <button class="btn-reset" (click)="resetFilters()" title="Rensa alla filter">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+            </svg>
+            Rensa
+          </button>
+        }
+        <app-button
+          class="action-btn-desktop"
+          variant="secondary"
+          (clicked)="openCategoryModal()"
+        >
           Hantera Kategorier
         </app-button>
-        <app-button variant="primary" (clicked)="openCreateResourceModal()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; margin-right: 6px; display: inline-block; vertical-align: middle;">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Ny Resurs
+        <app-button class="action-btn-desktop" variant="primary" (clicked)="openCreateResourceModal()">
+          + Ny Resurs
         </app-button>
       </div>
     </div>
 
-    <div class="table-card">
-      <app-table
-        [data]="resourcesResource.value() || []"
-        [columns]="columns"
-        [isLoading]="resourcesResource.isLoading()"
-        [total]="(resourcesResource.value() || []).length"
-        emptyMessage="Inga resurser hittades."
-      >
-      </app-table>
+    <div class="filter-body">
+      <div class="search-field">
+        <label class="filter-label">Sök</label>
+        <div class="search-input">
+          <svg
+            class="field-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Sök på namn eller beskrivning..."
+            (input)="updateSearch($event)"
+            [value]="searchQuery()"
+          />
+        </div>
+      </div>
+
+      <div class="filters-group">
+        <div class="filter-item">
+          <label class="filter-label">Kategori</label>
+          <select (change)="updateCategoryFilter($event)" [value]="selectedCategoryId() ?? ''">
+            <option value="">Alla kategorier</option>
+            @for (cat of categories(); track cat.id) {
+              <option [value]="cat.id">{{ cat.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label class="filter-label">Ort</label>
+          <select (change)="updateCampusFilter($event)" [value]="selectedCampusId() ?? ''">
+            <option value="">Alla orter</option>
+            @for (campus of campuses(); track campus.id) {
+              <option [value]="campus.id">{{ campus.city }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="mobile-actions">
+        <app-button variant="secondary" (clicked)="openCategoryModal()">
+          Hantera Kategorier
+        </app-button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Templates -->
-<ng-template #actionsTpl let-res>
-  <div class="table-actions">
-    <button class="delete-btn" (click)="deleteResource(res)" title="Ta bort resurs">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-      </svg>
-    </button>
+  <button class="fab-create" (click)="openCreateResourceModal()" title="Ny Resurs">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+    >
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  </button>
+
+  <div class="resources-content">
+    <app-table
+      [data]="paginatedResources()"
+      [columns]="columns"
+      [isLoading]="resourcesResource.isLoading()"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      [total]="totalResources()"
+      [autoSize]="true"
+      (pageChange)="handlePageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+      (rowClicked)="openEditResourceModal($event)"
+      emptyMessage="Inga resurser hittades."
+    >
+    </app-table>
+
+    <!-- Templates -->
+    <ng-template #resourceIconTpl let-res>
+      <div class="resource-icon-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+          <line x1="12" y1="22.08" x2="12" y2="12" />
+        </svg>
+      </div>
+    </ng-template>
+
+    <ng-template #categoryTpl let-res>
+      <app-badge variant="brand" size="sm">{{ res.categoryName }}</app-badge>
+    </ng-template>
+
+    <ng-template #campusTpl let-res>
+      <span class="campus-text">{{ res.campusCity }}</span>
+    </ng-template>
+
+    <ng-template #statusTpl let-res>
+      <div
+        class="status-indicator"
+        [class.active]="res.isActive"
+        [class.inactive]="!res.isActive"
+      >
+        <span class="status-dot"></span>
+        <span class="status-text">{{ res.isActive ? 'Aktiv' : 'Inaktiv' }}</span>
+      </div>
+    </ng-template>
+
+    <ng-template #actionsTpl let-res>
+      <div class="actions-cell">
+        <button class="row-action-btn" (click)="openEditResourceModal(res, $event)" title="Redigera resurs">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </svg>
+        </button>
+      </div>
+    </ng-template>
   </div>
-</ng-template>
+</div>
