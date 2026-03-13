@@ -13,40 +13,42 @@ import { ResourceCategoryDto, CampusResponseDto, CreateResourceDto } from '../..
   selector: 'app-resource-form-modal',
   imports: [CommonModule, ReactiveFormsModule, ButtonComponent],
   template: `
-    <form [formGroup]="resourceForm" class="modal-form" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label>Namn</label>
-        <input type="text" formControlName="name" placeholder="T.ex. Volvo V60 (ABC 123)" />
-      </div>
-      
-      <div class="form-row">
+    <form [formGroup]="resourceForm" (ngSubmit)="onSubmit()">
+      <div class="modal-content-body">
         <div class="form-group">
-          <label>Kategori</label>
-          <select formControlName="categoryId">
-            <option [ngValue]="null">Välj kategori...</option>
-            @for (cat of categories(); track cat.id) {
-              <option [ngValue]="cat.id">{{ cat.name }}</option>
-            }
-          </select>
+          <label>Namn</label>
+          <input type="text" formControlName="name" placeholder="T.ex. Volvo V60 (ABC 123)" />
         </div>
         
+        <div class="form-row">
+          <div class="form-group">
+            <label>Kategori</label>
+            <select formControlName="categoryId">
+              <option [ngValue]="null">Välj kategori...</option>
+              @for (cat of categories(); track cat.id) {
+                <option [ngValue]="cat.id">{{ cat.name }}</option>
+              }
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>Ort (Campus)</label>
+            <select formControlName="campusId">
+              <option [ngValue]="null">Välj ort...</option>
+              @for (campus of campuses(); track campus.id) {
+                <option [ngValue]="campus.id">{{ campus.city }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
         <div class="form-group">
-          <label>Ort (Campus)</label>
-          <select formControlName="campusId">
-            <option [ngValue]="null">Välj ort...</option>
-            @for (campus of campuses(); track campus.id) {
-              <option [ngValue]="campus.id">{{ campus.city }}</option>
-            }
-          </select>
+          <label>Beskrivning</label>
+          <textarea formControlName="description" rows="3" placeholder="Ytterligare info om resursen..."></textarea>
         </div>
       </div>
 
-      <div class="form-group">
-        <label>Beskrivning</label>
-        <textarea formControlName="description" rows="3" placeholder="Ytterligare info om resursen..."></textarea>
-      </div>
-
-      <div class="modal-actions">
+      <div class="modal-footer">
         <app-button variant="secondary" (clicked)="close()">Avbryt</app-button>
         <app-button type="submit" [disabled]="resourceForm.invalid || isSubmitting()">
           {{ isSubmitting() ? 'Sparar...' : 'Spara' }}
@@ -55,15 +57,11 @@ import { ResourceCategoryDto, CampusResponseDto, CreateResourceDto } from '../..
     </form>
   `,
   styles: [`
-    .modal-form { display: flex; flex-direction: column; gap: 1.25rem; padding: 0.5rem; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-    .form-group label { font-size: 0.875rem; font-weight: 500; color: var(--color-text-secondary); }
+    .form-group label { font-size: 0.875rem; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 0.5rem; display: block; }
     .form-group input, .form-group select, .form-group textarea {
-      padding: 0.6rem; border-radius: var(--radii-md); border: 1px solid var(--color-border);
-      background: var(--color-bg-panel); color: var(--color-text-primary);
+      width: 100%; padding: 0.6rem; border-radius: var(--radii-md); border: 1px solid var(--color-border);
+      background: var(--color-bg-panel); color: var(--color-text-primary); box-sizing: border-box;
     }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem; }
   `]
 })
 export class ResourceFormModalComponent {

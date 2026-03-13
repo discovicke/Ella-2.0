@@ -14,6 +14,8 @@ import { ToastService } from '../../../../shared/services/toast.service';
 import { ClassService } from '../../../../shared/services/class.service';
 import { RegistrationService } from '../../../../shared/services/registration.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { BadgeComponent } from '../../../../shared/components/badge/badge.component';
+import { SelectablePillComponent } from '../../../../shared/components/selectable-pill/selectable-pill.component';
 import { TimePickerComponent } from '../../../../shared/components/time-picker/time-picker.component';
 import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
 import { SelectComponent, SelectOption } from '../../../../shared/components/select/select.component';
@@ -41,7 +43,7 @@ interface BookingModalData extends RoomDetailModel {
 
 @Component({
   selector: 'app-booking-modal',
-  imports: [ReactiveFormsModule, ButtonComponent, TimePickerComponent, DatePickerComponent, SelectComponent],
+  imports: [ReactiveFormsModule, ButtonComponent, BadgeComponent, SelectablePillComponent, TimePickerComponent, DatePickerComponent, SelectComponent],
   templateUrl: './booking-modal.component.html',
   styleUrl: './booking-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

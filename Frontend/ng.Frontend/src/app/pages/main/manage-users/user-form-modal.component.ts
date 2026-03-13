@@ -18,6 +18,7 @@ import {
   ClassResponseDto,
 } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { SelectablePillComponent } from '../../../shared/components/selectable-pill/selectable-pill.component';
 
 export interface CustomPermissionsPayload {
   bookRoom: boolean;
@@ -43,9 +44,6 @@ export interface UserFormPayload {
   classIds: number[];
 }
 
-/**
- * Validator som ser till att lösenorden matchar
- */
 export const passwordMatchValidator: ValidatorFn = (
   control: AbstractControl,
 ): ValidationErrors | null => {
@@ -53,187 +51,163 @@ export const passwordMatchValidator: ValidatorFn = (
   const confirmPassword = control.get('confirmPassword');
 
   if (!password || !confirmPassword) return null;
-  if (confirmPassword.disabled) return null; // Ignorera om fältet är disabled
+  if (confirmPassword.disabled) return null;
 
   return password.value === confirmPassword.value ? null : { passwordMismatch: true };
 };
 
 @Component({
   selector: 'app-user-form-modal',
-  imports: [ReactiveFormsModule, ButtonComponent],
+  imports: [ReactiveFormsModule, ButtonComponent, SelectablePillComponent],
   template: `
-    <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
-      <div class="form-row">
-        <div class="form-group flex-3">
-          <label for="displayName">Namn</label>
-          <input
-            id="displayName"
-            type="text"
-            formControlName="displayName"
-            placeholder="Förnamn Efternamn"
-            maxlength="100"
-          />
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+      <div class="modal-content-body">
+        <div class="form-row">
+          <div class="form-group flex-3">
+            <label for="displayName">Namn</label>
+            <input
+              id="displayName"
+              type="text"
+              formControlName="displayName"
+              placeholder="Förnamn Efternamn"
+              maxlength="100"
+            />
+          </div>
+          <div class="form-group flex-1">
+            <label for="permissionLevel" title="Prioritet 1-10 vid bokningskrockar">Nivå</label>
+            <input
+              id="permissionLevel"
+              type="number"
+              formControlName="permissionLevel"
+              min="1"
+              max="10"
+            />
+          </div>
         </div>
-        <div class="form-group flex-1">
-          <label for="permissionLevel" title="Prioritet 1-10 vid bokningskrockar">Nivå</label>
-          <input
-            id="permissionLevel"
-            type="number"
-            formControlName="permissionLevel"
-            min="1"
-            max="10"
-          />
-        </div>
-      </div>
 
-      <div class="form-group">
-        <label for="email">E-post</label>
-        <input
-          id="email"
-          type="email"
-          formControlName="email"
-          placeholder="namn@example.com"
-          maxlength="254"
-        />
-        @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
-          <span class="error-msg">Giltig e-post krävs</span>
+        <div class="form-group">
+          <label for="email">E-post</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="namn@example.com"
+            maxlength="254"
+          />
+          @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
+            <span class="error-msg">Giltig e-post krävs</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="templateId">Roll</label>
+          <select id="templateId" formControlName="templateId">
+            <option [ngValue]="null">Anpassad (ingen mall)</option>
+            @for (template of templateOptions; track template.id) {
+              <option [ngValue]="template.id">{{ template.label }}</option>
+            }
+          </select>
+        </div>
+
+        @if (userForm.controls.templateId.value === null) {
+          <div class="form-section">
+            <p class="form-section-title">Anpassade behörigheter</p>
+            <p class="form-section-hint">
+              Välj exakt vad användaren ska kunna göra. Avmarkerat betyder ingen åtkomst.
+            </p>
+            <div class="permissions-grid">
+              @for (permission of permissionOptions; track permission.key) {
+                <label class="permission-item" [class.active]="isPermissionEnabled(permission.key)">
+                  <input type="checkbox" [formControlName]="permission.key" />
+                  <span class="permission-label">{{ permission.label }}</span>
+                  <span class="permission-switch" aria-hidden="true">
+                    <span class="switch-thumb"></span>
+                  </span>
+                </label>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="password">Lösenord</label>
+            <input
+              id="password"
+              type="password"
+              formControlName="password"
+              placeholder="Minst 6 tecken (krävs)"
+              maxlength="128"
+            />
+            @if (initialData) {
+              <span class="field-hint">Lämna tomt om du inte vill ändra lösenordet.</span>
+            }
+            @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
+              <span class="error-msg">Lösenord krävs (minst 6 tecken)</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Bekräfta lösenord</label>
+            <input
+              id="confirmPassword"
+              type="password"
+              formControlName="confirmPassword"
+              placeholder="Upprepa lösenordet"
+              maxlength="128"
+            />
+            @if (userForm.errors?.['passwordMismatch'] && userForm.get('confirmPassword')?.touched) {
+              <span class="error-msg">Lösenorden matchar inte</span>
+            }
+          </div>
+        </div>
+
+        @if (initialData) {
+          <div class="form-group">
+            <label for="isBanned">Status</label>
+            <select id="isBanned" formControlName="isBanned">
+              <option [value]="BannedStatus.NotBanned">Aktiv</option>
+              <option [value]="BannedStatus.Banned">Bannlyst</option>
+            </select>
+          </div>
+        }
+
+        @if (campusOptions.length) {
+          <div class="form-section">
+            <p class="form-section-title">Campus</p>
+            <p class="form-section-hint">Välj vilka campus användaren tillhör.</p>
+            <div class="pill-grid">
+              @for (campus of campusOptions; track campus.id) {
+                <app-selectable-pill
+                  [selected]="isCampusSelected(campus.id)"
+                  (toggle)="toggleCampus(campus.id)"
+                >
+                  {{ campus.city }}
+                </app-selectable-pill>
+              }
+            </div>
+          </div>
+        }
+
+        @if (classOptions.length) {
+          <div class="form-section">
+            <p class="form-section-title">Klasser</p>
+            <p class="form-section-hint">Välj vilka klasser användaren tillhör.</p>
+            <div class="pill-grid">
+              @for (cls of classOptions; track cls.id) {
+                <app-selectable-pill
+                  [selected]="isClassSelected(cls.id)"
+                  (toggle)="toggleClass(cls.id)"
+                >
+                  {{ cls.className }}
+                </app-selectable-pill>
+              }
+            </div>
+          </div>
         }
       </div>
 
-      <div class="form-group">
-        <label for="templateId">Roll</label>
-        <select id="templateId" formControlName="templateId">
-          <option [ngValue]="null">Anpassad (ingen mall)</option>
-          @for (template of templateOptions; track template.id) {
-            <option [ngValue]="template.id">{{ template.label }}</option>
-          }
-        </select>
-      </div>
-
-      @if (userForm.controls.templateId.value === null) {
-        <div class="permissions-block">
-          <p class="permissions-title">Anpassade behörigheter</p>
-          <p class="permissions-hint">
-            Välj exakt vad användaren ska kunna göra. Avmarkerat betyder ingen åtkomst.
-          </p>
-          <div class="permissions-grid">
-            @for (permission of permissionOptions; track permission.key) {
-              <label class="permission-item" [class.active]="isPermissionEnabled(permission.key)">
-                <input type="checkbox" [formControlName]="permission.key" />
-                <span class="permission-label">{{ permission.label }}</span>
-                <span class="permission-switch" aria-hidden="true">
-                  <span class="switch-thumb"></span>
-                </span>
-              </label>
-            }
-          </div>
-        </div>
-      }
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="password">Lösenord</label>
-          <input
-            id="password"
-            type="password"
-            formControlName="password"
-            placeholder="Minst 6 tecken (krävs)"
-            maxlength="128"
-          />
-          @if (initialData) {
-            <span class="field-hint">Lämna tomt om du inte vill ändra lösenordet.</span>
-          }
-          @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
-            <span class="error-msg">Lösenord krävs (minst 6 tecken)</span>
-          }
-        </div>
-
-        <div class="form-group">
-          <label for="confirmPassword">Bekräfta lösenord</label>
-          <input
-            id="confirmPassword"
-            type="password"
-            formControlName="confirmPassword"
-            placeholder="Upprepa lösenordet"
-            maxlength="128"
-          />
-          @if (userForm.errors?.['passwordMismatch'] && userForm.get('confirmPassword')?.touched) {
-            <span class="error-msg">Lösenorden matchar inte</span>
-          }
-        </div>
-      </div>
-
-      @if (initialData) {
-        <div class="form-group">
-          <label for="isBanned">Status</label>
-          <select id="isBanned" formControlName="isBanned">
-            <option [value]="BannedStatus.NotBanned">Aktiv</option>
-            <option [value]="BannedStatus.Banned">Bannlyst</option>
-          </select>
-        </div>
-      }
-
-      @if (campusOptions.length) {
-        <div class="associations-section">
-          <p class="associations-title">Campus</p>
-          <p class="associations-hint">Välj vilka campus användaren tillhör.</p>
-          <div class="pill-grid">
-            @for (campus of campusOptions; track campus.id) {
-              <button
-                type="button"
-                class="pill"
-                [class.on]="isCampusSelected(campus.id)"
-                (click)="toggleCampus(campus.id)"
-              >
-                @if (isCampusSelected(campus.id)) {
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                }
-                {{ campus.city }}
-              </button>
-            }
-          </div>
-        </div>
-      }
-
-      @if (classOptions.length) {
-        <div class="associations-section">
-          <p class="associations-title">Klasser</p>
-          <p class="associations-hint">Välj vilka klasser användaren tillhör.</p>
-          <div class="pill-grid">
-            @for (cls of classOptions; track cls.id) {
-              <button
-                type="button"
-                class="pill"
-                [class.on]="isClassSelected(cls.id)"
-                (click)="toggleClass(cls.id)"
-              >
-                @if (isClassSelected(cls.id)) {
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                }
-                {{ cls.className }}
-              </button>
-            }
-          </div>
-        </div>
-      }
-
-      <div class="form-actions">
+      <div class="modal-footer">
         <app-button variant="tertiary" (clicked)="onCancel()">Avbryt</app-button>
         @if (initialData) {
           <app-button variant="danger" (clicked)="onDelete()" [disabled]="isSubmitting()">
@@ -250,21 +224,8 @@ export const passwordMatchValidator: ValidatorFn = (
     `
       @use 'styles/mixins' as *;
 
-      .user-form {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-      }
-
-      .form-row {
-        display: flex;
-        gap: 1rem;
-        & > * {
-          flex: 1;
-        }
-        .flex-1 { flex: 1; }
-        .flex-3 { flex: 3; }
-      }
+      .flex-1 { flex: 1; }
+      .flex-3 { flex: 3; }
 
       .form-group {
         @include stack(0.5rem);
@@ -292,48 +253,11 @@ export const passwordMatchValidator: ValidatorFn = (
         margin-top: -0.25rem;
       }
 
-      .form-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 1rem;
-        margin-top: 1rem;
-
-        .btn-primary {
-          @include button-primary;
-        }
-        .btn-secondary {
-          @include button-ghost;
-        }
-        .btn-danger {
-          @include button-danger;
-        }
-      }
-
-      .permissions-block {
-        @include stack(0.5rem);
-        padding: 0.75rem;
-        border: 1px solid var(--color-border);
-        border-radius: 0.5rem;
-        background: var(--color-bg-panel);
-      }
-
-      .permissions-title {
-        margin: 0;
-        font-size: var(--font-sm);
-        font-weight: 600;
-        color: var(--color-text-primary);
-      }
-
-      .permissions-hint {
-        margin: 0;
-        font-size: var(--font-xs);
-        color: var(--color-text-secondary);
-      }
-
       .permissions-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.5rem;
+        margin-top: 0.5rem;
 
         @media (max-width: 640px) {
           grid-template-columns: 1fr;
@@ -403,66 +327,11 @@ export const passwordMatchValidator: ValidatorFn = (
         transform: translateX(0.95rem);
       }
 
-      .associations-section {
-        @include stack(0.5rem);
-        padding: 0.75rem;
-        border: 1px solid var(--color-border);
-        border-radius: 0.5rem;
-        background: var(--color-bg-panel);
-      }
-
-      .associations-title {
-        margin: 0;
-        font-size: var(--font-sm);
-        font-weight: 600;
-        color: var(--color-text-primary);
-      }
-
-      .associations-hint {
-        margin: 0;
-        font-size: var(--font-xs);
-        color: var(--color-text-secondary);
-      }
-
       .pill-grid {
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
-      }
-
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        padding: 0.4rem 0.75rem;
-        border: 1px solid var(--color-border);
-        border-radius: 999px;
-        background: var(--color-bg-card);
-        color: var(--color-text-secondary);
-        font-size: var(--font-sm);
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        user-select: none;
-
-        svg {
-          width: 0.9rem;
-          height: 0.9rem;
-          stroke: currentColor;
-          flex-shrink: 0;
-        }
-
-        &:hover {
-          border-color: var(--color-primary);
-          color: var(--color-primary);
-        }
-
-        &.on {
-          background: var(--color-primary-surface);
-          border-color: var(--color-primary);
-          color: var(--color-primary);
-          font-weight: 600;
-        }
+        margin-top: 0.5rem;
       }
     `,
   ],
@@ -563,7 +432,6 @@ export class UserFormModalComponent {
   );
 
   constructor() {
-    // Hantera confirmPassword baserat på om password har ett värde
     this.userForm.controls.password.valueChanges.subscribe((pwd) => {
       if (pwd && pwd.length > 0) {
         this.userForm.controls.confirmPassword.enable();
@@ -639,8 +507,6 @@ export class UserFormModalComponent {
       classIds: this.selectedClassIds(),
     };
 
-    // Om vi redigerar och lösenordet är tomt -> Ta bort det helt från payloaden
-    // så att backend inte försöker validera en tom sträng.
     if (this.initialData && !formData.password) {
       delete (payload as any).password;
     }
@@ -649,7 +515,6 @@ export class UserFormModalComponent {
       this.isSubmitting.set(true);
       try {
         await this.config.onSave(payload);
-        // Note: Success usually closes the modal, which destroys this component.
       } catch (error) {
         this.isSubmitting.set(false);
       }

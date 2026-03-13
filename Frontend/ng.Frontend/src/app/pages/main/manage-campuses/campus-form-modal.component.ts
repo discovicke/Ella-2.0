@@ -23,74 +23,76 @@ export interface CampusFormModalConfig {
   selector: 'app-campus-form-modal',
   imports: [ReactiveFormsModule, ButtonComponent],
   template: `
-    <form [formGroup]="campusForm" (ngSubmit)="onSubmit()" class="campus-form">
-      <div class="form-group">
-        <label for="campus-city">Stad</label>
-        <input
-          id="campus-city"
-          type="text"
-          formControlName="city"
-          placeholder="t.ex. Gävle"
-          maxlength="100"
-        />
-        @if (campusForm.get('city')?.invalid && campusForm.get('city')?.touched) {
-          <span class="error-msg">Stad krävs</span>
-        }
-      </div>
-
-      <div class="form-group">
-        <label for="campus-street">Adress</label>
-        <input
-          id="campus-street"
-          type="text"
-          formControlName="street"
-          placeholder="t.ex. Kungsgatan 12"
-          maxlength="150"
-        />
-        @if (campusForm.get('street')?.invalid && campusForm.get('street')?.touched) {
-          <span class="error-msg">Adress krävs</span>
-        }
-      </div>
-
-      <div class="form-row">
+    <form [formGroup]="campusForm" (ngSubmit)="onSubmit()">
+      <div class="modal-content-body">
         <div class="form-group">
-          <label for="campus-zip">Postnummer</label>
+          <label for="campus-city">Stad</label>
           <input
-            id="campus-zip"
+            id="campus-city"
             type="text"
-            formControlName="zip"
-            placeholder="t.ex. 802 10"
-            maxlength="20"
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="campus-country">Land</label>
-          <input
-            id="campus-country"
-            type="text"
-            formControlName="country"
-            placeholder="t.ex. Sverige"
+            formControlName="city"
+            placeholder="t.ex. Gävle"
             maxlength="100"
           />
-          @if (campusForm.get('country')?.invalid && campusForm.get('country')?.touched) {
-            <span class="error-msg">Land krävs</span>
+          @if (campusForm.get('city')?.invalid && campusForm.get('city')?.touched) {
+            <span class="error-msg">Stad krävs</span>
           }
+        </div>
+
+        <div class="form-group">
+          <label for="campus-street">Adress</label>
+          <input
+            id="campus-street"
+            type="text"
+            formControlName="street"
+            placeholder="t.ex. Kungsgatan 12"
+            maxlength="150"
+          />
+          @if (campusForm.get('street')?.invalid && campusForm.get('street')?.touched) {
+            <span class="error-msg">Adress krävs</span>
+          }
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="campus-zip">Postnummer</label>
+            <input
+              id="campus-zip"
+              type="text"
+              formControlName="zip"
+              placeholder="t.ex. 802 10"
+              maxlength="20"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="campus-country">Land</label>
+            <input
+              id="campus-country"
+              type="text"
+              formControlName="country"
+              placeholder="t.ex. Sverige"
+              maxlength="100"
+            />
+            @if (campusForm.get('country')?.invalid && campusForm.get('country')?.touched) {
+              <span class="error-msg">Land krävs</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="campus-contact">Kontakt</label>
+          <input
+            id="campus-contact"
+            type="text"
+            formControlName="contact"
+            placeholder="Valfri kontaktinfo..."
+            maxlength="150"
+          />
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="campus-contact">Kontakt</label>
-        <input
-          id="campus-contact"
-          type="text"
-          formControlName="contact"
-          placeholder="Valfri kontaktinfo..."
-          maxlength="150"
-        />
-      </div>
-
-      <div class="form-actions">
+      <div class="modal-footer">
         <app-button variant="tertiary" (clicked)="onCancel()">Avbryt</app-button>
         @if (initialData) {
           <app-button variant="danger" (clicked)="onDelete()" [disabled]="isSubmitting()">
@@ -111,24 +113,6 @@ export interface CampusFormModalConfig {
     `
       @use 'styles/mixins' as *;
 
-      .campus-form {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-      }
-
-      .form-row {
-        display: flex;
-        gap: 1rem;
-        & > * {
-          flex: 1;
-        }
-
-        @media (max-width: 480px) {
-          flex-direction: column;
-        }
-      }
-
       .form-group {
         @include stack(0.5rem);
         margin-bottom: 0;
@@ -146,13 +130,6 @@ export interface CampusFormModalConfig {
       .error-msg {
         font-size: var(--font-sm);
         color: var(--color-danger);
-      }
-
-      .form-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 1rem;
-        margin-top: 0.5rem;
       }
     `,
   ],

@@ -4,6 +4,7 @@ import { ModalService } from '../../../shared/services/modal.service';
 import { ConfirmService } from '../../../shared/services/confirm.service';
 import { ClassResponseDto, CampusResponseDto } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { SelectablePillComponent } from '../../../shared/components/selectable-pill/selectable-pill.component';
 
 export interface ClassFormPayload {
   className: string;
@@ -20,54 +21,43 @@ export interface ClassFormModalConfig {
 
 @Component({
   selector: 'app-class-form-modal',
-  imports: [ReactiveFormsModule, ButtonComponent],
+  imports: [ReactiveFormsModule, ButtonComponent, SelectablePillComponent],
   template: `
-    <form [formGroup]="classForm" (ngSubmit)="onSubmit()" class="class-form">
-      <div class="form-group">
-        <label for="class-name">Klassnamn</label>
-        <input
-          id="class-name"
-          type="text"
-          formControlName="className"
-          placeholder="t.ex. net25"
-          maxlength="100"
-        />
-        @if (classForm.get('className')?.invalid && classForm.get('className')?.touched) {
-          <span class="error-msg">Klassnamn krävs</span>
+    <form [formGroup]="classForm" (ngSubmit)="onSubmit()">
+      <div class="modal-content-body">
+        <div class="form-group">
+          <label for="class-name">Klassnamn</label>
+          <input
+            id="class-name"
+            type="text"
+            formControlName="className"
+            placeholder="t.ex. net25"
+            maxlength="100"
+          />
+          @if (classForm.get('className')?.invalid && classForm.get('className')?.touched) {
+            <span class="error-msg">Klassnamn krävs</span>
+          }
+        </div>
+
+        @if (campusOptions.length) {
+          <div class="form-section">
+            <p class="form-section-title">Campus</p>
+            <p class="form-section-hint">Välj vilka campus klassen tillhör.</p>
+            <div class="pill-grid">
+              @for (campus of campusOptions; track campus.id) {
+                <app-selectable-pill
+                  [selected]="isCampusSelected(campus.id)"
+                  (toggle)="toggleCampus(campus.id)"
+                >
+                  {{ campus.city }}
+                </app-selectable-pill>
+              }
+            </div>
+          </div>
         }
       </div>
 
-      @if (campusOptions.length) {
-        <div class="associations-section">
-          <p class="associations-title">Campus</p>
-          <p class="associations-hint">Välj vilka campus klassen tillhör.</p>
-          <div class="pill-grid">
-            @for (campus of campusOptions; track campus.id) {
-              <button
-                type="button"
-                class="pill"
-                [class.on]="isCampusSelected(campus.id)"
-                (click)="toggleCampus(campus.id)"
-              >
-                @if (isCampusSelected(campus.id)) {
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                }
-                {{ campus.city }}
-              </button>
-            }
-          </div>
-        </div>
-      }
-
-      <div class="form-actions">
+      <div class="modal-footer">
         <app-button variant="tertiary" (clicked)="onCancel()">Avbryt</app-button>
         @if (initialData) {
           <app-button variant="danger" (clicked)="onDelete()" [disabled]="isSubmitting()">
@@ -88,12 +78,6 @@ export interface ClassFormModalConfig {
     `
       @use 'styles/mixins' as *;
 
-      .class-form {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-      }
-
       .form-group {
         @include stack(0.5rem);
         margin-bottom: 0;
@@ -113,69 +97,10 @@ export interface ClassFormModalConfig {
         color: var(--color-danger);
       }
 
-      .associations-section {
-        @include stack(0.5rem);
-        padding-top: 0.25rem;
-      }
-
-      .associations-title {
-        margin: 0;
-        font-weight: 600;
-        font-size: var(--font-sm);
-        color: var(--color-text-primary);
-      }
-
-      .associations-hint {
-        margin: 0;
-        font-size: var(--font-xs);
-        color: var(--color-text-secondary);
-      }
-
       .pill-grid {
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
-      }
-
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        padding: 0.4rem 0.75rem;
-        border: 1px solid var(--color-border);
-        border-radius: 999px;
-        background: var(--color-bg-card);
-        color: var(--color-text-secondary);
-        font-size: var(--font-sm);
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        user-select: none;
-
-        svg {
-          width: 0.9rem;
-          height: 0.9rem;
-          stroke: currentColor;
-          flex-shrink: 0;
-        }
-
-        &:hover {
-          border-color: var(--color-primary);
-          color: var(--color-primary);
-        }
-
-        &.on {
-          background: var(--color-primary-surface);
-          border-color: var(--color-primary);
-          color: var(--color-primary);
-          font-weight: 600;
-        }
-      }
-
-      .form-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 1rem;
         margin-top: 0.5rem;
       }
     `,

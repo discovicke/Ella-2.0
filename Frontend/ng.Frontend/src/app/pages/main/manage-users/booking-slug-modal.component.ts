@@ -9,7 +9,7 @@ import { BookingSlugResponseDto } from '../../../models/models';
   selector: 'app-booking-slug-modal',
   imports: [CommonModule, ButtonComponent],
   template: `
-    <div class="slug-modal-content">
+    <div class="modal-content-body">
       @if (slugData(); as data) {
         <p class="description">
           Denna länk tillåter användaren att boka rum utan att logga in. 
@@ -25,20 +25,13 @@ import { BookingSlugResponseDto } from '../../../models/models';
       } @else {
         <p class="error">Kunde inte ladda länkdata.</p>
       }
+    </div>
 
-      <div class="modal-actions">
-        <app-button variant="primary" (clicked)="close()">Stäng</app-button>
-      </div>
+    <div class="modal-footer">
+      <app-button variant="primary" (clicked)="close()">Stäng</app-button>
     </div>
   `,
   styles: [`
-    .slug-modal-content {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      padding: 0.5rem;
-      color: var(--color-text-primary);
-    }
     .description {
       color: var(--color-text-secondary);
       font-size: var(--font-sm);
@@ -65,14 +58,10 @@ import { BookingSlugResponseDto } from '../../../models/models';
         width: 100%;
       }
     }
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 0.5rem;
-    }
     .error {
       color: var(--color-danger);
       font-weight: 500;
+      margin: 0;
     }
   `]
 })

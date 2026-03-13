@@ -1,292 +1,275 @@
-<div class="booking-modal-content">
+<div>
   <!-- Room Info Header -->
-  <div class="room-info-banner">
-    <div class="room-icon-wrapper">
-      @switch (getRoomIconType(room.roomTypeName)) {
-        @case ('lab') {
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10 2v8L4.5 20.29A2 2 0 0 0 6 23h12a2 2 0 0 0 1.5-2.71L14 10V2z" />
-            <path d="M8.5 2h7" />
-          </svg>
-        }
-        @case ('classroom') {
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-            <path d="M6 12v5c3 3 9 3 12 0v-5" />
-          </svg>
-        }
-        @case ('meeting') {
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-          </svg>
-        }
-        @case ('computer') {
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-            <line x1="12" y1="17" x2="12" y2="21" />
-          </svg>
-        }
-        @default {
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            <polyline points="9 22 9 12 15 12 15 22" />
-          </svg>
-        }
-      }
-    </div>
-    <div class="room-details">
-      <div class="room-main-meta">
-        <span class="room-type-label">{{ room.roomTypeName || 'Rum' }}</span>
-        <span class="meta-sep"></span>
-        <span class="room-capacity-label">{{ room.capacity }} personer</span>
-      </div>
-      <div class="room-sub-meta">
-        {{ room.campusCity }} @if(room.floor){ <span class="meta-sep"></span> Våning {{ room.floor }} }
-      </div>
-      
-      @if (room.assets?.length) {
-        <div class="room-assets-list">
-          @for (asset of room.assets; track asset) {
-            <span class="asset-tag">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-              {{ asset }}
-            </span>
+  <div class="modal-hero-banner">
+    <div class="hero-top">
+      <div class="room-icon-badge">
+        @switch (getRoomIconType(room.roomTypeName)) {
+          @case ('lab') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 2v8L4.5 20.29A2 2 0 0 0 6 23h12a2 2 0 0 0 1.5-2.71L14 10V2z" />
+              <path d="M8.5 2h7" />
+            </svg>
           }
-        </div>
-      }
-
-      @if (room.notes) {
-        <div class="room-header-notes">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="16" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-          </svg>
-          <span>{{ room.notes }}</span>
-        </div>
-      }
+          @case ('classroom') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+              <path d="M6 12v5c3 3 9 3 12 0v-5" />
+            </svg>
+          }
+          @case ('meeting') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            </svg>
+          }
+          @case ('computer') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+          }
+          @default {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+          }
+        }
+      </div>
     </div>
+    
+    <h3 class="hero-room">{{ room.roomTypeName || 'Rum' }}</h3>
+    <div class="hero-meta">
+      <span class="hero-detail">{{ room.capacity }} personer</span>
+      <span class="meta-sep"></span>
+      <span class="hero-detail">{{ room.campusCity }} @if(room.floor){ Våning {{ room.floor }} }</span>
+    </div>
+      
+    @if (room.assets?.length) {
+      <div class="hero-assets">
+        @for (asset of room.assets; track asset) {
+          <app-badge variant="asset">{{ asset }}</app-badge>
+        }
+      </div>
+    }
+
+    @if (room.notes) {
+      <div class="room-header-notes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <span>{{ room.notes }}</span>
+      </div>
+    }
   </div>
 
-  <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()" class="booking-form">
-    <!-- Tid: datum + starttid → sluttid på en rad -->
-    <div class="form-group" style="z-index: 10;">
-      <label>Tid</label>
-      <div class="time-row">
-        <app-date-picker 
-          [value]="bookingForm.controls.startDate.value" 
-          (valueChange)="updateStartDate($event)"
-        ></app-date-picker>
-        <app-time-picker 
-          [value]="bookingForm.controls.startTime.value" 
-          (valueChange)="updateStartTime($event)"
-        ></app-time-picker>
-        <span class="time-sep" aria-hidden="true">→</span>
-        <app-time-picker 
-          [value]="bookingForm.controls.endTime.value" 
-          (valueChange)="updateEndTime($event)"
-        ></app-time-picker>
+  <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()">
+    <div class="modal-content-body">
+      <!-- Tid: datum + starttid → sluttid på en rad -->
+      <div class="form-group" style="z-index: 10;">
+        <label>Tid</label>
+        <div class="time-row">
+          <app-date-picker 
+            [value]="bookingForm.controls.startDate.value" 
+            (valueChange)="updateStartDate($event)"
+          ></app-date-picker>
+          <app-time-picker 
+            [value]="bookingForm.controls.startTime.value" 
+            (valueChange)="updateStartTime($event)"
+          ></app-time-picker>
+          <span class="time-sep" aria-hidden="true">→</span>
+          <app-time-picker 
+            [value]="bookingForm.controls.endTime.value" 
+            (valueChange)="updateEndTime($event)"
+          ></app-time-picker>
+        </div>
       </div>
-    </div>
 
-    <!-- Anteckningar -->
-    <div class="form-group">
-      <label for="notes">Anteckningar</label>
-      <textarea
-        id="notes"
-        formControlName="notes"
-        placeholder="Frivilliga anteckningar..."
-        rows="3"
-        maxlength="500"
-      ></textarea>
-    </div>
+      <!-- Anteckningar -->
+      <div class="form-group">
+        <label for="notes">Anteckningar</label>
+        <textarea
+          id="notes"
+          formControlName="notes"
+          placeholder="Frivilliga anteckningar..."
+          rows="3"
+          maxlength="500"
+        ></textarea>
+      </div>
 
-    <!-- Återkommande bokning -->
-    <div class="recurrence-section">
-      <label class="checkbox-label">
-        <input type="checkbox" formControlName="isRecurring" />
-        Återkommande bokning
-      </label>
+      <!-- Återkommande bokning -->
+      <div class="form-section recurrence-section">
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="isRecurring" />
+          Återkommande bokning
+        </label>
 
-      @if (bookingForm.controls.isRecurring.value) {
-        <div class="recurrence-options">
-          <div class="form-row">
-            <div class="form-group" style="z-index: 9;">
-              <label for="pattern">Upprepa</label>
-              <app-select 
-                [options]="recurrenceOptions"
-                [value]="bookingForm.controls.recurrencePattern.value"
-                (valueChange)="updateRecurrencePattern($event)"
-              ></app-select>
-            </div>
-            <div class="form-group" style="z-index: 8;">
-              <label for="recurrenceEnd">Slutdatum</label>
-              <app-date-picker 
-                [value]="bookingForm.controls.recurrenceEnd.value"
-                (valueChange)="updateRecurrenceEnd($event)"
-              ></app-date-picker>
+        @if (bookingForm.controls.isRecurring.value) {
+          <div class="recurrence-options">
+            <div class="form-row">
+              <div class="form-group" style="z-index: 9;">
+                <label for="pattern">Upprepa</label>
+                <app-select 
+                  [options]="recurrenceOptions"
+                  [value]="bookingForm.controls.recurrencePattern.value"
+                  (valueChange)="updateRecurrencePattern($event)"
+                ></app-select>
+              </div>
+              <div class="form-group" style="z-index: 8;">
+                <label for="recurrenceEnd">Slutdatum</label>
+                <app-date-picker 
+                  [value]="bookingForm.controls.recurrenceEnd.value"
+                  (valueChange)="updateRecurrenceEnd($event)"
+                ></app-date-picker>
+              </div>
             </div>
           </div>
-        </div>
-      }
-    </div>
-
-    <!-- ─── Invite section ─── -->
-    <div class="invite-section">
-      <p class="invite-heading">Bjud in</p>
-
-      <!-- Individual user search -->
-      <div class="user-search">
-        <label for="userSearch">Sök användare</label>
-        <div class="search-wrapper">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input
-            type="text"
-            id="userSearch"
-            [value]="searchQuery()"
-            (input)="onSearchInput($event)"
-            (focus)="searchResults().length ? showSearchResults.set(true) : null"
-            (blur)="hideSearchResults()"
-            placeholder="Namn eller e-post..."
-            autocomplete="off"
-            [class.has-text]="searchQuery().length > 0"
-          />
-          @if (searchQuery() && !isSearching()) {
-            <button type="button" class="clear-btn" (mousedown)="clearSearchQuery()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          }
-          @if (isSearching()) {
-            <span class="search-spinner"></span>
-          }
-          @if (showSearchResults()) {
-            <ul class="search-dropdown">
-              @for (user of searchResults(); track user.userId) {
-                <li (mousedown)="selectUser(user)">
-                  <span class="dropdown-name">{{ user.displayName }}</span>
-                  <span class="dropdown-email">{{ user.email }}</span>
-                </li>
-              }
-            </ul>
-          }
-          @if (noSearchResults() && !isSearching()) {
-            <p class="no-results-hint">Inga resultat</p>
-          }
-        </div>
+        }
       </div>
 
-      <!-- Selected users chips -->
-      @if (selectedUsers().length) {
-        <div class="selected-users">
-          @for (user of selectedUsers(); track user.userId) {
-            <span class="user-chip">
-              {{ user.displayName }}
-              <button type="button" class="chip-remove" (click)="removeUser(user.userId)">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
+      <!-- ─── Invite section ─── -->
+      <div class="form-section invite-section">
+        <p class="form-section-title invite-heading">Bjud in</p>
+
+        <!-- Individual user search -->
+        <div class="user-search">
+          <label for="userSearch">Sök användare</label>
+          <div class="search-wrapper">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              type="text"
+              id="userSearch"
+              [value]="searchQuery()"
+              (input)="onSearchInput($event)"
+              (focus)="searchResults().length ? showSearchResults.set(true) : null"
+              (blur)="hideSearchResults()"
+              placeholder="Namn eller e-post..."
+              autocomplete="off"
+              [class.has-text]="searchQuery().length > 0"
+            />
+            @if (searchQuery() && !isSearching()) {
+              <button type="button" class="clear-btn" (mousedown)="clearSearchQuery()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
               </button>
-            </span>
-          }
+            }
+            @if (isSearching()) {
+              <span class="search-spinner"></span>
+            }
+            @if (showSearchResults()) {
+              <ul class="search-dropdown">
+                @for (user of searchResults(); track user.userId) {
+                  <li (mousedown)="selectUser(user)">
+                    <span class="dropdown-name">{{ user.displayName }}</span>
+                    <span class="dropdown-email">{{ user.email }}</span>
+                  </li>
+                }
+              </ul>
+            }
+            @if (noSearchResults() && !isSearching()) {
+              <p class="no-results-hint">Inga resultat</p>
+            }
+          </div>
         </div>
-      }
 
-      <!-- Class picker (ManageClasses only) -->
-      @if (canManageClasses && classes().length) {
-        <div class="class-section">
-          <button
-            type="button"
-            class="class-toggle"
-            (click)="showClassPicker.set(!showClassPicker())"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 00-3-3.87" />
-              <path d="M16 3.13a4 4 0 010 7.75" />
-            </svg>
-            Bjud in klass
-            <svg
-              class="chevron"
-              [class.open]="showClassPicker()"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
-
-          @if (showClassPicker()) {
-            <div class="class-picker">
-              <p class="picker-hint">Välj klasser att bjuda in till bokningen.</p>
-              <div class="pill-grid">
-                @for (cls of classes(); track cls.id) {
-                  <button
-                    type="button"
-                    class="pill"
-                    [class.on]="isClassSelected(cls.id)"
-                    (click)="toggleClass(cls.id)"
+        <!-- Selected users chips -->
+        @if (selectedUsers().length) {
+          <div class="selected-users">
+            @for (user of selectedUsers(); track user.userId) {
+              <span class="user-chip">
+                {{ user.displayName }}
+                <button type="button" class="chip-remove" (click)="removeUser(user.userId)">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
                   >
-                    @if (isClassSelected(cls.id)) {
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2.5"
-                        stroke-linecap="round"
-                      >
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    }
-                    {{ cls.className }}
-                  </button>
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </span>
+            }
+          </div>
+        }
+
+        <!-- Class picker (ManageClasses only) -->
+        @if (canManageClasses && classes().length) {
+          <div class="class-section">
+            <button
+              type="button"
+              class="class-toggle"
+              (click)="showClassPicker.set(!showClassPicker())"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 00-3-3.87" />
+                <path d="M16 3.13a4 4 0 010 7.75" />
+              </svg>
+              Bjud in klass
+              <svg
+                class="chevron"
+                [class.open]="showClassPicker()"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+
+            @if (showClassPicker()) {
+              <div class="class-picker">
+                <p class="picker-hint">Välj klasser att bjuda in till bokningen.</p>
+                <div class="pill-grid">
+                  @for (cls of classes(); track cls.id) {
+                    <app-selectable-pill
+                      [selected]="isClassSelected(cls.id)"
+                      (toggle)="toggleClass(cls.id)"
+                    >
+                      {{ cls.className }}
+                    </app-selectable-pill>
+                  }
+                </div>
+
+                <!-- Member preview -->
+                @if (isLoadingMembers()) {
+                  <p class="member-hint">Laddar medlemmar...</p>
+                } @else if (classMembers().length) {
+                  <div class="member-preview">
+                    <p class="member-hint">
+                      {{ classMembers().length }} medlem{{
+                        classMembers().length !== 1 ? 'mar' : ''
+                      }}
+                      kommer bjudas in
+                    </p>
+                    <div class="member-list">
+                      @for (member of classMembers(); track member.userId) {
+                        <span class="member-chip">{{ member.displayName }}</span>
+                      }
+                    </div>
+                  </div>
                 }
               </div>
-
-              <!-- Member preview -->
-              @if (isLoadingMembers()) {
-                <p class="member-hint">Laddar medlemmar...</p>
-              } @else if (classMembers().length) {
-                <div class="member-preview">
-                  <p class="member-hint">
-                    {{ classMembers().length }} medlem{{
-                      classMembers().length !== 1 ? 'mar' : ''
-                    }}
-                    kommer bjudas in
-                  </p>
-                  <div class="member-list">
-                    @for (member of classMembers(); track member.userId) {
-                      <span class="member-chip">{{ member.displayName }}</span>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-          }
-        </div>
-      }
+            }
+          </div>
+        }
+      </div>
     </div>
 
-    <div class="modal-actions">
+    <div class="modal-footer">
       <app-button type="button" variant="tertiary" (clicked)="modalService.close()">
         Avbryt
       </app-button>

@@ -16,7 +16,7 @@ export interface AssetTypesModalConfig {
   selector: 'app-asset-types-modal',
   imports: [ButtonComponent],
   template: `
-    <div class="asset-types-form">
+    <div class="modal-content-body">
       <!-- Create row -->
       <div class="at-create-row">
         <input
@@ -101,21 +101,15 @@ export interface AssetTypesModalConfig {
           </div>
         }
       </div>
+    </div>
 
-      <div class="at-footer">
-        <app-button variant="tertiary" (clicked)="onClose()">Stäng</app-button>
-      </div>
+    <div class="modal-footer">
+      <app-button variant="tertiary" (clicked)="onClose()">Stäng</app-button>
     </div>
   `,
   styles: [
     `
       @use 'styles/mixins' as *;
-
-      .asset-types-form {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-      }
 
       .at-create-row {
         display: flex;
@@ -217,11 +211,6 @@ export interface AssetTypesModalConfig {
           color: var(--color-danger);
         }
       }
-
-      .at-footer {
-        display: flex;
-        justify-content: flex-end;
-      }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -315,3 +304,4 @@ export class AssetTypesModalComponent {
     this.modalService.close();
   }
 }
+

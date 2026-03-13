@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { BadgeComponent } from '../../../shared/components/badge/badge.component';
 import { BookingService } from '../../../shared/services/booking.service';
 import { BookingDetailedReadModel, BookingStatus } from '../../../models/models';
 import {
@@ -21,11 +22,11 @@ export interface BookingEditModalConfig {
 
 @Component({
   selector: 'app-booking-edit-modal',
-  imports: [DatePipe, ButtonComponent, FormsModule],
+  imports: [DatePipe, ButtonComponent, BadgeComponent, FormsModule],
   template: `
     <div class="booking-modal">
       <!-- Hero: Room + Status -->
-      <div class="modal-hero" [attr.data-status]="booking.status">
+      <div class="modal-hero-banner" [attr.data-status]="booking.status">
         <div class="hero-top">
           <div class="room-icon-badge">
             @switch (getRoomIconType(booking.roomType)) {
@@ -62,9 +63,9 @@ export interface BookingEditModalConfig {
               }
             }
           </div>
-          <span class="status-badge" [attr.data-status]="booking.status">
+          <app-badge [variant]="getStatusVariant(booking.status)">
             {{ statusLabel(booking.status) }}
-          </span>
+          </app-badge>
         </div>
         
         <h3 class="hero-room">{{ booking.roomName ?? 'Okänt rum' }}</h3>
@@ -88,13 +89,13 @@ export interface BookingEditModalConfig {
         @if (booking.roomAssets?.length) {
           <div class="hero-assets">
             @for (asset of booking.roomAssets!; track asset) {
-              <span class="asset-chip">{{ asset }}</span>
+              <app-badge variant="asset">{{ asset }}</app-badge>
             }
           </div>
         }
       </div>
 
-      <div class="modal-body-content">
+      <div class="modal-content-body">
         <!-- Section: Time -->
         <div class="info-card">
           <div class="info-card-icon">
@@ -107,10 +108,10 @@ export interface BookingEditModalConfig {
           </div>
           <div class="info-card-content">
             <div class="info-label">Tid & Datum</div>
-            <div class="info-value">
+            <div class="info-card-value">
               {{ booking.startTime | date: 'EEEE d MMMM yyyy' : '' : 'sv' }}
             </div>
-            <div class="info-sub-value">
+            <div class="info-card-sub">
               {{ booking.startTime | date: 'HH:mm' }} – {{ booking.endTime | date: 'HH:mm' }}
               @if (booking.recurringGroupId) {
                 <span class="recurring-inline-badge" title="Återkommande bokning">
@@ -131,8 +132,8 @@ export interface BookingEditModalConfig {
           </div>
           <div class="info-card-content">
             <div class="info-label">Bokare</div>
-            <div class="info-value">{{ booking.userName ?? '—' }}</div>
-            <div class="info-sub-value">
+            <div class="info-card-value">{{ booking.userName ?? '—' }}</div>
+            <div class="info-card-sub">
               <a [href]="'mailto:' + booking.userEmail" class="email-link">
                 {{ booking.userEmail ?? '' }}
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
@@ -161,7 +162,7 @@ export interface BookingEditModalConfig {
               </div>
               <div class="info-card-content">
                 <div class="info-label">Deltagare</div>
-                <div class="info-value">{{ booking.registrationCount }} st</div>
+                <div class="info-card-value">{{ booking.registrationCount }} st</div>
               </div>
               <div class="expand-arrow" [class.expanded]="showParticipants()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -179,7 +180,7 @@ export interface BookingEditModalConfig {
             </div>
             <div class="info-card-content">
               <div class="info-label">Anteckning</div>
-              <div class="info-value info-value--notes">{{ booking.notes || '—' }}</div>
+              <div class="info-card-value info-card-value--notes">{{ booking.notes || '—' }}</div>
             </div>
           </div>
         </div>
@@ -232,7 +233,7 @@ export interface BookingEditModalConfig {
       </div>
 
       <!-- Footer: Meta + Actions -->
-      <div class="modal-footer">
+      <div class="modal-footer modal-footer--between">
         <div class="timestamps">
           <span>Skapad: {{ booking.createdAt | date: 'yyyy-MM-dd HH:mm' }}</span>
           @if (booking.updatedAt) {
@@ -293,17 +294,6 @@ export interface BookingEditModalConfig {
         display: flex;
         flex-direction: column;
         gap: 0;
-      }
-
-      /* ── Hero ── */
-      .modal-hero {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        padding: 24px;
-        margin: -24px -24px 0;
-        background: var(--color-bg-panel);
-        border-bottom: 1px solid var(--color-border);
       }
 
       .hero-top {
@@ -370,109 +360,24 @@ export interface BookingEditModalConfig {
         margin-top: 4px;
       }
 
-      .asset-chip {
-        display: inline-flex;
-        padding: 2px 10px;
-        background: var(--color-bg-card);
-        color: var(--color-text-secondary);
-        border: 1px solid var(--color-border);
-        border-radius: 6px;
-        font-size: 0.7rem;
-        font-weight: 600;
-      }
-
-      .status-badge {
-        display: inline-flex;
-        padding: 4px 12px;
-        border-radius: 999px;
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-
-        &[data-status='Active'] { background: var(--color-success-surface); color: var(--color-success); }
-        &[data-status='Pending'] { background: #fef3c7; color: #b45309; }
-        &[data-status='Cancelled'] { background: var(--color-danger-surface); color: var(--color-danger); }
-        &[data-status='Expired'] { background: var(--color-bg-panel); color: var(--color-text-muted); border: 1px solid var(--color-border); }
-      }
-
-      /* ── Body ── */
-      .modal-body-content {
-        padding: 20px 0;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-
-      .info-card {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        padding: 14px 16px;
-        background: var(--color-bg-panel);
-        border: 1px solid var(--color-border);
-        border-radius: 12px;
-        transition: all 0.2s ease;
-
-        &--compact {
-          padding: 10px 14px;
-        }
-
-        &.clickable {
-          cursor: pointer;
-          &:hover {
-            border-color: var(--color-primary);
-            background: var(--color-bg-card);
-          }
+      .info-card.clickable {
+        cursor: pointer;
+        &:hover {
+          border-color: var(--color-primary);
+          background: var(--color-bg-card);
         }
       }
 
-      .info-card-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        background: var(--color-bg-card);
-        color: var(--color-text-muted);
-        border-radius: 8px;
-        flex-shrink: 0;
-
-        svg { width: 18px; height: 18px; }
+      .info-card-value--notes {
+        font-weight: 500;
+        font-style: italic;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
 
-      .info-card-content {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-      }
-
-      .info-label {
-        font-size: 0.65rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--color-text-muted);
-        margin-bottom: 1px;
-      }
-
-      .info-value {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: var(--color-text-primary);
-        &--notes {
-          font-weight: 500;
-          font-style: italic;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      }
-
-      .info-sub-value {
-        font-size: 0.8rem;
-        color: var(--color-text-muted);
+      .info-card-sub {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -632,13 +537,6 @@ export interface BookingEditModalConfig {
       }
 
       /* ── Footer ── */
-      .modal-footer {
-        margin-top: 8px;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-      }
-
       .timestamps {
         display: flex;
         flex-wrap: wrap;
@@ -785,6 +683,21 @@ export class BookingEditModalComponent {
         return 'Utgången';
       default:
         return '—';
+    }
+  }
+
+  getStatusVariant(status?: BookingStatus): any {
+    switch (status) {
+      case BookingStatus.Active:
+        return 'success';
+      case BookingStatus.Pending:
+        return 'warning';
+      case BookingStatus.Cancelled:
+        return 'danger';
+      case BookingStatus.Expired:
+        return 'neutral';
+      default:
+        return 'neutral';
     }
   }
 

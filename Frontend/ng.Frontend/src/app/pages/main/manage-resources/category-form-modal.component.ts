@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { BadgeComponent } from '../../../shared/components/badge/badge.component';
 import { ModalService } from '../../../shared/services/modal.service';
 import { ResourceService } from '../../../core/services/resource.service';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -10,21 +11,21 @@ import { ResourceCategoryDto, CreateResourceCategoryDto } from '../../../models/
 
 @Component({
   selector: 'app-category-form-modal',
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, BadgeComponent],
   template: `
-    <div class="category-manager">
-      <div class="existing-categories">
-        <h3>Befintliga kategorier</h3>
-        <ul>
+    <div class="modal-content-body">
+      <div class="form-section">
+        <h3 class="form-section-title">Befintliga kategorier</h3>
+        <ul class="existing-categories">
           @for (cat of categories(); track cat.id) {
-            <li>{{ cat.name }}</li>
+            <li>
+              <app-badge variant="brand">{{ cat.name }}</app-badge>
+            </li>
           } @empty {
             <li class="empty">Inga kategorier skapade än.</li>
           }
         </ul>
       </div>
-
-      <hr />
 
       <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()" class="inline-form">
         <div class="form-group">
@@ -37,24 +38,18 @@ import { ResourceCategoryDto, CreateResourceCategoryDto } from '../../../models/
           </div>
         </div>
       </form>
+    </div>
 
-      <div class="modal-actions">
-        <app-button variant="primary" (clicked)="close()">Klar</app-button>
-      </div>
+    <div class="modal-footer">
+      <app-button variant="primary" (clicked)="close()">Klar</app-button>
     </div>
   `,
   styles: [`
-    .category-manager { display: flex; flex-direction: column; gap: 1.5rem; padding: 0.5rem; }
-    .existing-categories h3 { font-size: 0.9rem; margin: 0 0 0.5rem; color: var(--color-text-secondary); }
-    .existing-categories ul { list-style: none; padding: 0; margin: 0.5rem 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
-    .existing-categories li { background: var(--color-primary-surface); color: var(--color-primary); padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.875rem; border: 1px solid var(--color-primary-light); }
-    .existing-categories li.empty { background: transparent; color: var(--color-text-muted); font-style: italic; border: none; }
+    .existing-categories { list-style: none; padding: 0; margin: 0.5rem 0 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .existing-categories li.empty { color: var(--color-text-muted); font-style: italic; font-size: var(--font-sm); }
     .inline-form .input-with-btn { display: flex; gap: 0.5rem; }
     .inline-form input { flex: 1; padding: 0.6rem; border-radius: var(--radii-md); border: 1px solid var(--color-border); background: var(--color-bg-panel); color: var(--color-text-primary); }
-    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-    .form-group label { font-size: 0.875rem; font-weight: 500; }
-    .modal-actions { display: flex; justify-content: flex-end; margin-top: 1rem; }
-    hr { border: none; border-top: 1px solid var(--color-border); margin: 0; }
+    .form-group label { font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; display: block; }
   `]
 })
 export class CategoryFormModalComponent {

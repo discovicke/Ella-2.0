@@ -15,280 +15,283 @@ import { firstValueFrom } from 'rxjs';
   selector: 'app-import-users-modal',
   imports: [ButtonComponent],
   template: `
-    <!-- Step dots -->
-    <div class="steps">
-      <div
-        class="step"
-        [class.active]="currentStep() === 'form'"
-        [class.done]="currentStep() !== 'form'"
-      ></div>
-      <div class="step-line" [class.done]="currentStep() !== 'form'"></div>
-      <div
-        class="step"
-        [class.active]="currentStep() === 'importing'"
-        [class.done]="currentStep() === 'done'"
-      ></div>
-      <div class="step-line" [class.done]="currentStep() === 'done'"></div>
-      <div class="step" [class.active]="currentStep() === 'done'"></div>
-    </div>
+    <div class="modal-content-body">
+      <!-- Step dots -->
+      <div class="steps">
+        <div
+          class="step"
+          [class.active]="currentStep() === 'form'"
+          [class.done]="currentStep() !== 'form'"
+        ></div>
+        <div class="step-line" [class.done]="currentStep() !== 'form'"></div>
+        <div
+          class="step"
+          [class.active]="currentStep() === 'importing'"
+          [class.done]="currentStep() === 'done'"
+        ></div>
+        <div class="step-line" [class.done]="currentStep() === 'done'"></div>
+        <div class="step" [class.active]="currentStep() === 'done'"></div>
+      </div>
 
-    @if (unknownCampuses().length) {
-      <div class="conflict-view">
-        <div class="conflict-header">
-          <div class="conflict-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path
-                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-              />
-              <line x1="12" y1="9" x2="12" y2="13" />
-              <line x1="12" y1="17" x2="12.01" y2="17" />
-            </svg>
-          </div>
-          <div>
-            <h3>Okända studieorter</h3>
-            <p class="conflict-subtitle">
-              {{ unknownCampuses().length }} studieort{{ unknownCampuses().length > 1 ? 'er' : '' }}
-              saknas i systemet
-            </p>
-          </div>
-        </div>
-        <p class="conflict-description">
-          Användare med dessa studieorter kommer inte att kopplas till ett campus. Du kan avbryta
-          och lägga till campus manuellt först, eller fortsätta ändå.
-        </p>
-        <ul class="conflict-list">
-          @for (name of unknownCampuses(); track name) {
-            <li>
+      @if (unknownCampuses().length) {
+        <div class="conflict-view">
+          <div class="conflict-header">
+            <div class="conflict-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="15" y1="9" x2="9" y2="15" />
-                <line x1="9" y1="9" x2="15" y2="15" />
-              </svg>
-              {{ name }}
-            </li>
-          }
-        </ul>
-        <div class="conflict-actions">
-          <app-button variant="primary" [disabled]="isSubmitting()" (clicked)="onConfirmImport()">
-            Fortsätt ändå
-          </app-button>
-          <app-button variant="tertiary" [disabled]="isSubmitting()" (clicked)="onAbortImport()">
-            Avbryt
-          </app-button>
-        </div>
-      </div>
-    } @else if (isImporting()) {
-      <div class="importing-view">
-        <div class="importing-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
-        </div>
-        <h3 class="importing-title">Importerar användare</h3>
-        <p class="importing-subtitle">
-          {{ selectedFile()?.name }} &middot; {{ selectedClass()?.className }}
-        </p>
-        <div class="progress-track">
-          <div class="progress-bar"></div>
-        </div>
-        <p class="importing-hint">Detta kan ta en stund beroende på antalet användare...</p>
-      </div>
-    } @else if (!result()) {
-      <form (submit)="$event.preventDefault(); onSubmit()" class="import-form">
-        <p class="description">
-          Importera användare från en CSV-fil. Varje användare får ett genererat platshållarlösenord
-          och kopplas till den angivna klassen.
-        </p>
-
-        <div class="form-group">
-          <label>Klass</label>
-          <div class="class-search-wrapper">
-            @if (selectedClass()) {
-              <div class="selected-class">
-                <span>{{ selectedClass()!.className }}</span>
-                <button type="button" class="clear-class" (click)="clearClass()">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              </div>
-            } @else {
-              <div class="search-input-wrap">
-                <svg
-                  class="search-icon"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
-                <input
-                  type="text"
-                  [value]="classSearch()"
-                  (input)="onClassSearchInput($event)"
-                  (focus)="showClassDropdown.set(true)"
-                  (blur)="hideClassDropdown()"
-                  placeholder="Sök klass..."
-                  autocomplete="off"
+                <path
+                  d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
                 />
-              </div>
-            }
-            @if (showClassDropdown() && !selectedClass()) {
-              <ul class="class-dropdown">
-                @for (cls of filteredClasses(); track cls.id) {
-                  <li (mousedown)="selectClass(cls)">
-                    {{ cls.className }}
-                  </li>
-                } @empty {
-                  <li class="no-results">Inga klasser hittades</li>
-                }
-              </ul>
-            }
-          </div>
-          @if (!selectedClass() && classError()) {
-            <span class="error-msg">{{ classError() }}</span>
-          }
-        </div>
-
-        <div class="form-group">
-          <label>Roll</label>
-          <select class="role-select" (change)="onRoleChange($event)">
-            <option [value]="''">Ingen roll</option>
-            @for (template of roleOptions; track template.id) {
-              <option [value]="template.id">{{ template.label }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>CSV-fil</label>
-          <div
-            class="drop-zone"
-            [class.has-file]="selectedFile()"
-            [class.drag-over]="isDragOver()"
-            (click)="fileInput.click()"
-            (dragover)="onDragOver($event)"
-            (dragleave)="onDragLeave($event)"
-            (drop)="onDrop($event)"
-          >
-            <input #fileInput type="file" accept=".csv" hidden (change)="onFileSelected($event)" />
-
-            @if (selectedFile()) {
-              <div class="file-info">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                </svg>
-                <div class="file-details">
-                  <span class="file-name">{{ selectedFile()!.name }}</span>
-                  <span class="file-size">{{ formatFileSize(selectedFile()!.size) }}</span>
-                </div>
-                <button type="button" class="remove-file" (click)="removeFile($event)">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              </div>
-            } @else {
-              <div class="drop-prompt">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="17 8 12 3 7 8" />
-                  <line x1="12" y1="3" x2="12" y2="15" />
-                </svg>
-                <span>Dra och släpp en CSV-fil här, eller klicka för att välja</span>
-                <span class="hint">UTF-8, semikolon-separerad</span>
-              </div>
-            }
-          </div>
-          @if (fileError()) {
-            <span class="error-msg">{{ fileError() }}</span>
-          }
-        </div>
-
-        <div class="form-actions">
-          <app-button variant="tertiary" (clicked)="onCancel()">Avbryt</app-button>
-          <app-button
-            type="submit"
-            variant="primary"
-            [disabled]="!selectedClass() || !selectedFile() || isSubmitting()"
-          >
-            {{ isSubmitting() ? 'Validerar...' : 'Importera' }}
-          </app-button>
-        </div>
-      </form>
-    } @else {
-      <div class="result-view">
-        <div class="result-icon" [class.has-errors]="result()!.errors.length">
-          @if (!result()!.errors.length) {
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-              <polyline points="22 4 12 14.01 9 11.01" />
-            </svg>
-          } @else {
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-          }
-        </div>
-
-        <h3 class="result-title">
-          {{ result()!.errors.length ? 'Import klar med anmärkningar' : 'Import klar' }}
-        </h3>
-        <p class="result-class">Klass: {{ result()!.className }}</p>
-
-        <div class="result-summary">
-          <div class="result-stat success">
-            <span class="stat-value">{{ result()!.created }}</span>
-            <span class="stat-label">Skapade</span>
-          </div>
-          @if (result()!.updated) {
-            <div class="result-stat info">
-              <span class="stat-value">{{ result()!.updated }}</span>
-              <span class="stat-label">Uppdaterade</span>
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
             </div>
-          }
-          <div class="result-stat warning">
-            <span class="stat-value">{{ result()!.skipped }}</span>
-            <span class="stat-label">Hoppade över</span>
+            <div>
+              <h3>Okända studieorter</h3>
+              <p class="conflict-subtitle">
+                {{ unknownCampuses().length }} studieort{{ unknownCampuses().length > 1 ? 'er' : '' }}
+                saknas i systemet
+              </p>
+            </div>
           </div>
-          <div class="result-stat neutral">
-            <span class="stat-value">{{ result()!.totalRows }}</span>
-            <span class="stat-label">Totalt</span>
-          </div>
+          <p class="conflict-description">
+            Användare med dessa studieorter kommer inte att kopplas till ett campus. Du kan avbryta
+            och lägga till campus manuellt först, eller fortsätta ändå.
+          </p>
+          <ul class="conflict-list">
+            @for (name of unknownCampuses(); track name) {
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="15" y1="9" x2="9" y2="15" />
+                  <line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
+                {{ name }}
+              </li>
+            }
+          </ul>
         </div>
+      } @else if (isImporting()) {
+        <div class="importing-view">
+          <div class="importing-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          </div>
+          <h3 class="importing-title">Importerar användare</h3>
+          <p class="importing-subtitle">
+            {{ selectedFile()?.name }} &middot; {{ selectedClass()?.className }}
+          </p>
+          <div class="progress-track">
+            <div class="progress-bar"></div>
+          </div>
+          <p class="importing-hint">Detta kan ta en stund beroende på antalet användare...</p>
+        </div>
+      } @else if (!result()) {
+        <form (submit)="$event.preventDefault(); onSubmit()" class="import-form" id="importForm">
+          <p class="description">
+            Importera användare från en CSV-fil. Varje användare får ett genererat platshållarlösenord
+            och kopplas till den angivna klassen.
+          </p>
 
-        @if (result()!.errors.length) {
-          <div class="result-errors">
-            <p class="errors-title">
+          <div class="form-group">
+            <label>Klass</label>
+            <div class="class-search-wrapper">
+              @if (selectedClass()) {
+                <div class="selected-class">
+                  <span>{{ selectedClass()!.className }}</span>
+                  <button type="button" class="clear-class" (click)="clearClass()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              } @else {
+                <div class="search-input-wrap">
+                  <svg
+                    class="search-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.35-4.35" />
+                  </svg>
+                  <input
+                    type="text"
+                    [value]="classSearch()"
+                    (input)="onClassSearchInput($event)"
+                    (focus)="showClassDropdown.set(true)"
+                    (blur)="hideClassDropdown()"
+                    placeholder="Sök klass..."
+                    autocomplete="off"
+                  />
+                </div>
+              }
+              @if (showClassDropdown() && !selectedClass()) {
+                <ul class="class-dropdown">
+                  @for (cls of filteredClasses(); track cls.id) {
+                    <li (mousedown)="selectClass(cls)">
+                      {{ cls.className }}
+                    </li>
+                  } @empty {
+                    <li class="no-results">Inga klasser hittades</li>
+                  }
+                </ul>
+              }
+            </div>
+            @if (!selectedClass() && classError()) {
+              <span class="error-msg">{{ classError() }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label>Roll</label>
+            <select class="role-select" (change)="onRoleChange($event)">
+              <option [value]="''">Ingen roll</option>
+              @for (template of roleOptions; track template.id) {
+                <option [value]="template.id">{{ template.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>CSV-fil</label>
+            <div
+              class="drop-zone"
+              [class.has-file]="selectedFile()"
+              [class.drag-over]="isDragOver()"
+              (click)="fileInput.click()"
+              (dragover)="onDragOver($event)"
+              (dragleave)="onDragLeave($event)"
+              (drop)="onDrop($event)"
+            >
+              <input #fileInput type="file" accept=".csv" hidden (change)="onFileSelected($event)" />
+
+              @if (selectedFile()) {
+                <div class="file-info">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                  <div class="file-details">
+                    <span class="file-name">{{ selectedFile()!.name }}</span>
+                    <span class="file-size">{{ formatFileSize(selectedFile()!.size) }}</span>
+                  </div>
+                  <button type="button" class="remove-file" (click)="removeFile($event)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              } @else {
+                <div class="drop-prompt">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                  <span>Dra och släpp en CSV-fil här, eller klicka för att välja</span>
+                  <span class="hint">UTF-8, semikolon-separerad</span>
+                </div>
+              }
+            </div>
+            @if (fileError()) {
+              <span class="error-msg">{{ fileError() }}</span>
+            }
+          </div>
+        </form>
+      } @else {
+        <div class="result-view">
+          <div class="result-icon" [class.has-errors]="result()!.errors.length">
+            @if (!result()!.errors.length) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            } @else {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="8" x2="12" y2="12" />
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
-              Detaljer ({{ result()!.errors.length }})
-            </p>
-            <ul>
-              @for (error of result()!.errors; track error) {
-                <li>{{ error }}</li>
-              }
-            </ul>
+            }
           </div>
-        }
 
-        <div class="form-actions">
-          <app-button variant="primary" (clicked)="onCancel()">Stäng</app-button>
+          <h3 class="result-title">
+            {{ result()!.errors.length ? 'Import klar med anmärkningar' : 'Import klar' }}
+          </h3>
+          <p class="result-class">Klass: {{ result()!.className }}</p>
+
+          <div class="result-summary">
+            <div class="result-stat success">
+              <span class="stat-value">{{ result()!.created }}</span>
+              <span class="stat-label">Skapade</span>
+            </div>
+            @if (result()!.updated) {
+              <div class="result-stat info">
+                <span class="stat-value">{{ result()!.updated }}</span>
+                <span class="stat-label">Uppdaterade</span>
+              </div>
+            }
+            <div class="result-stat warning">
+              <span class="stat-value">{{ result()!.skipped }}</span>
+              <span class="stat-label">Hoppade över</span>
+            </div>
+            <div class="result-stat neutral">
+              <span class="stat-value">{{ result()!.totalRows }}</span>
+              <span class="stat-label">Totalt</span>
+            </div>
+          </div>
+
+          @if (result()!.errors.length) {
+            <div class="result-errors">
+              <p class="errors-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                Detaljer ({{ result()!.errors.length }})
+              </p>
+              <ul>
+                @for (error of result()!.errors; track error) {
+                  <li>{{ error }}</li>
+                }
+              </ul>
+            </div>
+          }
         </div>
-      </div>
-    }
+      }
+    </div>
+
+    <div class="modal-footer">
+      @if (unknownCampuses().length) {
+        <app-button variant="tertiary" [disabled]="isSubmitting()" (clicked)="onAbortImport()">
+          Avbryt
+        </app-button>
+        <app-button variant="primary" [disabled]="isSubmitting()" (clicked)="onConfirmImport()">
+          Fortsätt ändå
+        </app-button>
+      } @else if (!result() && !isImporting()) {
+        <app-button variant="tertiary" (clicked)="onCancel()">Avbryt</app-button>
+        <app-button
+          form="importForm"
+          type="submit"
+          variant="primary"
+          [disabled]="!selectedClass() || !selectedFile() || isSubmitting()"
+          (clicked)="onSubmit()"
+        >
+          {{ isSubmitting() ? 'Validerar...' : 'Importera' }}
+        </app-button>
+      } @else if (result()) {
+        <app-button variant="primary" (clicked)="onCancel()">Stäng</app-button>
+      }
+    </div>
   `,
   styles: [
     `
@@ -416,12 +419,6 @@ import { firstValueFrom } from 'rxjs';
             flex: 1;
           }
         }
-      }
-
-      .conflict-actions {
-        display: flex;
-        gap: 0.75rem;
-        margin-top: 0.25rem;
       }
 
       /* Importing view */
@@ -780,13 +777,6 @@ import { firstValueFrom } from 'rxjs';
           background: var(--color-danger-surface, rgba(220, 38, 38, 0.1));
           color: var(--color-danger);
         }
-      }
-
-      .form-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.75rem;
-        margin-top: 0.25rem;
       }
 
       /* Result view */
