@@ -15,7 +15,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            var sql = "SELECT * FROM users ORDER BY id;";
+            var sql = "SELECT * FROM v_users_with_level ORDER BY id;";
             return await conn.QueryAsync<User>(sql);
         }
         catch (Exception ex)
@@ -64,14 +64,14 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
                 parameters.Add("IsBanned", (int)bannedStatus.Value);
             }
 
-            var countSql = $"SELECT COUNT(*) FROM users {where};";
+            var countSql = $"SELECT COUNT(*) FROM v_users_with_level {where};";
             var totalCount = await conn.ExecuteScalarAsync<int>(countSql, parameters);
 
             var offset = (page - 1) * pageSize;
             parameters.Add("Limit", pageSize);
             parameters.Add("Offset", offset);
 
-            var dataSql = $"SELECT * FROM users {where} ORDER BY id LIMIT @Limit OFFSET @Offset;";
+            var dataSql = $"SELECT * FROM v_users_with_level {where} ORDER BY id LIMIT @Limit OFFSET @Offset;";
             var users = await conn.QueryAsync<User>(dataSql, parameters);
 
             return (users, totalCount);
@@ -89,7 +89,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            var sql = "SELECT * FROM users WHERE id = @id;";
+            var sql = "SELECT * FROM v_users_with_level WHERE id = @id;";
             return await conn.QuerySingleOrDefaultAsync<User>(sql, new { id });
         }
         catch (Exception ex)
@@ -105,7 +105,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            var sql = "SELECT * FROM users WHERE email = @email;";
+            var sql = "SELECT * FROM v_users_with_level WHERE email = @email;";
             return await conn.QuerySingleOrDefaultAsync<User>(sql, new { email });
         }
         catch (Exception ex)
@@ -126,7 +126,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
             var escaped = query.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_");
             var sql = """
                 SELECT id AS Id, display_name AS DisplayName, email AS Email
-                FROM users
+                FROM v_users_with_level
                 WHERE (display_name LIKE @Search ESCAPE '\' OR email LIKE @Search ESCAPE '\')
                   AND is_banned = 0
                   AND id != @ExcludeUserId
@@ -160,8 +160,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
 
             var sql =
                 @"
-            INSERT INTO users (email, password_hash, display_name, is_banned, is_active, permission_level, permission_template_id)
-            VALUES (@Email, @PasswordHash, @DisplayName, @IsBanned, @IsActive, @PermissionLevel, @PermissionTemplateId);";
+            INSERT INTO users (email, password_hash, display_name, is_banned, is_active, permission_level_override, permission_template_id)
+            VALUES (@Email, @PasswordHash, @DisplayName, @IsBanned, @IsActive, @PermissionLevelOverride, @PermissionTemplateId);";
 
             var rowsAffected = await conn.ExecuteAsync(
                 sql,
@@ -172,7 +172,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
                     user.DisplayName,
                     user.IsBanned,
                     user.IsActive,
-                    user.PermissionLevel,
+                    user.PermissionLevelOverride,
                     user.PermissionTemplateId,
                 }
             );
@@ -201,7 +201,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
                 display_name = @DisplayName,
                 is_banned = @IsBanned,
                 is_active = @IsActive,
-                permission_level = @PermissionLevel,
+                permission_level_override = @PermissionLevelOverride,
                 tokens_valid_after = @TokensValidAfter,
                 permission_template_id = @PermissionTemplateId
             WHERE id = @Id;";
@@ -215,7 +215,7 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
                     user.DisplayName,
                     user.IsBanned,
                     user.IsActive,
-                    user.PermissionLevel,
+                    user.PermissionLevelOverride,
                     user.TokensValidAfter,
                     user.PermissionTemplateId,
                     Id = id,

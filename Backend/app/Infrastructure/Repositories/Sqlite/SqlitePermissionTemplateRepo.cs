@@ -19,7 +19,7 @@ public class SqlitePermissionTemplateRepo(
 
             var templates = (
                 await conn.QueryAsync<PermissionTemplate>(
-                    "SELECT * FROM permission_templates ORDER BY sort_order, id;"
+                    "SELECT * FROM permission_templates ORDER BY default_permission_level DESC, id;"
                 )
             ).ToList();
 
@@ -36,6 +36,7 @@ public class SqlitePermissionTemplateRepo(
                     Name = t.Name,
                     Label = t.Label,
                     CssClass = t.CssClass,
+                    DefaultPermissionLevel = t.DefaultPermissionLevel,
                     Permissions = flags
                         .Where(f => f.TemplateId == t.Id)
                         .ToDictionary(f => f.PermissionKey, f => f.Value),
@@ -77,6 +78,7 @@ public class SqlitePermissionTemplateRepo(
                 Name = template.Name,
                 Label = template.Label,
                 CssClass = template.CssClass,
+                DefaultPermissionLevel = template.DefaultPermissionLevel,
                 Permissions = flags.ToDictionary(f => f.PermissionKey, f => f.Value),
             };
         }
@@ -160,7 +162,7 @@ public class SqlitePermissionTemplateRepo(
                     // Update existing
                     await conn.ExecuteAsync(
                         @"UPDATE permission_templates 
-                          SET name = @Name, label = @Label, css_class = @CssClass, sort_order = @SortOrder
+                          SET name = @Name, label = @Label, css_class = @CssClass, default_permission_level = @DefaultPermissionLevel
                           WHERE id = @Id;",
                         new
                         {
@@ -170,7 +172,7 @@ public class SqlitePermissionTemplateRepo(
                                 : tpl.Label.ToLower().Replace(" ", "-"),
                             tpl.Label,
                             tpl.CssClass,
-                            SortOrder = i,
+                            DefaultPermissionLevel = tpl.DefaultPermissionLevel,
                         },
                         transaction: tx
                     );
@@ -180,8 +182,8 @@ public class SqlitePermissionTemplateRepo(
                 {
                     // Insert new
                     templateId = await conn.ExecuteScalarAsync<long>(
-                        @"INSERT INTO permission_templates (name, label, css_class, sort_order)
-                          VALUES (@Name, @Label, @CssClass, @SortOrder);
+                        @"INSERT INTO permission_templates (name, label, css_class, default_permission_level)
+                          VALUES (@Name, @Label, @CssClass, @DefaultPermissionLevel);
                           SELECT last_insert_rowid();",
                         new
                         {
@@ -190,7 +192,7 @@ public class SqlitePermissionTemplateRepo(
                                 : tpl.Label.ToLower().Replace(" ", "-"),
                             tpl.Label,
                             tpl.CssClass,
-                            SortOrder = i,
+                            DefaultPermissionLevel = tpl.DefaultPermissionLevel,
                         },
                         transaction: tx
                     );
