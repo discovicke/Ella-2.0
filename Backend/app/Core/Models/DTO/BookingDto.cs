@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Backend.app.Core.Models.Enums;
+using Backend.app.Core.Models.Entities;
 
 namespace Backend.app.Core.Models.DTO;
 
@@ -14,7 +15,30 @@ public record CreateBookingDto(
     long[]? ClassIds = null,
     string? BookerName = null,
     string? RecurrencePattern = null, // "daily", "weekly", "biweekly", "monthly"
-    DateTime? RecurrenceEnd = null
+    DateTime? RecurrenceEnd = null,
+    bool OverwriteConflicts = false
+);
+
+public record ConflictDetailDto(
+    long BookingId,
+    DateTime StartTime,
+    DateTime EndTime,
+    string UserName,
+    string? UserEmail,
+    int UserPermissionLevel
+);
+
+public record BookingConflictResponseDto(
+    bool RequiresConfirmation,
+    string Message,
+    List<ConflictDetailDto> Conflicts
+);
+
+public record BookingCreateResultDto(
+    Booking? Booking = null,
+    BookingConflictResponseDto? ConflictResponse = null,
+    bool Success = true,
+    string? ErrorMessage = null
 );
 
 /// <summary>

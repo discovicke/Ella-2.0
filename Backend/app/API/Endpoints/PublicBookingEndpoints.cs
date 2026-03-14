@@ -121,20 +121,20 @@ public static class PublicBookingEndpoints
 
                     try
                     {
-                        var booking = await bookingService.CreateBookingAsync(createDto);
+                        var result = await bookingService.CreateBookingAsync(createDto);
 
-                        if (booking is null)
+                        if (!result.Success || result.Booking is null)
                         {
                             return Results.Conflict(
-                                new { message = "The room is already booked for this time period." }
+                                new { message = result.ErrorMessage ?? "The room is already booked for this time period." }
                             );
                         }
 
                         return Results.Created(
-                            $"/api/public/bookings/{booking.Id}",
+                            $"/api/public/bookings/{result.Booking.Id}",
                             new
                             {
-                                id = booking.Id,
+                                id = result.Booking.Id,
                                 message = "Your booking request has been submitted and is awaiting approval.",
                                 status = "Pending",
                             }

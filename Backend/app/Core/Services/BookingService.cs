@@ -244,10 +244,11 @@ public class BookingService(
     /// Create a new booking. 
     /// Logic: Lessons can override private bookings. Private bookings cannot override anything.
     /// </summary>
-    public async Task<Booking> CreateBookingAsync(CreateBookingDto dto)
+    public async Task<BookingCreateResultDto> CreateBookingAsync(CreateBookingDto dto)
     {
         // 1. Validation: Existence
-        if (await userRepo.GetUserByIdAsync(dto.UserId) is null)
+        var user = await userRepo.GetUserByIdAsync(dto.UserId);
+        if (user is null)
         {
             throw new KeyNotFoundException($"User with ID {dto.UserId} not found.");
         }
@@ -287,15 +288,19 @@ public class BookingService(
 
                 occurrences.Add((currentStart, currentEnd));
                 
-                // Safety break to prevent infinite loops (max 1 year or 100 occurrences)
+                // Safety break to prevent infinite loops (max 100 occurrences)
                 if (occurrences.Count >= 100) break;
             }
         }
 
         var recurringGroupId = occurrences.Count > 1 ? Guid.NewGuid() : (Guid?)null;
-        var createdBookings = new List<Booking>();
 
         // 2. Check for overlaps for ALL occurrences
+        var userLevel = user?.PermissionLevel ?? 1;
+        var allOverlaps = new List<Booking>();
+        var conflictsToReport = new List<ConflictDetailDto>();
+        bool canOverrideAll = true;
+
         foreach (var occ in occurrences)
         {
             var overlaps = (await repo.GetOverlappingBookingsAsync(
@@ -304,39 +309,55 @@ public class BookingService(
                 occ.End
             )).ToList();
 
-            if (overlaps.Any())
+            foreach (var existing in overlaps)
             {
-                var user = await userRepo.GetUserByIdAsync(dto.UserId);
-                var userLevel = user?.PermissionLevel ?? 1;
+                if (allOverlaps.Any(o => o.Id == existing.Id)) continue;
+                allOverlaps.Add(existing);
 
-                bool canOverrideAll = true;
-                var conflictingUsers = new List<(long BookingId, int Level)>();
+                var existingUser = await userRepo.GetUserByIdAsync(existing.UserId);
+                var existingLevel = existingUser?.PermissionLevel ?? 1;
 
-                foreach (var existing in overlaps)
+                if (userLevel <= existingLevel)
                 {
-                    var existingUser = await userRepo.GetUserByIdAsync(existing.UserId);
-                    var existingLevel = existingUser?.PermissionLevel ?? 1;
-                    
-                    if (userLevel <= existingLevel)
-                    {
-                        canOverrideAll = false;
-                        break;
-                    }
-                    conflictingUsers.Add((existing.Id, existingLevel));
+                    canOverrideAll = false;
                 }
+                
+                conflictsToReport.Add(new ConflictDetailDto(
+                    existing.Id,
+                    existing.StartTime,
+                    existing.EndTime,
+                    existingUser?.DisplayName ?? "Okänd användare",
+                    existingUser?.Email,
+                    existingLevel
+                ));
+            }
+        }
 
-                if (canOverrideAll)
-                {
-                    foreach (var conflict in conflictingUsers)
-                    {
-                        await repo.CancelBookingAsync(conflict.BookingId);
-                    }
-                }
-                else
-                {
-                    throw new InvalidOperationException(
-                        $"Konflikt vid {occ.Start:yyyy-MM-dd HH:mm}: Rummet är upptaget av en användare med samma eller högre prioritet (din nivå: {userLevel}).");
-                }
+        if (allOverlaps.Any())
+        {
+            if (!canOverrideAll)
+            {
+                return new BookingCreateResultDto(
+                    Success: false,
+                    ErrorMessage: $"Konflikt: Rummet är upptaget av en användare med samma eller högre prioritet (din nivå: {userLevel})."
+                );
+            }
+
+            if (!dto.OverwriteConflicts)
+            {
+                return new BookingCreateResultDto(
+                    ConflictResponse: new BookingConflictResponseDto(
+                        true,
+                        "Denna bokning kommer att överskriva befintliga bokningar. Bekräfta överskrivning.",
+                        conflictsToReport
+                    )
+                );
+            }
+
+            // If we have permission and OverwriteConflicts is true, cancel all overlaps
+            foreach (var conflict in allOverlaps)
+            {
+                await repo.CancelBookingAsync(conflict.Id);
             }
         }
 
@@ -371,7 +392,7 @@ public class BookingService(
             }
         }
 
-        return firstBooking!;
+        return new BookingCreateResultDto(Booking: firstBooking!);
     }
 
     /// <summary>
