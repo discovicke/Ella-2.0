@@ -39,6 +39,7 @@ public record AuthedUserResponseDto
     public string? DisplayName { get; set; }
     public UserPermissions? Permissions { get; set; }
     public bool IsBanned { get; set; }
+    public int PermissionLevel { get; set; }
 }
 
 public record TokenValidationResultDto

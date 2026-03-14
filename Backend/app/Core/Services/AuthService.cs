@@ -316,6 +316,7 @@ public class AuthService(
             DisplayName = user.DisplayName,
             Permissions = permissions ?? new UserPermissions { UserId = user.Id }, // Fallback to empty permissions
             IsBanned = user.IsBanned == BannedStatus.Banned,
+            PermissionLevel = user.PermissionLevel,
         };
     }
 }
