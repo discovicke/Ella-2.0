@@ -12,6 +12,7 @@ import { PermissionTemplateService } from '../../../shared/services/permission-t
 import { ToastService } from '../../../shared/services/toast.service';
 import { ConfirmService } from '../../../shared/services/confirm.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { SelectComponent, SelectOption } from '../../../shared/components/select/select.component';
 import { PermissionTemplateDto } from '../../../models/models';
 import { firstValueFrom } from 'rxjs';
 import { initPermissionTemplates } from '../../../core/permission-templates';
@@ -22,6 +23,7 @@ interface EditableTemplate {
   id?: number | null;
   label: string;
   cssClass: string;
+  defaultPermissionLevel: number;
   permissions: Record<string, boolean>;
   isNew?: boolean;
 }
@@ -35,7 +37,7 @@ let nextUid = 0;
 
 @Component({
   selector: 'app-manage-roles-page',
-  imports: [FormsModule, ButtonComponent],
+  imports: [FormsModule, ButtonComponent, SelectComponent],
   templateUrl: './manage-roles.page.html',
   styleUrl: './manage-roles.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -59,6 +61,11 @@ export class ManageRolesPage implements OnInit {
     { label: 'Röd', cssClass: 'red' },
     { label: 'Grå', cssClass: 'gray' },
   ];
+
+  protected readonly permissionLevelOptions: SelectOption[] = Array.from({ length: 10 }, (_, i) => ({
+    id: i + 1,
+    label: `${i + 1}${i === 0 ? ' (Lägst)' : i === 9 ? ' (Högst)' : ''}`
+  }));
 
   private readonly permissionLabelMap: Record<string, string> = {
     BookRoom: 'Boka rum',
@@ -111,9 +118,11 @@ export class ManageRolesPage implements OnInit {
             id: t.id,
             label: t.label ?? '',
             cssClass: this.normalizeCssClass(t.cssClass),
+            defaultPermissionLevel: t.defaultPermissionLevel ?? 1,
             permissions: perms,
           };
-        }),
+        })
+          .sort((a, b) => b.defaultPermissionLevel - a.defaultPermissionLevel)
       );
       this.hasChanges.set(false);
     } catch {
@@ -150,40 +159,29 @@ export class ManageRolesPage implements OnInit {
     this.hasChanges.set(true);
   }
 
+  updateDefaultPermissionLevel(templateIndex: number, value: string | number) {
+    this.templates.update((list) => {
+      const copy = [...list];
+      copy[templateIndex] = { ...copy[templateIndex], defaultPermissionLevel: Number(value) };
+      return copy;
+    });
+    this.hasChanges.set(true);
+  }
+
   addTemplate() {
     const keys = this.permissionKeys();
     const perms: Record<string, boolean> = {};
     keys.forEach((k) => (perms[k] = false));
 
     this.templates.update((list) => [
+      { uid: nextUid++, label: '', cssClass: 'gray', defaultPermissionLevel: 1, permissions: perms, isNew: true },
       ...list,
-      { uid: nextUid++, label: '', cssClass: '', permissions: perms, isNew: true },
     ]);
     this.hasChanges.set(true);
   }
 
   removeTemplate(index: number) {
     this.templates.update((list) => list.filter((_, i) => i !== index));
-    this.hasChanges.set(true);
-  }
-
-  moveUp(index: number) {
-    if (index <= 0) return;
-    this.templates.update((list) => {
-      const copy = [...list];
-      [copy[index - 1], copy[index]] = [copy[index], copy[index - 1]];
-      return copy;
-    });
-    this.hasChanges.set(true);
-  }
-
-  moveDown(index: number) {
-    this.templates.update((list) => {
-      if (index >= list.length - 1) return list;
-      const copy = [...list];
-      [copy[index], copy[index + 1]] = [copy[index + 1], copy[index]];
-      return copy;
-    });
     this.hasChanges.set(true);
   }
 
@@ -222,6 +220,7 @@ export class ManageRolesPage implements OnInit {
           id: t.id,
           label: t.label.trim(),
           cssClass: t.cssClass.trim(),
+          defaultPermissionLevel: t.defaultPermissionLevel,
           permissions: permissions,
         };
       });
@@ -237,8 +236,10 @@ export class ManageRolesPage implements OnInit {
           id: t.id,
           label: t.label ?? '',
           cssClass: this.normalizeCssClass(t.cssClass),
+          defaultPermissionLevel: t.defaultPermissionLevel ?? 1,
           permissions: { ...(t.permissions ?? {}) },
-        })),
+        }))
+        .sort((a, b) => b.defaultPermissionLevel - a.defaultPermissionLevel)
       );
 
       // Refresh the global permission templates signal so the rest of the app updates

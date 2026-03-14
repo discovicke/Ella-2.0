@@ -358,7 +358,7 @@ export class ManageUsersPage implements OnInit {
           displayName: payload.displayName,
           password: payload.password || null,
           isBanned: payload.isBanned || BannedStatus.NotBanned,
-          permissionLevel: payload.permissionLevel,
+          permissionLevelOverride: payload.permissionLevelOverride,
         };
 
         await firstValueFrom(this.userService.updateUser(userId, updatePayload));
@@ -373,6 +373,7 @@ export class ManageUsersPage implements OnInit {
           email: payload.email,
           displayName: payload.displayName,
           password: payload.password ?? '',
+          permissionLevelOverride: payload.permissionLevelOverride,
         };
 
         const created = await firstValueFrom(this.userService.createUser(createPayload));

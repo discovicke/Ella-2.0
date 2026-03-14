@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
 import {
   AbstractControl,
   FormControl,
@@ -19,6 +19,7 @@ import {
 } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { SelectablePillComponent } from '../../../shared/components/selectable-pill/selectable-pill.component';
+import { SelectComponent, SelectOption } from '../../../shared/components/select/select.component';
 
 export interface CustomPermissionsPayload {
   bookRoom: boolean;
@@ -38,7 +39,7 @@ export interface UserFormPayload {
   displayName: string;
   password?: string;
   isBanned?: BannedStatus;
-  permissionLevel: number;
+  permissionLevelOverride: number | null;
   selectedTemplateId: number | null;
   customPermissions: CustomPermissionsPayload;
   campusIds: number[];
@@ -59,12 +60,15 @@ export const passwordMatchValidator: ValidatorFn = (
 
 @Component({
   selector: 'app-user-form-modal',
-  imports: [ReactiveFormsModule, ButtonComponent, SelectablePillComponent],
+  imports: [ReactiveFormsModule, ButtonComponent, SelectablePillComponent, SelectComponent],
   template: `
     <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
       <div class="modal-content-body">
-        <div class="form-row">
-          <div class="form-group flex-3">
+        <!-- Section: Account Information -->
+        <div class="form-section">
+          <p class="form-section-title">Kontoinformation</p>
+          
+          <div class="form-group">
             <label for="displayName">Namn</label>
             <input
               id="displayName"
@@ -73,137 +77,152 @@ export const passwordMatchValidator: ValidatorFn = (
               placeholder="Förnamn Efternamn"
               maxlength="100"
             />
+            @if (userForm.get('displayName')?.invalid && userForm.get('displayName')?.touched) {
+              <span class="error-msg">Namn krävs</span>
+            }
           </div>
-          <div class="form-group flex-1">
-            <label for="permissionLevel" title="Prioritet 1-10 vid bokningskrockar">Nivå</label>
-            <input
-              id="permissionLevel"
-              type="number"
-              formControlName="permissionLevel"
-              min="1"
-              max="10"
-            />
-          </div>
-        </div>
 
-        <div class="form-group">
-          <label for="email">E-post</label>
-          <input
-            id="email"
-            type="email"
-            formControlName="email"
-            placeholder="namn@example.com"
-            maxlength="254"
-          />
-          @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
-            <span class="error-msg">Giltig e-post krävs</span>
+          <div class="form-group">
+            <label for="email">E-post</label>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="namn@example.com"
+              maxlength="254"
+            />
+            @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
+              <span class="error-msg">Giltig e-post krävs</span>
+            }
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="password">Lösenord</label>
+              <input
+                id="password"
+                type="password"
+                formControlName="password"
+                placeholder="Minst 6 tecken"
+                maxlength="128"
+              />
+              @if (initialData) {
+                <span class="field-hint">Lämna tomt för att behålla befintligt.</span>
+              }
+              @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
+                <span class="error-msg">Lösenord krävs (minst 6 tecken)</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword">Bekräfta lösenord</label>
+              <input
+                id="confirmPassword"
+                type="password"
+                formControlName="confirmPassword"
+                placeholder="Upprepa lösenordet"
+                maxlength="128"
+              />
+              @if (userForm.errors?.['passwordMismatch'] && userForm.get('confirmPassword')?.touched) {
+                <span class="error-msg">Lösenorden matchar inte</span>
+              }
+            </div>
+          </div>
+
+          @if (initialData) {
+            <div class="form-group">
+              <label>Status</label>
+              <app-select
+                [options]="statusOptions"
+                [value]="userForm.controls.isBanned.value"
+                (valueChange)="userForm.controls.isBanned.setValue($any($event))"
+              ></app-select>
+            </div>
           }
         </div>
 
-        <div class="form-group">
-          <label for="templateId">Roll</label>
-          <select id="templateId" formControlName="templateId">
-            <option [ngValue]="null">Anpassad (ingen mall)</option>
-            @for (template of templateOptions; track template.id) {
-              <option [ngValue]="template.id">{{ template.label }}</option>
-            }
-          </select>
+        <!-- Section: Permissions -->
+        <div class="form-section">
+          <p class="form-section-title">Behörighet & Prioritet</p>
+          
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label>Roll</label>
+              <app-select
+                [options]="roleSelectOptions()"
+                [value]="userForm.controls.templateId.value ?? 'null'"
+                (valueChange)="onRoleSelectChange($event)"
+              ></app-select>
+            </div>
+
+            <div class="form-group flex-1">
+              <label>Prioritetsnivå</label>
+              <app-select
+                [options]="permissionLevelOptions()"
+                [value]="userForm.controls.permissionLevelOverride.value ?? 'null'"
+                (valueChange)="onPermissionLevelChange($event)"
+              ></app-select>
+              <span class="field-hint">Vid bokningskrockar vinner högre nivå.</span>
+            </div>
+          </div>
+
+          @if (userForm.controls.templateId.value === null) {
+            <div class="form-section-inner">
+              <p class="form-section-subtitle">Anpassade behörigheter</p>
+              <p class="form-section-hint">
+                Välj exakt vad användaren ska kunna göra.
+              </p>
+              <div class="permissions-grid">
+                @for (permission of permissionOptions; track permission.key) {
+                  <label class="permission-item" [class.active]="isPermissionEnabled(permission.key)">
+                    <input type="checkbox" [formControlName]="permission.key" />
+                    <span class="permission-label">{{ permission.label }}</span>
+                    <span class="permission-switch" aria-hidden="true">
+                      <span class="switch-thumb"></span>
+                    </span>
+                  </label>
+                }
+              </div>
+            </div>
+          }
         </div>
 
-        @if (userForm.controls.templateId.value === null) {
+        <!-- Section: Affiliation -->
+        @if (campusOptions.length || classOptions.length) {
           <div class="form-section">
-            <p class="form-section-title">Anpassade behörigheter</p>
-            <p class="form-section-hint">
-              Välj exakt vad användaren ska kunna göra. Avmarkerat betyder ingen åtkomst.
-            </p>
-            <div class="permissions-grid">
-              @for (permission of permissionOptions; track permission.key) {
-                <label class="permission-item" [class.active]="isPermissionEnabled(permission.key)">
-                  <input type="checkbox" [formControlName]="permission.key" />
-                  <span class="permission-label">{{ permission.label }}</span>
-                  <span class="permission-switch" aria-hidden="true">
-                    <span class="switch-thumb"></span>
-                  </span>
-                </label>
-              }
-            </div>
-          </div>
-        }
+            <p class="form-section-title">Tillhörighet</p>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="password">Lösenord</label>
-            <input
-              id="password"
-              type="password"
-              formControlName="password"
-              placeholder="Minst 6 tecken (krävs)"
-              maxlength="128"
-            />
-            @if (initialData) {
-              <span class="field-hint">Lämna tomt om du inte vill ändra lösenordet.</span>
+            @if (campusOptions.length) {
+              <div class="affiliation-group">
+                <p class="form-section-subtitle">Campus</p>
+                <div class="pill-grid">
+                  @for (campus of campusOptions; track campus.id) {
+                    <app-selectable-pill
+                      [selected]="isCampusSelected(campus.id)"
+                      (toggle)="toggleCampus(campus.id)"
+                    >
+                      {{ campus.city }}
+                    </app-selectable-pill>
+                  }
+                </div>
+              </div>
             }
-            @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
-              <span class="error-msg">Lösenord krävs (minst 6 tecken)</span>
+
+            @if (classOptions.length) {
+              <div class="affiliation-group">
+                <p class="form-section-subtitle">Klasser</p>
+                <div class="pill-grid">
+                  @for (cls of classOptions; track cls.id) {
+                    <app-selectable-pill
+                      [selected]="isClassSelected(cls.id)"
+                      (toggle)="toggleClass(cls.id)"
+                    >
+                      {{ cls.className }}
+                    </app-selectable-pill>
+                  }
+                </div>
+              </div>
             }
-          </div>
-
-          <div class="form-group">
-            <label for="confirmPassword">Bekräfta lösenord</label>
-            <input
-              id="confirmPassword"
-              type="password"
-              formControlName="confirmPassword"
-              placeholder="Upprepa lösenordet"
-              maxlength="128"
-            />
-            @if (userForm.errors?.['passwordMismatch'] && userForm.get('confirmPassword')?.touched) {
-              <span class="error-msg">Lösenorden matchar inte</span>
-            }
-          </div>
-        </div>
-
-        @if (initialData) {
-          <div class="form-group">
-            <label for="isBanned">Status</label>
-            <select id="isBanned" formControlName="isBanned">
-              <option [value]="BannedStatus.NotBanned">Aktiv</option>
-              <option [value]="BannedStatus.Banned">Bannlyst</option>
-            </select>
-          </div>
-        }
-
-        @if (campusOptions.length) {
-          <div class="form-section">
-            <p class="form-section-title">Campus</p>
-            <p class="form-section-hint">Välj vilka campus användaren tillhör.</p>
-            <div class="pill-grid">
-              @for (campus of campusOptions; track campus.id) {
-                <app-selectable-pill
-                  [selected]="isCampusSelected(campus.id)"
-                  (toggle)="toggleCampus(campus.id)"
-                >
-                  {{ campus.city }}
-                </app-selectable-pill>
-              }
-            </div>
-          </div>
-        }
-
-        @if (classOptions.length) {
-          <div class="form-section">
-            <p class="form-section-title">Klasser</p>
-            <p class="form-section-hint">Välj vilka klasser användaren tillhör.</p>
-            <div class="pill-grid">
-              @for (cls of classOptions; track cls.id) {
-                <app-selectable-pill
-                  [selected]="isClassSelected(cls.id)"
-                  (toggle)="toggleClass(cls.id)"
-                >
-                  {{ cls.className }}
-                </app-selectable-pill>
-              }
-            </div>
           </div>
         }
       </div>
@@ -226,14 +245,55 @@ export const passwordMatchValidator: ValidatorFn = (
       @use 'styles/mixins' as *;
 
       .flex-1 { flex: 1; }
+      .flex-2 { flex: 2; }
       .flex-3 { flex: 3; }
 
-      .form-group {
+      .form-section {
+        @include stack(1.25rem);
+
+        &:not(:last-child) {
+          margin-bottom: 2rem;
+        }
+      }
+
+      .form-section-title {
+        font-size: var(--font-sm);
+        font-weight: 700;
+        color: var(--color-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+      }
+
+      .form-section-inner {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: var(--color-bg-panel);
+        border-radius: 0.75rem;
+        border: 1px solid var(--color-border);
+      }
+
+      .form-section-subtitle {
+        font-size: var(--font-sm);
+        font-weight: 600;
+        color: var(--color-text-primary);
+        margin-bottom: 0.25rem;
+      }
+
+      .affiliation-group {
         @include stack(0.5rem);
+        &:not(:last-child) {
+          margin-bottom: 1rem;
+        }
+      }
+
+      .form-group {
+        @include stack(0.4rem);
         margin-bottom: 0;
 
         label {
           font-weight: 600;
+          font-size: var(--font-sm);
           color: var(--color-text-primary);
         }
 
@@ -334,6 +394,12 @@ export const passwordMatchValidator: ValidatorFn = (
         gap: 0.5rem;
         margin-top: 0.5rem;
       }
+
+      .modal-footer {
+        border-top: none;
+        margin-top: 1rem;
+        padding-top: 0.5rem;
+      }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -345,14 +411,46 @@ export class UserFormModalComponent {
 
   private config = this.modalService.modalData();
   protected initialData = this.config?.user;
-  protected templateOptions: PermissionTemplateDto[] = this.config?.templateOptions ?? [];
   protected initialTemplateId: number | null = this.config?.initialTemplateId ?? null;
   protected initialPermissions: UserPermissions | undefined = this.config?.initialPermissions;
   protected campusOptions: CampusResponseDto[] = this.config?.campusOptions ?? [];
   protected classOptions: ClassResponseDto[] = this.config?.classOptions ?? [];
 
+  protected readonly roleSelectOptions = signal<SelectOption[]>([
+    { id: 'null', label: 'Anpassad (ingen mall)' },
+    ...(this.config?.templateOptions ?? []).map((t: PermissionTemplateDto) => ({
+      id: t.id,
+      label: t.label,
+    })),
+  ]);
+
+  protected readonly statusOptions: SelectOption[] = [
+    { id: BannedStatus.NotBanned, label: 'Aktiv' },
+    { id: BannedStatus.Banned, label: 'Bannlyst' },
+  ];
+
   private selectedCampusIds = signal<number[]>(this.config?.initialCampusIds ?? []);
   private selectedClassIds = signal<number[]>(this.config?.initialClassIds ?? []);
+
+  // Compute options based on selected template
+  protected readonly selectedTemplate = signal<PermissionTemplateDto | null>(
+    (this.config?.templateOptions ?? []).find((t: PermissionTemplateDto) => t.id === this.initialTemplateId) ?? null
+  );
+
+  protected readonly permissionLevelOptions = computed(() => {
+    const tpl = this.selectedTemplate();
+    const defaultOpt: SelectOption = {
+      id: 'null',
+      label: tpl ? `Ärv från ${tpl.label} (Nivå ${tpl.defaultPermissionLevel ?? 1})` : 'Standard (Nivå 1)'
+    };
+    
+    const explicitOptions: SelectOption[] = Array.from({ length: 10 }, (_, i) => ({
+      id: i + 1,
+      label: `Anpassad: ${i + 1}${i === 0 ? ' (Lägst)' : i === 9 ? ' (Högst)' : ''}`
+    }));
+
+    return [defaultOpt, ...explicitOptions];
+  });
 
   protected readonly permissionOptions: Array<{
     key: keyof CustomPermissionsPayload;
@@ -377,9 +475,8 @@ export class UserFormModalComponent {
         nonNullable: true,
         validators: [Validators.required],
       }),
-      permissionLevel: new FormControl<number>(this.initialData?.permissionLevel || 1, {
-        nonNullable: true,
-        validators: [Validators.required, Validators.min(1), Validators.max(10)],
+      permissionLevelOverride: new FormControl<number | null>(this.initialData?.permissionLevelOverride ?? null, {
+        nonNullable: false,
       }),
       email: new FormControl(this.initialData?.email || '', {
         nonNullable: true,
@@ -445,6 +542,37 @@ export class UserFormModalComponent {
         this.userForm.controls.confirmPassword.setValue('');
       }
     });
+  }
+
+  onRoleSelectChange(id: string | number | null) {
+    const value = id === 'null' ? null : Number(id);
+    const oldTpl = this.selectedTemplate();
+    const newTpl = (this.config?.templateOptions ?? []).find((t: PermissionTemplateDto) => t.id === value) ?? null;
+    
+    // Check if user has custom override and template changed
+    if (this.userForm.controls.permissionLevelOverride.value !== null && oldTpl?.id !== newTpl?.id) {
+      this.confirmService.show(
+        `Användaren har en anpassad prioritetsnivå (${this.userForm.controls.permissionLevelOverride.value}). Vill du återställa till standardnivån för den nya rollen?`,
+        {
+          title: 'Behåll anpassad nivå?',
+          confirmText: 'Återställ till standard',
+          cancelText: 'Behåll anpassad',
+          dangerConfirm: false,
+        }
+      ).then((restore: boolean) => {
+        if (restore) {
+          this.userForm.controls.permissionLevelOverride.setValue(null);
+        }
+      });
+    }
+
+    this.userForm.controls.templateId.setValue(value);
+    this.selectedTemplate.set(newTpl);
+  }
+
+  onPermissionLevelChange(id: string | number | null) {
+    const value = id === 'null' ? null : Number(id);
+    this.userForm.controls.permissionLevelOverride.setValue(value);
   }
 
   isPermissionEnabled(key: keyof CustomPermissionsPayload): boolean {

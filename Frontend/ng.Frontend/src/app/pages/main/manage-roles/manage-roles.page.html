@@ -57,39 +57,17 @@
                   }
                 </select>
               </div>
+              <div class="field">
+                <label class="field-label">Standardprioritet</label>
+                <app-select
+                  [options]="permissionLevelOptions"
+                  [value]="template.defaultPermissionLevel"
+                  (valueChange)="updateDefaultPermissionLevel(tplIdx, $any($event))"
+                ></app-select>
+              </div>
             </div>
 
             <div class="card-actions">
-              <button
-                class="btn-icon"
-                (click)="moveUp(tplIdx)"
-                [disabled]="tplIdx === 0"
-                title="Flytta upp"
-                aria-label="Flytta upp"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M4.5 15.75l7.5-7.5 7.5 7.5"
-                  />
-                </svg>
-              </button>
-              <button
-                class="btn-icon"
-                (click)="moveDown(tplIdx)"
-                [disabled]="tplIdx === templates().length - 1"
-                title="Flytta ner"
-                aria-label="Flytta ner"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                  />
-                </svg>
-              </button>
               <button
                 class="btn-icon remove"
                 (click)="removeTemplate(tplIdx)"
