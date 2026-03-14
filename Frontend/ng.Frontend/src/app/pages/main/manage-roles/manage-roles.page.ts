@@ -52,6 +52,7 @@ export class ManageRolesPage implements OnInit {
   templates = signal<EditableTemplate[]>([]);
   saving = signal(false);
   loading = signal(true);
+  collapsedPermissions = signal<Set<number>>(new Set());
 
   readonly colorOptions: RoleColorOption[] = [
     { label: 'Grön', cssClass: 'green' },
@@ -267,6 +268,26 @@ export class ManageRolesPage implements OnInit {
 
   discard() {
     this.loadTemplates();
+  }
+
+  togglePermissions(templateUid: number) {
+    this.collapsedPermissions.update((set) => {
+      const newSet = new Set(set);
+      if (newSet.has(templateUid)) {
+        newSet.delete(templateUid);
+      } else {
+        newSet.add(templateUid);
+      }
+      return newSet;
+    });
+  }
+
+  isPermissionsCollapsed(templateUid: number): boolean {
+    return this.collapsedPermissions().has(templateUid);
+  }
+
+  getEnabledPermissionCount(template: EditableTemplate): number {
+    return Object.values(template.permissions).filter(Boolean).length;
   }
 
   private normalizeCssClass(value: string | undefined | null): string {
