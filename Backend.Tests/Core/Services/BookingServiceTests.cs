@@ -50,8 +50,8 @@ public class BookingServiceTests
         var result = await _sut.CreateBookingAsync(dto);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(100, result.Id);
+        Assert.NotNull(result.Booking);
+        Assert.Equal(100, result.Booking.Id);
     }
 
     [Fact]

@@ -15,6 +15,7 @@ public class User
     public BannedStatus IsBanned { get; set; } = BannedStatus.NotBanned;
     public bool IsActive { get; set; } = false;
     public int PermissionLevel { get; set; } = 1;
+    public int? PermissionLevelOverride { get; set; }
     public string? ResetTokenHash { get; set; }
     public DateTime? ResetTokenExpires { get; set; }
     public DateTime TokensValidAfter { get; set; } = DateTime.UtcNow;

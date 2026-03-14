@@ -40,6 +40,8 @@ public record AuthedUserResponseDto
     public UserPermissions? Permissions { get; set; }
     public bool IsBanned { get; set; }
     public int PermissionLevel { get; set; }
+    public int? PermissionLevelOverride { get; set; }
+    public int? TemplateDefaultLevel { get; set; }
 }
 
 public record TokenValidationResultDto

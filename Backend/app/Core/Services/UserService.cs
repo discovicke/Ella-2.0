@@ -127,7 +127,7 @@ public class UserService(
             PasswordHash = hashed,
             IsActive = true,
             IsBanned = BannedStatus.NotBanned,
-            PermissionLevel = 1,
+            PermissionLevelOverride = dto.PermissionLevelOverride,
         };
 
         var success = await repo.CreateUserAsync(user);
@@ -154,7 +154,7 @@ public class UserService(
     {
         logger.LogInformation("Updating user with ID {UserId}", id);
 
-        if (dto.PermissionLevel is < 1 or > 10)
+        if (dto.PermissionLevelOverride is < 1 or > 10)
             throw new ArgumentException("PermissionLevel must be between 1 and 10.");
 
         var existing =
@@ -175,7 +175,7 @@ public class UserService(
             DisplayName = dto.DisplayName,
             PasswordHash = passwordHash,
             IsBanned = dto.IsBanned,
-            PermissionLevel = dto.PermissionLevel,
+            PermissionLevelOverride = dto.PermissionLevelOverride,
             TokensValidAfter = existing.TokensValidAfter,
             PermissionTemplateId = existing.PermissionTemplateId,
         };
@@ -301,6 +301,8 @@ public class UserService(
             user.IsBanned,
             permissions,
             user.PermissionLevel,
+            user.PermissionLevelOverride,
+            null, // TemplateDefaultLevel
             campusNames,
             classNames
         );
