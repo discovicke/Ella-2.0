@@ -63,7 +63,7 @@ Table "permission_templates" {
   "name" TEXT [unique, not null]
   "label" TEXT [not null]
   "css_class" TEXT
-  "sort_order" INTEGER [default: 0]
+  "default_permission_level" INTEGER [not null, check: `default_permission_level >= 1 AND default_permission_level <= 10`, default: 1]
 }
 
 Table "permission_template_flags" {
@@ -88,7 +88,7 @@ Table "users" {
   "display_name" TEXT
   "is_banned" BOOLEAN [not null, default: false]
   "is_active" BOOLEAN [not null, default: true]
-  "permission_level" INTEGER [not null, check: `permission_level >= 1 AND permission_level <= 10`, default: 1]
+  "permission_level_override" INTEGER [check: `permission_level_override >= 1 AND permission_level_override <= 10`]
   "reset_token_hash" TEXT
   "reset_token_expires" TIMESTAMPTZ
   "tokens_valid_after" TIMESTAMPTZ [not null, default: `NOW()`]
