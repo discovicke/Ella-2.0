@@ -25,8 +25,8 @@ import {
   BookingStatus,
   RoomDetailModel,
   ClassResponseDto,
-  BookingConflictResponse,
-  ConflictDetail,
+  BookingConflictResponseDto,
+  ConflictDetailDto,
 } from '../../../../models/models';
 import { Subject, Subscription, debounceTime, distinctUntilChanged, switchMap, of } from 'rxjs';
 
@@ -329,8 +329,8 @@ export class BookingModalComponent implements OnInit, OnDestroy {
     const booking: CreateBookingDto = {
       userId: user.id,
       roomId: this.room.roomId,
-      startTime: this.toLocalIsoString(startDateTime),
-      endTime: this.toLocalIsoString(endDateTime),
+      startTime: startDateTime.toISOString(),
+      endTime: endDateTime.toISOString(),
       notes: formValue.notes || '',
       status: BookingStatus.Active,
       classIds,
@@ -389,12 +389,12 @@ export class BookingModalComponent implements OnInit, OnDestroy {
     });
   }
 
-  private async handleBookingConflict(conflictResponse: BookingConflictResponse): Promise<boolean> {
+  private async handleBookingConflict(conflictResponse: BookingConflictResponseDto): Promise<boolean> {
     const conflicts = conflictResponse.conflicts;
     
     let message = 'Denna bokning kommer att överskriva följande bokningar:\n\n';
     
-    conflicts.forEach(c => {
+    conflicts.forEach((c: ConflictDetailDto) => {
       const date = new Date(c.startTime).toLocaleDateString('sv-SE');
       const start = new Date(c.startTime).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
       const end = new Date(c.endTime).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
@@ -412,13 +412,8 @@ export class BookingModalComponent implements OnInit, OnDestroy {
     });
   }
 
-  private toLocalIsoString(date: Date): string {
-    const pad = (value: number) => String(value).padStart(2, '0');
-
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-  }
-
   private toLocalDateEndOfDayIsoString(dateInput: string): string {
-    return `${dateInput}T23:59:59`;
+    const d = new Date(`${dateInput}T23:59:59`);
+    return d.toISOString();
   }
 }

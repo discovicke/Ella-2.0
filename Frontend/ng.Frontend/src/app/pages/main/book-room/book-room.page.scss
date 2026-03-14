@@ -11,7 +11,11 @@
   flex-direction: column;
   height: 100%;
   background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 26%),
+    radial-gradient(
+      circle at top right,
+      color-mix(in srgb, var(--color-primary) 8%, transparent),
+      transparent 26%
+    ),
     linear-gradient(
       180deg,
       color-mix(in srgb, var(--color-primary-surface) 24%, var(--color-bg-body)) 0%,
@@ -523,6 +527,11 @@
   &.clickable {
     cursor: pointer;
 
+    &.overridable {
+      border-style: dashed;
+      border-color: color-mix(in srgb, var(--color-warning) 40%, var(--color-border));
+    }
+
     &:hover {
       border-color: color-mix(in srgb, var(--color-border) 70%, var(--color-text-muted));
       box-shadow: var(--shadow-md);
@@ -541,6 +550,14 @@
       }
     }
 
+    &.overridable:hover {
+      border-color: var(--color-warning);
+
+      .row-chevron {
+        color: var(--color-warning);
+      }
+    }
+
     &:focus-visible {
       outline: 2px solid var(--color-primary);
       outline-offset: 2px;
@@ -551,9 +568,17 @@
     opacity: 0.7;
     background: color-mix(in srgb, var(--color-bg-body) 96%, transparent);
 
-    &:hover {
+    &.clickable:hover {
       border-color: var(--color-warning);
       opacity: 1;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      background: var(--color-bg-card);
+
+      .row-chevron {
+        transform: translateX(3px);
+        color: var(--color-warning);
+      }
     }
   }
 }
@@ -579,6 +604,12 @@
   flex-shrink: 0;
   color: var(--color-primary-on-surface);
   transition: all 0.2s ease;
+
+  &.overridable {
+    background: var(--color-warning-surface);
+    color: var(--color-warning-hover);
+    border-color: color-mix(in srgb, var(--color-warning) 20%, transparent);
+  }
 
   svg {
     width: 24px;
@@ -735,17 +766,28 @@
   }
 }
 
-.busy-badge {
+.busy-badge,
+.overridable-badge {
   display: inline-flex;
   padding: 2px 8px;
-  background: var(--color-warning-surface);
-  color: var(--color-warning-hover);
-  border: 1px solid color-mix(in srgb, var(--color-warning) 15%, transparent);
   border-radius: 4px;
   font-size: 0.62rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.busy-badge {
+  background: var(--color-warning-surface);
+  color: var(--color-warning-hover);
+  border: 1px solid color-mix(in srgb, var(--color-warning) 15%, transparent);
+}
+
+.overridable-badge {
+  background: var(--color-warning-surface);
+  color: var(--color-warning-hover);
+  border: 1px solid color-mix(in srgb, var(--color-warning) 30%, transparent);
 }
 
 /* ─── Skeleton loading ───────────────────────────────────────────── */
