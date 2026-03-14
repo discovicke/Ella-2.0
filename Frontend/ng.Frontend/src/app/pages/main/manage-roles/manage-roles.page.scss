@@ -133,12 +133,24 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 
-  &.green { @include badge(var(--badge-green-bg), var(--badge-green-text)); }
-  &.blue { @include badge(var(--badge-blue-bg), var(--badge-blue-text)); }
-  &.orange { @include badge(var(--badge-orange-bg), var(--badge-orange-text)); }
-  &.purple { @include badge(var(--color-primary-surface), var(--color-primary-on-surface)); }
-  &.red { @include badge(var(--color-danger-surface), var(--color-danger)); }
-  &.gray { @include badge(var(--badge-gray-bg), var(--badge-gray-text)); }
+  &.green {
+    @include badge(var(--badge-green-bg), var(--badge-green-text));
+  }
+  &.blue {
+    @include badge(var(--badge-blue-bg), var(--badge-blue-text));
+  }
+  &.orange {
+    @include badge(var(--badge-orange-bg), var(--badge-orange-text));
+  }
+  &.purple {
+    @include badge(var(--color-primary-surface), var(--color-primary-on-surface));
+  }
+  &.red {
+    @include badge(var(--color-danger-surface), var(--color-danger));
+  }
+  &.gray {
+    @include badge(var(--badge-gray-bg), var(--badge-gray-text));
+  }
 }
 
 .btn-icon {
@@ -229,7 +241,9 @@
   font-size: 0.875rem;
   color: var(--color-text-primary);
   background: var(--color-bg-panel);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
   height: 38px; // Force same height as app-select usually has
 
   &:focus {
@@ -303,7 +317,7 @@
 }
 
 .permissions-content {
-  padding: 0 20px 20px 20px;
+  padding: 20px;
   animation: slideDown 0.2s ease;
 }
 
