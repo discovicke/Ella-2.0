@@ -128,6 +128,15 @@ public class BookingService(
             .Where(b => b.Status is not BookingStatus.Cancelled and not BookingStatus.Expired)
             .ToList();
 
+        // Get all users involved in bookings to fetch their permission levels
+        var userIdsForConflictingBookings = bookings.Select(b => b.UserId).Distinct();
+        var userMap = new Dictionary<long, int>();
+        foreach (var uid in userIdsForConflictingBookings)
+        {
+            var u = await userRepo.GetUserByIdAsync(uid);
+            userMap[uid] = u?.PermissionLevel ?? 1;
+        }
+
         return candidateRooms
             .Select(room =>
             {
@@ -141,6 +150,7 @@ public class BookingService(
                         b.EndTime,
                         b.UserName,
                         b.UserEmail,
+                        userMap.GetValueOrDefault(b.UserId, 1),
                         b.Status
                     ))
                     .ToList();

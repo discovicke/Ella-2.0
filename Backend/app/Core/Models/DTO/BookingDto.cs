@@ -87,6 +87,7 @@ public record AvailabilityConflictDto(
     DateTime EndTime,
     string? UserName,
     string? UserEmail,
+    int UserPermissionLevel,
     BookingStatus Status
 );
 

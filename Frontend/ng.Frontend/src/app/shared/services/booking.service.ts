@@ -47,6 +47,7 @@ export interface AvailabilityConflict {
   endTime: string;
   userName?: string | null;
   userEmail?: string | null;
+  userPermissionLevel: number;
   status: BookingStatus;
 }
 
