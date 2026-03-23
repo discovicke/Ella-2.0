@@ -10,6 +10,7 @@ Detta dokument spårar projektets framsteg. Uppdaterat: 2026-03-13.
 - [ ] **Escalation guard for permissions**: Förhindra att användare ger behörigheter de inte själva har (i `UserService.cs`).
 - [ ] **Frontend: Registreringssida**: Implementera den publika registreringssidan (`register.page.ts`). Backend är klar men frontend-sidan är tom.
 - [ ] **CSRF-skydd för publika formulär**: Lägg till CSRF-skydd för det fristående bokningsformuläret.
+- [ ] **Backend: Calendar-view API endpoint**: Create separate `GET /api/bookings/calendar-view` endpoint requiring `BookRoom` permission that returns minimal booking data (no user details) for the room booking calendar. Currently students get 403 when viewing the calendar because it uses `getAllBookings()` which requires `ManageBookings` permission.
 
 ### Priority: MEDIUM
 - [ ] **Background Clean-up worker**: En tjänst som rensar gamla rader och uppdaterar historik för att hålla index snabba.
