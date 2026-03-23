@@ -52,7 +52,7 @@ public class UserImportService(
         var skipped = 0;
         var errors = new List<string>();
 
-        foreach (var student in students)
+        foreach (var student in students.Skip(1))
         {
             var email = (student.Email ?? "").Trim();
             if (string.IsNullOrWhiteSpace(email))
