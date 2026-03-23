@@ -655,15 +655,6 @@ VALUES
 SELECT setval(pg_get_serial_sequence('resource_bookings', 'id'), (SELECT MAX(id) FROM resource_bookings));
 
 -- -------------------------------------------------------------
---  USER BOOKING SLUGS
--- -------------------------------------------------------------
-INSERT INTO user_booking_slugs (user_id, slug, is_active)
-VALUES 
-       (1, 'boka-admin', true),
-       (3, 'sven-svensson', true),
-       (4, 'karin-karlsson', true);
-
--- -------------------------------------------------------------
 --  BOOKING ↔ CLASS
 -- -------------------------------------------------------------
 INSERT INTO booking_class (booking_id, class_id)
