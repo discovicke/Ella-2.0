@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   OnInit,
   signal,
@@ -18,11 +19,14 @@ import {
   CampusResponseDto,
 } from '../../../models/models';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
+import { TimePickerComponent } from '../../../shared/components/time-picker/time-picker.component';
+import { SelectComponent } from '../../../shared/components/select/select.component';
 import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-bookingform',
-  imports: [ReactiveFormsModule, ButtonComponent],
+  imports: [ReactiveFormsModule, ButtonComponent, DatePickerComponent, TimePickerComponent, SelectComponent],
   templateUrl: './bookingform.component.html',
   styleUrl: './bookingform.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -84,6 +88,11 @@ export class BookingformComponent implements OnInit {
     return [...citySet].sort();
   });
 
+  // --- Computed: city options for select component ---
+  readonly cityOptions = computed(() =>
+    this.cities().map((city) => ({ id: city, label: city }))
+  );
+
   // --- Computed: rooms filtered by selected city ---
   readonly filteredRooms = computed(() => {
     const city = this.selectedCity();
@@ -91,12 +100,28 @@ export class BookingformComponent implements OnInit {
     return this.rooms().filter((room) => room.campusCity === city);
   });
 
+  // --- Computed: room options for select component ---
+  readonly roomOptions = computed(() =>
+    this.filteredRooms().map((room) => ({
+      id: room.roomId!,
+      label: room.name ?? 'Namnlöst rum',
+    }))
+  );
+
   // Expanded rooms for collapsible list
   readonly expandedRooms = signal<Set<number>>(new Set());
 
   // Form status
   readonly formStatus = toSignal(this.bookingForm.statusChanges, { initialValue: 'INVALID' });
   readonly isFormValid = computed(() => this.formStatus() === 'VALID');
+
+  // Writable signals for custom picker two-way bindings
+  readonly citySignal = signal<string>('');
+  readonly roomSignal = signal<number | null>(null);
+  readonly startDateSignal = signal<string>('');
+  readonly startTimeSignal = signal<string>('');
+  readonly endDateSignal = signal<string>('');
+  readonly endTimeSignal = signal<string>('');
 
   // Time validation error
   readonly timeError = computed(() => {
@@ -125,6 +150,43 @@ export class BookingformComponent implements OnInit {
     // Set default dates to today
     this.bookingForm.controls.startDate.setValue(this.today);
     this.bookingForm.controls.endDate.setValue(this.today);
+    // Initialize picker signals
+    this.startDateSignal.set(this.today);
+    this.endDateSignal.set(this.today);
+  }
+
+  constructor() {
+    // Sync picker signals -> form controls
+    effect(() => {
+      const city = this.citySignal();
+      if (city) {
+        this.bookingForm.controls.selectedCity.setValue(city);
+        this.bookingForm.controls.selectedRoomId.setValue(null);
+        this.roomSignal.set(null);
+      }
+    });
+    effect(() => {
+      const room = this.roomSignal();
+      if (room !== null) {
+        this.bookingForm.controls.selectedRoomId.setValue(room);
+      }
+    });
+    effect(() => {
+      const val = this.startDateSignal();
+      if (val) this.bookingForm.controls.startDate.setValue(val);
+    });
+    effect(() => {
+      const val = this.startTimeSignal();
+      if (val) this.bookingForm.controls.startTime.setValue(val);
+    });
+    effect(() => {
+      const val = this.endDateSignal();
+      if (val) this.bookingForm.controls.endDate.setValue(val);
+    });
+    effect(() => {
+      const val = this.endTimeSignal();
+      if (val) this.bookingForm.controls.endTime.setValue(val);
+    });
   }
 
   private verifySlug(slug: string): void {
@@ -199,6 +261,44 @@ export class BookingformComponent implements OnInit {
 
   onCityChange(): void {
     this.bookingForm.controls.selectedRoomId.setValue(null);
+  }
+
+  // Handler methods for custom components
+  onCitySelect(value: string | number | null): void {
+    if (value) {
+      this.bookingForm.controls.selectedCity.setValue(value as string);
+      this.onCityChange();
+    }
+  }
+
+  onRoomSelect(value: string | number | null): void {
+    if (value !== null && value !== undefined) {
+      this.bookingForm.controls.selectedRoomId.setValue(Number(value));
+    }
+  }
+
+  onStartDateChange(value: string | null): void {
+    if (value) {
+      this.bookingForm.controls.startDate.setValue(value);
+    }
+  }
+
+  onStartTimeChange(value: string | null): void {
+    if (value) {
+      this.bookingForm.controls.startTime.setValue(value);
+    }
+  }
+
+  onEndDateChange(value: string | null): void {
+    if (value) {
+      this.bookingForm.controls.endDate.setValue(value);
+    }
+  }
+
+  onEndTimeChange(value: string | null): void {
+    if (value) {
+      this.bookingForm.controls.endTime.setValue(value);
+    }
   }
 
   onSubmit(): void {
@@ -283,6 +383,13 @@ export class BookingformComponent implements OnInit {
       startDate: this.today,
       endDate: this.today,
     });
+    // Reset picker signals
+    this.citySignal.set('');
+    this.roomSignal.set(null);
+    this.startDateSignal.set(this.today);
+    this.startTimeSignal.set('');
+    this.endDateSignal.set(this.today);
+    this.endTimeSignal.set('');
     if (this.bookingSlug()) {
       this.bookingForm.controls.name.setValue(this.userDisplayName() || '');
       this.bookingForm.controls.name.disable();

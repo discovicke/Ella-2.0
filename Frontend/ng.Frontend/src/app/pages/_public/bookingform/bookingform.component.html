@@ -67,58 +67,53 @@
           <!-- Stad + Rum -->
           <div class="field-row">
             <div class="field">
-              <label class="field-label" for="city">Stad</label>
-              <select id="city" formControlName="selectedCity" (change)="onCityChange()" required>
-                <option value="">Välj stad</option>
-                @for (city of cities(); track city) {
-                  <option [value]="city">{{ city }}</option>
-                }
-              </select>
+              <label class="field-label">Stad</label>
+              <app-select
+                [options]="cityOptions()"
+                placeholder="Välj stad"
+                [(value)]="citySignal"
+              ></app-select>
             </div>
 
             <div class="field">
-              <label class="field-label" for="room">Rum</label>
-              <select
-                id="room"
-                formControlName="selectedRoomId"
-                required
-                [attr.disabled]="!selectedCity() ? true : null"
-              >
-                <option [ngValue]="null">Välj rum</option>
-                @for (room of filteredRooms(); track room.roomId) {
-                  <option [ngValue]="room.roomId">{{ room.name }}</option>
-                }
-              </select>
+              <label class="field-label">Rum</label>
+              <app-select
+                [options]="roomOptions()"
+                placeholder="Välj rum"
+                [(value)]="roomSignal"
+              ></app-select>
             </div>
           </div>
 
           <!-- Start -->
           <div class="field-row">
             <div class="field">
-              <label class="field-label" for="startDate">Startdatum</label>
-              <input
-                type="date"
-                id="startDate"
-                formControlName="startDate"
-                [min]="today"
-                required
-              />
+              <label class="field-label">Startdatum</label>
+              <app-date-picker
+                [(value)]="startDateSignal"
+              ></app-date-picker>
             </div>
             <div class="field">
-              <label class="field-label" for="startTime">Starttid</label>
-              <input type="time" id="startTime" formControlName="startTime" required />
+              <label class="field-label">Starttid</label>
+              <app-time-picker
+                [(value)]="startTimeSignal"
+              ></app-time-picker>
             </div>
           </div>
 
           <!-- Slut -->
           <div class="field-row">
             <div class="field">
-              <label class="field-label" for="endDate">Slutdatum</label>
-              <input type="date" id="endDate" formControlName="endDate" [min]="today" required />
+              <label class="field-label">Slutdatum</label>
+              <app-date-picker
+                [(value)]="endDateSignal"
+              ></app-date-picker>
             </div>
             <div class="field">
-              <label class="field-label" for="endTime">Sluttid</label>
-              <input type="time" id="endTime" formControlName="endTime" required />
+              <label class="field-label">Sluttid</label>
+              <app-time-picker
+                [(value)]="endTimeSignal"
+              ></app-time-picker>
             </div>
           </div>
 
