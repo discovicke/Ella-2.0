@@ -21,6 +21,7 @@ import {
   BookingService,
   RoomAvailabilityResult,
 } from '../../../shared/services/booking.service';
+import { SessionService } from '../../../core/session.service';
 import { ModalService } from '../../../shared/services/modal.service';
 import { RoomService } from '../../../shared/services/room.service';
 import { BookingModalComponent } from './booking-modal/booking-modal.component';
@@ -35,9 +36,10 @@ type DiscoveryView = 'availability' | 'schedule';
 
 interface AvailabilityCandidate {
   room: RoomDetailModel;
-  conflicts: BookingDetailedReadModel[];
+  conflicts: (BookingDetailedReadModel & { userPermissionLevel?: number })[];
   isAvailable: boolean;
-  nextConflict?: BookingDetailedReadModel;
+  isOverridable: boolean;
+  nextConflict?: BookingDetailedReadModel & { userPermissionLevel?: number };
   matchReasons: string[];
   matchScore: number;
 }
@@ -53,6 +55,7 @@ export class BookRoomPage {
   private readonly roomService = inject(RoomService);
   private readonly bookingService = inject(BookingService);
   private readonly modalService = inject(ModalService);
+  private readonly sessionService = inject(SessionService);
   
   private roomQuerySubject = new Subject<string>();
   private capacitySubject = new Subject<number>();
@@ -202,43 +205,53 @@ export class BookRoomPage {
   readonly availabilityCandidates = computed<AvailabilityCandidate[]>(() => {
     const byRoomId = new Map(this.rooms().map((room) => [room.roomId, room]));
     const mapped: AvailabilityCandidate[] = [];
+    const currentUserLevel = this.sessionService.permissionLevel();
 
     for (const item of this.availabilityResource.value() ?? []) {
-        const room = byRoomId.get(item.roomId);
-        if (!room) continue;
+      const room = byRoomId.get(item.roomId);
+      if (!room) continue;
 
-        const conflicts = item.conflicts.map((conflict) => ({
-          bookingId: conflict.bookingId,
-          roomId: item.roomId,
-          roomName: item.roomName,
-          campusCity: item.campusCity,
-          roomType: item.roomTypeName,
-          roomCapacity: item.capacity,
-          startTime: conflict.startTime,
-          endTime: conflict.endTime,
-          status: conflict.status,
-          userName: conflict.userName,
-          userEmail: conflict.userEmail,
-          registrationCount: 0,
-          invitationCount: 0,
-        })) as BookingDetailedReadModel[];
+      const conflicts = item.conflicts.map((conflict) => ({
+        bookingId: conflict.bookingId,
+        roomId: item.roomId,
+        roomName: item.roomName,
+        campusCity: item.campusCity,
+        roomType: item.roomTypeName,
+        roomCapacity: item.capacity,
+        startTime: conflict.startTime,
+        endTime: conflict.endTime,
+        status: conflict.status,
+        userName: conflict.userName,
+        userEmail: conflict.userEmail,
+        userPermissionLevel: conflict.userPermissionLevel,
+        registrationCount: 0,
+        invitationCount: 0,
+      })) as (BookingDetailedReadModel & { userPermissionLevel?: number })[];
 
-        mapped.push({
-          room,
-          conflicts,
-          isAvailable: item.isAvailable,
-          nextConflict: conflicts[0],
-          matchReasons: item.matchReasons,
-          matchScore: item.matchScore,
-        });
-      }
+      const isOverridable =
+        !item.isAvailable &&
+        conflicts.length > 0 &&
+        conflicts.every((c) => currentUserLevel > (c.userPermissionLevel ?? 0));
+
+      mapped.push({
+        room,
+        conflicts,
+        isAvailable: item.isAvailable,
+        isOverridable,
+        nextConflict: conflicts[0],
+        matchReasons: item.matchReasons,
+        matchScore: item.matchScore,
+      });
+    }
 
     return mapped;
   });
 
-  readonly availableRooms = computed(() => this.availabilityCandidates().filter((candidate) => candidate.isAvailable));
+  readonly availableRooms = computed(() =>
+    this.availabilityCandidates().filter((candidate) => candidate.isAvailable || candidate.isOverridable),
+  );
   readonly unavailableRooms = computed(() =>
-    this.availabilityCandidates().filter((candidate) => !candidate.isAvailable),
+    this.availabilityCandidates().filter((candidate) => !candidate.isAvailable && !candidate.isOverridable),
   );
 
   readonly activeSecondaryFilterCount = computed(() => {

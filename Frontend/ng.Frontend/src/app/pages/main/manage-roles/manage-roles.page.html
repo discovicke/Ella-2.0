@@ -32,64 +32,15 @@
     <div class="templates-grid">
       @for (template of templates(); track template.uid; let tplIdx = $index) {
         <div class="template-card" [class.is-new]="template.isNew">
-          <!-- Card Header -->
-          <div class="card-header">
-            <div class="card-fields">
-              <div class="field">
-                <label class="field-label">Rollnamn</label>
-                <input
-                  type="text"
-                  class="field-input"
-                  [ngModel]="template.label"
-                  (ngModelChange)="updateLabel(tplIdx, $event)"
-                  placeholder="t.ex. Student"
-                />
+          
+          <div class="card-body">
+            <!-- Top Bar: Preview Badge & Actions -->
+            <div class="card-top-bar">
+              <div class="badge-wrapper">
+                <span class="user-role-badge" [class]="template.cssClass || 'gray'">
+                  {{ template.label || 'Namnlös' }}
+                </span>
               </div>
-              <div class="field">
-                <label class="field-label">Färg</label>
-                <select
-                  class="field-input"
-                  [ngModel]="template.cssClass"
-                  (ngModelChange)="updateCssClass(tplIdx, $event)"
-                >
-                  @for (color of colorOptions; track color.cssClass) {
-                    <option [value]="color.cssClass">{{ color.label }}</option>
-                  }
-                </select>
-              </div>
-            </div>
-
-            <div class="card-actions">
-              <button
-                class="btn-icon"
-                (click)="moveUp(tplIdx)"
-                [disabled]="tplIdx === 0"
-                title="Flytta upp"
-                aria-label="Flytta upp"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M4.5 15.75l7.5-7.5 7.5 7.5"
-                  />
-                </svg>
-              </button>
-              <button
-                class="btn-icon"
-                (click)="moveDown(tplIdx)"
-                [disabled]="tplIdx === templates().length - 1"
-                title="Flytta ner"
-                aria-label="Flytta ner"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                  />
-                </svg>
-              </button>
               <button
                 class="btn-icon remove"
                 (click)="removeTemplate(tplIdx)"
@@ -105,30 +56,88 @@
                 </svg>
               </button>
             </div>
-          </div>
 
-          <!-- Preview Badge -->
-          <div class="card-preview">
-            <span class="preview-label">Förhandsgranskning:</span>
-            <span class="user-role-badge" [class]="template.cssClass || 'gray'">
-              {{ template.label || 'Namnlös' }}
-            </span>
-          </div>
-
-          <!-- Permission Toggles -->
-          <div class="permissions-grid">
-            @for (key of permissionKeys(); track key) {
-              <label class="permission-toggle" [class.active]="template.permissions[key]">
+            <!-- Form Fields -->
+            <div class="card-fields">
+              <div class="field name-field">
+                <label class="field-label">Rollnamn</label>
                 <input
-                  type="checkbox"
-                  [checked]="template.permissions[key]"
-                  (change)="togglePermission(tplIdx, key)"
+                  type="text"
+                  class="field-input"
+                  [ngModel]="template.label"
+                  (ngModelChange)="updateLabel(tplIdx, $event)"
+                  placeholder="t.ex. Student"
                 />
-                <span class="toggle-track">
-                  <span class="toggle-thumb"></span>
+              </div>
+              
+              <div class="field color-field">
+                <label class="field-label">Färg</label>
+                <select
+                  class="field-input"
+                  [ngModel]="template.cssClass"
+                  (ngModelChange)="updateCssClass(tplIdx, $event)"
+                >
+                  @for (color of colorOptions; track color.cssClass) {
+                    <option [value]="color.cssClass">{{ color.label }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="field priority-field">
+                <label class="field-label">Prioritet</label>
+                <app-select
+                  [options]="permissionLevelOptions"
+                  [value]="template.defaultPermissionLevel"
+                  (valueChange)="updateDefaultPermissionLevel(tplIdx, $any($event))"
+                ></app-select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Collapsible Permissions Section -->
+          <div class="permissions-section">
+            <button 
+              class="permissions-toggle"
+              (click)="togglePermissions(template.uid)"
+              [attr.aria-expanded]="!isPermissionsCollapsed(template.uid)"
+            >
+              <div class="toggle-content">
+                <span class="toggle-text">Behörigheter</span>
+                <span class="permission-count">
+                  {{ getEnabledPermissionCount(template) }} av {{ permissionKeys().length }}
                 </span>
-                <span class="toggle-label">{{ formatKey(key) }}</span>
-              </label>
+                <span class="toggle-icon">
+                  @if (isPermissionsCollapsed(template.uid)) {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+                    </svg>
+                  }
+                </span>
+              </div>
+            </button>
+
+            @if (!isPermissionsCollapsed(template.uid)) {
+              <div class="permissions-content">
+                <div class="permissions-grid">
+                  @for (key of permissionKeys(); track key) {
+                    <label class="permission-toggle" [class.active]="template.permissions[key]">
+                      <input
+                        type="checkbox"
+                        [checked]="template.permissions[key]"
+                        (change)="togglePermission(tplIdx, key)"
+                      />
+                      <span class="toggle-track">
+                        <span class="toggle-thumb"></span>
+                      </span>
+                      <span class="toggle-label">{{ formatKey(key) }}</span>
+                    </label>
+                  }
+                </div>
+              </div>
             }
           </div>
         </div>
@@ -139,7 +148,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
-        <span>Lägg till roll</span>
+        <span>Lägg till ny roll</span>
       </button>
     </div>
   }

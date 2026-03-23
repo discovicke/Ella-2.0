@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS "users" (
     "display_name" TEXT,
     "is_banned" INTEGER NOT NULL DEFAULT 0,
     "is_active" INTEGER NOT NULL DEFAULT 0,
-    "permission_level" INTEGER NOT NULL DEFAULT 1 CHECK (permission_level >= 1 AND permission_level <= 10),
+    "permission_level_override" INTEGER CHECK (permission_level_override >= 1 AND permission_level_override <= 10),
     "reset_token_hash" TEXT,
     "reset_token_expires" TEXT,
     "tokens_valid_after" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS permission_templates (
     name TEXT NOT NULL UNIQUE,
     label TEXT NOT NULL,
     css_class TEXT,
-    sort_order INTEGER DEFAULT 0
+    default_permission_level INTEGER NOT NULL DEFAULT 1 CHECK (default_permission_level >= 1 AND default_permission_level <= 10)
 );
 
 -- 3. Template Flags (Definition of what a Role can do)
@@ -219,6 +219,23 @@ CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings (user_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_recurring_group ON bookings (recurring_group_id) WHERE recurring_group_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_user_perm_overrides_user_id ON user_permission_overrides (user_id);
 
+
+DROP VIEW IF EXISTS v_users_with_level;
+CREATE VIEW v_users_with_level AS
+SELECT u.id,
+       u.email,
+       u.password_hash,
+       u.display_name,
+       u.is_banned,
+       u.is_active,
+       COALESCE(u.permission_level_override, pt.default_permission_level, 1) AS permission_level,
+       u.permission_level_override,
+       u.reset_token_hash,
+       u.reset_token_expires,
+       u.tokens_valid_after,
+       u.permission_template_id
+FROM users u
+LEFT JOIN permission_templates pt ON u.permission_template_id = pt.id;
 
 -- 4. Views for Read Models
 -- View: Bookings with enriched data (user and room names, registration count)

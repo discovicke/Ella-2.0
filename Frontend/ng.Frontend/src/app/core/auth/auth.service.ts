@@ -83,6 +83,7 @@ export class AuthService {
       email: apiUser.email,
       displayName: apiUser.displayName,
       permissions: apiUser.permissions ?? null,
+      permissionLevel: apiUser.permissionLevel ?? 0,
       isBanned: !!apiUser.isBanned,
     };
   }

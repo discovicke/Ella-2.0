@@ -13,6 +13,8 @@ public record UserResponseDto(
     BannedStatus IsBanned,
     UserPermissions? Permissions,
     int PermissionLevel,
+    int? PermissionLevelOverride,
+    int? TemplateDefaultLevel,
     List<string>? CampusNames = null,
     List<string>? ClassNames = null
 );
@@ -20,7 +22,8 @@ public record UserResponseDto(
 public record CreateUserDto(
     [property: MaxLength(254)] string Email,
     [property: MaxLength(100)] string? DisplayName,
-    [property: MaxLength(128)] string Password
+    [property: MaxLength(128)] string Password,
+    int? PermissionLevelOverride
 );
 
 public record UpdateUserDto(
@@ -29,5 +32,5 @@ public record UpdateUserDto(
     [property: MaxLength(100)] string? DisplayName,
     [property: MaxLength(128)] string? Password,
     BannedStatus IsBanned,
-    int PermissionLevel
+    int? PermissionLevelOverride
 );

@@ -9,6 +9,7 @@ import {
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BookingService } from '../../../../shared/services/booking.service';
 import { ModalService } from '../../../../shared/services/modal.service';
+import { ConfirmService } from '../../../../shared/services/confirm.service';
 import { SessionService } from '../../../../core/session.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { ClassService } from '../../../../shared/services/class.service';
@@ -24,6 +25,8 @@ import {
   BookingStatus,
   RoomDetailModel,
   ClassResponseDto,
+  BookingConflictResponseDto,
+  ConflictDetailDto,
 } from '../../../../models/models';
 import { Subject, Subscription, debounceTime, distinctUntilChanged, switchMap, of } from 'rxjs';
 
@@ -51,6 +54,7 @@ interface BookingModalData extends RoomDetailModel {
 export class BookingModalComponent implements OnInit, OnDestroy {
   private readonly bookingService = inject(BookingService);
   protected readonly modalService = inject(ModalService);
+  private readonly confirmService = inject(ConfirmService);
   private readonly sessionService = inject(SessionService);
   private readonly toastService = inject(ToastService);
   private readonly classService = inject(ClassService);
@@ -325,8 +329,8 @@ export class BookingModalComponent implements OnInit, OnDestroy {
     const booking: CreateBookingDto = {
       userId: user.id,
       roomId: this.room.roomId,
-      startTime: this.toLocalIsoString(startDateTime),
-      endTime: this.toLocalIsoString(endDateTime),
+      startTime: startDateTime.toISOString(),
+      endTime: endDateTime.toISOString(),
       notes: formValue.notes || '',
       status: BookingStatus.Active,
       classIds,
@@ -336,6 +340,10 @@ export class BookingModalComponent implements OnInit, OnDestroy {
         : null,
     };
 
+    this.performBooking(booking, individualUserIds);
+  }
+
+  private performBooking(booking: CreateBookingDto, individualUserIds: number[]): void {
     this.bookingService.createBooking(booking).subscribe({
       next: (result) => {
         // If individual users were selected, invite them after booking creation
@@ -360,21 +368,52 @@ export class BookingModalComponent implements OnInit, OnDestroy {
           this.modalService.close();
         }
       },
-      error: (err) => {
+      error: async (err) => {
         console.error('Booking error:', err);
-        this.toastService.showError('Kunde inte skapa bokning. Kontrollera tillgänglighet.');
+        
+        // Handle booking conflict (overwrite confirmation needed)
+        if (err.status === 409 && err.error?.conflicts) {
+          const confirmed = await this.handleBookingConflict(err.error);
+          if (confirmed) {
+            this.performBooking({ ...booking, overwriteConflicts: true }, individualUserIds);
+          } else {
+            this.isSubmitting.set(false);
+          }
+          return;
+        }
+
+        const message = err.error?.message || 'Kunde inte skapa bokning. Kontrollera tillgänglighet.';
+        this.toastService.showError(message);
         this.isSubmitting.set(false);
       },
     });
   }
 
-  private toLocalIsoString(date: Date): string {
-    const pad = (value: number) => String(value).padStart(2, '0');
+  private async handleBookingConflict(conflictResponse: BookingConflictResponseDto): Promise<boolean> {
+    const conflicts = conflictResponse.conflicts;
+    
+    let message = 'Denna bokning kommer att överskriva följande bokningar:\n\n';
+    
+    conflicts.forEach((c: ConflictDetailDto) => {
+      const date = new Date(c.startTime).toLocaleDateString('sv-SE');
+      const start = new Date(c.startTime).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+      const end = new Date(c.endTime).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+      message += `• ${c.userName} - ${date} ${start}-${end} (nivå: ${c.userPermissionLevel})\n`;
+    });
+    
+    message += '\nVill du fortsätta och avboka dessa?';
 
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    return await this.confirmService.show(message, {
+      title: 'Bekräfta överskrivning',
+      confirmText: 'Bekräfta och överskriv',
+      cancelText: 'Avbryt',
+      dangerConfirm: true,
+      icon: 'warning'
+    });
   }
 
   private toLocalDateEndOfDayIsoString(dateInput: string): string {
-    return `${dateInput}T23:59:59`;
+    const d = new Date(`${dateInput}T23:59:59`);
+    return d.toISOString();
   }
 }

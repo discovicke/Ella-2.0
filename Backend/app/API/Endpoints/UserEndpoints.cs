@@ -442,7 +442,7 @@ public static class UserEndpoints
         if (string.IsNullOrWhiteSpace(dto.Email))
             return Results.BadRequest("Email is required.");
 
-        if (dto.PermissionLevel is < 1 or > 10)
+        if (dto.PermissionLevelOverride is < 1 or > 10)
             return Results.BadRequest("PermissionLevel must be between 1 and 10.");
 
         return null;

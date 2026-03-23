@@ -83,8 +83,10 @@ public class BookingSlugService(
             BookerName: user.DisplayName ?? user.Email
         );
 
-        var booking = await bookingService.CreateBookingAsync(fullRequest);
+        var result = await bookingService.CreateBookingAsync(fullRequest);
         
+        if (!result.Success || result.Booking == null) return null;
+
         return new AuthResponseDto
         {
             Message = "Booking successful",

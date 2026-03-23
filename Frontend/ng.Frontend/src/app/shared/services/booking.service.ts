@@ -47,6 +47,7 @@ export interface AvailabilityConflict {
   endTime: string;
   userName?: string | null;
   userEmail?: string | null;
+  userPermissionLevel: number;
   status: BookingStatus;
 }
 
@@ -141,8 +142,8 @@ export class BookingService {
     return this.http.put(`${this.apiUrl}/${bookingId}?newStatus=Cancelled`, {});
   }
 
-  createBooking(booking: CreateBookingDto): Observable<{ id: number }> {
-    return this.http.post<{ id: number }>(this.apiUrl, booking);
+  createBooking(booking: CreateBookingDto): Observable<any> {
+    return this.http.post<any>(this.apiUrl, booking);
   }
 
   // ── Booking form admin (kill switch) ──

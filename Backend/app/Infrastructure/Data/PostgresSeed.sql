@@ -39,11 +39,11 @@ ON CONFLICT (key) DO NOTHING;
 --  1 = Student, 2 = Educator, 3 = Admin
 -- -------------------------------------------------------------
 
-INSERT INTO permission_templates (id, name, label, css_class, sort_order)
+INSERT INTO permission_templates (id, name, label, css_class, default_permission_level)
     OVERRIDING SYSTEM VALUE
-VALUES (1, 'student', 'Student', 'green', 0),
-       (2, 'educator', 'Educator', 'blue', 1),
-       (3, 'admin', 'Admin', 'orange', 2);
+VALUES (1, 'student', 'Student', 'green', 1),
+       (2, 'educator', 'Educator', 'blue', 5),
+       (3, 'admin', 'Admin', 'orange', 10);
 
 SELECT setval(pg_get_serial_sequence('permission_templates', 'id'), (SELECT MAX(id) FROM permission_templates));
 
@@ -120,65 +120,65 @@ SELECT setval(pg_get_serial_sequence('class', 'id'), (SELECT MAX(id) FROM class)
 --  50  = Generisk testelev
 -- -------------------------------------------------------------
 
-INSERT INTO users (id, email, password_hash, display_name, is_active, permission_template_id, permission_level)
+INSERT INTO users (id, email, password_hash, display_name, is_active, permission_template_id, permission_level_override)
     OVERRIDING SYSTEM VALUE
-VALUES (1, 'admin@edugrade.com', '__HASH__', 'Admin Testberg', true, 3, 10),
-       (2, 'campus.admin@edugrade.com', '__HASH__', 'Campus Manager', true, 3, 10),
-       (3, 'sven.svensson@edugrade.com', '__HASH__', 'Sven Svensson', true, 2, 5),
-       (4, 'karin.karlsson.gavle@edugrade.com', '__HASH__', 'Karin Karlsson', true, 2, 5),
-       (5, 'anders.andersson@edugrade.com', '__HASH__', 'Anders Andersson', true, 2, 5),
-       (10, 'andre.ponten.net25@edu.edugrade.com', '__HASH__', 'André Pontén', true, 1, 1),
-       (11, 'christian.gennari.net25@edu.edugrade.com', '__HASH__', 'Christian Gennari', true, 1, 1),
-       (12, 'marcus.loov.net25@edu.edugrade.com', '__HASH__', 'Marcus Lööv', true, 1, 1),
-       (13, 'viktor.johansson.net25@edu.edugrade.com', '__HASH__', 'Viktor Johansson', true, 1, 1),
-       (14, 'sofia.eriksson.net25@edu.edugrade.com', '__HASH__', 'Sofia Eriksson', true, 1, 1),
-       (15, 'erik.nilsson.net25@edu.edugrade.com', '__HASH__', 'Erik Nilsson', true, 1, 1),
-       (20, 'linda.berg.ux25@edu.edugrade.com', '__HASH__', 'Linda Berg', true, 1, 1),
-       (21, 'mikael.holm.ux25@edu.edugrade.com', '__HASH__', 'Mikael Holm', true, 1, 1),
-       (22, 'anna.sundstrom.ux25@edu.edugrade.com', '__HASH__', 'Anna Sundström', true, 1, 1),
-       (23, 'per.ostlund.ux25@edu.edugrade.com', '__HASH__', 'Per Östlund', true, 1, 1),
-       (30, 'johan.kvist.dev24@edu.edugrade.com', '__HASH__', 'Johan Kvist', true, 1, 1),
-       (31, 'elena.popova.dev24@edu.edugrade.com', '__HASH__', 'Elena Popova', true, 1, 1),
-       (32, 'oscar.lundin.dev24@edu.edugrade.com', '__HASH__', 'Oscar Lundin', true, 1, 1),
+VALUES (1, 'admin@edugrade.com', '__HASH__', 'Admin Testberg', true, 3, NULL),
+       (2, 'campus.admin@edugrade.com', '__HASH__', 'Campus Manager', true, 3, NULL),
+       (3, 'sven.svensson@edugrade.com', '__HASH__', 'Sven Svensson', true, 2, NULL),
+       (4, 'karin.karlsson.gavle@edugrade.com', '__HASH__', 'Karin Karlsson', true, 2, NULL),
+       (5, 'anders.andersson@edugrade.com', '__HASH__', 'Anders Andersson', true, 2, NULL),
+       (10, 'andre.ponten.net25@edu.edugrade.com', '__HASH__', 'André Pontén', true, 1, NULL),
+       (11, 'christian.gennari.net25@edu.edugrade.com', '__HASH__', 'Christian Gennari', true, 1, NULL),
+       (12, 'marcus.loov.net25@edu.edugrade.com', '__HASH__', 'Marcus Lööv', true, 1, NULL),
+       (13, 'viktor.johansson.net25@edu.edugrade.com', '__HASH__', 'Viktor Johansson', true, 1, NULL),
+       (14, 'sofia.eriksson.net25@edu.edugrade.com', '__HASH__', 'Sofia Eriksson', true, 1, NULL),
+       (15, 'erik.nilsson.net25@edu.edugrade.com', '__HASH__', 'Erik Nilsson', true, 1, NULL),
+       (20, 'linda.berg.ux25@edu.edugrade.com', '__HASH__', 'Linda Berg', true, 1, NULL),
+       (21, 'mikael.holm.ux25@edu.edugrade.com', '__HASH__', 'Mikael Holm', true, 1, NULL),
+       (22, 'anna.sundstrom.ux25@edu.edugrade.com', '__HASH__', 'Anna Sundström', true, 1, NULL),
+       (23, 'per.ostlund.ux25@edu.edugrade.com', '__HASH__', 'Per Östlund', true, 1, NULL),
+       (30, 'johan.kvist.dev24@edu.edugrade.com', '__HASH__', 'Johan Kvist', true, 1, NULL),
+       (31, 'elena.popova.dev24@edu.edugrade.com', '__HASH__', 'Elena Popova', true, 1, NULL),
+       (32, 'oscar.lundin.dev24@edu.edugrade.com', '__HASH__', 'Oscar Lundin', true, 1, NULL),
        (33, 'oscar.lundin.dev222@edu.edugrade.com', '__HASH__', 'Custom Guy', true, NULL, 1),
-       (50, 'elev@edugrade.com', '__HASH__', 'Elev Testlund', true, 1, 1),
+       (50, 'elev@edugrade.com', '__HASH__', 'Elev Testlund', true, 1, NULL),
 
        -- Extra students for pagination testing (sys25 - Hudiksvall)
-       (60, 'lisa.franzen.sys25@edu.edugrade.com', '__HASH__', 'Lisa Franzén', true, 1, 1),
-       (61, 'david.hall.sys25@edu.edugrade.com', '__HASH__', 'David Hall', true, 1, 1),
-       (62, 'emma.lindqvist.sys25@edu.edugrade.com', '__HASH__', 'Emma Lindqvist', true, 1, 1),
-       (63, 'alexander.norberg.sys25@edu.edugrade.com', '__HASH__', 'Alexander Norberg', true, 1, 1),
-       (64, 'maja.pettersson.sys25@edu.edugrade.com', '__HASH__', 'Maja Pettersson', true, 1, 1),
-       (65, 'hugo.sandberg.sys25@edu.edugrade.com', '__HASH__', 'Hugo Sandberg', true, 1, 1),
+       (60, 'lisa.franzen.sys25@edu.edugrade.com', '__HASH__', 'Lisa Franzén', true, 1, NULL),
+       (61, 'david.hall.sys25@edu.edugrade.com', '__HASH__', 'David Hall', true, 1, NULL),
+       (62, 'emma.lindqvist.sys25@edu.edugrade.com', '__HASH__', 'Emma Lindqvist', true, 1, NULL),
+       (63, 'alexander.norberg.sys25@edu.edugrade.com', '__HASH__', 'Alexander Norberg', true, 1, NULL),
+       (64, 'maja.pettersson.sys25@edu.edugrade.com', '__HASH__', 'Maja Pettersson', true, 1, NULL),
+       (65, 'hugo.sandberg.sys25@edu.edugrade.com', '__HASH__', 'Hugo Sandberg', true, 1, NULL),
 
        -- Extra students (net25 - Hudiksvall)
-       (66, 'wilma.ekman.net25@edu.edugrade.com', '__HASH__', 'Wilma Ekman', true, 1, 1),
-       (67, 'lucas.blom.net25@edu.edugrade.com', '__HASH__', 'Lucas Blom', true, 1, 1),
-       (68, 'ella.dahlgren.net25@edu.edugrade.com', '__HASH__', 'Ella Dahlgren', true, 1, 1),
-       (69, 'oliver.forsberg.net25@edu.edugrade.com', '__HASH__', 'Oliver Forsberg', true, 1, 1),
+       (66, 'wilma.ekman.net25@edu.edugrade.com', '__HASH__', 'Wilma Ekman', true, 1, NULL),
+       (67, 'lucas.blom.net25@edu.edugrade.com', '__HASH__', 'Lucas Blom', true, 1, NULL),
+       (68, 'ella.dahlgren.net25@edu.edugrade.com', '__HASH__', 'Ella Dahlgren', true, 1, NULL),
+       (69, 'oliver.forsberg.net25@edu.edugrade.com', '__HASH__', 'Oliver Forsberg', true, 1, NULL),
 
        -- Extra students (ux25 - Gävle)
-       (70, 'astrid.hedlund.ux25@edu.edugrade.com', '__HASH__', 'Astrid Hedlund', true, 1, 1),
-       (71, 'leo.isaksson.ux25@edu.edugrade.com', '__HASH__', 'Leo Isaksson', true, 1, 1),
-       (72, 'saga.jansson.ux25@edu.edugrade.com', '__HASH__', 'Saga Jansson', true, 1, 1),
-       (73, 'nils.karlberg.ux25@edu.edugrade.com', '__HASH__', 'Nils Karlberg', true, 1, 1),
+       (70, 'astrid.hedlund.ux25@edu.edugrade.com', '__HASH__', 'Astrid Hedlund', true, 1, NULL),
+       (71, 'leo.isaksson.ux25@edu.edugrade.com', '__HASH__', 'Leo Isaksson', true, 1, NULL),
+       (72, 'saga.jansson.ux25@edu.edugrade.com', '__HASH__', 'Saga Jansson', true, 1, NULL),
+       (73, 'nils.karlberg.ux25@edu.edugrade.com', '__HASH__', 'Nils Karlberg', true, 1, NULL),
 
        -- Extra students (dev24 - Sundsvall)
-       (74, 'freja.larsson.dev24@edu.edugrade.com', '__HASH__', 'Freja Larsson', true, 1, 1),
-       (75, 'axel.magnusson.dev24@edu.edugrade.com', '__HASH__', 'Axel Magnusson', true, 1, 1),
-       (76, 'klara.nyberg.dev24@edu.edugrade.com', '__HASH__', 'Klara Nyberg', true, 1, 1),
-       (77, 'filip.olsson.dev24@edu.edugrade.com', '__HASH__', 'Filip Olsson', true, 1, 1),
-       (78, 'ines.persson.dev24@edu.edugrade.com', '__HASH__', 'Ines Persson', true, 1, 1),
+       (74, 'freja.larsson.dev24@edu.edugrade.com', '__HASH__', 'Freja Larsson', true, 1, NULL),
+       (75, 'axel.magnusson.dev24@edu.edugrade.com', '__HASH__', 'Axel Magnusson', true, 1, NULL),
+       (76, 'klara.nyberg.dev24@edu.edugrade.com', '__HASH__', 'Klara Nyberg', true, 1, NULL),
+       (77, 'filip.olsson.dev24@edu.edugrade.com', '__HASH__', 'Filip Olsson', true, 1, NULL),
+       (78, 'ines.persson.dev24@edu.edugrade.com', '__HASH__', 'Ines Persson', true, 1, NULL),
 
        -- Extra educators
-       (80, 'marie.wallin@edugrade.com', '__HASH__', 'Marie Wallin', true, 2, 5),
-       (81, 'thomas.berggren@edugrade.com', '__HASH__', 'Thomas Berggren', true, 2, 5),
+       (80, 'marie.wallin@edugrade.com', '__HASH__', 'Marie Wallin', true, 2, NULL),
+       (81, 'thomas.berggren@edugrade.com', '__HASH__', 'Thomas Berggren', true, 2, NULL),
 
        -- Extra admins
-       (82, 'johanna.admin@edugrade.com', '__HASH__', 'Johanna Lindström', true, 3, 10),
+       (82, 'johanna.admin@edugrade.com', '__HASH__', 'Johanna Lindström', true, 3, NULL),
 
        -- Banned user for filter testing
-       (83, 'banned.user@edu.edugrade.com', '__HASH__', 'Avstängd Testsson', true, 1, 1),
+       (83, 'banned.user@edu.edugrade.com', '__HASH__', 'Avstängd Testsson', true, 1, NULL),
 
        -- System user for public booking form
        (99, 'bookingform@system.local', '__NOLOGIN__', 'Bokningsformulär', true, NULL, 1);

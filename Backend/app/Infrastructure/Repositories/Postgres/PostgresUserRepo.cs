@@ -17,7 +17,7 @@ public class PostgresUserRepo(
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            var sql = "SELECT * FROM users ORDER BY id;";
+            var sql = "SELECT * FROM v_users_with_level ORDER BY id;";
             return await conn.QueryAsync<User>(sql);
         }
         catch (Exception ex)
@@ -66,14 +66,14 @@ public class PostgresUserRepo(
                 parameters.Add("IsBanned", bannedStatus.Value == BannedStatus.Banned);
             }
 
-            var countSql = $"SELECT COUNT(*) FROM users {where};";
+            var countSql = $"SELECT COUNT(*) FROM v_users_with_level {where};";
             var totalCount = await conn.ExecuteScalarAsync<int>(countSql, parameters);
 
             var offset = (page - 1) * pageSize;
             parameters.Add("Limit", pageSize);
             parameters.Add("Offset", offset);
 
-            var dataSql = $"SELECT * FROM users {where} ORDER BY id LIMIT @Limit OFFSET @Offset;";
+            var dataSql = $"SELECT * FROM v_users_with_level {where} ORDER BY id LIMIT @Limit OFFSET @Offset;";
             var users = await conn.QueryAsync<User>(dataSql, parameters);
 
             return (users, totalCount);
@@ -91,7 +91,7 @@ public class PostgresUserRepo(
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            var sql = "SELECT * FROM users WHERE id = @id;";
+            var sql = "SELECT * FROM v_users_with_level WHERE id = @id;";
             return await conn.QuerySingleOrDefaultAsync<User>(sql, new { id });
         }
         catch (Exception ex)
@@ -107,7 +107,7 @@ public class PostgresUserRepo(
         {
             await using var conn = connectionFactory.CreateConnection();
             await conn.OpenAsync();
-            var sql = "SELECT * FROM users WHERE email = @email;";
+            var sql = "SELECT * FROM v_users_with_level WHERE email = @email;";
             return await conn.QuerySingleOrDefaultAsync<User>(sql, new { email });
         }
         catch (Exception ex)
@@ -128,7 +128,7 @@ public class PostgresUserRepo(
             var escaped = query.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_");
             var sql = """
                 SELECT id, display_name, email
-                FROM users
+                FROM v_users_with_level
                 WHERE (display_name ILIKE @Search ESCAPE '\' OR email ILIKE @Search ESCAPE '\')
                   AND is_banned = false
                   AND id != @ExcludeUserId
@@ -162,8 +162,8 @@ public class PostgresUserRepo(
 
             var sql =
                 @"
-            INSERT INTO users (email, password_hash, display_name, is_banned, is_active, permission_level, reset_token_hash, reset_token_expires, permission_template_id)
-            VALUES (@Email, @PasswordHash, @DisplayName, @IsBanned, @IsActive, @PermissionLevel, @ResetTokenHash, @ResetTokenExpires, @PermissionTemplateId);";
+            INSERT INTO users (email, password_hash, display_name, is_banned, is_active, permission_level_override, reset_token_hash, reset_token_expires, permission_template_id)
+            VALUES (@Email, @PasswordHash, @DisplayName, @IsBanned, @IsActive, @PermissionLevelOverride, @ResetTokenHash, @ResetTokenExpires, @PermissionTemplateId);";
 
             var rowsAffected = await conn.ExecuteAsync(
                 sql,
@@ -174,7 +174,7 @@ public class PostgresUserRepo(
                     user.DisplayName,
                     IsBanned = user.IsBanned == BannedStatus.Banned,
                     user.IsActive,
-                    user.PermissionLevel,
+                    user.PermissionLevelOverride,
                     user.ResetTokenHash,
                     user.ResetTokenExpires,
                     user.PermissionTemplateId,
@@ -205,7 +205,7 @@ public class PostgresUserRepo(
                 display_name = @DisplayName,
                 is_banned = @IsBanned,
                 is_active = @IsActive,
-                permission_level = @PermissionLevel,
+                permission_level_override = @PermissionLevelOverride,
                 reset_token_hash = @ResetTokenHash,
                 reset_token_expires = @ResetTokenExpires,
                 tokens_valid_after = @TokensValidAfter,
@@ -221,7 +221,7 @@ public class PostgresUserRepo(
                     user.DisplayName,
                     IsBanned = user.IsBanned == BannedStatus.Banned,
                     user.IsActive,
-                    user.PermissionLevel,
+                    user.PermissionLevelOverride,
                     user.ResetTokenHash,
                     user.ResetTokenExpires,
                     TokensValidAfter = user.TokensValidAfter.ToUniversalTime(),

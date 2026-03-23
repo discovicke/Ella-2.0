@@ -6,6 +6,7 @@ export interface UserState {
   email: string;
   displayName: string;
   permissions: UserPermissions | null;
+  permissionLevel: number;
   isBanned: boolean;
   token?: string; // JWT token
 }
@@ -23,6 +24,7 @@ export class SessionService {
   readonly currentUser = computed(() => this._currentUser());
   readonly isAuthenticated = computed(() => !!this.currentUser());
   readonly permissions = computed(() => this.currentUser()?.permissions);
+  readonly permissionLevel = computed(() => this.currentUser()?.permissionLevel ?? 0);
 
   constructor() {
     this.restoreSession();

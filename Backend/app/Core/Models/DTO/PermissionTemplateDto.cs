@@ -33,6 +33,9 @@ public class PermissionTemplateDto
     [MaxLength(50)]
     public string CssClass { get; set; } = string.Empty;
 
+    [JsonPropertyName("defaultPermissionLevel")]
+    public int DefaultPermissionLevel { get; set; } = 1;
+
     /// <summary>
     /// Dictionary of permission_name → true/false.
     /// Keys should match system_permissions(key).

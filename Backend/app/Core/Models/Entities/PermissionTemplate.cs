@@ -10,7 +10,7 @@ public class PermissionTemplate
     public string Name { get; set; } = string.Empty;
     public string Label { get; set; } = string.Empty;
     public string CssClass { get; set; } = string.Empty;
-    public int SortOrder { get; set; }
+    public int DefaultPermissionLevel { get; set; } = 1;
 }
 
 /// <summary>

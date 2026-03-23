@@ -167,16 +167,26 @@ public static class BookingEndpoints
                         UserId = authenticatedUserId,
                     };
 
-                    var createdBooking = await service.CreateBookingAsync(safeDto);
+                    var result = await service.CreateBookingAsync(safeDto);
 
-                    if (createdBooking is null)
+                    if (!result.Success)
+                    {
+                        return Results.BadRequest(new { message = result.ErrorMessage });
+                    }
+
+                    if (result.ConflictResponse is not null)
+                    {
+                        return Results.Conflict(result.ConflictResponse);
+                    }
+
+                    if (result.Booking is null)
                     {
                         return Results.Conflict(
                             new { message = "The room is already booked for this time period." }
                         );
                     }
 
-                    return Results.Created($"/api/bookings/{createdBooking.Id}", createdBooking);
+                    return Results.Created($"/api/bookings/{result.Booking.Id}", result.Booking);
                 }
             )
             .RequirePermission("BookRoom")
@@ -189,7 +199,7 @@ public static class BookingEndpoints
             .Produces<BookingDetailedReadModel>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status409Conflict)
+            .Produces<BookingConflictResponseDto>(StatusCodes.Status409Conflict)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
 

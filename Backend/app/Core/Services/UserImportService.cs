@@ -65,7 +65,8 @@ public class UserImportService(
             var dto = new CreateUserDto(
                 email,
                 GenerateDisplayName(student),
-                GeneratePlaceholderPassword(student)
+                GeneratePlaceholderPassword(student),
+                null
             );
 
             try
