@@ -202,6 +202,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
                 is_banned = @IsBanned,
                 is_active = @IsActive,
                 permission_level_override = @PermissionLevelOverride,
+                reset_token_hash = @ResetTokenHash,
+                reset_token_expires = @ResetTokenExpires,
                 tokens_valid_after = @TokensValidAfter,
                 permission_template_id = @PermissionTemplateId
             WHERE id = @Id;";
@@ -216,6 +218,8 @@ public class SqliteUserRepo(IDbConnectionFactory connectionFactory, ILogger<Sqli
                     user.IsBanned,
                     user.IsActive,
                     user.PermissionLevelOverride,
+                    user.ResetTokenHash,
+                    user.ResetTokenExpires,
                     user.TokensValidAfter,
                     user.PermissionTemplateId,
                     Id = id,
