@@ -175,7 +175,10 @@ public class UserService(
             DisplayName = dto.DisplayName,
             PasswordHash = passwordHash,
             IsBanned = dto.IsBanned,
+            IsActive = existing.IsActive,
             PermissionLevelOverride = dto.PermissionLevelOverride,
+            ResetTokenHash = existing.ResetTokenHash,
+            ResetTokenExpires = existing.ResetTokenExpires,
             TokensValidAfter = existing.TokensValidAfter,
             PermissionTemplateId = existing.PermissionTemplateId,
         };
