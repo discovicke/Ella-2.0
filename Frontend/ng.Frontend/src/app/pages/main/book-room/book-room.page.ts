@@ -110,11 +110,7 @@ export class BookRoomPage {
     },
     loader: ({ params }) =>
       firstValueFrom(
-        this.bookingService.getAllBookings({
-          startDate: params.start,
-          endDate: params.end,
-          pageSize: 1000,
-        }),
+        this.bookingService.getOccupancy(params.start, params.end)
       ),
   });
 
@@ -172,7 +168,7 @@ export class BookRoomPage {
     return null;
   });
 
-  readonly bookings = computed(() => this.bookingsResource.value()?.items ?? []);
+  readonly bookings = computed(() => this.bookingsResource.value() ?? []);
 
   readonly availabilityResource = resource({
     params: () => ({

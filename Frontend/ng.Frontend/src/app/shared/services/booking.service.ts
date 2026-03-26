@@ -7,6 +7,7 @@ import {
   BookingStatus,
   PagedResultOfBookingDetailedReadModel,
   GroupedPagedResultOfBookingDetailedReadModel,
+  OccupancySlotDto,
 } from '../../models/models';
 
 export interface BookingFilterParams {
@@ -132,6 +133,16 @@ export class BookingService {
     if (filters.query) params = params.set('query', filters.query);
 
     return this.http.get<RoomAvailabilityResult[]>(`${this.apiUrl}/availability`, { params });
+  }
+
+  getOccupancy(startDate: string, endDate: string, roomId?: number): Observable<OccupancySlotDto[]> {
+    let params = new HttpParams()
+      .set('startDate', startDate)
+      .set('endDate', endDate);
+
+    if (roomId) params = params.set('roomId', roomId);
+
+    return this.http.get<OccupancySlotDto[]>('/api/calendar/occupancy', { params });
   }
 
   updateBookingStatus(bookingId: number, status: BookingStatus): Observable<unknown> {

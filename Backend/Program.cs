@@ -95,6 +95,7 @@ api.MapResourceEndpoints();
 api.MapRoomEndpoints();
 api.MapAssetEndpoints();
 api.MapBookingEndpoints();
+api.MapCalendarEndpoints();
 api.MapRegistrationEndpoints();
 api.MapPermissionTemplateEndpoints();
 api.MapCampusEndpoints();

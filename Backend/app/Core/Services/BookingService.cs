@@ -251,6 +251,38 @@ public class BookingService(
     }
 
     /// <summary>
+    /// Get occupancy slots for calendar display.
+    /// Returns only Active bookings with minimal data for calendar visualization.
+    /// </summary>
+    public async Task<IEnumerable<OccupancySlotDto>> GetOccupancyAsync(
+        DateTime startDate,
+        DateTime endDate,
+        long? roomId = null
+    )
+    {
+        var bookings = await readModelRepo.GetDetailedBookingsFilteredAsync(
+            roomId: roomId,
+            startDate: startDate,
+            endDate: endDate,
+            status: BookingStatus.Active
+        );
+
+        return bookings
+            .Where(b => b.Status == BookingStatus.Active)
+            .Select(b => new OccupancySlotDto(
+                b.BookingId,
+                b.RoomId,
+                b.RoomName ?? "Okänt rum",
+                b.StartTime,
+                b.EndTime,
+                b.Status,
+                b.UserName
+            ))
+            .OrderBy(b => b.StartTime)
+            .ToList();
+    }
+
+    /// <summary>
     /// Create a new booking. 
     /// Logic: Lessons can override private bookings. Private bookings cannot override anything.
     /// </summary>
