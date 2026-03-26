@@ -4,6 +4,13 @@ using Backend.app.Infrastructure.Auth;
 
 namespace Backend.app.API.Endpoints;
 
+/// <summary>
+/// Registration endpoints for booking invitations and RSVPs.
+/// 
+/// Routes are nested under /bookings because registrations are sub-resources of bookings
+/// (e.g., /bookings/{id}/register, /bookings/{id}/invitations). This keeps related
+/// operations together and maintains RESTful resource hierarchy.
+/// </summary>
 public static class RegistrationEndpoints
 {
     public static RouteGroupBuilder MapRegistrationEndpoints(this IEndpointRouteBuilder app)

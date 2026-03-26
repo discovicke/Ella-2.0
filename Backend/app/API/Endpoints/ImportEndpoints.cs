@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.app.API.Endpoints;
 
-public static class ImportEndpoint
+public static class ImportEndpoints
 {
     public static RouteGroupBuilder MapImportEndpoints(this IEndpointRouteBuilder app)
     {
