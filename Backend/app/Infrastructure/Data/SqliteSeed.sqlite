@@ -294,117 +294,117 @@ VALUES
     -- ============================================================
     --  ADMIN TESTBERG (user 1) — 40 bookings total for pagination
     -- ============================================================
-    -- Februari (historik)
-    (100, 3, 1, '2026-02-21 08:00:00', '2026-02-21 09:00:00', 2, 'Månadsmöte administration'),
-    (101, 12, 1, '2026-02-25 13:00:00', '2026-02-25 14:30:00', 2, 'Intervju ny personal'),
-    (102, 3, 1, '2026-03-02 07:30:00', '2026-03-02 08:30:00', 1, 'AVBOKAT: Ledningsgrupp'),
-    (103, 1, 1, '2026-03-04 09:00:00', '2026-03-04 11:00:00', 2, 'Genomgång av säkerhetsprocedurer'),
-    (104, 6, 1, '2026-03-07 12:00:00', '2026-03-07 14:00:00', 2, 'Inspektion av fiberlab'),
-    (105, 3, 1, '2026-03-10 08:00:00', '2026-03-10 09:00:00', 2, 'Kvartalsplanering'),
-    (106, 3, 1, '2026-03-13 09:00:00', '2026-03-13 10:00:00', 2, 'Systemunderhåll planering'),
-    (107, 22, 1, '2026-03-17 12:00:00', '2026-03-17 13:00:00', 2, 'Budgetmöte Q1'),
-    (108, 12, 1, '2026-03-18 08:00:00', '2026-03-18 09:30:00', 2, 'Möte med fastighetsskötare'),
-    (109, 3, 1, '2026-03-19 14:00:00', '2026-03-19 15:00:00', 1, 'AVBOKAT: Fredagsfika special'),
-    -- Mars (kommande)
-    (110, 4, 1, '2026-03-21 07:00:00', '2026-03-21 11:00:00', 2, 'Personalutbildning: HLR'),
-    (111, 20, 1, '2026-03-25 09:00:00', '2026-03-25 14:00:00', 0, 'Campus-turné: Sundsvall'),
-    (112, 10, 1, '2026-03-26 09:00:00', '2026-03-26 14:00:00', 0, 'Campus-turné: Gävle'),
-    (113, 3, 1, '2026-03-29 08:00:00', '2026-03-29 09:30:00', 0, 'Uppföljning kursutvärdering'),
-    (114, 1, 1, '2026-03-30 12:00:00', '2026-03-30 14:00:00', 0, 'Workshop: Ny LMS-plattform'),
-    (115, 12, 1, '2026-03-31 09:00:00', '2026-03-31 10:30:00', 1, 'AVBOKAT: Leverantörsmöte'),
-    (116, 4, 1, '2026-04-02 07:00:00', '2026-04-02 11:00:00', 0, 'Brandövning hela campus'),
-    (117, 22, 1, '2026-04-05 13:00:00', '2026-04-05 15:00:00', 0, 'IT-säkerhet genomgång'),
-    (118, 3, 1, '2026-04-07 08:00:00', '2026-04-07 09:00:00', 0, 'Veckomöte ledning'),
-    (119, 6, 1, '2026-04-08 12:00:00', '2026-04-08 14:00:00', 0, 'Labbinventering fiberlab'),
-    (120, 10, 1, '2026-04-09 08:00:00', '2026-04-09 15:00:00', 0, 'Rekryteringsdag Gävle'),
-    (121, 3, 1, '2026-04-12 09:00:00', '2026-04-12 10:00:00', 0, 'Schemaplanering HT2026'),
-    (122, 20, 1, '2026-04-14 08:00:00', '2026-04-14 11:00:00', 0, 'Strategimöte Sundsvall'),
-    (123, 1, 1, '2026-04-15 12:00:00', '2026-04-15 14:00:00', 1, 'AVBOKAT: Nätverksmigration'),
-    (124, 4, 1, '2026-04-16 07:30:00', '2026-04-16 10:00:00', 0, 'Examinationsplanering'),
-    (125, 12, 1, '2026-04-19 13:00:00', '2026-04-19 14:30:00', 0, 'Medarbetarsamtal'),
-    (126, 3, 1, '2026-04-20 08:00:00', '2026-04-20 09:30:00', 0, 'Kvartalsavslut Q1'),
-    -- April
-    (127, 1, 1, '2026-04-21 06:00:00', '2026-04-21 08:00:00', 0, 'Terminsstart uppföljning'),
-    (128, 6, 1, '2026-04-23 11:00:00', '2026-04-23 14:00:00', 0, 'Uppgradering labbutrustning'),
-    (129, 22, 1, '2026-04-27 08:00:00', '2026-04-27 10:00:00', 0, 'Samarbete med Mittuniversitetet'),
-    (130, 3, 1, '2026-04-28 07:00:00', '2026-04-28 08:00:00', 0, 'Veckomöte ledning'),
-    (131, 10, 1, '2026-04-30 07:00:00', '2026-04-30 14:00:00', 0, 'Öppet hus Gävle'),
-    (132, 4, 1, '2026-05-04 06:00:00', '2026-05-04 10:00:00', 0, 'Tentamensövervakning'),
-    (133, 3, 1, '2026-05-05 12:00:00', '2026-05-05 13:00:00', 1, 'AVBOKAT: Konferens Stockholm'),
-    (134, 20, 1, '2026-05-07 07:00:00', '2026-05-07 13:00:00', 0, 'Campus-inspektion Sundsvall'),
-    (135, 1, 1, '2026-05-12 08:00:00', '2026-05-12 10:00:00', 0, 'Budget HT2026 planering'),
-    (136, 12, 1, '2026-05-14 11:00:00', '2026-05-14 12:30:00', 0, 'Intervju: Ny lärartjänst'),
-    (137, 3, 1, '2026-05-18 07:00:00', '2026-05-18 08:00:00', 0, 'Månadsmöte april'),
-    (138, 6, 1, '2026-05-19 11:00:00', '2026-05-19 13:00:00', 0, 'Felsökning nätverkslab'),
-    (139, 4, 1, '2026-05-20 06:00:00', '2026-05-20 10:00:00', 0, 'Terminsutvärdering VT2026'),
+    -- Mars (historik)
+    (100, 3, 1, '2026-03-24 08:00:00', '2026-03-24 09:00:00', 2, 'Månadsmöte administration'),
+    (101, 12, 1, '2026-03-28 13:00:00', '2026-03-28 14:30:00', 2, 'Intervju ny personal'),
+    (102, 3, 1, '2026-04-02 07:30:00', '2026-04-02 08:30:00', 1, 'AVBOKAT: Ledningsgrupp'),
+    (103, 1, 1, '2026-04-04 09:00:00', '2026-04-04 11:00:00', 2, 'Genomgång av säkerhetsprocedurer'),
+    (104, 6, 1, '2026-04-07 12:00:00', '2026-04-07 14:00:00', 2, 'Inspektion av fiberlab'),
+    (105, 3, 1, '2026-04-10 08:00:00', '2026-04-10 09:00:00', 2, 'Kvartalsplanering'),
+    (106, 3, 1, '2026-04-13 09:00:00', '2026-04-13 10:00:00', 2, 'Systemunderhåll planering'),
+    (107, 22, 1, '2026-04-17 12:00:00', '2026-04-17 13:00:00', 2, 'Budgetmöte Q1'),
+    (108, 12, 1, '2026-04-18 08:00:00', '2026-04-18 09:30:00', 2, 'Möte med fastighetsskötare'),
+    (109, 3, 1, '2026-04-19 14:00:00', '2026-04-19 15:00:00', 1, 'AVBOKAT: Fredagsfika special'),
+    -- April (kommande)
+    (110, 4, 1, '2026-04-21 07:00:00', '2026-04-21 11:00:00', 2, 'Personalutbildning: HLR'),
+    (111, 20, 1, '2026-04-25 09:00:00', '2026-04-25 14:00:00', 0, 'Campus-turné: Sundsvall'),
+    (112, 10, 1, '2026-04-26 09:00:00', '2026-04-26 14:00:00', 0, 'Campus-turné: Gävle'),
+    (113, 3, 1, '2026-04-29 08:00:00', '2026-04-29 09:30:00', 0, 'Uppföljning kursutvärdering'),
+    (114, 1, 1, '2026-04-30 12:00:00', '2026-04-30 14:00:00', 0, 'Workshop: Ny LMS-plattform'),
+    (115, 12, 1, '2026-05-01 09:00:00', '2026-05-01 10:30:00', 1, 'AVBOKAT: Leverantörsmöte'),
+    (116, 4, 1, '2026-05-03 07:00:00', '2026-05-03 11:00:00', 0, 'Brandövning hela campus'),
+    (117, 22, 1, '2026-05-06 13:00:00', '2026-05-06 15:00:00', 0, 'IT-säkerhet genomgång'),
+    (118, 3, 1, '2026-05-08 08:00:00', '2026-05-08 09:00:00', 0, 'Veckomöte ledning'),
+    (119, 6, 1, '2026-05-09 12:00:00', '2026-05-09 14:00:00', 0, 'Labbinventering fiberlab'),
+    (120, 10, 1, '2026-05-10 08:00:00', '2026-05-10 15:00:00', 0, 'Rekryteringsdag Gävle'),
+    (121, 3, 1, '2026-05-13 09:00:00', '2026-05-13 10:00:00', 0, 'Schemaplanering HT2026'),
+    (122, 20, 1, '2026-05-15 08:00:00', '2026-05-15 11:00:00', 0, 'Strategimöte Sundsvall'),
+    (123, 1, 1, '2026-05-16 12:00:00', '2026-05-16 14:00:00', 1, 'AVBOKAT: Nätverksmigration'),
+    (124, 4, 1, '2026-05-17 07:30:00', '2026-05-17 10:00:00', 0, 'Examinationsplanering'),
+    (125, 12, 1, '2026-05-20 13:00:00', '2026-05-20 14:30:00', 0, 'Medarbetarsamtal'),
+    (126, 3, 1, '2026-05-21 08:00:00', '2026-05-21 09:30:00', 0, 'Kvartalsavslut Q1'),
+    -- Maj
+    (127, 1, 1, '2026-05-22 06:00:00', '2026-05-22 08:00:00', 0, 'Terminsstart uppföljning'),
+    (128, 6, 1, '2026-05-24 11:00:00', '2026-05-24 14:00:00', 0, 'Uppgradering labbutrustning'),
+    (129, 22, 1, '2026-05-28 08:00:00', '2026-05-28 10:00:00', 0, 'Samarbete med Mittuniversitetet'),
+    (130, 3, 1, '2026-05-29 07:00:00', '2026-05-29 08:00:00', 0, 'Veckomöte ledning'),
+    (131, 10, 1, '2026-05-31 07:00:00', '2026-05-31 14:00:00', 0, 'Öppet hus Gävle'),
+    (132, 4, 1, '2026-06-04 06:00:00', '2026-06-04 10:00:00', 0, 'Tentamensövervakning'),
+    (133, 3, 1, '2026-06-05 12:00:00', '2026-06-05 13:00:00', 1, 'AVBOKAT: Konferens Stockholm'),
+    (134, 20, 1, '2026-06-07 07:00:00', '2026-06-07 13:00:00', 0, 'Campus-inspektion Sundsvall'),
+    (135, 1, 1, '2026-06-12 08:00:00', '2026-06-12 10:00:00', 0, 'Budget HT2026 planering'),
+    (136, 12, 1, '2026-06-14 11:00:00', '2026-06-14 12:30:00', 0, 'Intervju: Ny lärartjänst'),
+    (137, 3, 1, '2026-06-18 07:00:00', '2026-06-18 08:00:00', 0, 'Månadsmöte april'),
+    (138, 6, 1, '2026-06-19 11:00:00', '2026-06-19 13:00:00', 0, 'Felsökning nätverkslab'),
+    (139, 4, 1, '2026-06-20 06:00:00', '2026-06-20 10:00:00', 0, 'Terminsutvärdering VT2026'),
 
     -- ============================================================
     --  ELEV TESTLUND (user 50) — 14 bookings
     -- ============================================================
-    (200, 1, 50, '2026-03-02 07:30:00', '2026-03-02 11:00:00', 2, 'Grupparbete: Databaser intro'),
-    (201, 2, 50, '2026-03-03 12:00:00', '2026-03-03 15:00:00', 2, 'Projekt: Frontend basics'),
-    (202, 1, 50, '2026-03-05 08:00:00', '2026-03-05 11:00:00', 2, 'Eget arbete: SQL Lab'),
-    (203, 5, 50, '2026-03-06 09:00:00', '2026-03-06 11:00:00', 1, 'AVBOKAT: Extra matte'),
-    (204, 4, 50, '2026-03-07 12:00:00', '2026-03-07 15:00:00', 2, 'Seminarie: UX principer'),
-    (205, 1, 50, '2026-03-10 07:30:00', '2026-03-10 11:00:00', 2, 'Grupparbete: API design'),
-    (206, 4, 50, '2026-03-12 13:00:00', '2026-03-12 15:00:00', 2, 'Extra stöd: Nätverksteknik'),
-    (207, 1, 50, '2026-03-14 08:00:00', '2026-03-14 10:30:00', 2, 'Eget arbete: Inlämningsuppgift'),
-    (208, 2, 50, '2026-03-15 12:00:00', '2026-03-15 14:00:00', 1, 'AVBOKAT: Tandläkartid'),
-    (209, 5, 50, '2026-03-16 07:00:00', '2026-03-16 11:00:00', 2, 'Lab: Switch-konfiguration'),
-    (210, 1, 50, '2026-03-17 08:00:00', '2026-03-17 11:00:00', 2, 'Grupparbete: Slutprojekt del 1'),
-    (211, 4, 50, '2026-03-18 12:00:00', '2026-03-18 15:00:00', 2, 'Projektpresentation övning'),
-    (212, 2, 50, '2026-03-19 09:00:00', '2026-03-19 11:00:00', 2, 'Självstudier: Molntjänster'),
-    (213, 1, 50, '2026-03-22 07:30:00', '2026-03-22 11:00:00', 2, 'Repetitionsdag inför tentamen'),
+    (200, 1, 50, '2026-04-02 07:30:00', '2026-04-02 11:00:00', 2, 'Grupparbete: Databaser intro'),
+    (201, 2, 50, '2026-04-03 12:00:00', '2026-04-03 15:00:00', 2, 'Projekt: Frontend basics'),
+    (202, 1, 50, '2026-04-05 08:00:00', '2026-04-05 11:00:00', 2, 'Eget arbete: SQL Lab'),
+    (203, 5, 50, '2026-04-06 09:00:00', '2026-04-06 11:00:00', 1, 'AVBOKAT: Extra matte'),
+    (204, 4, 50, '2026-04-07 12:00:00', '2026-04-07 15:00:00', 2, 'Seminarie: UX principer'),
+    (205, 1, 50, '2026-04-10 07:30:00', '2026-04-10 11:00:00', 2, 'Grupparbete: API design'),
+    (206, 4, 50, '2026-04-12 13:00:00', '2026-04-12 15:00:00', 2, 'Extra stöd: Nätverksteknik'),
+    (207, 1, 50, '2026-04-14 08:00:00', '2026-04-14 10:30:00', 2, 'Eget arbete: Inlämningsuppgift'),
+    (208, 2, 50, '2026-04-15 12:00:00', '2026-04-15 14:00:00', 1, 'AVBOKAT: Tandläkartid'),
+    (209, 5, 50, '2026-04-16 07:00:00', '2026-04-16 11:00:00', 2, 'Lab: Switch-konfiguration'),
+    (210, 1, 50, '2026-04-17 08:00:00', '2026-04-17 11:00:00', 2, 'Grupparbete: Slutprojekt del 1'),
+    (211, 4, 50, '2026-04-18 12:00:00', '2026-04-18 15:00:00', 2, 'Projektpresentation övning'),
+    (212, 2, 50, '2026-04-19 09:00:00', '2026-04-19 11:00:00', 2, 'Självstudier: Molntjänster'),
+    (213, 1, 50, '2026-04-22 07:30:00', '2026-04-22 11:00:00', 2, 'Repetitionsdag inför tentamen'),
 
     -- ============================================================
     --  EDUCATORS (users 3, 4, 5, 80, 81) — richer booking data
     -- ============================================================
-    (300, 2, 3, '2026-03-12 08:00:00', '2026-03-12 15:00:00', 2, 'Föreläsning: C# Advanced (demo26)'),
-    (301, 5, 4, '2026-03-13 07:30:00', '2026-03-13 14:30:00', 2, 'Labbarbete: Gävle Tech Night'),
-    (302, 10, 4, '2026-03-16 08:00:00', '2026-03-16 15:00:00', 2, 'UX Workshop: Design Systems'),
-    (303, 20, 5, '2026-03-20 08:00:00', '2026-03-20 16:00:00', 2, 'Öppet hus: Sundsvall'),
-    (304, 2, 3, '2026-03-23 08:00:00', '2026-03-23 11:00:00', 2, 'Föreläsning: Entity Framework'),
-    (305, 4, 3, '2026-03-26 12:00:00', '2026-03-26 15:00:00', 0, 'Kodgenomgång: Studentprojekt'),
-    (306, 1, 3, '2026-03-30 07:30:00', '2026-03-30 10:30:00', 0, 'Tentamen: Databasteknik'),
-    (307, 2, 3, '2026-04-06 08:00:00', '2026-04-06 15:00:00', 1, 'AVBOKAT: Konferens'),
-    (308, 10, 4, '2026-03-24 08:00:00', '2026-03-24 15:00:00', 0, 'Figma workshop dag 1'),
-    (309, 10, 4, '2026-03-25 08:00:00', '2026-03-25 15:00:00', 0, 'Figma workshop dag 2'),
-    (310, 11, 4, '2026-03-31 09:00:00', '2026-03-31 14:00:00', 0, 'Prototyp-labb: React Native'),
-    (311, 20, 5, '2026-04-01 08:00:00', '2026-04-01 11:00:00', 0, 'Gästföreläsning: AI i utbildning'),
-    (312, 21, 5, '2026-04-07 12:00:00', '2026-04-07 15:00:00', 0, 'Lab: Python maskinlärning'),
-    (313, 20, 5, '2026-04-15 08:00:00', '2026-04-15 16:00:00', 0, 'Hackathonarrangemang'),
-    (314, 2, 80, '2026-03-22 08:00:00', '2026-03-22 11:00:00', 2, 'Föreläsning: Systemdesign'),
-    (315, 4, 80, '2026-03-29 12:00:00', '2026-03-29 15:00:00', 0, 'Workshop: Docker & Kubernetes'),
-    (316, 1, 80, '2026-04-05 07:30:00', '2026-04-05 10:30:00', 0, 'Tentamen: Operativsystem'),
-    (317, 10, 81, '2026-03-27 08:00:00', '2026-03-27 15:00:00', 0, 'Kurs: Användbarhetstestning'),
-    (318, 11, 81, '2026-04-03 09:00:00', '2026-04-03 14:00:00', 0, 'Studiebesök: Sandvik UX-avd'),
-    (319, 12, 81, '2026-04-10 12:00:00', '2026-04-10 14:00:00', 0, 'Handledning: Examensarbete'),
+    (300, 2, 3, '2026-04-12 08:00:00', '2026-04-12 15:00:00', 2, 'Föreläsning: C# Advanced (demo26)'),
+    (301, 5, 4, '2026-04-13 07:30:00', '2026-04-13 14:30:00', 2, 'Labbarbete: Gävle Tech Night'),
+    (302, 10, 4, '2026-04-16 08:00:00', '2026-04-16 15:00:00', 2, 'UX Workshop: Design Systems'),
+    (303, 20, 5, '2026-04-20 08:00:00', '2026-04-20 16:00:00', 2, 'Öppet hus: Sundsvall'),
+    (304, 2, 3, '2026-04-23 08:00:00', '2026-04-23 11:00:00', 2, 'Föreläsning: Entity Framework'),
+    (305, 4, 3, '2026-04-26 12:00:00', '2026-04-26 15:00:00', 0, 'Kodgenomgång: Studentprojekt'),
+    (306, 1, 3, '2026-04-30 07:30:00', '2026-04-30 10:30:00', 0, 'Tentamen: Databasteknik'),
+    (307, 2, 3, '2026-05-07 08:00:00', '2026-05-07 15:00:00', 1, 'AVBOKAT: Konferens'),
+    (308, 10, 4, '2026-04-24 08:00:00', '2026-04-24 15:00:00', 0, 'Figma workshop dag 1'),
+    (309, 10, 4, '2026-04-25 08:00:00', '2026-04-25 15:00:00', 0, 'Figma workshop dag 2'),
+    (310, 11, 4, '2026-05-01 09:00:00', '2026-05-01 14:00:00', 0, 'Prototyp-labb: React Native'),
+    (311, 20, 5, '2026-05-02 08:00:00', '2026-05-02 11:00:00', 0, 'Gästföreläsning: AI i utbildning'),
+    (312, 21, 5, '2026-05-08 12:00:00', '2026-05-08 15:00:00', 0, 'Lab: Python maskinlärning'),
+    (313, 20, 5, '2026-05-16 08:00:00', '2026-05-16 16:00:00', 0, 'Hackathonarrangemang'),
+    (314, 2, 80, '2026-04-22 08:00:00', '2026-04-22 11:00:00', 2, 'Föreläsning: Systemdesign'),
+    (315, 4, 80, '2026-04-29 12:00:00', '2026-04-29 15:00:00', 0, 'Workshop: Docker & Kubernetes'),
+    (316, 1, 80, '2026-05-06 07:30:00', '2026-05-06 10:30:00', 0, 'Tentamen: Operativsystem'),
+    (317, 10, 81, '2026-04-27 08:00:00', '2026-04-27 15:00:00', 0, 'Kurs: Användbarhetstestning'),
+    (318, 11, 81, '2026-05-04 09:00:00', '2026-05-04 14:00:00', 0, 'Studiebesök: Sandvik UX-avd'),
+    (319, 12, 81, '2026-05-11 12:00:00', '2026-05-11 14:00:00', 0, 'Handledning: Examensarbete'),
 
     -- ============================================================
     --  STUDENT BOOKINGS (various students) — more volume
     -- ============================================================
-    (400, 1, 10, '2026-03-23 08:00:00', '2026-03-23 11:00:00', 2, 'Grupparbete: REST API'),
-    (401, 5, 11, '2026-03-24 12:00:00', '2026-03-24 15:00:00', 0, 'Laboration: Nätverkssäkerhet'),
-    (402, 4, 12, '2026-03-25 07:00:00', '2026-03-25 11:00:00', 0, 'Eget arbete: Slutprojekt'),
-    (403, 1, 13, '2026-03-26 08:00:00', '2026-03-26 10:00:00', 1, 'AVBOKAT: Sjuk'),
-    (404, 2, 14, '2026-03-29 12:00:00', '2026-03-29 15:00:00', 0, 'Projekt: Webbshop frontend'),
-    (405, 1, 15, '2026-04-01 07:30:00', '2026-04-01 10:30:00', 0, 'Grupparbete: CI/CD pipeline'),
-    (406, 10, 20, '2026-03-23 08:00:00', '2026-03-23 11:00:00', 2, 'Skissarbete: Rebranding'),
-    (407, 10, 21, '2026-03-28 12:00:00', '2026-03-28 15:00:00', 0, 'Användartester: App v2'),
-    (408, 12, 22, '2026-03-30 09:00:00', '2026-03-30 11:00:00', 0, 'Handledning: Portfolio'),
-    (409, 10, 23, '2026-04-01 08:00:00', '2026-04-01 10:00:00', 0, 'Wireframes: Kundprojekt'),
-    (410, 20, 30, '2026-03-24 08:00:00', '2026-03-24 15:00:00', 0, 'Hackathon-förberedelse'),
-    (411, 21, 31, '2026-03-29 12:00:00', '2026-03-29 15:00:00', 0, 'Labb: Arduino IoT-sensor'),
-    (412, 20, 32, '2026-03-31 07:30:00', '2026-03-31 11:00:00', 0, 'Grupparbete: Mobilapp'),
-    (413, 1, 60, '2026-03-25 08:00:00', '2026-03-25 11:00:00', 0, 'Labb: Linux-administration'),
-    (414, 5, 61, '2026-03-26 12:00:00', '2026-03-26 15:00:00', 0, 'Nätverkslabb: VLAN-konfiguration'),
-    (415, 4, 62, '2026-03-30 07:00:00', '2026-03-30 11:00:00', 0, 'Eget arbete: Serverprojekt'),
-    (416, 1, 66, '2026-03-31 08:00:00', '2026-03-31 11:00:00', 0, 'Grupparbete: Blazor-app'),
-    (417, 2, 67, '2026-04-01 12:00:00', '2026-04-01 15:00:00', 0, 'Projekt: SignalR realtidschat'),
-    (418, 10, 70, '2026-03-30 08:00:00', '2026-03-30 11:00:00', 0, 'Designsprint: Dag 1'),
-    (419, 10, 71, '2026-03-31 08:00:00', '2026-03-31 11:00:00', 0, 'Designsprint: Dag 2'),
-    (420, 20, 74, '2026-04-02 08:00:00', '2026-04-02 15:00:00', 0, 'Kodmaraton: Game jam'),
-    (421, 21, 75, '2026-04-02 12:00:00', '2026-04-02 15:00:00', 1, 'AVBOKAT: Tågförsenad');
+    (400, 1, 10, '2026-04-23 08:00:00', '2026-04-23 11:00:00', 2, 'Grupparbete: REST API'),
+    (401, 5, 11, '2026-04-24 12:00:00', '2026-04-24 15:00:00', 0, 'Laboration: Nätverkssäkerhet'),
+    (402, 4, 12, '2026-04-25 07:00:00', '2026-04-25 11:00:00', 0, 'Eget arbete: Slutprojekt'),
+    (403, 1, 13, '2026-04-26 08:00:00', '2026-04-26 10:00:00', 1, 'AVBOKAT: Sjuk'),
+    (404, 2, 14, '2026-04-29 12:00:00', '2026-04-29 15:00:00', 0, 'Projekt: Webbshop frontend'),
+    (405, 1, 15, '2026-05-02 07:30:00', '2026-05-02 10:30:00', 0, 'Grupparbete: CI/CD pipeline'),
+    (406, 10, 20, '2026-04-23 08:00:00', '2026-04-23 11:00:00', 2, 'Skissarbete: Rebranding'),
+    (407, 10, 21, '2026-04-28 12:00:00', '2026-04-28 15:00:00', 0, 'Användartester: App v2'),
+    (408, 12, 22, '2026-04-30 09:00:00', '2026-04-30 11:00:00', 0, 'Handledning: Portfolio'),
+    (409, 10, 23, '2026-05-02 08:00:00', '2026-05-02 10:00:00', 0, 'Wireframes: Kundprojekt'),
+    (410, 20, 30, '2026-04-24 08:00:00', '2026-04-24 15:00:00', 0, 'Hackathon-förberedelse'),
+    (411, 21, 31, '2026-04-29 12:00:00', '2026-04-29 15:00:00', 0, 'Labb: Arduino IoT-sensor'),
+    (412, 20, 32, '2026-05-01 07:30:00', '2026-05-01 11:00:00', 0, 'Grupparbete: Mobilapp'),
+    (413, 1, 60, '2026-04-25 08:00:00', '2026-04-25 11:00:00', 0, 'Labb: Linux-administration'),
+    (414, 5, 61, '2026-04-26 12:00:00', '2026-04-26 15:00:00', 0, 'Nätverkslabb: VLAN-konfiguration'),
+    (415, 4, 62, '2026-04-30 07:00:00', '2026-04-30 11:00:00', 0, 'Eget arbete: Serverprojekt'),
+    (416, 1, 66, '2026-05-01 08:00:00', '2026-05-01 11:00:00', 0, 'Grupparbete: Blazor-app'),
+    (417, 2, 67, '2026-05-02 12:00:00', '2026-05-02 15:00:00', 0, 'Projekt: SignalR realtidschat'),
+    (418, 10, 70, '2026-04-30 08:00:00', '2026-04-30 11:00:00', 0, 'Designsprint: Dag 1'),
+    (419, 10, 71, '2026-05-01 08:00:00', '2026-05-01 11:00:00', 0, 'Designsprint: Dag 2'),
+    (420, 20, 74, '2026-05-03 08:00:00', '2026-05-03 15:00:00', 0, 'Kodmaraton: Game jam'),
+    (421, 21, 75, '2026-05-03 12:00:00', '2026-05-03 15:00:00', 1, 'AVBOKAT: Tågförsenad');
 
 -- ═══════════════════════════════════════════════════════════════
 -- 11. CONFIRMED REGISTRATIONS (status: 1 = Registered)
@@ -413,19 +413,19 @@ VALUES
 INSERT INTO registrations (booking_id, user_id, status)
 VALUES
     -- Educators & admins cross-attending (past — visible in Historik)
-    (300, 1,  1),   -- Admin      → Sven's C# lecture (Feb 20)
-    (303, 1,  1),   -- Admin      → Anders' open house (Feb 28)
-    (301, 3,  1),   -- Sven       → Karin's Gävle Tech Night (Feb 21)
-    (303, 3,  1),   -- Sven       → Anders' open house (Feb 28)
-    (300, 4,  1),   -- Karin      → Sven's C# lecture (Feb 20)
-    (302, 5,  1),   -- Anders     → Karin's UX Workshop (Feb 24)
-    (303, 80, 1),   -- Marie      → Anders' open house (Feb 28)
-    (314, 5,  1),   -- Anders     → Marie's Systemdesign (Mar 2)
+    (300, 1,  1),   -- Admin      → Sven's C# lecture (Mar 20)
+    (303, 1,  1),   -- Admin      → Anders' open house (Mar 28)
+    (301, 3,  1),   -- Sven       → Karin's Gävle Tech Night (Mar 21)
+    (303, 3,  1),   -- Sven       → Anders' open house (Mar 28)
+    (300, 4,  1),   -- Karin      → Sven's C# lecture (Mar 20)
+    (302, 5,  1),   -- Anders     → Karin's UX Workshop (Mar 24)
+    (303, 80, 1),   -- Marie      → Anders' open house (Mar 28)
+    (314, 5,  1),   -- Anders     → Marie's Systemdesign (Apr 2)
 
     -- Educators & admins cross-attending (upcoming — visible in Kommande)
-    (308, 3,  1),   -- Sven       → Karin's Figma dag 1 (Mar 4)
-    (311, 80, 1),   -- Marie      → Anders' AI lecture (Mar 12)
-    (313, 81, 1),   -- Thomas     → Anders' Hackathon (Mar 25)
+    (308, 3,  1),   -- Sven       → Karin's Figma dag 1 (Apr 4)
+    (311, 80, 1),   -- Marie      → Anders' AI lecture (Apr 12)
+    (313, 81, 1),   -- Thomas     → Anders' Hackathon (Apr 25)
 
     -- Students at educator/admin events (past)
     (300, 50, 1), (300, 10, 1), (300, 11, 1), (300, 12, 1),
@@ -452,9 +452,9 @@ VALUES
     (420, 77, 1), (420, 78, 1),
 
     -- Additional student cross-registrations (upcoming)
-    (310, 12, 1),   -- Marcus  → Karin's Prototyp-labb (Mar 11)
-    (318, 22, 1),   -- Anna    → Thomas' Studiebesök (Mar 14)
-    (312, 31, 1);   -- Elena   → Anders' Python lab (Mar 18)
+    (310, 12, 1),   -- Marcus  → Karin's Prototyp-labb (Apr 11)
+    (318, 22, 1),   -- Anna    → Thomas' Studiebesök (Apr 14)
+    (312, 31, 1);   -- Elena   → Anders' Python lab (Apr 18)
 
 
 -- ═══════════════════════════════════════════════════════════════
@@ -465,57 +465,57 @@ VALUES
 INSERT INTO registrations (booking_id, user_id, status)
 VALUES
     -- Admin Testberg (1) — admin
-    (308, 1,  0),   -- Figma workshop Mar 4 (Karin)
-    (318, 1,  0),   -- Studiebesök Sandvik Mar 14 (Thomas)
+    (308, 1,  0),   -- Figma workshop Apr 4 (Karin)
+    (318, 1,  0),   -- Studiebesök Sandvik Apr 14 (Thomas)
 
     -- Sven Svensson (3) — educator
-    (111, 3,  0),   -- Campus-turné Sundsvall Mar 5 (Admin)
-    (317, 3,  0),   -- Användbarhetstestning Mar 7 (Thomas)
+    (111, 3,  0),   -- Campus-turné Sundsvall Apr 5 (Admin)
+    (317, 3,  0),   -- Användbarhetstestning Apr 7 (Thomas)
 
     -- Karin Karlsson (4) — educator
-    (311, 4,  0),   -- AI i utbildning Mar 12 (Anders)
-    (315, 4,  0),   -- Docker & Kubernetes Mar 9 (Marie)
+    (311, 4,  0),   -- AI i utbildning Apr 12 (Anders)
+    (315, 4,  0),   -- Docker & Kubernetes Apr 9 (Marie)
 
     -- Anders Andersson (5) — educator
-    (310, 5,  0),   -- Prototyp-labb Mar 11 (Karin)
-    (116, 5,  0),   -- Brandövning Mar 13 (Admin)
+    (310, 5,  0),   -- Prototyp-labb Apr 11 (Karin)
+    (116, 5,  0),   -- Brandövning Apr 13 (Admin)
 
     -- Elev Testlund (50) — student
-    (305, 50, 0),   -- Kodgenomgång Mar 6 (Sven)
-    (306, 50, 0),   -- Tentamen Mar 10 (Sven)
-    (315, 50, 0),   -- Docker & Kubernetes Mar 9 (Marie)
+    (305, 50, 0),   -- Kodgenomgång Apr 6 (Sven)
+    (306, 50, 0),   -- Tentamen Apr 10 (Sven)
+    (315, 50, 0),   -- Docker & Kubernetes Apr 9 (Marie)
 
     -- André Pontén (10) — student
-    (308, 10, 0),   -- Figma dag 1 Mar 4 (Karin)
-    (311, 10, 0),   -- AI i utbildning Mar 12 (Anders)
-    (315, 10, 0),   -- Docker & Kubernetes Mar 9 (Marie)
+    (308, 10, 0),   -- Figma dag 1 Apr 4 (Karin)
+    (311, 10, 0),   -- AI i utbildning Apr 12 (Anders)
+    (315, 10, 0),   -- Docker & Kubernetes Apr 9 (Marie)
 
     -- Christian Gennari (11) — student
-    (305, 11, 0),   -- Kodgenomgång Mar 6 (Sven)
-    (317, 11, 0),   -- Användbarhetstestning Mar 7 (Thomas)
+    (305, 11, 0),   -- Kodgenomgång Apr 6 (Sven)
+    (317, 11, 0),   -- Användbarhetstestning Apr 7 (Thomas)
 
     -- Marcus Lööv (12) — student
-    (312, 12, 0),   -- Python maskinlärning Mar 18 (Anders)
+    (312, 12, 0),   -- Python maskinlärning Apr 18 (Anders)
 
     -- Linda Berg (20) — student
-    (311, 20, 0),   -- AI i utbildning Mar 12 (Anders)
-    (313, 20, 0),   -- Hackathon Mar 25 (Anders)
+    (311, 20, 0),   -- AI i utbildning Apr 12 (Anders)
+    (313, 20, 0),   -- Hackathon Apr 25 (Anders)
 
     -- Johan Kvist (30) — student
-    (312, 30, 0),   -- Python maskinlärning Mar 18 (Anders)
-    (313, 30, 0),   -- Hackathon Mar 25 (Anders)
+    (312, 30, 0),   -- Python maskinlärning Apr 18 (Anders)
+    (313, 30, 0),   -- Hackathon Apr 25 (Anders)
 
     -- Lisa Franzén (60) — student
-    (315, 60, 0),   -- Docker & Kubernetes Mar 9 (Marie)
-    (317, 60, 0),   -- Användbarhetstestning Mar 7 (Thomas)
+    (315, 60, 0),   -- Docker & Kubernetes Apr 9 (Marie)
+    (317, 60, 0),   -- Användbarhetstestning Apr 7 (Thomas)
 
     -- Marie Wallin (80) — educator
-    (111, 80, 0),   -- Campus-turné Sundsvall Mar 5 (Admin)
-    (309, 80, 0),   -- Figma dag 2 Mar 5 (Karin)
+    (111, 80, 0),   -- Campus-turné Sundsvall Apr 5 (Admin)
+    (309, 80, 0),   -- Figma dag 2 Apr 5 (Karin)
 
     -- Thomas Berggren (81) — educator
-    (112, 81, 0),   -- Campus-turné Gävle Mar 6 (Admin)
-    (315, 81, 0);   -- Docker & Kubernetes Mar 9 (Marie)
+    (112, 81, 0),   -- Campus-turné Gävle Apr 6 (Admin)
+    (315, 81, 0);   -- Docker & Kubernetes Apr 9 (Marie)
 
 
 -- ═══════════════════════════════════════════════════════════════
@@ -525,15 +525,15 @@ VALUES
 INSERT INTO registrations (booking_id, user_id, status)
 VALUES
     -- Past declined (visible in Historik as read-only)
-    (301, 1,  2),   -- Admin      declined Karin's Gävle Tech Night (Feb 21)
-    (302, 3,  2),   -- Sven       declined Karin's UX Workshop (Feb 24)
-    (300, 5,  2),   -- Anders     declined Sven's C# lecture (Feb 20)
-    (303, 4,  2),   -- Karin      declined Anders' open house (Feb 28)
+    (301, 1,  2),   -- Admin      declined Karin's Gävle Tech Night (Mar 21)
+    (302, 3,  2),   -- Sven       declined Karin's UX Workshop (Mar 24)
+    (300, 5,  2),   -- Anders     declined Sven's C# lecture (Mar 20)
+    (303, 4,  2),   -- Karin      declined Anders' open house (Mar 28)
 
     -- Upcoming declined (visible in Kommande as declined)
-    (304, 50, 2),   -- Elev Testlund declined Sven's upcoming (Mar 3)
-    (311, 11, 2),   -- Christian   declined Anders' AI (Mar 12)
-    (313, 10, 2);   -- André      declined Anders' Hackathon (Mar 25)
+    (304, 50, 2),   -- Elev Testlund declined Sven's upcoming (Apr 3)
+    (311, 11, 2),   -- Christian   declined Anders' AI (Apr 12)
+    (313, 10, 2);   -- André      declined Anders' Hackathon (Apr 25)
 
 
 -- ═══════════════════════════════════════════════════════════════
@@ -563,11 +563,11 @@ VALUES
 -- ═══════════════════════════════════════════════════════════════
 INSERT INTO resource_bookings (id, resource_id, user_id, start_time, end_time, notes)
 VALUES 
-    (1, 1, 1, '2026-03-10 08:00:00', '2026-03-10 16:00:00', 'Resa till Gävle (historik)'),
-    (2, 4, 3, '2026-03-15 09:00:00', '2026-03-15 12:00:00', 'Lånedatorer för test (historik)'),
-    (3, 3, 4, '2026-03-25 07:30:00', '2026-03-25 18:00:00', 'Studiebesök Sandviken (kommande)'),
-    (4, 5, 5, '2026-03-27 10:00:00', '2026-03-27 15:00:00', 'Hackathon utrustning (kommande)'),
-    (5, 1, 1, '2026-03-24 09:00:00', '2026-03-24 15:00:00', 'Kundmöte (idag)');
+    (1, 1, 1, '2026-04-10 08:00:00', '2026-04-10 16:00:00', 'Resa till Gävle (historik)'),
+    (2, 4, 3, '2026-04-15 09:00:00', '2026-04-15 12:00:00', 'Lånedatorer för test (historik)'),
+    (3, 3, 4, '2026-04-25 07:30:00', '2026-04-25 18:00:00', 'Studiebesök Sandviken (kommande)'),
+    (4, 5, 5, '2026-04-27 10:00:00', '2026-04-27 15:00:00', 'Hackathon utrustning (kommande)'),
+    (5, 1, 1, '2026-04-24 09:00:00', '2026-04-24 15:00:00', 'Kundmöte (idag)');
 
 -- ═══════════════════════════════════════════════════════════════
 -- 18. BOOKING ↔ CLASS
